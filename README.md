@@ -32,10 +32,10 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
 8. **Otvori sobu**: zid-view je editor na fotki zida (jedinice cm, x od lijevog kuta gledano iznutra, visina od poda).
    Na gornjem rubu su izlazi bužira iz deke (projekcija kraja trase na najbliži zid); izlaz se vuče po fotki,
    lijevo-desno pomiče kraj bužira i na tlocrtu, gore-dolje postavlja visinu izlaza. Alati: **Kutija (K)**,
-   **Utičnica (U)**, **Prekidač (P)**, **Svjetlo (L)**, **Ormar (O)** postavljaju element klikom (snap 1 cm, na
-   standardne visine 30/105/115/230 cm i na x drugih elemenata). **Kabel (C)**: klik na izlaz bužira ili element
+   **Utičnica (U)**, **Prekidač (P)**, **Svjetlo (L)**, **Ormar (O)** postavljaju element klikom (snap 1 cm i
+   poravnanje s drugim elementima po x i visini; fotka je okvirna, pa nema snapa na apsolutne visine). **Kabel (C)**: klik na izlaz bužira ili element
    počinje, klikovi dodaju vodoravne/okomite lomove, klik na element završava; kabel je vezan za oba kraja i prati
-   ih pri pomicanju. Plave trake su instalacijske zone po DIN 18015-3 (Z ih gasi). Desno: fotka zida, svojstva
+   ih pri pomicanju. Desno: fotka zida, svojstva
    odabira (tip, oznaka, pozicija, vrsta prekidača, tip kabela, duljina) i lista svega na zidu.
 
 ## Sljedeće

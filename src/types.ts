@@ -61,8 +61,6 @@ export const ELEMENT_META: Record<ElementType, { label: string; key: string; pre
   panel: { label: 'Ormar', key: 'O', prefix: 'RO', zM: 1.5 },
 }
 
-// DIN 18015-3 preferred heights (m); elements snap to these when close.
-export const STANDARD_HEIGHTS = [0.3, 1.05, 1.15, 2.3]
 
 export interface Room {
   id: string

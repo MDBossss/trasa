@@ -17,7 +17,6 @@ interface State {
   elementType: ElementType
   wallCamera: { x: number; y: number; scale: number }
   wallFitNonce: number
-  showZones: boolean
   selectedId: string | null
   view: View
   showGrid: boolean
@@ -40,7 +39,7 @@ interface State {
   updateCable: (id: string, p: Partial<Cable>) => void
   select: (id: string | null) => void
   setView: (v: View) => void
-  toggle: (k: 'showGrid' | 'snapGrid' | 'snapAngle' | 'showZones') => void
+  toggle: (k: 'showGrid' | 'snapGrid' | 'snapAngle') => void
   patchProject: (p: Partial<Project>) => void
   replaceProject: (p: Project) => void
   addConduit: (points: Pt[]) => string
@@ -66,7 +65,6 @@ export const useStore = create<State>()(
       elementType: 'box',
       wallCamera: { x: 0, y: 0, scale: 1 },
       wallFitNonce: 0,
-      showZones: true,
       selectedId: null,
       view: { kind: 'plan' },
       showGrid: true,

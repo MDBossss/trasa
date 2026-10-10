@@ -5,7 +5,7 @@ import type { KonvaEventObject } from 'konva/lib/Node'
 import useImage from 'use-image'
 import { useStore } from '../store'
 import { cableColor, cablePath, endPos, type Exit, type WallCtx, type WallInfo } from '../walls'
-import { STANDARD_HEIGHTS, type CableEnd, type ElementType, type WallElement } from '../types'
+import type { CableEnd, ElementType, WallElement } from '../types'
 import { Hud } from './Hud'
 import { activeWallTool } from './WallToolRail'
 
@@ -30,7 +30,6 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
   const selectedId = useStore((s) => s.selectedId)
   const camera = useStore((s) => s.wallCamera)
   const fitNonce = useStore((s) => s.wallFitNonce)
-  const showZones = useStore((s) => s.showZones)
   const showGrid = useStore((s) => s.showGrid)
   const { select, setWallTool, setWallCamera, wallZoomBy, wallFitView, addElement, updateElement, addCable, updateCable, removeSelected, toggle } = useStore.getState()
   const [img] = useImage(photo ?? '')
@@ -72,17 +71,18 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
     return { xM: x / 100, zM: (H - y) / 100 }
   }, [H])
 
-  // 1 cm snap; without Alt also standard heights and x-alignment with other ports (±3 cm)
+  // 1 cm snap; without Alt also x/z alignment with other elements and exits (±3 cm).
+  // No absolute-height snapping: wall photos are approximate, not 1:1.
   const snapPos = useCallback(
     (p: P, skipId?: string): P => {
       let xM = Math.round(p.xM * 100) / 100
       let zM = Math.round(p.zM * 100) / 100
       const g: { x?: number; z?: number } = {}
       if (!alt) {
-        for (const h of STANDARD_HEIGHTS) if (Math.abs(zM - h) <= 0.03) { zM = h; g.z = h }
         if (Math.abs(zM - project.ceilingM) <= 0.03) zM = project.ceilingM
-        const xs = [...elements.filter((e) => e.id !== skipId).map((e) => e.xM), ...wall.exits.map((e) => e.posM)]
-        for (const x of xs) if (Math.abs(xM - x) <= 0.03) { xM = x; g.x = x }
+        const others = elements.filter((e) => e.id !== skipId)
+        for (const x of [...others.map((e) => e.xM), ...wall.exits.map((e) => e.posM)]) if (Math.abs(xM - x) <= 0.03) { xM = x; g.x = x }
+        for (const z of others.map((e) => e.zM)) if (Math.abs(zM - z) <= 0.03) { zM = z; g.z = z }
       }
       setGuide(g.x !== undefined || g.z !== undefined ? g : null)
       return { xM: Math.max(0, Math.min(wall.lengthM, xM)), zM: Math.max(0, Math.min(project.ceilingM, zM)) }
@@ -131,7 +131,6 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       const map: Record<string, [typeof tool, ElementType?]> = { v: ['select'], h: ['pan'], k: ['element', 'box'], u: ['element', 'socket'], p: ['element', 'switch'], l: ['element', 'light'], o: ['element', 'panel'], c: ['cable'] }
       if (map[e.key]) setWallTool(...map[e.key])
       if (e.key === 'g') toggle('showGrid')
-      if (e.key === 'z') toggle('showZones')
       if (e.key === '+' || e.key === '=') wallZoomBy(1.2, { x: size.w / 2, y: size.h / 2 })
       if (e.key === '-') wallZoomBy(1 / 1.2, { x: size.w / 2, y: size.h / 2 })
       if (e.key === '0') wallFitView()
@@ -256,10 +255,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
         onZoomIn={() => wallZoomBy(1.2, { x: size.w / 2, y: size.h / 2 })}
         onZoomOut={() => wallZoomBy(1 / 1.2, { x: size.w / 2, y: size.h / 2 })}
         onFit={wallFitView}
-        toggles={[
-          { icon: 'grid', on: showGrid, title: 'Grid 10 cm (G)', onClick: () => toggle('showGrid') },
-          { icon: 'zones', on: showZones, title: 'Instalacijske zone DIN 18015-3 (Z)', onClick: () => toggle('showZones') },
-        ]}
+        toggles={[{ icon: 'grid', on: showGrid, title: 'Grid 10 cm (G)', onClick: () => toggle('showGrid') }]}
         hint={<><b>{t.label}</b> · {t.hint}</>}
         extra={cursor && <div className="hud-group hud-coords">x {cursor.xM.toFixed(2)} m · h {cursor.zM.toFixed(2)} m</div>}
       />
@@ -281,15 +277,6 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
         <Layer listening={false}>
           <Rect x={0} y={0} width={W} height={H} fill="#f5f5f5" stroke="#555" strokeWidth={px(2)} />
           {img && <KImage image={img} x={0} y={0} width={W} height={H} />}
-          {showZones && (
-            <Group opacity={0.22}>
-              {[[15, 45], [100, 130], [H - 45, H - 15]].map(([a, b], i) => (
-                <Rect key={i} x={0} y={H - b} width={W} height={b - a} fill="#1e88e5" />
-              ))}
-              <Rect x={10} y={0} width={20} height={H} fill="#1e88e5" />
-              <Rect x={W - 30} y={0} width={20} height={H} fill="#1e88e5" />
-            </Group>
-          )}
           {showGrid && (
             <Shape
               sceneFunc={(ctx2, shape) => {
@@ -310,9 +297,6 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
               <Line points={[i * 100, H, i * 100, H + px(8)]} stroke="#555" strokeWidth={px(1)} />
               <Text x={i * 100} y={H + px(10)} text={`${i} m`} fontSize={px(12)} fill="#555" offsetX={px(10)} />
             </Group>
-          ))}
-          {[0.3, 1.05, 2.3].map((h) => (
-            <Text key={h} x={-px(4)} y={H - h * 100} text={`${h.toFixed(2)}`} fontSize={px(10)} fill="#888" align="right" width={px(40)} offsetX={px(40)} offsetY={px(5)} />
           ))}
           {guide?.x !== undefined && <Line points={[guide.x * 100, 0, guide.x * 100, H]} stroke="#e91e63" strokeWidth={px(1)} dash={[px(6), px(4)]} />}
           {guide?.z !== undefined && <Line points={[0, H - guide.z * 100, W, H - guide.z * 100]} stroke="#e91e63" strokeWidth={px(1)} dash={[px(6), px(4)]} />}
@@ -398,8 +382,8 @@ function Symbol({ type, selected, px }: { type: ElementType; selected: boolean; 
   const sw = px(2)
   const halo = selected ? <Circle radius={13} fill="rgba(30,136,229,0.18)" /> : null
   switch (type) {
-    case 'box':
-      return <>{halo}<Circle radius={7} fill="#fff" stroke={stroke} strokeWidth={sw} /><Circle radius={2.2} fill={stroke} /></>
+    case 'box': // square like the physical flush box (IEC uses a circle; this is a personal planner)
+      return <>{halo}<Rect x={-7} y={-7} width={14} height={14} fill="#fff" stroke={stroke} strokeWidth={sw} /><Circle radius={2.2} fill={stroke} /></>
     case 'socket':
       return <>{halo}<Arc innerRadius={0} outerRadius={7} angle={180} rotation={180} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-9, 0, 9, 0]} stroke={stroke} strokeWidth={sw} /><Line points={[0, 0, 0, 7]} stroke={stroke} strokeWidth={sw} /></>
     case 'switch':
