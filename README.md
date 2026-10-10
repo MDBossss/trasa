@@ -1,7 +1,8 @@
 # Trasa
 
 Vizualni plan provlačenja bužira i razvodnih kutija po kući. Radi lokalno u pregledniku,
-bez servera: projekt se automatski sprema u IndexedDB, a za backup/prijenos postoji Export/Import JSON.
+bez servera: projekt se automatski sprema u IndexedDB, a **Spremi** (Cmd+S) piše `.trasa.json` datoteku
+(u Chromeu uvijek u istu datoteku, drugdje kao download) koja uz projekt pamti i gdje si stao. **Otvori** je vraća.
 
 ## Pokretanje
 

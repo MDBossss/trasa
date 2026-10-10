@@ -1,7 +1,8 @@
 import { useRef } from 'react'
 import { redo, undo, useStore } from '../store'
-import { fileToDataUrl, download } from '../images'
+import { fileToDataUrl } from '../images'
 import { emptyProject, type Tool } from '../types'
+import { open, save } from '../persistence'
 
 const TOOLS: { id: Tool; label: string; key: string; hint: string }[] = [
   { id: 'select', label: 'Odaberi', key: 'V', hint: 'klik označi, Delete briše, vuci točke' },
@@ -20,6 +21,9 @@ export function Toolbar() {
   const showGrid = useStore((s) => s.showGrid)
   const snapGrid = useStore((s) => s.snapGrid)
   const snapAngle = useStore((s) => s.snapAngle)
+  const dirty = useStore((s) => s.dirty)
+  const fileName = useStore((s) => s.fileName)
+  const hasPicker = 'showSaveFilePicker' in window
   const planInput = useRef<HTMLInputElement>(null)
   const jsonInput = useRef<HTMLInputElement>(null)
 
@@ -29,20 +33,8 @@ export function Toolbar() {
     patchProject({ planImage: url, planSize: { w, h }, planRotation: 0 })
   }
 
-  const exportJson = () => {
-    const blob = new Blob([JSON.stringify(project)], { type: 'application/json' })
-    download(`${project.name.replace(/\s+/g, '_')}.trasa.json`, URL.createObjectURL(blob))
-  }
-
-  const importJson = async (f: File | undefined) => {
-    if (!f) return
-    const p = JSON.parse(await f.text())
-    if (p?.version !== 1) { alert('Nepoznat format datoteke'); return }
-    replaceProject(p)
-  }
-
   const reset = () => {
-    if (confirm('Obrisati cijeli projekt? (eksportiraj prije ako treba)')) replaceProject(emptyProject())
+    if (confirm('Obrisati cijeli projekt? (spremi prije ako treba)')) replaceProject(emptyProject())
   }
 
   return (
@@ -74,9 +66,13 @@ export function Toolbar() {
           </>
         )}
         <input ref={planInput} type="file" accept="image/*" hidden onChange={(e) => void onPlan(e.target.files?.[0])} />
-        <button onClick={exportJson}>Export JSON</button>
-        <button onClick={() => jsonInput.current?.click()}>Import JSON</button>
-        <input ref={jsonInput} type="file" accept=".json,application/json" hidden onChange={(e) => void importJson(e.target.files?.[0])} />
+        <button onClick={() => void save()} className={dirty ? 'dirty' : ''} title="Cmd+S">
+          Spremi{dirty ? ' •' : ''}
+        </button>
+        {hasPicker && <button onClick={() => void save(true)} title="Spremi u novu datoteku">Spremi kao</button>}
+        <button onClick={() => (hasPicker ? void open() : jsonInput.current?.click())}>Otvori</button>
+        <input ref={jsonInput} type="file" accept=".json,application/json" hidden onChange={(e) => void open(e.target.files?.[0])} />
+        {fileName && <span className="muted file">{fileName}</span>}
         <button className="danger" onClick={reset}>Novi</button>
       </div>
     </div>

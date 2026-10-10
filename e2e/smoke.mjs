@@ -6,6 +6,8 @@ const URL = process.argv[2] ?? 'http://localhost:5177/'
 const SHOTS = process.env.SHOTS ?? '/tmp'
 const browser = await chromium.launch({ channel: 'chrome', headless: true })
 const page = await browser.newPage({ viewport: { width: 1400, height: 900 } })
+// native file pickers cannot be driven, so exercise the download/input fallback
+await page.addInitScript(() => { delete window.showSaveFilePicker; delete window.showOpenFilePicker })
 const errors = []
 page.on('pageerror', (e) => errors.push(String(e)))
 page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()) })
@@ -108,6 +110,7 @@ assert.deepEqual(st.conduits[0].points, [{ x: 680, y: 150 }, { x: 420, y: 150 }]
 assert.deepEqual(st.rooms[0].points[0], { x: 700, y: 100 })
 await page.waitForTimeout(200); await page.screenshot({ path: `${SHOTS}/trasa-rotated.png` })
 await page.getByText('↺ 90°').click()
+await page.waitForTimeout(250) // refit after rotation
 st = await state()
 assert.equal(st.planRotation, 0)
 assert.deepEqual(st.conduits[0].points, [{ x: 150, y: 120 }, { x: 150, y: 380 }])
@@ -188,15 +191,33 @@ await page.locator('svg.elevation image').waitFor()
 await page.locator('.room-mini .list').getByText('1/4 fotki').waitFor().catch(() => {})
 await page.screenshot({ path: `${SHOTS}/trasa-room.png` })
 
+// save (Cmd+S) while on wall 3 → file carries project + ui position
+await page.locator('.toolbar').getByText('Spremi •').waitFor()
+const [dl] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Meta+s')])
+assert.match(dl.suggestedFilename(), /\.trasa\.json$/)
+const saved = JSON.parse(await (await import('node:fs/promises')).readFile(await dl.path(), 'utf8'))
+assert.equal(saved.app, 'trasa')
+assert.equal(saved.project.conduits.length, 3)
+assert.deepEqual(saved.ui.view, { kind: 'room', roomId: saved.project.rooms[0].id, wall: 2 })
+await page.locator('.toolbar').getByText('Spremi', { exact: true }).waitFor()
+
 // persistence across reload
 await page.waitForTimeout(600)
 await page.reload()
 await page.locator('.list').getByText('B1-ormar').waitFor()
 await page.locator('.list').getByText('1/4 fotki').waitFor()
 
-// export json download
-const [dl] = await Promise.all([page.waitForEvent('download'), page.getByText('Export JSON').click()])
-assert.match(dl.suggestedFilename(), /\.trasa\.json$/)
+// wipe, then open the saved file → everything back, including the wall view
+await page.getByText('Novi').click()
+await page.locator('.list').getByText('B1-ormar').waitFor({ state: 'hidden' })
+await page.getByText('Otvori').click()
+await page.locator('input[type=file][accept=".json,application/json"]').setInputFiles(await dl.path())
+await page.locator('.room-head h2', { hasText: 'Dnevna' }).waitFor()
+await page.locator('.wall-head h3', { hasText: 'Zid 3' }).waitFor()
+await page.locator('svg.elevation image').waitFor()
+st = await state()
+assert.equal(st.conduits[0].name, 'B1-ormar')
+assert.equal(await page.evaluate(() => window.__trasa.getState().dirty), false)
 
 assert.deepEqual(errors, [], 'console/page errors')
 console.log('OK', { prompts })

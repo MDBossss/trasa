@@ -19,6 +19,8 @@ interface State {
   snapGrid: boolean
   snapAngle: boolean
   loaded: boolean
+  dirty: boolean
+  fileName: string | null
 
   setTool: (t: Tool) => void
   select: (id: string | null) => void
@@ -34,6 +36,7 @@ interface State {
   removeSelected: () => void
   rotatePlan: (dir: 1 | -1) => void
   setTilt: (deg: number) => void
+  markSaved: (fileName?: string) => void
 }
 
 export const useStore = create<State>()(
@@ -47,6 +50,8 @@ export const useStore = create<State>()(
       snapGrid: true,
       snapAngle: true,
       loaded: false,
+      dirty: false,
+      fileName: null,
 
       setTool: (tool) => set({ tool, selectedId: null }),
       select: (selectedId) => set({ selectedId }),
@@ -104,6 +109,7 @@ export const useStore = create<State>()(
         const t = Math.max(-45, Math.min(45, Math.round(deg * 100) / 100))
         set((s) => ({ project: { ...s.project, planTilt: t } }))
       },
+      markSaved: (fileName) => set((s) => ({ dirty: false, fileName: fileName ?? s.fileName })),
       removeSelected: () =>
         set((s) => {
           const id = s.selectedId
@@ -140,6 +146,7 @@ export async function loadPersisted() {
 let timer: number | undefined
 useStore.subscribe((s, prev) => {
   if (!s.loaded || s.project === prev.project) return
+  if (!s.dirty) useStore.setState({ dirty: true })
   window.clearTimeout(timer)
   timer = window.setTimeout(() => void idbSet(IDB_KEY, s.project), 400)
 })

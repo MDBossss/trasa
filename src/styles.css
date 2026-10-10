@@ -61,3 +61,5 @@ table.exits th { color: var(--muted); font-weight: 600; font-size: 11px; text-tr
 .tilt-controls { display: flex; gap: 3px; align-items: center; }
 .tilt-controls input { width: 58px; text-align: center; }
 .tilt-actions { display: flex; gap: 4px; }
+.toolbar button.dirty { border-color: var(--warn); color: var(--warn); }
+.toolbar .file { font-size: 11px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

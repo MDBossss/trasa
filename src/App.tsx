@@ -5,6 +5,7 @@ import { Sidebar } from './components/Sidebar'
 import { PlanCanvas } from './components/PlanCanvas'
 import { RoomView } from './components/RoomView'
 import { fileToDataUrl } from './images'
+import { save } from './persistence'
 
 export default function App() {
   const view = useStore((s) => s.view)
@@ -13,12 +14,15 @@ export default function App() {
   useEffect(() => {
     void loadPersisted()
     const onKey = (e: KeyboardEvent) => {
-      if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'z') return
-      e.preventDefault()
-      e.shiftKey ? redo() : undo()
+      if (!(e.metaKey || e.ctrlKey)) return
+      const k = e.key.toLowerCase()
+      if (k === 's') { e.preventDefault(); void save(e.shiftKey) }
+      if (k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo() }
     }
+    const onUnload = (e: BeforeUnloadEvent) => { if (useStore.getState().dirty) e.preventDefault() }
+    window.addEventListener('beforeunload', onUnload)
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('beforeunload', onUnload) }
   }, [])
 
   const onDrop = async (e: React.DragEvent) => {
