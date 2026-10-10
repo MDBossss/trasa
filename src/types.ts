@@ -33,12 +33,13 @@ export interface Project {
   planTilt: number
   pxPerMeter: number | null
   gridCm: number
+  gridOrigin: Pt
   ceilingM: number
   conduits: Conduit[]
   rooms: Room[]
 }
 
-export type Tool = 'select' | 'pan' | 'calibrate' | 'room' | 'conduit' | 'align'
+export type Tool = 'select' | 'pan' | 'calibrate' | 'room' | 'conduit' | 'align' | 'origin'
 
 export type View = { kind: 'plan' } | { kind: 'room'; roomId: string; wall: number | null }
 
@@ -58,6 +59,7 @@ export function emptyProject(): Project {
     planTilt: 0,
     pxPerMeter: null,
     gridCm: 10,
+    gridOrigin: { x: 0, y: 0 },
     ceilingM: 2.6,
     conduits: [],
     rooms: [],

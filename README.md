@@ -16,10 +16,10 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
 
 1. **Učitaj tlocrt** (gumb ili drag & drop slike). Gumbi ↺/↻ rotiraju tlocrt po 90°, nacrtano se rotira s njim. Grid pokriva cijelo platno pa se može crtati i izvan slike. Nakrivljen sken: **Nagib slike** u sidebaru (±1°, ±0.1°, upis), **Auto poravnaj** (traži kut pod kojim su zidovi najoštrije poravnati s gridom) ili **Poravnaj (A)**: dva klika duž zida koji treba biti ravan. Nagib pomiče samo sliku, pa poravnaj prije crtanja.
 2. **Mjerilo (C)**: dva klika na poznatu udaljenost, upiši metre. Nakon toga grid je u cm, a duljine u metrima.
-3. **Soba (R)**: klikaj kutove, zatvori klikom na prvi kut ili Enterom.
-4. **Bužir (B)**: klikaj točke trase kroz deku, Enter ili dupli klik završi. Svaki dobije svoju boju i naziv (B1, B2...). Backspace briše zadnju točku, Esc odustaje.
-5. **Odaberi (V)**: klik označi bužir ili sobu, vuci točke, Delete briše. Odabrani bužir je isprekidan.
-6. **Otvori sobu**: po zidu učitaj fotku s mobitela. Na gornjem rubu zida alat sam nacrta gdje koji bužir izlazi iz deke (projekcija kraja trase na najbliži zid).
+5. **Soba (R)**: klikaj kutove, zatvori klikom na prvi kut ili Enterom.
+6. **Bužir (B)**: klikaj točke trase kroz deku, Enter ili dupli klik završi. Svaki dobije svoju boju i naziv (B1, B2...). Backspace briše zadnju točku, Esc odustaje.
+7. **Odaberi (V)**: klik označi bužir ili sobu, vuci točke, Delete briše. Odabrani bužir je isprekidan.
+8. **Otvori sobu**: po zidu učitaj fotku s mobitela. Na gornjem rubu zida alat sam nacrta gdje koji bužir izlazi iz deke (projekcija kraja trase na najbliži zid).
 
 Grid i snap na 45° se mogu isključiti u alatnoj traci. Kotačić zumira, Space + vučenje pomiče.
 

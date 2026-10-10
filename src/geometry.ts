@@ -8,13 +8,18 @@ export function polylineLength(pts: Pt[]) {
   return l
 }
 
-export function snapToGrid(p: Pt, step: number): Pt {
-  return { x: Math.round(p.x / step) * step, y: Math.round(p.y / step) * step }
+const O: Pt = { x: 0, y: 0 }
+
+export function snapToGrid(p: Pt, step: number, origin: Pt = O): Pt {
+  return {
+    x: Math.round((p.x - origin.x) / step) * step + origin.x,
+    y: Math.round((p.y - origin.y) / step) * step + origin.y,
+  }
 }
 
 // Angle snap keeps the point on the grid: ortho segments round the length,
 // diagonal ones round the per-axis delta so dx === dy stays on grid nodes.
-export function snapPoint(p: Pt, prev: Pt | null, step: number | null, angle: boolean): Pt {
+export function snapPoint(p: Pt, prev: Pt | null, step: number | null, angle: boolean, origin: Pt = O): Pt {
   if (prev && angle) {
     const dx = p.x - prev.x
     const dy = p.y - prev.y
@@ -30,7 +35,7 @@ export function snapPoint(p: Pt, prev: Pt | null, step: number | null, angle: bo
     if (step) len = Math.round(len / step) * step
     return { x: prev.x + dir.x * len, y: prev.y + dir.y * len }
   }
-  if (step) return snapToGrid(p, step)
+  if (step) return snapToGrid(p, step, origin)
   return p
 }
 

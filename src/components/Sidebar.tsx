@@ -21,6 +21,14 @@ export function Sidebar() {
           <span className={ppm ? 'ok' : 'warn'}>{ppm ? `${ppm.toFixed(1)} px/m` : 'nije postavljeno (alat Mjerilo)'}</span>
         </label>
         <label>Grid (cm) <input type="number" min={1} value={project.gridCm} onChange={(e) => patchProject({ gridCm: Math.max(1, +e.target.value || 10) })} /></label>
+        <label>
+          Ishodište grida
+          <span className="tilt-controls">
+            <span className="muted">{Math.round(project.gridOrigin.x)}, {Math.round(project.gridOrigin.y)}</span>
+            <button className="mini" onClick={() => setTool('origin')}>Postavi (O)</button>
+            <button className="mini" onClick={() => patchProject({ gridOrigin: { x: 0, y: 0 } })} disabled={!project.gridOrigin.x && !project.gridOrigin.y}>Reset</button>
+          </span>
+        </label>
         <label>Visina stropa (m) <input type="number" step={0.05} value={project.ceilingM} onChange={(e) => patchProject({ ceilingM: +e.target.value || 2.6 })} /></label>
         {project.planImage && (
           <div className="tilt">

@@ -10,6 +10,7 @@ const TOOLS: { id: Tool; label: string; key: string; hint: string }[] = [
   { id: 'room', label: 'Soba', key: 'R', hint: 'klik dodaje kutove, klik na prvi ili Enter zatvori' },
   { id: 'calibrate', label: 'Mjerilo', key: 'C', hint: 'dva klika na poznatu udaljenost' },
   { id: 'align', label: 'Poravnaj', key: 'A', hint: 'dva klika duž zida koji treba biti ravan; slika se zakrene na grid' },
+  { id: 'origin', label: 'Ishodište', key: 'O', hint: 'klik na kut zida: grid linije prolaze kroz tu točku' },
 ]
 
 export function Toolbar() {

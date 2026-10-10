@@ -60,9 +60,10 @@ export function PlanCanvas() {
     return { x: (p.x - st.x()) / st.scaleX(), y: (p.y - st.y()) / st.scaleY() }
   }, [])
 
+  const origin = project.gridOrigin
   const snapped = useCallback(
-    (p: Pt, prev: Pt | null) => snapPoint(p, prev, snapStep, snapAngle),
-    [snapStep, snapAngle],
+    (p: Pt, prev: Pt | null) => snapPoint(p, prev, snapStep, snapAngle, origin),
+    [snapStep, snapAngle, origin],
   )
 
   const finishDraft = useCallback(() => {
@@ -85,7 +86,7 @@ export function PlanCanvas() {
       if (e.key === 'Backspace' && draft.length) { setDraft((d) => d.slice(0, -1)); return }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) { removeSelected(); return }
       if (e.metaKey || e.ctrlKey) return
-      const map: Record<string, typeof tool> = { v: 'select', h: 'pan', b: 'conduit', r: 'room', c: 'calibrate', a: 'align' }
+      const map: Record<string, typeof tool> = { v: 'select', h: 'pan', b: 'conduit', r: 'room', c: 'calibrate', a: 'align', o: 'origin' }
       if (map[e.key]) setTool(map[e.key])
       if (e.key === 'g') useStore.getState().toggle('showGrid')
     }
@@ -117,6 +118,11 @@ export function PlanCanvas() {
     if (tool === 'select') {
       const id = e.target.name() || null
       select(id)
+      return
+    }
+    if (tool === 'origin') {
+      patchProject({ gridOrigin: raw })
+      setTool('select')
       return
     }
     if (tool === 'align') {
@@ -157,7 +163,7 @@ export function PlanCanvas() {
     const raw = toImg()
     if (!raw) return
     const prev = draft.length ? draft[draft.length - 1] : null
-    setCursor(tool === 'align' ? raw : snapped(raw, tool === 'calibrate' ? null : prev))
+    setCursor(tool === 'align' || tool === 'origin' ? raw : snapped(raw, tool === 'calibrate' ? null : prev))
   }
 
   const sel = selectedId
@@ -225,14 +231,23 @@ export function PlanCanvas() {
                 const y1 = (size.h - view.y) / s
                 const draw = (stepPx: number, style: string) => {
                   ctx.beginPath()
-                  for (let x = Math.floor(x0 / stepPx) * stepPx; x <= x1; x += stepPx) { ctx.moveTo(x, y0); ctx.lineTo(x, y1) }
-                  for (let y = Math.floor(y0 / stepPx) * stepPx; y <= y1; y += stepPx) { ctx.moveTo(x0, y); ctx.lineTo(x1, y) }
+                  const ox = ((origin.x % stepPx) + stepPx) % stepPx
+                  const oy = ((origin.y % stepPx) + stepPx) % stepPx
+                  for (let x = Math.floor((x0 - ox) / stepPx) * stepPx + ox; x <= x1; x += stepPx) { ctx.moveTo(x, y0); ctx.lineTo(x, y1) }
+                  for (let y = Math.floor((y0 - oy) / stepPx) * stepPx + oy; y <= y1; y += stepPx) { ctx.moveTo(x0, y); ctx.lineTo(x1, y) }
                   ctx.setAttr('strokeStyle', style)
                   ctx.setAttr('lineWidth', px(1))
                   ctx.stroke()
                 }
                 draw(st, 'rgba(0,120,255,0.18)')
                 draw(st * 10, 'rgba(0,120,255,0.35)')
+                // origin cross
+                ctx.beginPath()
+                ctx.moveTo(origin.x - px(10), origin.y); ctx.lineTo(origin.x + px(10), origin.y)
+                ctx.moveTo(origin.x, origin.y - px(10)); ctx.lineTo(origin.x, origin.y + px(10))
+                ctx.setAttr('strokeStyle', '#ff5722')
+                ctx.setAttr('lineWidth', px(2))
+                ctx.stroke()
                 ctx.fillStrokeShape(shape)
               }}
             />
@@ -328,7 +343,7 @@ export function PlanCanvas() {
             <>
               <Line
                 points={[...draft, cursor].flatMap((p) => [p.x, p.y])}
-                stroke={tool === 'calibrate' || tool === 'align' ? '#ff5722' : tool === 'room' ? '#1e88e5' : '#333'}
+                stroke={tool === 'calibrate' || tool === 'align' || tool === 'origin' ? '#ff5722' : tool === 'room' ? '#1e88e5' : '#333'}
                 strokeWidth={px(2)}
                 dash={[px(6), px(4)]}
                 closed={tool === 'room' && draft.length >= 2}
@@ -353,7 +368,7 @@ export function PlanCanvas() {
             </>
           )}
           {cursor && tool !== 'select' && !panning && (
-            <Circle x={cursor.x} y={cursor.y} radius={px(3)} fill={tool === 'calibrate' || tool === 'align' ? '#ff5722' : '#333'} />
+            <Circle x={cursor.x} y={cursor.y} radius={px(3)} fill={tool === 'calibrate' || tool === 'align' || tool === 'origin' ? '#ff5722' : '#333'} />
           )}
         </Layer>
       </Stage>
