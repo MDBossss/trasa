@@ -40,9 +40,15 @@ export default function App() {
     <div className="app" onDragOver={(e) => e.preventDefault()} onDrop={(e) => void onDrop(e)}>
       <Header />
       <div className="main">
-        {view.kind === 'plan' && <ToolRail />}
-        {view.kind === 'plan' ? <PlanCanvas /> : <RoomView roomId={view.roomId} wall={view.wall} />}
-        <Sidebar />
+        {view.kind === 'plan' ? (
+          <>
+            <ToolRail />
+            <PlanCanvas />
+            <Sidebar />
+          </>
+        ) : (
+          <RoomView roomId={view.roomId} wall={view.wall} />
+        )}
       </div>
     </div>
   )

@@ -1,18 +1,23 @@
 import { create } from 'zustand'
 import { temporal } from 'zundo'
 import { get as idbGet, set as idbSet } from 'idb-keyval'
-import { emptyProject, PALETTE, type Conduit, type Project, type Pt, type Room, type Tool, type View } from './types'
+import { emptyProject, PALETTE, ELEMENT_META, type Cable, type Conduit, type ElementType, type Project, type Pt, type Room, type Tool, type View, type WallElement, type WallTool } from './types'
 
 const IDB_KEY = 'trasa-project'
 
 // Fills fields added after a project was saved.
-export const normalize = (p: Project): Project => ({ ...emptyProject(), ...p, planRotation: p.planRotation ?? 0, planTilt: p.planTilt ?? 0, gridOrigin: p.gridOrigin ?? { x: 0, y: 0 }, planOpacity: p.planOpacity ?? 1 })
+export const normalize = (p: Project): Project => ({ ...emptyProject(), ...p, planRotation: p.planRotation ?? 0, planTilt: p.planTilt ?? 0, gridOrigin: p.gridOrigin ?? { x: 0, y: 0 }, planOpacity: p.planOpacity ?? 1, elements: p.elements ?? [], cables: p.cables ?? [] })
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 
 interface State {
   project: Project
   tool: Tool
+  wallTool: WallTool
+  elementType: ElementType
+  wallCamera: { x: number; y: number; scale: number }
+  wallFitNonce: number
+  showZones: boolean
   selectedId: string | null
   view: View
   showGrid: boolean
@@ -25,9 +30,17 @@ interface State {
   fileName: string | null
 
   setTool: (t: Tool) => void
+  setWallTool: (t: WallTool, type?: ElementType) => void
+  setWallCamera: (c: { x: number; y: number; scale: number }) => void
+  wallZoomBy: (factor: number, center?: Pt) => void
+  wallFitView: () => void
+  addElement: (e: Omit<WallElement, 'id' | 'label'> & { label?: string }) => string
+  updateElement: (id: string, p: Partial<WallElement>) => void
+  addCable: (c: Omit<Cable, 'id'>) => string
+  updateCable: (id: string, p: Partial<Cable>) => void
   select: (id: string | null) => void
   setView: (v: View) => void
-  toggle: (k: 'showGrid' | 'snapGrid' | 'snapAngle') => void
+  toggle: (k: 'showGrid' | 'snapGrid' | 'snapAngle' | 'showZones') => void
   patchProject: (p: Partial<Project>) => void
   replaceProject: (p: Project) => void
   addConduit: (points: Pt[]) => string
@@ -49,6 +62,11 @@ export const useStore = create<State>()(
     (set, get) => ({
       project: emptyProject(),
       tool: 'select',
+      wallTool: 'select',
+      elementType: 'box',
+      wallCamera: { x: 0, y: 0, scale: 1 },
+      wallFitNonce: 0,
+      showZones: true,
       selectedId: null,
       view: { kind: 'plan' },
       showGrid: true,
@@ -61,6 +79,35 @@ export const useStore = create<State>()(
       fileName: null,
 
       setTool: (tool) => set({ tool, selectedId: null }),
+      setWallTool: (wallTool, type) => set((s) => ({ wallTool, elementType: type ?? s.elementType, selectedId: null })),
+      setWallCamera: (wallCamera) => set({ wallCamera }),
+      wallZoomBy: (factor, center) =>
+        set((s) => {
+          const c = s.wallCamera
+          const scale = Math.max(0.1, Math.min(30, c.scale * factor))
+          const cx = center?.x ?? 0
+          const cy = center?.y ?? 0
+          return { wallCamera: { scale, x: cx - ((cx - c.x) / c.scale) * scale, y: cy - ((cy - c.y) / c.scale) * scale } }
+        }),
+      wallFitView: () => set((s) => ({ wallFitNonce: s.wallFitNonce + 1 })),
+      addElement: (e) => {
+        const id = uid()
+        set((s) => {
+          const n = s.project.elements.filter((x) => x.type === e.type).length + 1
+          const label = e.label ?? `${ELEMENT_META[e.type].prefix}${n}`
+          return { project: { ...s.project, elements: [...s.project.elements, { ...e, id, label }] }, selectedId: id }
+        })
+        return id
+      },
+      updateElement: (id, p) =>
+        set((s) => ({ project: { ...s.project, elements: s.project.elements.map((e) => (e.id === id ? { ...e, ...p } : e)) } })),
+      addCable: (c) => {
+        const id = uid()
+        set((s) => ({ project: { ...s.project, cables: [...s.project.cables, { ...c, id }] }, selectedId: id }))
+        return id
+      },
+      updateCable: (id, p) =>
+        set((s) => ({ project: { ...s.project, cables: s.project.cables.map((c) => (c.id === id ? { ...c, ...p } : c)) } })),
       select: (selectedId) => set({ selectedId }),
       setView: (view) => set({ view }),
       toggle: (k) => set((s) => ({ [k]: !s[k] })),
@@ -132,12 +179,24 @@ export const useStore = create<State>()(
         set((s) => {
           const id = s.selectedId
           if (!id) return {}
+          const p = s.project
+          // cables bound to a removed element/conduit end keep a free end at its last spot
+          const el = p.elements.find((e) => e.id === id)
+          const freeEnd = (end: Cable['from']): Cable['from'] => {
+            if (end.kind === 'element' && end.id === id && el) return { kind: 'free', xM: el.xM, zM: el.zM }
+            if (end.kind === 'exit' && end.conduitId === id) return { kind: 'free', xM: 0, zM: p.ceilingM }
+            return end
+          }
+          const rooms = p.rooms.filter((r) => r.id !== id)
+          const roomGone = rooms.length !== p.rooms.length
           return {
             selectedId: null,
             project: {
-              ...s.project,
-              conduits: s.project.conduits.filter((c) => c.id !== id),
-              rooms: s.project.rooms.filter((r) => r.id !== id),
+              ...p,
+              conduits: p.conduits.filter((c) => c.id !== id),
+              rooms,
+              elements: p.elements.filter((e) => e.id !== id && !(roomGone && e.roomId === id)),
+              cables: p.cables.filter((c) => c.id !== id && !(roomGone && c.roomId === id)).map((c) => ({ ...c, from: freeEnd(c.from), to: freeEnd(c.to) })),
             },
           }
         }),

@@ -225,38 +225,95 @@ await page.waitForTimeout(300)
 await clickImg(350, 250)
 await page.getByText('Otvori sobu').click()
 await page.locator('.room-head h2', { hasText: 'Dnevna' }).waitFor()
-await page.locator('.room-mini .list li').nth(0).click()
-await page.locator('table.exits').getByText('B1-ormar').waitFor()
-await page.locator('table.exits').getByText('0.50 m').waitFor()
-await page.locator('table.exits').getByText('0.20 m').waitFor()
-// drag the exit 1 m to the right along the top edge → conduit start moves on the plan too
-const m0 = await page.locator('svg.elevation text', { hasText: /^0 m$/ }).boundingBox()
-const m1 = await page.locator('svg.elevation text', { hasText: /^1 m$/ }).boundingBox()
-const pxPerM = m1.x - m0.x
-const exitBox = await page.locator('[data-testid^="exit-"] circle').first().boundingBox()
-const ex = exitBox.x + exitBox.width / 2
-const ey = exitBox.y + exitBox.height / 2
-await page.mouse.move(ex, ey); await page.mouse.down(); await page.mouse.move(ex + pxPerM / 2, ey, { steps: 4 }); await page.mouse.move(ex + pxPerM, ey, { steps: 4 }); await page.mouse.up()
-await page.locator('table.exits').getByText(/^1\.(49|50|51|52) m$/).waitFor() // screen-pixel rounding
+await page.locator('.sidebar .list li', { hasText: 'Zid 1' }).click()
+await page.locator('.wall-nav', { hasText: 'Zid 1' }).waitFor()
+await page.locator('.sidebar .list li', { hasText: 'B1-ormar' }).getByText('0.50 m · strop').waitFor()
+
+// wall canvas helpers: units are cm, y from the ceiling
+const wallToScreen = async (xM, zM) => page.evaluate(([xM, zM, H]) => {
+  const st = window.Konva.stages[0]
+  const r = st.container().getBoundingClientRect()
+  return { x: r.left + st.x() + xM * 100 * st.scaleX(), y: r.top + st.y() + (H - zM * 100) * st.scaleY() }
+}, [xM, zM, (await state()).ceilingM * 100])
+const clickWall = async (xM, zM) => { const p = await wallToScreen(xM, zM); await page.mouse.move(p.x, p.y); await page.mouse.click(p.x, p.y) }
+const dragWall = async (from, to) => {
+  const a = await wallToScreen(...from); const b = await wallToScreen(...to)
+  await page.mouse.move(a.x, a.y); await page.mouse.down(); await page.mouse.move((a.x + b.x) / 2, (a.y + b.y) / 2, { steps: 4 }); await page.mouse.move(b.x, b.y, { steps: 4 }); await page.mouse.up()
+}
+
+// drag the exit 1 m right along the ceiling → conduit start moves on the plan too
+await dragWall([0.5, 2.6], [1.5, 2.6])
+await page.locator('.sidebar .list li', { hasText: 'B1-ormar' }).getByText(/1\.(49|50|51) m · strop/).waitFor()
 st = await state()
 assert.ok(Math.abs(st.conduits[0].points[0].x - 250) < 1.5 && Math.abs(st.conduits[0].points[0].y - 120) < 0.01, JSON.stringify(st.conduits[0].points[0]))
 await page.keyboard.press('Meta+z')
-await page.locator('table.exits').getByText('0.50 m').waitFor()
+await page.locator('.sidebar .list li', { hasText: 'B1-ormar' }).getByText('0.50 m · strop').waitFor()
 assert.deepEqual((await state()).conduits[0].points[0], { x: 150, y: 120 })
-// vertical drag: exit height 1 m below the ceiling (2.6 → 1.6 m), plan point unchanged
-await page.mouse.move(ex, ey); await page.mouse.down(); await page.mouse.move(ex, ey + pxPerM / 2, { steps: 4 }); await page.mouse.move(ex, ey + pxPerM, { steps: 4 }); await page.mouse.up()
-await page.locator('table.exits').getByText(/^1\.(58|59|60|61|62) m$/).waitFor()
+// vertical drag: exit height 1 m below the ceiling → 1.60 m, plan point unchanged
+await dragWall([0.5, 2.6], [0.5, 1.6])
+await page.locator('.sidebar .list li', { hasText: 'B1-ormar' }).getByText(/h 1\.(59|60|61)/).waitFor()
 st = await state()
 assert.ok(Math.abs(st.conduits[0].exitZ.start - 1.6) < 0.03, JSON.stringify(st.conduits[0].exitZ))
 assert.deepEqual(st.conduits[0].points[0], { x: 150, y: 120 })
 await page.keyboard.press('Meta+z')
 assert.equal((await state()).conduits[0].exitZ, undefined)
+
+// elements: box (K) snaps to the 2.30 standard height; socket (U) snaps its x to the box
+await page.keyboard.press('k')
+await clickWall(1.0, 2.32)
+st = await state()
+assert.equal(st.elements.length, 1)
+assert.deepEqual([st.elements[0].type, st.elements[0].label, st.elements[0].xM, st.elements[0].zM, st.elements[0].wall], ['box', 'K1', 1, 2.3, 0])
+await page.keyboard.press('u')
+await clickWall(1.02, 0.31)
+st = await state()
+assert.deepEqual([st.elements[1].type, st.elements[1].label, st.elements[1].xM, st.elements[1].zM], ['socket', 'U1', 1, 0.3])
+await page.keyboard.press('Escape')
+assert.equal(await page.evaluate(() => window.__trasa.getState().wallTool), 'select')
+
+// cable: exit B1 → corner at (1.0, 2.6) → box; cable binds to both ports
+await page.keyboard.press('c')
+await clickWall(0.5, 2.6)
+await clickWall(1.0, 2.62)
+await clickWall(1.0, 2.3)
+st = await state()
+assert.equal(st.cables.length, 1)
+assert.deepEqual(st.cables[0].from, { kind: 'exit', conduitId: st.conduits[0].id, end: 'start' })
+assert.deepEqual(st.cables[0].to, { kind: 'element', id: st.elements[0].id })
+assert.deepEqual(st.cables[0].via, [{ xM: 1, zM: 2.6 }])
+await page.locator('.props', { hasText: 'Kabel' }).getByText('0.80 m').waitFor()
+// box → socket straight down
+await clickWall(1.0, 2.3)
+await clickWall(1.0, 0.3)
+st = await state()
+assert.equal(st.cables.length, 2)
+await page.locator('.props', { hasText: 'Kabel' }).getByText('2.00 m').waitFor()
+
+// moving the box drags both cables along (binding); Alt drag = no snap
+await page.keyboard.press('v')
+await dragWall([1.0, 2.3], [1.5, 2.3])
+st = await state()
+assert.deepEqual([st.elements[0].xM, st.elements[0].zM], [1.5, 2.3])
+await page.locator('.sidebar .list li', { hasText: 'K1 → U1' }).getByText(/2\.0[0-9] m/).waitFor()
+await page.locator('.sidebar .list li', { hasText: 'B1-ormar (bužir) → K1' }).getByText(/1\.0[0-9] m/).waitFor()
+
+// deleting the socket frees that cable end at the socket's last spot
+await clickWall(1.0, 0.3)
+await page.locator('.props h3', { hasText: 'Utičnica' }).waitFor()
+await page.keyboard.press('Delete')
+st = await state()
+assert.equal(st.elements.length, 1)
+assert.deepEqual(st.cables[1].to, { kind: 'free', xM: 1, zM: 0.3 })
+await page.keyboard.press('Meta+z')
+assert.equal((await state()).elements.length, 2)
+await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
+
 // wall 3 (bottom): B1 end 0.2 m away; from inside, the bottom wall runs right→left, so 4.5 m from the left
-await page.locator('.room-mini .list li').nth(2).click()
-await page.locator('table.exits').getByText('4.50 m').waitFor()
+await page.locator('.sidebar .list li', { hasText: 'Zid 3' }).click()
+await page.locator('.sidebar .list li', { hasText: 'B1-ormar' }).getByText('4.50 m · strop').waitFor()
 await page.locator('input[type=file][capture]').setInputFiles({ name: 'wall.png', mimeType: 'image/png', buffer: Buffer.from(planPng.split(',')[1], 'base64') })
-await page.locator('svg.elevation image').waitFor()
-await page.locator('.room-mini .list').getByText('1/4 fotki').waitFor().catch(() => {})
+await page.waitForFunction(() => window.Konva.stages[0].findOne('Image'))
+await page.locator('.sidebar .list li', { hasText: 'Zid 3' }).getByText('foto').waitFor()
 await page.screenshot({ path: `${SHOTS}/trasa-room.png` })
 
 // save (Cmd+S) while on wall 3 → file carries project + ui position
@@ -281,8 +338,8 @@ await page.locator('.list').getByText('B1-ormar').waitFor({ state: 'hidden' })
 await menu('Otvori…')
 await page.locator('input[type=file][accept=".json,application/json"]').setInputFiles(await dl.path())
 await page.locator('.room-head h2', { hasText: 'Dnevna' }).waitFor()
-await page.locator('.wall-head h3', { hasText: 'Zid 3' }).waitFor()
-await page.locator('svg.elevation image').waitFor()
+await page.locator('.wall-nav', { hasText: 'Zid 3' }).waitFor()
+await page.waitForFunction(() => window.Konva.stages[0].findOne('Image'))
 st = await state()
 assert.equal(st.conduits[0].name, 'B1-ormar')
 assert.equal(await page.evaluate(() => window.__trasa.getState().dirty), false)
@@ -353,8 +410,8 @@ await page.evaluate(() => new Promise((r) => { const q = indexedDB.deleteDatabas
 await page.getByRole('button', { name: 'GitHub' }).click()
 await page.locator('.modal .list li', { hasText: 'kuca' }).getByText('Otvori').click()
 await page.locator('.room-head h2', { hasText: 'Dnevna' }).waitFor()
-await page.locator('.wall-head h3', { hasText: 'Zid 3' }).waitFor()
-await page.locator('svg.elevation image').waitFor()
+await page.locator('.wall-nav', { hasText: 'Zid 3' }).waitFor()
+await page.waitForFunction(() => window.Konva.stages[0].findOne('Image'))
 st = await state()
 assert.equal(st.planImage, before.planImage)
 assert.deepEqual(st.rooms[0].walls, before.rooms[0].walls)

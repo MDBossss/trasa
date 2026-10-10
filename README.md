@@ -29,13 +29,16 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
 5. **Soba (R)**: klikaj kutove, zatvori klikom na prvi kut ili Enterom.
 6. **Bužir (B)**: klikaj točke trase kroz deku, Enter ili dupli klik završi. Svaki dobije svoju boju i naziv (B1, B2...). Backspace briše zadnju točku, Esc odustaje.
 7. **Odaberi (V)**: klik označi bužir ili sobu, vuci cijelu liniju ili pojedine točke, Delete briše. Odabrani bužir je isprekidan. Držanje **Alt** isključuje snap (slobodno pomicanje i crtanje).
-8. **Otvori sobu**: po zidu učitaj fotku s mobitela. Na gornjem rubu zida alat sam nacrta gdje koji bužir izlazi iz deke (projekcija kraja trase na najbliži zid). Izlaz se može povući po fotki: lijevo-desno pomiče kraj bužira i na tlocrtu, gore-dolje postavlja visinu izlaza iz zida (default strop), korak 1 cm. Prozirnost tlocrta je slider u sidebaru.
-
-Layout: alati u lijevoj traci (ikone + prečaci), datotečne akcije u meniju ☰, zoom/undo i grid/snap prekidači kao HUD na platnu (+ − 0 G), desni panel sa svojstvima odabira, listom bužira i soba te sklopivim setupom tlocrta po koracima. Kotačić zumira, Space + vučenje pomiče.
+8. **Otvori sobu**: zid-view je editor na fotki zida (jedinice cm, x od lijevog kuta gledano iznutra, visina od poda).
+   Na gornjem rubu su izlazi bužira iz deke (projekcija kraja trase na najbliži zid); izlaz se vuče po fotki,
+   lijevo-desno pomiče kraj bužira i na tlocrtu, gore-dolje postavlja visinu izlaza. Alati: **Kutija (K)**,
+   **Utičnica (U)**, **Prekidač (P)**, **Svjetlo (L)**, **Ormar (O)** postavljaju element klikom (snap 1 cm, na
+   standardne visine 30/105/115/230 cm i na x drugih elemenata). **Kabel (C)**: klik na izlaz bužira ili element
+   počinje, klikovi dodaju vodoravne/okomite lomove, klik na element završava; kabel je vezan za oba kraja i prati
+   ih pri pomicanju. Plave trake su instalacijske zone po DIN 18015-3 (Z ih gasi). Desno: fotka zida, svojstva
+   odabira (tip, oznaka, pozicija, vrsta prekidača, tip kabela, duljina) i lista svega na zidu.
 
 ## Sljedeće
 
 - ispravljanje fotke zida (4 kuta → pravokutnik u metrima)
-- elementi na zidu: razvodna kutija, utičnica, prekidač, svjetlo, ormar, s visinama
-- kabeli po zidu od izlaza bužira do kutije
 - strujni krugovi i tablica ormara, BOM u metrima, checklist izvedbe, PDF export po sobi

@@ -19,6 +19,51 @@ export interface Wall {
   photo?: string
 }
 
+export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel'
+export type SwitchKind = 'obicni' | 'serijski' | 'izmjenicni' | 'krizni'
+
+// Placed on a wall: x from the left (inside view), z from the floor, metres.
+export interface WallElement {
+  id: string
+  roomId: string
+  wall: number
+  type: ElementType
+  label: string
+  xM: number
+  zM: number
+  note: string
+  switchKind?: SwitchKind
+}
+
+export type CableEnd =
+  | { kind: 'element'; id: string }
+  | { kind: 'exit'; conduitId: string; end: 'start' | 'end' }
+  | { kind: 'free'; xM: number; zM: number }
+
+export interface Cable {
+  id: string
+  roomId: string
+  wall: number
+  type: string
+  from: CableEnd
+  to: CableEnd
+  via: { xM: number; zM: number }[]
+  note: string
+}
+
+export const CABLE_TYPES = ['NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-J 5x1.5', 'NYM-J 5x2.5', 'NYM-J 4x1.5', 'UTP cat6', 'koaks', 'zvono 2x0.75', 'ostalo']
+
+export const ELEMENT_META: Record<ElementType, { label: string; key: string; prefix: string; zM: number }> = {
+  box: { label: 'Razvodna kutija', key: 'K', prefix: 'K', zM: 2.3 },
+  socket: { label: 'Utičnica', key: 'U', prefix: 'U', zM: 0.3 },
+  switch: { label: 'Prekidač', key: 'P', prefix: 'P', zM: 1.05 },
+  light: { label: 'Svjetlo', key: 'L', prefix: 'S', zM: 2.6 },
+  panel: { label: 'Ormar', key: 'O', prefix: 'RO', zM: 1.5 },
+}
+
+// DIN 18015-3 preferred heights (m); elements snap to these when close.
+export const STANDARD_HEIGHTS = [0.3, 1.05, 1.15, 2.3]
+
 export interface Room {
   id: string
   name: string
@@ -40,9 +85,12 @@ export interface Project {
   ceilingM: number
   conduits: Conduit[]
   rooms: Room[]
+  elements: WallElement[]
+  cables: Cable[]
 }
 
 export type Tool = 'select' | 'pan' | 'calibrate' | 'room' | 'conduit' | 'align' | 'origin'
+export type WallTool = 'select' | 'pan' | 'element' | 'cable'
 
 export type View = { kind: 'plan' } | { kind: 'room'; roomId: string; wall: number | null }
 
@@ -67,5 +115,7 @@ export function emptyProject(): Project {
     ceilingM: 2.6,
     conduits: [],
     rooms: [],
+    elements: [],
+    cables: [],
   }
 }
