@@ -30,6 +30,7 @@ export interface Project {
   planImage: string | null
   planSize: { w: number; h: number } | null
   planRotation: 0 | 90 | 180 | 270
+  planTilt: number
   pxPerMeter: number | null
   gridCm: number
   ceilingM: number
@@ -37,7 +38,7 @@ export interface Project {
   rooms: Room[]
 }
 
-export type Tool = 'select' | 'pan' | 'calibrate' | 'room' | 'conduit'
+export type Tool = 'select' | 'pan' | 'calibrate' | 'room' | 'conduit' | 'align'
 
 export type View = { kind: 'plan' } | { kind: 'room'; roomId: string; wall: number | null }
 
@@ -54,6 +55,7 @@ export function emptyProject(): Project {
     planImage: null,
     planSize: null,
     planRotation: 0,
+    planTilt: 0,
     pxPerMeter: null,
     gridCm: 10,
     ceilingM: 2.6,

@@ -56,3 +56,8 @@ label { display: flex; align-items: center; gap: 6px; }
 table.exits { border-collapse: collapse; width: 100%; }
 table.exits th, table.exits td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
 table.exits th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; }
+
+.tilt { display: flex; flex-direction: column; gap: 6px; }
+.tilt-controls { display: flex; gap: 3px; align-items: center; }
+.tilt-controls input { width: 58px; text-align: center; }
+.tilt-actions { display: flex; gap: 4px; }

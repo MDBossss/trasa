@@ -26,7 +26,7 @@ export function PlanCanvas() {
   const showGrid = useStore((s) => s.showGrid)
   const snapGrid = useStore((s) => s.snapGrid)
   const snapAngle = useStore((s) => s.snapAngle)
-  const { select, setTool, addConduit, addRoom, updateConduit, updateRoom, patchProject, removeSelected } = useStore.getState()
+  const { select, setTool, addConduit, addRoom, updateConduit, updateRoom, patchProject, removeSelected, setTilt } = useStore.getState()
 
   const [img] = useImage(project.planImage ?? '')
   const step = gridStepPx(project)
@@ -85,7 +85,7 @@ export function PlanCanvas() {
       if (e.key === 'Backspace' && draft.length) { setDraft((d) => d.slice(0, -1)); return }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) { removeSelected(); return }
       if (e.metaKey || e.ctrlKey) return
-      const map: Record<string, typeof tool> = { v: 'select', h: 'pan', b: 'conduit', r: 'room', c: 'calibrate' }
+      const map: Record<string, typeof tool> = { v: 'select', h: 'pan', b: 'conduit', r: 'room', c: 'calibrate', a: 'align' }
       if (map[e.key]) setTool(map[e.key])
       if (e.key === 'g') useStore.getState().toggle('showGrid')
     }
@@ -119,6 +119,16 @@ export function PlanCanvas() {
       select(id)
       return
     }
+    if (tool === 'align') {
+      if (draft.length === 1) {
+        const a = (Math.atan2(raw.y - draft[0].y, raw.x - draft[0].x) * 180) / Math.PI
+        const delta = a - Math.round(a / 90) * 90
+        setTilt(project.planTilt - delta)
+        setDraft([])
+        setTool('select')
+      } else setDraft([raw])
+      return
+    }
     const prev = draft.length ? draft[draft.length - 1] : null
     const p = snapped(raw, tool === 'calibrate' ? null : prev)
     if (tool === 'calibrate') {
@@ -147,7 +157,7 @@ export function PlanCanvas() {
     const raw = toImg()
     if (!raw) return
     const prev = draft.length ? draft[draft.length - 1] : null
-    setCursor(snapped(raw, tool === 'calibrate' ? null : prev))
+    setCursor(tool === 'align' ? raw : snapped(raw, tool === 'calibrate' ? null : prev))
   }
 
   const sel = selectedId
@@ -196,9 +206,11 @@ export function PlanCanvas() {
           {img && dims && (
             <KImage
               image={img}
-              rotation={rot}
-              x={rot === 90 ? dims.w : rot === 180 ? dims.w : 0}
-              y={rot === 180 ? dims.h : rot === 270 ? dims.h : 0}
+              rotation={rot + project.planTilt}
+              x={dims.w / 2}
+              y={dims.h / 2}
+              offsetX={img.width / 2}
+              offsetY={img.height / 2}
             />
           )}
           {showGrid && step && img && (
@@ -316,7 +328,7 @@ export function PlanCanvas() {
             <>
               <Line
                 points={[...draft, cursor].flatMap((p) => [p.x, p.y])}
-                stroke={tool === 'calibrate' ? '#ff5722' : tool === 'room' ? '#1e88e5' : '#333'}
+                stroke={tool === 'calibrate' || tool === 'align' ? '#ff5722' : tool === 'room' ? '#1e88e5' : '#333'}
                 strokeWidth={px(2)}
                 dash={[px(6), px(4)]}
                 closed={tool === 'room' && draft.length >= 2}
@@ -327,7 +339,9 @@ export function PlanCanvas() {
                 <Tag fill="rgba(0,0,0,0.75)" cornerRadius={px(3)} />
                 <Text
                   text={
-                    tool === 'calibrate'
+                    tool === 'align'
+                      ? `${((Math.atan2(cursor.y - draft[0].y, cursor.x - draft[0].x) * 180) / Math.PI).toFixed(1)}°`
+                      : tool === 'calibrate'
                       ? `${Math.round(dist(draft[0], cursor))} px`
                       : `seg ${fmtMeters(dist(draft[draft.length - 1], cursor), project.pxPerMeter)} · uk ${fmtMeters(polylineLength([...draft, cursor]), project.pxPerMeter)}`
                   }
@@ -339,7 +353,7 @@ export function PlanCanvas() {
             </>
           )}
           {cursor && tool !== 'select' && !panning && (
-            <Circle x={cursor.x} y={cursor.y} radius={px(3)} fill={tool === 'calibrate' ? '#ff5722' : '#333'} />
+            <Circle x={cursor.x} y={cursor.y} radius={px(3)} fill={tool === 'calibrate' || tool === 'align' ? '#ff5722' : '#333'} />
           )}
         </Layer>
       </Stage>

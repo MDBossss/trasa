@@ -6,7 +6,7 @@ import { emptyProject, PALETTE, type Conduit, type Project, type Pt, type Room, 
 const IDB_KEY = 'trasa-project'
 
 // Fills fields added after a project was saved.
-export const normalize = (p: Project): Project => ({ ...emptyProject(), ...p, planRotation: p.planRotation ?? 0 })
+export const normalize = (p: Project): Project => ({ ...emptyProject(), ...p, planRotation: p.planRotation ?? 0, planTilt: p.planTilt ?? 0 })
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 
@@ -33,6 +33,7 @@ interface State {
   setWallPhoto: (roomId: string, wall: number, photo: string | undefined) => void
   removeSelected: () => void
   rotatePlan: (dir: 1 | -1) => void
+  setTilt: (deg: number) => void
 }
 
 export const useStore = create<State>()(
@@ -99,6 +100,10 @@ export const useStore = create<State>()(
             },
           }
         }),
+      setTilt: (deg) => {
+        const t = Math.max(-45, Math.min(45, Math.round(deg * 100) / 100))
+        set((s) => ({ project: { ...s.project, planTilt: t } }))
+      },
       removeSelected: () =>
         set((s) => {
           const id = s.selectedId
@@ -113,7 +118,12 @@ export const useStore = create<State>()(
           }
         }),
     }),
-    { partialize: (s) => ({ project: s.project }), limit: 100 },
+    {
+      partialize: (s) => ({ project: s.project }),
+      // without this every tool/selection change would push a no-op undo entry
+      equality: (a, b) => a.project === b.project,
+      limit: 100,
+    },
   ),
 )
 

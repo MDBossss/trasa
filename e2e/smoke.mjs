@@ -125,6 +125,39 @@ await page.keyboard.press('v')
 
 await page.screenshot({ path: `${SHOTS}/trasa-plan.png` })
 
+// tilt: a plan scanned 3° off → Auto detects it, line align and ±1° buttons adjust it
+const skewedPng = await page.evaluate(() => {
+  const c = document.createElement('canvas'); c.width = 1200; c.height = 800
+  const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, 1200, 800)
+  g.translate(600, 400); g.rotate((3 * Math.PI) / 180); g.translate(-600, -400)
+  g.lineWidth = 12; g.strokeStyle = '#222'; g.strokeRect(100, 100, 1000, 600); g.strokeRect(100, 100, 500, 300); g.strokeRect(300, 400, 200, 300)
+  return c.toDataURL('image/png')
+})
+await page.locator('input[type=file][accept="image/*"]').first().setInputFiles({ name: 'skew.png', mimeType: 'image/png', buffer: Buffer.from(skewedPng.split(',')[1], 'base64') })
+await page.waitForTimeout(300)
+await page.getByText('Auto poravnaj').click()
+await page.waitForFunction(() => Math.abs(window.__trasa.getState().project.planTilt) > 0.5)
+st = await state()
+assert.ok(Math.abs(st.planTilt + 3) < 0.3, `auto tilt ${st.planTilt}`)
+await page.waitForTimeout(200)
+await page.screenshot({ path: `${SHOTS}/trasa-tilt.png` })
+await page.getByText('Reset').click()
+assert.equal((await state()).planTilt, 0)
+await page.keyboard.press('a')
+await clickImg(100, 100); await clickImg(600, 126)
+st = await state()
+// clicks land on whole screen pixels at ~0.5 zoom, so allow ~0.15°
+assert.ok(Math.abs(st.planTilt + 2.98) < 0.15, `line tilt ${st.planTilt}`)
+const t0 = st.planTilt
+await page.getByText('−1°').click()
+assert.ok(Math.abs((await state()).planTilt - (t0 - 1)) < 0.01)
+await page.getByText('+0.1').click()
+assert.ok(Math.abs((await state()).planTilt - (t0 - 0.9)) < 0.01)
+await page.keyboard.press('Meta+z'); await page.keyboard.press('Meta+z'); await page.keyboard.press('Meta+z')
+assert.equal((await state()).planTilt, 0)
+await page.locator('input[type=file][accept="image/*"]').first().setInputFiles({ name: 'plan.png', mimeType: 'image/png', buffer: Buffer.from(planPng.split(',')[1], 'base64') })
+await page.waitForTimeout(300)
+
 // room view: wall 1 (top) has B1 start 0.2 m away at 0.5 m from the left
 await clickImg(350, 250)
 await page.getByText('Otvori sobu →').click()

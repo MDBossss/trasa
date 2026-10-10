@@ -1,11 +1,12 @@
 import { useStore } from '../store'
 import { fmtMeters, polylineLength } from '../geometry'
 import { DIAMETERS } from '../types'
+import { detectSkew } from '../images'
 
 export function Sidebar() {
   const project = useStore((s) => s.project)
   const selectedId = useStore((s) => s.selectedId)
-  const { select, patchProject, updateConduit, updateRoom, removeSelected, setView, setTool } = useStore.getState()
+  const { select, patchProject, updateConduit, updateRoom, removeSelected, setView, setTool, setTilt } = useStore.getState()
   const conduit = project.conduits.find((c) => c.id === selectedId)
   const room = project.rooms.find((r) => r.id === selectedId)
   const ppm = project.pxPerMeter
@@ -21,6 +22,26 @@ export function Sidebar() {
         </label>
         <label>Grid (cm) <input type="number" min={1} value={project.gridCm} onChange={(e) => patchProject({ gridCm: Math.max(1, +e.target.value || 10) })} /></label>
         <label>Visina stropa (m) <input type="number" step={0.05} value={project.ceilingM} onChange={(e) => patchProject({ ceilingM: +e.target.value || 2.6 })} /></label>
+        {project.planImage && (
+          <div className="tilt">
+            <label>
+              Nagib slike
+              <span className="tilt-controls">
+                <button className="mini" onClick={() => setTilt(project.planTilt - 1)}>−1°</button>
+                <button className="mini" onClick={() => setTilt(project.planTilt - 0.1)}>−0.1</button>
+                <input type="number" step={0.1} value={project.planTilt} onChange={(e) => setTilt(+e.target.value || 0)} />
+                <button className="mini" onClick={() => setTilt(project.planTilt + 0.1)}>+0.1</button>
+                <button className="mini" onClick={() => setTilt(project.planTilt + 1)}>+1°</button>
+              </span>
+            </label>
+            <div className="tilt-actions">
+              <button className="mini" onClick={() => autoAlign(project.planImage!, setTilt)}>Auto poravnaj</button>
+              <button className="mini" onClick={() => setTool('align')}>Po liniji (A)</button>
+              <button className="mini" onClick={() => setTilt(0)} disabled={!project.planTilt}>Reset</button>
+            </div>
+            <p className="muted">Poravnaj sliku s gridom prije crtanja: nagib pomiče samo sliku, ne i nacrtano.</p>
+          </div>
+        )}
       </section>
 
       {conduit && (
@@ -83,4 +104,10 @@ export function Sidebar() {
       </section>
     </aside>
   )
+}
+
+function autoAlign(src: string, setTilt: (deg: number) => void) {
+  const img = new Image()
+  img.onload = () => setTilt(-detectSkew(img))
+  img.src = src
 }
