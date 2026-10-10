@@ -13,12 +13,13 @@ pnpm typecheck
 pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --port 5177)
 ```
 
-## GitHub: app na Pages, projekti u istom repou (šifrirano)
+## Hosting: Cloudflare, projekti u GitHub repou (šifrirano)
 
-- App: https://mdbossss.github.io/trasa/ (deploy iz `.github/workflows/pages.yml` na push na main, osim promjena u `projects/`).
-- Projekti: gumb **GitHub** sprema u `projects/<slug>/project.json.enc` + `img/*.enc` u ovaj isti repo. Repo je javan
-  (Pages na besplatnom planu), pa se sve šifrira na uređaju (AES-GCM, PBKDF2 iz lozinke) prije slanja; bez lozinke
-  datoteke u repou nisu čitljive. Istu lozinku upišeš na svakom uređaju.
+- App: https://trasa.trasa-auth.workers.dev/ (Cloudflare Workers static assets; `pnpm deploy` = build + `wrangler deploy`).
+  GitHub Pages nije korišten jer su Actions na računu zaključani zbog naplate.
+- Projekti: gumb **GitHub** sprema u `projects/<slug>/project.json.enc` + `img/*.enc` u repo `mdbossss/trasa`. Repo je javan,
+  pa se sve šifrira na uređaju (AES-GCM, PBKDF2 iz lozinke) prije slanja; bez lozinke datoteke u repou nisu čitljive.
+  Istu lozinku upišeš na svakom uređaju.
 - Prijava: gumb **Prijavi se GitHubom** u GitHub panelu. Tok ide preko Cloudflare Workera u `auth-worker/`
   (https://trasa-auth.trasa-auth.workers.dev), jer GitHub ne dopušta zamjenu OAuth koda iz preglednika. Worker je
   prvi put otvoren na `/` i tamo se jednim klikom registrira GitHub App "Trasa" (manifest tok, pravo Contents: write),
