@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { loadGhConfig, saveGhConfig, startLogin, type GhConfig } from '../github'
+import { appInstallUrl, loadGhConfig, saveGhConfig, startLogin, type GhConfig } from '../github'
 import { listRemoteProjects, openRemote, saveRemote, slugify } from '../remote'
 import { useStore } from '../store'
 
@@ -10,6 +10,7 @@ export function GitHubPanel({ onClose }: { onClose: () => void }) {
   const [projects, setProjects] = useState<string[] | null>(null)
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
+  const [installUrl, setInstallUrl] = useState<string | null>(null)
   const name = useStore((s) => s.project.name)
   const dirty = useStore((s) => s.dirty)
 
@@ -40,7 +41,9 @@ export function GitHubPanel({ onClose }: { onClose: () => void }) {
       await refresh(cfg)
     } catch (e) {
       setStatus('')
-      setError(String((e as Error).message))
+      const msg = String((e as Error).message)
+      setError(msg)
+      if (msg.includes('nije instaliran')) setInstallUrl(await appInstallUrl())
     }
   }
 
@@ -90,7 +93,13 @@ export function GitHubPanel({ onClose }: { onClose: () => void }) {
             {status && <p className="status">{status}</p>}
           </>
         )}
-        {error && <p className="error">{error}{/istekla|401|Bad credentials/.test(error) && connected && <> <button className="mini" onClick={startLogin}>Prijavi se ponovno</button></>}</p>}
+        {error && (
+          <p className="error">
+            {error}
+            {/istekla|401|Bad credentials/.test(error) && connected && <> <button className="mini" onClick={startLogin}>Prijavi se ponovno</button></>}
+            {installUrl && <> <a href={installUrl} target="_blank" rel="noreferrer">Instaliraj app na repo</a>, pa spremi ponovno.</>}
+          </p>
+        )}
       </div>
     </div>
   )

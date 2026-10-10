@@ -75,6 +75,9 @@ export default {
 
     if (!creds) return html(`<p>Auth još nije postavljen. <a href="/">Postavi</a>.</p>`)
 
+    // public app info for the client (install link on "not accessible by integration")
+    if (url.pathname === '/app') return json({ slug: creds.slug, html_url: creds.html_url, install_url: `${creds.html_url}/installations/new` }, origin ?? '*')
+
     // --- login ---------------------------------------------------------------
     if (url.pathname === '/login') {
       const ret = url.searchParams.get('return') ?? env.APP_URL

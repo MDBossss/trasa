@@ -27,6 +27,15 @@ export class GhError extends Error {
   constructor(public status: number, msg: string) { super(msg) }
 }
 
+export async function appInstallUrl(): Promise<string | null> {
+  try {
+    const res = await fetch(`${AUTH_URL}/app`)
+    return res.ok ? ((await res.json()) as { install_url: string }).install_url : null
+  } catch {
+    return null
+  }
+}
+
 // OAuth user tokens from a GitHub App expire (8 h); refresh through the worker when close.
 // Parallel requests share one refresh: GitHub rotates refresh tokens, so a
 // second concurrent refresh with the same token would fail.
@@ -77,7 +86,11 @@ async function api(cfg: GhConfig, path: string, init: RequestInit = {}, accept =
     headers: { Authorization: `Bearer ${await bearer(cfg)}`, Accept: accept, 'X-GitHub-Api-Version': '2022-11-28', ...(init.headers ?? {}) },
   })
   if (res.status === 404) return null
-  if (!res.ok) throw new GhError(res.status, `GitHub ${res.status}: ${(await res.text()).slice(0, 200)}`)
+  if (!res.ok) {
+    const text = await res.text()
+    if (res.status === 403 && text.includes('not accessible by integration')) throw new GhError(403, 'GitHub App nije instaliran na ovaj repo (čitanje javnog repoa radi, pisanje ne).')
+    throw new GhError(res.status, `GitHub ${res.status}: ${text.slice(0, 200)}`)
+  }
   return res
 }
 
