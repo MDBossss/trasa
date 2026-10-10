@@ -13,13 +13,14 @@ pnpm typecheck
 pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --port 5177)
 ```
 
-## GitHub: app na Pages, projekti u privatnom repou
+## GitHub: app na Pages, projekti u istom repou (šifrirano)
 
-- App: https://mislavvv.github.io/trasa/ (deploy iz `.github/workflows/pages.yml` na svaki push na master).
-- Projekti: gumb **GitHub** u alatnoj traci sprema u `projects/<slug>/project.json` + `img/` u repo `mislavvv/trasa-projects`
-  (privatan, jer su unutra fotke kuće). Isti projekt otvoriš s bilo kojeg uređaja.
-- Token: GitHub → Settings → Developer settings → Fine-grained tokens → samo repo `trasa-projects`, permission
-  **Contents: Read and write**. Token ostaje u localStorageu tog uređaja; unosiš ga jednom po uređaju.
+- App: https://mislavvv.github.io/trasa/ (deploy iz `.github/workflows/pages.yml` na push na main, osim promjena u `projects/`).
+- Projekti: gumb **GitHub** sprema u `projects/<slug>/project.json.enc` + `img/*.enc` u ovaj isti repo. Repo je javan
+  (Pages na besplatnom planu), pa se sve šifrira na uređaju (AES-GCM, PBKDF2 iz lozinke) prije slanja; bez lozinke
+  datoteke u repou nisu čitljive. Istu lozinku upišeš na svakom uređaju.
+- Token: GitHub → Settings → Developer settings → Fine-grained tokens → samo repo `trasa`, permission
+  **Contents: Read and write**. Token i lozinka ostaju u localStorageu tog uređaja.
 
 ## Rad
 

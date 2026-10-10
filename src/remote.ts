@@ -4,12 +4,22 @@ import { get as idbGet, set as idbSet } from 'idb-keyval'
 import { bytesToDataUrl, dataUrlToBytes, ghGetBytes, ghList, ghPut, sha256Hex, type GhConfig } from './github'
 import { applySaveFile, buildSaveFile, type SaveFile } from './persistence'
 import { useStore } from './store'
+import { decrypt, encrypt } from './crypto'
 import type { Project } from './types'
 
 export const slugify = (name: string) =>
   name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'projekt'
 
 const shas = new Map<string, string>()
+
+// With a passphrase every file is stored encrypted under a ".enc" suffix.
+const enc = (cfg: GhConfig, path: string) => (cfg.passphrase ? `${path}.enc` : path)
+const seal = (cfg: GhConfig, bytes: Uint8Array) => (cfg.passphrase ? encrypt(bytes, cfg.passphrase) : Promise.resolve(bytes))
+async function fetchFile(cfg: GhConfig, path: string) {
+  const got = await ghGetBytes(cfg, enc(cfg, path))
+  if (!got) return null
+  return { sha: got.sha, bytes: cfg.passphrase ? await decrypt(got.bytes, cfg.passphrase) : got.bytes }
+}
 
 export async function listRemoteProjects(cfg: GhConfig) {
   const entries = await ghList(cfg, 'projects')
@@ -20,7 +30,7 @@ export async function saveRemote(cfg: GhConfig, onStatus: (s: string) => void) {
   const file = buildSaveFile()
   const slug = slugify(file.project.name)
   const dir = `projects/${slug}`
-  const existing = new Set((await ghList(cfg, `${dir}/img`)).map((e) => e.name))
+  const existing = new Set((await ghList(cfg, `${dir}/img`)).map((e) => e.name.replace(/\.enc$/, '')))
   const refs = new Map<string, string>()
 
   const upload = async (dataUrl: string) => {
@@ -31,7 +41,7 @@ export async function saveRemote(cfg: GhConfig, onStatus: (s: string) => void) {
     const path = `${dir}/img/${name}`
     if (!existing.has(name)) {
       onStatus(`Šaljem sliku ${refs.size + 1}…`)
-      await ghPut(cfg, path, bytes, `trasa: ${slug} slika`)
+      await ghPut(cfg, enc(cfg, path), await seal(cfg, bytes), `trasa: ${slug} slika`)
       existing.add(name)
     }
     const ref = `gh:${path}`
@@ -57,9 +67,9 @@ export async function saveRemote(cfg: GhConfig, onStatus: (s: string) => void) {
   onStatus('Spremam projekt…')
   const path = `${dir}/project.json`
   let sha = shas.get(path)
-  if (!sha) sha = (await ghGetBytes(cfg, path))?.sha
+  if (!sha) sha = (await ghGetBytes(cfg, enc(cfg, path)))?.sha
   const body = new TextEncoder().encode(JSON.stringify({ ...file, project } satisfies SaveFile, null, 1))
-  shas.set(path, await ghPut(cfg, path, body, `trasa: ${slug}`, sha))
+  shas.set(path, await ghPut(cfg, enc(cfg, path), await seal(cfg, body), `trasa: ${slug}`, sha))
   useStore.getState().markSaved(`gh:${slug}`)
   onStatus('')
 }
@@ -67,8 +77,8 @@ export async function saveRemote(cfg: GhConfig, onStatus: (s: string) => void) {
 export async function openRemote(cfg: GhConfig, slug: string, onStatus: (s: string) => void) {
   const path = `projects/${slug}/project.json`
   onStatus('Učitavam projekt…')
-  const got = await ghGetBytes(cfg, path)
-  if (!got) throw new Error('Projekt ne postoji')
+  const got = await fetchFile(cfg, path)
+  if (!got) throw new Error('Projekt ne postoji (ili je spremljen bez/s drugom lozinkom)')
   shas.set(path, got.sha)
   const file = JSON.parse(new TextDecoder().decode(got.bytes)) as SaveFile
   let n = 0
@@ -78,7 +88,7 @@ export async function openRemote(cfg: GhConfig, slug: string, onStatus: (s: stri
     const p = ref.slice(3)
     const cached = (await idbGet(`img:${p}`)) as string | undefined
     if (cached) return cached
-    const img = await ghGetBytes(cfg, p)
+    const img = await fetchFile(cfg, p)
     if (!img) return undefined
     const url = bytesToDataUrl(p.endsWith('.png') ? 'image/png' : 'image/jpeg', img.bytes)
     void idbSet(`img:${p}`, url)

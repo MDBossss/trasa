@@ -4,7 +4,7 @@ import { listRemoteProjects, openRemote, saveRemote, slugify } from '../remote'
 import { useStore } from '../store'
 
 export function GitHubPanel({ onClose }: { onClose: () => void }) {
-  const [cfg, setCfg] = useState<GhConfig>(() => loadGhConfig() ?? { token: '', repo: '', branch: 'main' })
+  const [cfg, setCfg] = useState<GhConfig>(() => { const c = loadGhConfig(); return c ? { ...c, passphrase: c.passphrase ?? '' } : { token: '', repo: 'mislavvv/trasa', branch: 'main', passphrase: '' } })
   const [connected, setConnected] = useState(!!loadGhConfig())
   const [projects, setProjects] = useState<string[] | null>(null)
   const [status, setStatus] = useState('')
@@ -49,16 +49,18 @@ export function GitHubPanel({ onClose }: { onClose: () => void }) {
         <div className="modal-head"><h3>GitHub projekti</h3><button className="mini" onClick={onClose}>✕</button></div>
         {!connected ? (
           <div className="form">
-            <p className="muted">Projekti se spremaju u tvoj (privatni) repo pa ih otvoriš s bilo kojeg uređaja. Treba fine-grained token s pravom <b>Contents: Read and write</b> samo za taj repo.</p>
-            <label>Repo <input placeholder="mislavvv/trasa-projects" value={cfg.repo} onChange={(e) => setCfg({ ...cfg, repo: e.target.value })} /></label>
+            <p className="muted">Projekti se spremaju u GitHub repo (mapa <code>projects/</code>) pa ih otvoriš s bilo kojeg uređaja. Treba fine-grained token s pravom <b>Contents: Read and write</b> za taj repo.</p>
+            <label>Repo <input placeholder="mislavvv/trasa" value={cfg.repo} onChange={(e) => setCfg({ ...cfg, repo: e.target.value })} /></label>
             <label>Grana <input value={cfg.branch} onChange={(e) => setCfg({ ...cfg, branch: e.target.value })} /></label>
             <label>Token <input type="password" placeholder="github_pat_…" value={cfg.token} onChange={(e) => setCfg({ ...cfg, token: e.target.value })} /></label>
+            <label>Lozinka šifriranja <input type="password" placeholder="obavezno ako je repo javan" value={cfg.passphrase} onChange={(e) => setCfg({ ...cfg, passphrase: e.target.value })} /></label>
+            <p className="muted">S lozinkom su datoteke u repou šifrirane (AES-GCM) na uređaju; repo može biti javan, a tlocrt i fotke ostaju privatni. Istu lozinku upišeš na svakom uređaju.</p>
             <button onClick={connect} disabled={!cfg.repo || !cfg.token}>Poveži</button>
           </div>
         ) : (
           <>
             <div className="row">
-              <span className="muted">{cfg.repo} @ {cfg.branch}</span>
+              <span className="muted">{cfg.repo} @ {cfg.branch} · {cfg.passphrase ? 'šifrirano' : 'nešifrirano'}</span>
               <button className="mini" onClick={() => { saveGhConfig(null); setConnected(false); setProjects(null) }}>Odspoji</button>
             </div>
             <div className="form">

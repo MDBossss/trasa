@@ -155,3 +155,4 @@ table.exits th { color: var(--muted); font-weight: 600; font-size: 11px; text-tr
   .project-name { width: 120px; }
   .save-state { display: none; }
 }
+code { font: 11px ui-monospace, Menlo, monospace; background: var(--panel2); padding: 1px 4px; border-radius: 3px; }

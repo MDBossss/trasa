@@ -1,6 +1,6 @@
 // Minimal GitHub Contents API client; projects live in a (private) repo so
 // the same project opens from any device.
-export interface GhConfig { token: string; repo: string; branch: string }
+export interface GhConfig { token: string; repo: string; branch: string; passphrase: string }
 
 const KEY = 'trasa-github'
 

@@ -306,24 +306,35 @@ await page.route('https://api.github.com/**', async (route) => {
 })
 const before = await state()
 await page.getByRole('button', { name: 'GitHub' }).click()
-await page.getByPlaceholder('mislavvv/trasa-projects').fill('https://github.com/mislavvv/trasa-projects')
+await page.getByPlaceholder('mislavvv/trasa').fill('https://github.com/mislavvv/trasa')
+await page.getByPlaceholder('obavezno ako je repo javan').fill('tajna')
 await page.getByPlaceholder('github_pat_…').fill('tok123')
 await page.getByText('Poveži').click()
 await page.getByText('Još nema projekata.').waitFor()
 await page.locator('.modal').getByText('Spremi "Kuća" u repo').click()
 await page.locator('.modal .list').getByText('kuca').waitFor()
 // plan and wall photo are the same PNG here, so they dedupe to one image file
-assert.deepEqual([...repo.keys()].filter((k) => !k.includes('/img/')), ['projects/kuca/project.json'])
+assert.deepEqual([...repo.keys()].filter((k) => !k.includes('/img/')), ['projects/kuca/project.json.enc'])
 assert.equal([...repo.keys()].filter((k) => k.includes('/img/')).length, 1)
-const remote = JSON.parse(Buffer.from(repo.get('projects/kuca/project.json').content, 'base64').toString())
+// at rest everything is ".enc" ciphertext: no plaintext JSON or JPEG markers
+assert.ok([...repo.keys()].every((k) => k.endsWith('.enc')), [...repo.keys()].join())
+const rawProj = Buffer.from(repo.get('projects/kuca/project.json.enc').content, 'base64')
+assert.ok(!rawProj.toString('latin1').includes('conduits'))
+const decryptedRemote = await page.evaluate(async ([b64, pass]) => {
+  const data = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveKey'])
+  const k = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: data.subarray(0, 16), iterations: 310000, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt'])
+  return new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: data.subarray(16, 28) }, k, data.subarray(28)))
+}, [rawProj.toString('base64'), 'tajna'])
+const remote = JSON.parse(decryptedRemote)
 assert.match(remote.project.planImage, /^gh:projects\/kuca\/img\/[0-9a-f]{16}\.(jpg|png)$/)
 assert.equal(remote.ui.view.kind, 'room')
 assert.equal(await page.evaluate(() => window.__trasa.getState().fileName), 'gh:kuca')
 // saving again re-uses the images and updates project.json with the sha
-const shaBefore = repo.get('projects/kuca/project.json').sha
+const shaBefore = repo.get('projects/kuca/project.json.enc').sha
 await page.locator('.modal').getByText('Spremi "Kuća" u repo').click()
-for (let i = 0; i < 50 && repo.get('projects/kuca/project.json').sha === shaBefore; i++) await page.waitForTimeout(100)
-assert.notEqual(repo.get('projects/kuca/project.json').sha, shaBefore)
+for (let i = 0; i < 50 && repo.get('projects/kuca/project.json.enc').sha === shaBefore; i++) await page.waitForTimeout(100)
+assert.notEqual(repo.get('projects/kuca/project.json.enc').sha, shaBefore)
 assert.equal(repo.size, 2)
 await page.locator('.modal-head button').click()
 
