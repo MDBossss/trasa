@@ -1,6 +1,10 @@
 // Minimal GitHub Contents API client; projects live in a (private) repo so
 // the same project opens from any device.
-export interface GhConfig { token: string; repo: string; branch: string; passphrase: string }
+export const AUTH_URL = 'https://trasa-auth.trasa-auth.workers.dev'
+
+export interface GhAuth { access_token: string; refresh_token: string | null; expires_at: number | null }
+// token = manual fine-grained PAT (fallback); auth = OAuth tokens from the worker
+export interface GhConfig { token: string; repo: string; branch: string; passphrase: string; auth?: GhAuth | null }
 
 const KEY = 'trasa-github'
 
@@ -23,10 +27,54 @@ export class GhError extends Error {
   constructor(public status: number, msg: string) { super(msg) }
 }
 
+// OAuth user tokens from a GitHub App expire (8 h); refresh through the worker when close.
+// Parallel requests share one refresh: GitHub rotates refresh tokens, so a
+// second concurrent refresh with the same token would fail.
+let inflight: Promise<GhAuth> | null = null
+export async function bearer(cfg: GhConfig): Promise<string> {
+  const a = cfg.auth
+  if (!a) return cfg.token
+  if (!a.expires_at || a.expires_at - Date.now() > 60_000 || !a.refresh_token) return a.access_token
+  inflight ??= (async () => {
+    try {
+      const res = await fetch(`${AUTH_URL}/refresh`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ refresh_token: a.refresh_token }) })
+      if (!res.ok) throw new GhError(401, 'GitHub prijava je istekla, prijavi se ponovno')
+      const fresh = (await res.json()) as GhAuth
+      saveGhConfig({ ...(loadGhConfig() ?? cfg), auth: fresh })
+      return fresh
+    } finally {
+      inflight = null
+    }
+  })()
+  const fresh = await inflight
+  cfg.auth = fresh
+  return fresh.access_token
+}
+
+export function startLogin() {
+  const ret = new URL(window.location.href)
+  ret.hash = ''
+  window.location.href = `${AUTH_URL}/login?return=${encodeURIComponent(ret.toString())}`
+}
+
+// After the worker redirects back with #gh=<base64 json>, store the tokens.
+export function consumeLoginHash(): boolean {
+  const m = /[#&]gh=([^&]+)/.exec(window.location.hash)
+  if (!m) return false
+  try {
+    const auth = JSON.parse(atob(decodeURIComponent(m[1]))) as GhAuth
+    const cfg = loadGhConfig() ?? { token: '', repo: 'mislavvv/trasa', branch: 'main', passphrase: '' }
+    saveGhConfig({ ...cfg, auth })
+  } finally {
+    history.replaceState(null, '', window.location.pathname + window.location.search)
+  }
+  return true
+}
+
 async function api(cfg: GhConfig, path: string, init: RequestInit = {}, accept = 'application/vnd.github+json') {
   const res = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${path}`, {
     ...init,
-    headers: { Authorization: `Bearer ${cfg.token}`, Accept: accept, 'X-GitHub-Api-Version': '2022-11-28', ...(init.headers ?? {}) },
+    headers: { Authorization: `Bearer ${await bearer(cfg)}`, Accept: accept, 'X-GitHub-Api-Version': '2022-11-28', ...(init.headers ?? {}) },
   })
   if (res.status === 404) return null
   if (!res.ok) throw new GhError(res.status, `GitHub ${res.status}: ${(await res.text()).slice(0, 200)}`)

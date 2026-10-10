@@ -1,0 +1,11 @@
+name = "trasa-auth"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+
+[[kv_namespaces]]
+binding = "CREDS"
+id = "6e3551952b2a4ef596e148c4c4fbe958"
+
+[vars]
+APP_URL = "https://mislavvv.github.io/trasa/"
+ALLOWED_ORIGINS = "https://mislavvv.github.io,http://localhost:*"

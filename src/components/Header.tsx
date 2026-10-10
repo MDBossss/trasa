@@ -12,7 +12,10 @@ export function Header() {
   const fileName = useStore((s) => s.fileName)
   const { patchProject, replaceProject } = useStore.getState()
   const [menu, setMenu] = useState(false)
-  const [gh, setGh] = useState(false)
+  const openGitHub = useStore((s) => s.openGitHub)
+  const [gh, setGhState] = useState(false)
+  const setGh = (v: boolean) => { setGhState(v); if (!v) useStore.setState({ openGitHub: false }) }
+  const ghOpen = gh || openGitHub
   const [theme, setTheme] = useState<'light' | 'dark'>(() => { try { return localStorage.getItem('trasa-theme') === 'dark' ? 'dark' : 'light' } catch { return 'light' } })
   const planInput = useRef<HTMLInputElement>(null)
   const jsonInput = useRef<HTMLInputElement>(null)
@@ -78,7 +81,7 @@ export function Header() {
       </button>
       <input ref={planInput} type="file" accept="image/*" hidden onChange={(e) => void onPlan(e.target.files?.[0])} />
       <input ref={jsonInput} type="file" accept=".json,application/json" hidden onChange={(e) => void open(e.target.files?.[0])} />
-      {gh && <GitHubPanel onClose={() => setGh(false)} />}
+      {ghOpen && <GitHubPanel onClose={() => setGh(false)} />}
     </header>
   )
 }

@@ -33,6 +33,18 @@ export function RoomView({ roomId, wall }: { roomId: string; wall: number | null
   }
   const go = (d: number) => setView({ kind: 'room', roomId, wall: ((wall ?? 0) + d + walls.length) % walls.length })
 
+  // ← / → switch walls
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement
+      if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || !walls.length) return
+      if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1) }
+      if (e.key === 'ArrowRight') { e.preventDefault(); go(1) }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
   return (
     <>
       {current && <WallToolRail />}

@@ -19,8 +19,11 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
 - Projekti: gumb **GitHub** sprema u `projects/<slug>/project.json.enc` + `img/*.enc` u ovaj isti repo. Repo je javan
   (Pages na besplatnom planu), pa se sve šifrira na uređaju (AES-GCM, PBKDF2 iz lozinke) prije slanja; bez lozinke
   datoteke u repou nisu čitljive. Istu lozinku upišeš na svakom uređaju.
-- Token: GitHub → Settings → Developer settings → Fine-grained tokens → samo repo `trasa`, permission
-  **Contents: Read and write**. Token i lozinka ostaju u localStorageu tog uređaja.
+- Prijava: gumb **Prijavi se GitHubom** u GitHub panelu. Tok ide preko Cloudflare Workera u `auth-worker/`
+  (https://trasa-auth.trasa-auth.workers.dev), jer GitHub ne dopušta zamjenu OAuth koda iz preglednika. Worker je
+  prvi put otvoren na `/` i tamo se jednim klikom registrira GitHub App "Trasa" (manifest tok, pravo Contents: write),
+  pa se instalira na repo. Tokeni (8 h + refresh) ostaju u localStorageu uređaja; worker ih osvježava.
+  Deploy workera: `cd auth-worker && pnpm install && npx wrangler deploy`. Ručni fine-grained token i dalje radi pod "Napredno".
 
 ## Rad
 

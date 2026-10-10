@@ -7,12 +7,14 @@ import { PlanCanvas } from './components/PlanCanvas'
 import { RoomView } from './components/RoomView'
 import { fileToDataUrl } from './images'
 import { open, save } from './persistence'
+import { consumeLoginHash } from './github'
 
 export default function App() {
   const view = useStore((s) => s.view)
   const loaded = useStore((s) => s.loaded)
 
   useEffect(() => {
+    if (consumeLoginHash()) useStore.setState({ openGitHub: true })
     void loadPersisted()
     const onKey = (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey)) return

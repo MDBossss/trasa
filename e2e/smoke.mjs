@@ -374,12 +374,34 @@ await page.route('https://api.github.com/**', async (route) => {
   return route.fulfill({ status: 500 })
 })
 const before = await state()
+// OAuth: the worker sends the browser back with #gh=<tokens>; an expired token is refreshed through the worker
+let refreshed = 0
+await page.route('https://trasa-auth.trasa-auth.workers.dev/refresh', async (route) => {
+  refreshed++
+  const body = route.request().postDataJSON()
+  assert.equal(body.refresh_token, 'r1')
+  return route.fulfill({ json: { access_token: 'tok123', refresh_token: 'r2', expires_at: Date.now() + 3600e3 }, headers: { 'access-control-allow-origin': '*' } })
+})
 await page.getByRole('button', { name: 'GitHub' }).click()
 await page.getByPlaceholder('mislavvv/trasa').fill('https://github.com/mislavvv/trasa')
 await page.getByPlaceholder('obavezno ako je repo javan').fill('tajna')
-await page.getByPlaceholder('github_pat_…').fill('tok123')
-await page.getByText('Poveži').click()
+await page.locator('.modal-head button').click() // config is only saved on login; set it the way the login button does
+await page.evaluate(() => localStorage.setItem('trasa-github', JSON.stringify({ token: '', repo: 'mislavvv/trasa', branch: 'main', passphrase: 'tajna', auth: null })))
+const ghHash = Buffer.from(JSON.stringify({ access_token: 'old', refresh_token: 'r1', expires_at: Date.now() - 1000 })).toString('base64')
+await page.goto('about:blank') // a hash-only goto would not reload; the real redirect comes from another origin
+await page.goto(`${APP_URL}#gh=${encodeURIComponent(ghHash)}`)
+await page.locator('.modal h3', { hasText: 'GitHub projekti' }).waitFor() // panel opens itself after login
+assert.equal(await page.evaluate(() => location.hash), '')
 await page.getByText('Još nema projekata.').waitFor()
+assert.equal(refreshed, 1)
+assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('trasa-github')).auth.refresh_token), 'r2')
+await page.getByText('GitHub prijava').waitFor()
+// back to the room view so the saved file carries wall 3 again
+await page.locator('.modal-head button').click()
+await page.locator('.sidebar .list li', { hasText: 'Dnevna' }).getByText('Otvori').click()
+await page.locator('.sidebar .list li', { hasText: 'Zid 3' }).click()
+await page.locator('.wall-nav', { hasText: 'Zid 3' }).waitFor()
+await page.getByRole('button', { name: 'GitHub' }).click()
 await page.locator('.modal').getByText('Spremi "Kuća" u repo').click()
 await page.locator('.modal .list').getByText('kuca').waitFor()
 // plan and wall photo are the same PNG here, so they dedupe to one image file
