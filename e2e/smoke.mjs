@@ -11,7 +11,7 @@ await page.addInitScript(() => { delete window.showSaveFilePicker; delete window
 const errors = []
 page.on('pageerror', (e) => errors.push(String(e)))
 // expected 404s: the GitHub mock answers 404 for missing dirs/files
-page.on('console', (m) => { if (m.type() === 'error' && !/status of 404/.test(m.text())) errors.push(m.text()) })
+page.on('console', (m) => { if (m.type() === 'error' && !/status of (404|409)/.test(m.text())) errors.push(m.text()) })
 
 const prompts = []
 page.on('dialog', async (d) => {
@@ -350,6 +350,7 @@ assert.equal(await page.evaluate(() => window.__trasa.getState().dirty), false)
 
 // GitHub storage against an in-memory mock of the Contents API
 const repo = new Map()
+let lastPut = 0
 await page.route('https://api.github.com/**', async (route) => {
   const req = route.request()
   const url = new URL(req.url())
@@ -367,6 +368,9 @@ await page.route('https://api.github.com/**', async (route) => {
     const body = req.postDataJSON()
     const cur = repo.get(path)
     if (cur && body.sha !== cur.sha) return route.fulfill({ status: 409, json: { message: 'conflict' } })
+    // GitHub's branch race: a commit right after another one gets a 409; the client must retry
+    if (lastPut && Date.now() - lastPut < 150) { lastPut = 0; return route.fulfill({ status: 409, json: { message: 'is at x but expected y' } }) }
+    lastPut = Date.now()
     const sha = 'sha_' + Math.random().toString(36).slice(2)
     repo.set(path, { sha, content: body.content })
     return route.fulfill({ json: { content: { sha } } })
@@ -421,7 +425,8 @@ const remote = JSON.parse(decryptedRemote)
 assert.match(remote.project.planImage, /^gh:projects\/kuca\/img\/[0-9a-f]{16}\.(jpg|png)$/)
 assert.equal(remote.ui.view.kind, 'room')
 assert.equal(await page.evaluate(() => window.__trasa.getState().fileName), 'gh:kuca')
-// saving again re-uses the images and updates project.json with the sha
+// saving again re-uses the images and updates project.json even if the file changed elsewhere (stale sha → refetch)
+repo.get('projects/kuca/project.json.enc').sha = 'sha_changed_on_another_device'
 const shaBefore = repo.get('projects/kuca/project.json.enc').sha
 await page.locator('.modal').getByText('Spremi "Kuća" u repo').click()
 for (let i = 0; i < 50 && repo.get('projects/kuca/project.json.enc').sha === shaBefore; i++) await page.waitForTimeout(100)

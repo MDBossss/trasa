@@ -114,14 +114,20 @@ export async function ghGetBytes(cfg: GhConfig, path: string): Promise<{ sha: st
   return { sha: j.sha, bytes: new Uint8Array(await raw.arrayBuffer()) }
 }
 
+// A 409 right after another commit is GitHub's branch race; retry a few times.
 export async function ghPut(cfg: GhConfig, path: string, bytes: Uint8Array, message: string, sha?: string): Promise<string> {
-  const res = await api(cfg, path, {
-    method: 'PUT',
-    body: JSON.stringify({ message, content: bytesToB64(bytes), branch: cfg.branch, ...(sha ? { sha } : {}) }),
-  })
-  if (!res) throw new GhError(404, 'Repo ili grana ne postoji')
-  const j = (await res.json()) as { content: { sha: string } }
-  return j.content.sha
+  const body = JSON.stringify({ message, content: bytesToB64(bytes), branch: cfg.branch, ...(sha ? { sha } : {}) })
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const res = await api(cfg, path, { method: 'PUT', body })
+      if (!res) throw new GhError(404, 'Repo ili grana ne postoji')
+      const j = (await res.json()) as { content: { sha: string } }
+      return j.content.sha
+    } catch (e) {
+      if (!(e instanceof GhError) || e.status !== 409 || attempt >= 3 || sha) throw e
+      await new Promise((r) => setTimeout(r, 400 * (attempt + 1)))
+    }
+  }
 }
 
 export function bytesToB64(bytes: Uint8Array): string {

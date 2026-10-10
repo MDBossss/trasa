@@ -1,7 +1,7 @@
 // Save/open projects in a GitHub repo: projects/<slug>/project.json plus the
 // images as separate files, referenced as "gh:<path>" so the JSON stays small.
 import { get as idbGet, set as idbSet } from 'idb-keyval'
-import { bytesToDataUrl, dataUrlToBytes, ghGetBytes, ghList, ghPut, sha256Hex, type GhConfig } from './github'
+import { bytesToDataUrl, dataUrlToBytes, GhError, ghGetBytes, ghList, ghPut, sha256Hex, type GhConfig } from './github'
 import { applySaveFile, buildSaveFile, type SaveFile } from './persistence'
 import { useStore } from './store'
 import { decrypt, encrypt } from './crypto'
@@ -49,27 +49,29 @@ export async function saveRemote(cfg: GhConfig, onStatus: (s: string) => void) {
     return ref
   }
 
+  // Uploads run one after another: every PUT is a commit on the same branch
+  // and GitHub answers 409 to concurrent ones.
   const p = file.project
-  const project: Project = {
-    ...p,
-    planImage: p.planImage ? await upload(p.planImage) : null,
-    rooms: await Promise.all(
-      p.rooms.map(async (r) => ({
-        ...r,
-        walls: Object.fromEntries(
-          await Promise.all(
-            Object.entries(r.walls).map(async ([k, w]) => [k, { ...w, photo: w.photo ? await upload(w.photo) : undefined }]),
-          ),
-        ),
-      })),
-    ),
+  const rooms = []
+  for (const r of p.rooms) {
+    const walls: typeof r.walls = {}
+    for (const [k, w] of Object.entries(r.walls)) walls[+k] = { ...w, photo: w.photo ? await upload(w.photo) : undefined }
+    rooms.push({ ...r, walls })
   }
+  const project: Project = { ...p, planImage: p.planImage ? await upload(p.planImage) : null, rooms }
   onStatus('Spremam projekt…')
   const path = `${dir}/project.json`
-  let sha = shas.get(path)
-  if (!sha) sha = (await ghGetBytes(cfg, enc(cfg, path)))?.sha
-  const body = new TextEncoder().encode(JSON.stringify({ ...file, project } satisfies SaveFile, null, 1))
-  shas.set(path, await ghPut(cfg, enc(cfg, path), await seal(cfg, body), `trasa: ${slug}`, sha))
+  const body = await seal(cfg, new TextEncoder().encode(JSON.stringify({ ...file, project } satisfies SaveFile, null, 1)))
+  const freshSha = async () => (await ghGetBytes(cfg, enc(cfg, path)))?.sha
+  let sha = shas.get(path) ?? (await freshSha())
+  try {
+    shas.set(path, await ghPut(cfg, enc(cfg, path), body, `trasa: ${slug}`, sha))
+  } catch (e) {
+    // stale sha (saved from another device, or a cached one): re-read and retry once
+    if (!(e instanceof GhError) || e.status !== 409) throw e
+    sha = await freshSha()
+    shas.set(path, await ghPut(cfg, enc(cfg, path), body, `trasa: ${slug}`, sha))
+  }
   useStore.getState().markSaved(`gh:${slug}`)
   onStatus('')
 }
