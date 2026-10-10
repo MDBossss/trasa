@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { redo, undo, useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { emptyProject, type Tool } from '../types'
@@ -26,6 +26,11 @@ export function Toolbar() {
   const fileName = useStore((s) => s.fileName)
   const hasPicker = 'showSaveFilePicker' in window
   const [gh, setGh] = useState(false)
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => { try { return localStorage.getItem('trasa-theme') === 'dark' ? 'dark' : 'light' } catch { return 'light' } })
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    try { localStorage.setItem('trasa-theme', theme) } catch { /* private mode */ }
+  }, [theme])
   const planInput = useRef<HTMLInputElement>(null)
   const jsonInput = useRef<HTMLInputElement>(null)
 
@@ -78,6 +83,7 @@ export function Toolbar() {
         {fileName && <span className="muted file">{fileName}</span>}
         {gh && <GitHubPanel onClose={() => setGh(false)} />}
         <button className="danger" onClick={reset}>Novi</button>
+        <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} title="Svijetla / tamna tema">{theme === 'dark' ? '☀︎' : '☾'}</button>
       </div>
     </div>
   )
