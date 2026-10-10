@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useStore } from '../store'
 import { wallExits, type Exit } from '../walls'
 import { signedArea } from '../geometry'
@@ -15,6 +15,10 @@ export function RoomView({ roomId, wall }: { roomId: string; wall: number | null
   const ppm = project.pxPerMeter ?? 100
   const walls = useMemo(() => (room ? wallExits(room, project.conduits, ppm) : []), [room, project.conduits, ppm])
   const cw = room ? signedArea(room.points) > 0 : true
+  // opening a room lands on its first wall right away
+  useEffect(() => {
+    if (room && wall === null && walls.length) setView({ kind: 'room', roomId, wall: 0 })
+  }, [room, wall, walls.length, roomId, setView])
   if (!room) return <div className="room-view"><p>Soba ne postoji.</p></div>
   const current = wall !== null ? walls[wall] : null
 

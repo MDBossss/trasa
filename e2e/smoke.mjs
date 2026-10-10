@@ -225,8 +225,7 @@ await page.waitForTimeout(300)
 await clickImg(350, 250)
 await page.getByText('Otvori sobu').click()
 await page.locator('.room-head h2', { hasText: 'Dnevna' }).waitFor()
-await page.locator('.sidebar .list li', { hasText: 'Zid 1' }).click()
-await page.locator('.wall-nav', { hasText: 'Zid 1' }).waitFor()
+await page.locator('.wall-nav', { hasText: 'Zid 1' }).waitFor() // first wall opens automatically
 await page.locator('.sidebar .list li', { hasText: 'B1-ormar' }).getByText('0.50 m · strop').waitFor()
 
 // wall canvas helpers: units are cm, y from the ceiling

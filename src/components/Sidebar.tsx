@@ -49,7 +49,7 @@ export function Sidebar() {
           </div>
           <label>Naziv <input value={room.name} onChange={(e) => updateRoom(room.id, { name: e.target.value })} /></label>
           <div className="stat"><span>Zidova</span><b>{room.points.length}</b><span className="muted">{Object.values(room.walls).filter((w) => w.photo).length} s fotkom</span></div>
-          <button className="primary" onClick={() => setView({ kind: 'room', roomId: room.id, wall: null })}><Icon.camera /> Otvori sobu</button>
+          <button className="primary" onClick={() => setView({ kind: 'room', roomId: room.id, wall: 0 })}><Icon.camera /> Otvori sobu</button>
         </section>
       )}
 
@@ -75,7 +75,7 @@ export function Sidebar() {
             <li key={r.id} className={r.id === selectedId ? 'sel' : ''} onClick={() => { setTool('select'); select(r.id) }}>
               <span className="name">{r.name}</span>
               <span className="meta">{Object.values(r.walls).filter((w) => w.photo).length}/{r.points.length} fotki</span>
-              <button className="mini" onClick={(e) => { e.stopPropagation(); setView({ kind: 'room', roomId: r.id, wall: null }) }}>Otvori</button>
+              <button className="mini" onClick={(e) => { e.stopPropagation(); setView({ kind: 'room', roomId: r.id, wall: 0 }) }}>Otvori</button>
             </li>
           ))}
         </ul>
