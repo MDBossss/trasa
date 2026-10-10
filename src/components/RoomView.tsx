@@ -5,7 +5,7 @@ import { fileToDataUrl } from '../images'
 import type { Conduit, Pt, Room } from '../types'
 import { Icon } from './Icons'
 
-interface Exit { conduit: Conduit; end: 'start' | 'end'; posM: number; distM: number; offset: Pt }
+interface Exit { conduit: Conduit; end: 'start' | 'end'; posM: number; distM: number; offset: Pt; zM: number | null }
 
 // A conduit endpoint is an exit on its nearest wall when within 0.5 m of it.
 // With a clockwise polygon (screen coords) wall i runs left→right as seen from inside.
@@ -27,7 +27,7 @@ function wallExits(room: Room, conduits: Conduit[], ppm: number) {
       }
       if (best) {
         const foot = projectOnSegment(p, best.w.a, best.w.b).point
-        best.w.exits.push({ conduit: c, end, posM: (cw ? best.t : 1 - best.t) * best.w.lengthM, distM: best.distM, offset: { x: p.x - foot.x, y: p.y - foot.y } })
+        best.w.exits.push({ conduit: c, end, posM: (cw ? best.t : 1 - best.t) * best.w.lengthM, distM: best.distM, offset: { x: p.x - foot.x, y: p.y - foot.y }, zM: c.exitZ?.[end] ?? null })
       }
     }
   }
@@ -47,11 +47,13 @@ export function RoomView({ roomId, wall }: { roomId: string; wall: number | null
 
   // Dragging an exit along the top edge moves that conduit end on the plan,
   // sliding it along the wall and keeping its distance from the wall.
-  const moveExit = (w: { a: Pt; b: Pt; lengthM: number }, e: Exit, posM: number) => {
+  // Vertical moves only change the stored exit height; horizontal moves slide the plan point.
+  const moveExit = (w: { a: Pt; b: Pt; lengthM: number }, e: Exit, posM: number, zM: number) => {
     const t = cw ? posM / w.lengthM : 1 - posM / w.lengthM
     const p: Pt = { x: w.a.x + (w.b.x - w.a.x) * t + e.offset.x, y: w.a.y + (w.b.y - w.a.y) * t + e.offset.y }
     const pts = e.conduit.points.map((q, i) => (i === (e.end === 'start' ? 0 : e.conduit.points.length - 1) ? p : q))
-    updateConduit(e.conduit.id, { points: pts })
+    const atCeiling = Math.abs(zM - project.ceilingM) < 0.005
+    updateConduit(e.conduit.id, { points: pts, exitZ: { ...e.conduit.exitZ, [e.end]: atCeiling ? undefined : zM } })
   }
   if (!room) return <div className="room-view"><p>Soba ne postoji.</p></div>
 
@@ -116,21 +118,22 @@ export function RoomView({ roomId, wall }: { roomId: string; wall: number | null
                 {room.walls[current.i]?.photo && <button className="danger" onClick={() => setWallPhoto(roomId, current.i, undefined)}>Ukloni fotku</button>}
                 <input ref={fileRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => void onPhoto(e.target.files?.[0])} />
               </div>
-              <WallElevation lengthM={current.lengthM} heightM={project.ceilingM} photo={room.walls[current.i]?.photo} exits={current.exits} onMove={(e, posM) => moveExit(current, e, posM)} />
-              <p className="muted">Povuci izlaz bužira lijevo-desno po gornjem rubu da ga namjestiš prema fotki (korak 1 cm). Pomiče i kraj bužira na tlocrtu.</p>
+              <WallElevation lengthM={current.lengthM} heightM={project.ceilingM} photo={room.walls[current.i]?.photo} exits={current.exits} onMove={(e, posM, zM) => moveExit(current, e, posM, zM)} />
+              <p className="muted">Povuci izlaz bužira po fotki: lijevo-desno pomiče kraj bužira i na tlocrtu, gore-dolje postavlja visinu izlaza iz zida (korak 1 cm). Default je strop.</p>
               <table className="exits">
-                <thead><tr><th>Bužir</th><th>Kraj</th><th>Od lijevo</th><th>Od zida</th><th>Od / Do</th></tr></thead>
+                <thead><tr><th>Bužir</th><th>Kraj</th><th>Od lijevo</th><th>Visina</th><th>Od zida</th><th>Od / Do</th></tr></thead>
                 <tbody>
                   {current.exits.map((e, i) => (
                     <tr key={i}>
                       <td><span className="swatch" style={{ background: e.conduit.color }} /> {e.conduit.name} ø{e.conduit.diameter}</td>
                       <td>{e.end === 'start' ? 'početak' : 'kraj'}</td>
                       <td>{e.posM.toFixed(2)} m</td>
+                      <td>{e.zM === null ? 'strop' : `${e.zM.toFixed(2)} m`}</td>
                       <td>{e.distM.toFixed(2)} m</td>
                       <td>{e.conduit.from || '–'} → {e.conduit.to || '–'}</td>
                     </tr>
                   ))}
-                  {current.exits.length === 0 && <tr><td colSpan={5} className="muted">Nijedan bužir ne završava uz ovaj zid.</td></tr>}
+                  {current.exits.length === 0 && <tr><td colSpan={6} className="muted">Nijedan bužir ne završava uz ovaj zid.</td></tr>}
                 </tbody>
               </table>
             </>
@@ -141,18 +144,19 @@ export function RoomView({ roomId, wall }: { roomId: string; wall: number | null
   )
 }
 
-function WallElevation({ lengthM, heightM, photo, exits, onMove }: { lengthM: number; heightM: number; photo?: string; exits: Exit[]; onMove: (e: Exit, posM: number) => void }) {
+function WallElevation({ lengthM, heightM, photo, exits, onMove }: { lengthM: number; heightM: number; photo?: string; exits: Exit[]; onMove: (e: Exit, posM: number, zM: number) => void }) {
   const W = lengthM * 100
   const H = heightM * 100
   const svgRef = useRef<SVGSVGElement>(null)
-  const [drag, setDrag] = useState<{ idx: number; posM: number } | null>(null)
+  const [drag, setDrag] = useState<{ idx: number; posM: number; zM: number } | null>(null)
 
-  const toSvgX = (clientX: number, clientY: number) => {
+  const toSvg = (clientX: number, clientY: number) => {
     const svg = svgRef.current!
-    const pt = new DOMPoint(clientX, clientY).matrixTransform(svg.getScreenCTM()!.inverse())
-    return pt.x
+    return new DOMPoint(clientX, clientY).matrixTransform(svg.getScreenCTM()!.inverse())
   }
   const clampPos = (xCm: number) => Math.max(0, Math.min(lengthM, Math.round(xCm) / 100))
+  const clampZ = (yCm: number) => Math.max(0, Math.min(heightM, Math.round(H - yCm) / 100))
+  const finish = () => { if (drag) { onMove(exits[drag.idx], drag.posM, drag.zM); setDrag(null) } }
 
   return (
     <svg
@@ -160,9 +164,9 @@ function WallElevation({ lengthM, heightM, photo, exits, onMove }: { lengthM: nu
       className="elevation"
       viewBox={`-20 -40 ${W + 40} ${H + 70}`}
       preserveAspectRatio="xMidYMid meet"
-      onPointerMove={(ev) => { if (drag) setDrag({ ...drag, posM: clampPos(toSvgX(ev.clientX, ev.clientY)) }) }}
-      onPointerUp={() => { if (drag) { onMove(exits[drag.idx], drag.posM); setDrag(null) } }}
-      onPointerLeave={() => { if (drag) { onMove(exits[drag.idx], drag.posM); setDrag(null) } }}
+      onPointerMove={(ev) => { if (drag) { const p = toSvg(ev.clientX, ev.clientY); setDrag({ ...drag, posM: clampPos(p.x), zM: clampZ(p.y) }) } }}
+      onPointerUp={finish}
+      onPointerLeave={finish}
     >
       <rect x={0} y={0} width={W} height={H} fill="#f3f3f3" stroke="#555" strokeWidth={2} />
       {photo && <image href={photo} x={0} y={0} width={W} height={H} preserveAspectRatio="none" />}
@@ -173,16 +177,23 @@ function WallElevation({ lengthM, heightM, photo, exits, onMove }: { lengthM: nu
         </g>
       ))}
       {exits.map((e, i) => {
-        const posM = drag?.idx === i ? drag.posM : e.posM
+        const dragging = drag?.idx === i
+        const posM = dragging ? drag.posM : e.posM
+        const zM = dragging ? drag.zM : (e.zM ?? heightM)
         const x = posM * 100
+        const y = H - zM * 100
+        const atCeiling = zM >= heightM - 0.005
         return (
-          <g key={i} className="exit" data-testid={`exit-${e.conduit.id}-${e.end}`} style={{ cursor: 'ew-resize' }}
-            onPointerDown={(ev) => { ev.preventDefault(); (ev.currentTarget.ownerSVGElement ?? ev.currentTarget).setPointerCapture?.(ev.pointerId); setDrag({ idx: i, posM: e.posM }) }}>
-            <line x1={x} y1={-30} x2={x} y2={0} stroke={e.conduit.color} strokeWidth={5} />
-            {drag?.idx === i && <line x1={x} y1={0} x2={x} y2={H} stroke={e.conduit.color} strokeWidth={1.5} strokeDasharray="6 4" />}
-            <circle cx={x} cy={0} r={9} fill={e.conduit.color} stroke="#fff" strokeWidth={2} />
-            <text x={x} y={-34} fontSize={13} fontWeight={700} textAnchor="middle" fill={e.conduit.color}>
-              {e.conduit.name}{drag?.idx === i ? ` ${posM.toFixed(2)} m` : ''}
+          <g key={i} className="exit" data-testid={`exit-${e.conduit.id}-${e.end}`} style={{ cursor: 'move' }}
+            onPointerDown={(ev) => { ev.preventDefault(); (ev.currentTarget.ownerSVGElement ?? ev.currentTarget).setPointerCapture?.(ev.pointerId); setDrag({ idx: i, posM: e.posM, zM: e.zM ?? heightM }) }}>
+            {atCeiling
+              ? <line x1={x} y1={-30} x2={x} y2={0} stroke={e.conduit.color} strokeWidth={5} />
+              : <line x1={x} y1={0} x2={x} y2={y} stroke={e.conduit.color} strokeWidth={5} strokeDasharray="10 6" opacity={0.6} />}
+            {dragging && <line x1={x} y1={0} x2={x} y2={H} stroke={e.conduit.color} strokeWidth={1.5} strokeDasharray="6 4" />}
+            {dragging && <line x1={0} y1={y} x2={W} y2={y} stroke={e.conduit.color} strokeWidth={1.5} strokeDasharray="6 4" />}
+            <circle cx={x} cy={y} r={9} fill={e.conduit.color} stroke="#fff" strokeWidth={2} />
+            <text x={x} y={atCeiling ? -34 : y - 14} fontSize={13} fontWeight={700} textAnchor="middle" fill={e.conduit.color} stroke="#fff" strokeWidth={3} paintOrder="stroke">
+              {e.conduit.name}{dragging ? ` ${posM.toFixed(2)} m · h ${zM.toFixed(2)} m` : atCeiling ? '' : ` h ${zM.toFixed(2)} m`}
             </text>
           </g>
         )

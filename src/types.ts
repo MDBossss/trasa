@@ -11,6 +11,8 @@ export interface Conduit {
   from: string
   to: string
   note: string
+  // height from floor (m) where each end leaves the wall; undefined = ceiling
+  exitZ?: { start?: number; end?: number }
 }
 
 export interface Wall {

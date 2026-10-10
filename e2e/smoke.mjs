@@ -243,6 +243,14 @@ assert.ok(Math.abs(st.conduits[0].points[0].x - 250) < 1.5 && Math.abs(st.condui
 await page.keyboard.press('Meta+z')
 await page.locator('table.exits').getByText('0.50 m').waitFor()
 assert.deepEqual((await state()).conduits[0].points[0], { x: 150, y: 120 })
+// vertical drag: exit height 1 m below the ceiling (2.6 → 1.6 m), plan point unchanged
+await page.mouse.move(ex, ey); await page.mouse.down(); await page.mouse.move(ex, ey + pxPerM / 2, { steps: 4 }); await page.mouse.move(ex, ey + pxPerM, { steps: 4 }); await page.mouse.up()
+await page.locator('table.exits').getByText(/^1\.(58|59|60|61|62) m$/).waitFor()
+st = await state()
+assert.ok(Math.abs(st.conduits[0].exitZ.start - 1.6) < 0.03, JSON.stringify(st.conduits[0].exitZ))
+assert.deepEqual(st.conduits[0].points[0], { x: 150, y: 120 })
+await page.keyboard.press('Meta+z')
+assert.equal((await state()).conduits[0].exitZ, undefined)
 // wall 3 (bottom): B1 end 0.2 m away; from inside, the bottom wall runs right→left, so 4.5 m from the left
 await page.locator('.room-mini .list li').nth(2).click()
 await page.locator('table.exits').getByText('4.50 m').waitFor()
