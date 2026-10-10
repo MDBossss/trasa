@@ -32,7 +32,7 @@ process.on('uncaughtException', async (e) => {
 await page.goto(APP_URL)
 await page.evaluate(() => new Promise((r) => { const q = indexedDB.deleteDatabase('keyval-store'); q.onsuccess = q.onerror = q.onblocked = () => r() }))
 await page.reload()
-await page.getByText('Učitaj tlocrt (gumb gore)').waitFor()
+await page.getByText('Ispusti sliku tlocrta ovdje').waitFor()
 
 // synthetic floor plan 1200x800 with a thick wall outline
 const planPng = await page.evaluate(() => {
@@ -42,7 +42,7 @@ const planPng = await page.evaluate(() => {
   return c.toDataURL('image/png')
 })
 await page.locator('input[type=file][accept="image/*"]').first().setInputFiles({ name: 'plan.png', mimeType: 'image/png', buffer: Buffer.from(planPng.split(',')[1], 'base64') })
-await page.getByText('Učitaj tlocrt (gumb gore)').waitFor({ state: 'hidden' })
+await page.getByText('Ispusti sliku tlocrta ovdje').waitFor({ state: 'hidden' })
 await page.waitForFunction(() => window.Konva?.stages?.[0]?.findOne('Image'))
 
 const toScreen = async (x, y) => page.evaluate(([x, y]) => {
@@ -52,11 +52,14 @@ const toScreen = async (x, y) => page.evaluate(([x, y]) => {
 }, [x, y])
 const clickImg = async (x, y) => { const p = await toScreen(x, y); await page.mouse.move(p.x, p.y); await page.mouse.click(p.x, p.y) }
 const state = () => page.evaluate(() => window.__trasa.getState().project)
+const openSetup = () => page.evaluate(() => { document.querySelector('details.setup').open = true })
+const menu = async (label) => { await page.getByRole('button', { name: 'Datoteka' }).click(); await page.getByText(label).click() }
 
 // calibrate: 500 px = 5 m → 100 px/m
 await page.keyboard.press('c')
 await clickImg(100, 100); await clickImg(600, 100)
-await page.getByText('100.0 px/m').waitFor()
+await page.locator('.badge.ok').waitFor() // setup collapses once calibrated
+await openSetup(); await page.getByText('100.0 px/m').waitFor()
 assert.equal((await state()).pxPerMeter, 100)
 
 // room: click corners, close by clicking first corner
@@ -66,6 +69,12 @@ await page.getByText('Dnevna').first().waitFor()
 let st = await state()
 assert.equal(st.rooms.length, 1)
 assert.deepEqual(st.rooms[0].points, [{ x: 100, y: 100 }, { x: 600, y: 100 }, { x: 600, y: 400 }, { x: 100, y: 400 }])
+// room label is centred on the room
+{
+  const r = await page.evaluate(() => { const t = window.Konva.stages[0].find('Text').find((n) => n.text() === 'Dnevna'); const b = t.getClientRect({ relativeTo: t.getStage() }); return { cx: b.x + b.width / 2, cy: b.y + b.height / 2 } })
+  // getClientRect relative to the stage is in plan coordinates; the room centre is (350,250)
+  assert.ok(Math.abs(r.cx - 350) < 2 && Math.abs(r.cy - 250) < 3, `label at ${JSON.stringify(r)}`)
+}
 
 // conduit 1: straight down, finish with Enter → 2.60 m
 await page.keyboard.press('b')
@@ -104,13 +113,13 @@ st = await state()
 assert.deepEqual(st.conduits[0].points[1], { x: 150, y: 380 })
 
 // rotate the plan: drawing follows the image (1200x800 → 800x1200)
-await page.getByText('↻ 90°').click()
+await openSetup(); await page.getByTitle('Rotiraj udesno').click()
 st = await state()
 assert.equal(st.planRotation, 90)
 assert.deepEqual(st.conduits[0].points, [{ x: 680, y: 150 }, { x: 420, y: 150 }])
 assert.deepEqual(st.rooms[0].points[0], { x: 700, y: 100 })
 await page.waitForTimeout(200); await page.screenshot({ path: `${SHOTS}/trasa-rotated.png` })
-await page.getByText('↺ 90°').click()
+await page.getByTitle('Rotiraj ulijevo').click()
 await page.waitForTimeout(250) // refit after rotation
 st = await state()
 assert.equal(st.planRotation, 0)
@@ -118,7 +127,7 @@ assert.deepEqual(st.conduits[0].points, [{ x: 150, y: 120 }, { x: 150, y: 380 }]
 assert.deepEqual(st.rooms[0].points[0], { x: 100, y: 100 })
 
 // plan opacity slider drives the Konva image opacity
-await page.locator('input[type=range]').fill('0.4')
+await openSetup(); await page.locator('input[type=range]').fill('0.4')
 assert.equal((await state()).planOpacity, 0.4)
 assert.equal(await page.evaluate(() => window.Konva.stages[0].findOne('Image').opacity()), 0.4)
 await page.locator('input[type=range]').fill('1')
@@ -135,8 +144,16 @@ await clickImg(153, 120); await clickImg(153, 300); await page.keyboard.press('E
 st = await state()
 assert.deepEqual(st.conduits[2].points, [{ x: 155, y: 117 }, { x: 155, y: 297 }])
 await page.keyboard.press('v'); await page.keyboard.press('Meta+z')
-await page.getByText('Reset').first().click()
+await openSetup(); await page.locator('.steps li').nth(2).getByText('Reset').click()
 assert.deepEqual((await state()).gridOrigin, { x: 0, y: 0 })
+
+// HUD zoom buttons and fit
+const s0 = (await page.evaluate(() => window.__trasa.getState().camera)).scale
+await page.getByRole('button', { name: 'Uvećaj' }).click()
+assert.ok((await page.evaluate(() => window.__trasa.getState().camera)).scale > s0)
+await page.getByRole('button', { name: 'Uklopi' }).click()
+await page.waitForTimeout(100)
+assert.ok(Math.abs((await page.evaluate(() => window.__trasa.getState().camera)).scale - s0) < 1e-6)
 
 // drawing outside the image works and snaps to the same grid (zoom out first so it is on screen)
 const box = await page.locator('.canvas-wrap').boundingBox()
@@ -160,13 +177,13 @@ const skewedPng = await page.evaluate(() => {
 })
 await page.locator('input[type=file][accept="image/*"]').first().setInputFiles({ name: 'skew.png', mimeType: 'image/png', buffer: Buffer.from(skewedPng.split(',')[1], 'base64') })
 await page.waitForTimeout(300)
-await page.getByText('Auto poravnaj').click()
+await openSetup(); await page.getByText('Auto poravnaj').click()
 await page.waitForFunction(() => Math.abs(window.__trasa.getState().project.planTilt) > 0.5)
 st = await state()
 assert.ok(Math.abs(st.planTilt + 3) < 0.3, `auto tilt ${st.planTilt}`)
 await page.waitForTimeout(200)
 await page.screenshot({ path: `${SHOTS}/trasa-tilt.png` })
-await page.getByText('Reset').last().click()
+await page.locator('.steps li').nth(1).getByText('Reset').click()
 assert.equal((await state()).planTilt, 0)
 await page.keyboard.press('a')
 await clickImg(100, 100); await clickImg(600, 126)
@@ -185,7 +202,7 @@ await page.waitForTimeout(300)
 
 // room view: wall 1 (top) has B1 start 0.2 m away at 0.5 m from the left
 await clickImg(350, 250)
-await page.getByText('Otvori sobu →').click()
+await page.getByText('Otvori sobu').click()
 await page.locator('.room-head h2', { hasText: 'Dnevna' }).waitFor()
 await page.locator('.room-mini .list li').nth(0).click()
 await page.locator('table.exits').getByText('B1-ormar').waitFor()
@@ -214,14 +231,14 @@ await page.locator('.room-mini .list').getByText('1/4 fotki').waitFor().catch(()
 await page.screenshot({ path: `${SHOTS}/trasa-room.png` })
 
 // save (Cmd+S) while on wall 3 → file carries project + ui position
-await page.locator('.toolbar').getByText('Spremi •').waitFor()
+await page.locator('.save-state.dirty').waitFor()
 const [dl] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Meta+s')])
 assert.match(dl.suggestedFilename(), /\.trasa\.json$/)
 const saved = JSON.parse(await (await import('node:fs/promises')).readFile(await dl.path(), 'utf8'))
 assert.equal(saved.app, 'trasa')
 assert.equal(saved.project.conduits.length, 3)
 assert.deepEqual(saved.ui.view, { kind: 'room', roomId: saved.project.rooms[0].id, wall: 2 })
-await page.locator('.toolbar').getByText('Spremi', { exact: true }).waitFor()
+await page.locator('.save-state:not(.dirty)').waitFor()
 
 // persistence across reload
 await page.waitForTimeout(600)
@@ -230,9 +247,9 @@ await page.locator('.list').getByText('B1-ormar').waitFor()
 await page.locator('.list').getByText('1/4 fotki').waitFor()
 
 // wipe, then open the saved file → everything back, including the wall view
-await page.getByText('Novi').click()
+await menu('Novi projekt')
 await page.locator('.list').getByText('B1-ormar').waitFor({ state: 'hidden' })
-await page.getByText('Otvori').click()
+await menu('Otvori…')
 await page.locator('input[type=file][accept=".json,application/json"]').setInputFiles(await dl.path())
 await page.locator('.room-head h2', { hasText: 'Dnevna' }).waitFor()
 await page.locator('.wall-head h3', { hasText: 'Zid 3' }).waitFor()
@@ -267,7 +284,7 @@ await page.route('https://api.github.com/**', async (route) => {
   return route.fulfill({ status: 500 })
 })
 const before = await state()
-await page.getByText('GitHub', { exact: true }).click()
+await page.getByRole('button', { name: 'GitHub' }).click()
 await page.getByPlaceholder('mislavvv/trasa-projects').fill('https://github.com/mislavvv/trasa-projects')
 await page.getByPlaceholder('github_pat_…').fill('tok123')
 await page.getByText('Poveži').click()
@@ -290,10 +307,10 @@ assert.equal(repo.size, 2)
 await page.locator('.modal-head button').click()
 
 // wipe, open from GitHub → identical project and view
-await page.getByText('Novi').click()
+await menu('Novi projekt')
 await page.locator('.list').getByText('B1-ormar').waitFor({ state: 'hidden' })
 await page.evaluate(() => new Promise((r) => { const q = indexedDB.deleteDatabase('keyval-store'); q.onsuccess = q.onerror = q.onblocked = () => r() }))
-await page.getByText('GitHub', { exact: true }).click()
+await page.getByRole('button', { name: 'GitHub' }).click()
 await page.locator('.modal .list li', { hasText: 'kuca' }).getByText('Otvori').click()
 await page.locator('.room-head h2', { hasText: 'Dnevna' }).waitFor()
 await page.locator('.wall-head h3', { hasText: 'Zid 3' }).waitFor()

@@ -3,6 +3,7 @@ import { useStore } from '../store'
 import { dist, projectOnSegment, signedArea } from '../geometry'
 import { fileToDataUrl } from '../images'
 import type { Conduit, Pt, Room } from '../types'
+import { Icon } from './Icons'
 
 interface Exit { conduit: Conduit; end: 'start' | 'end'; posM: number; distM: number; offset: Pt }
 
@@ -70,7 +71,7 @@ export function RoomView({ roomId, wall }: { roomId: string; wall: number | null
   return (
     <div className="room-view">
       <div className="room-head">
-        <button onClick={() => setView({ kind: 'plan' })}>← Tlocrt</button>
+        <button onClick={() => setView({ kind: 'plan' })}><Icon.back /> Tlocrt</button>
         <h2>{room.name}</h2>
         {!project.pxPerMeter && <span className="warn">Mjerilo nije postavljeno, duljine su procjena.</span>}
       </div>
@@ -111,7 +112,7 @@ export function RoomView({ roomId, wall }: { roomId: string; wall: number | null
             <>
               <div className="wall-head">
                 <h3>Zid {current.i + 1} · {current.lengthM.toFixed(2)} m × {project.ceilingM} m</h3>
-                <button onClick={() => fileRef.current?.click()}>{room.walls[current.i]?.photo ? 'Zamijeni fotku' : 'Učitaj fotku zida'}</button>
+                <button className="primary" onClick={() => fileRef.current?.click()}><Icon.camera /> {room.walls[current.i]?.photo ? 'Zamijeni fotku' : 'Učitaj fotku zida'}</button>
                 {room.walls[current.i]?.photo && <button className="danger" onClick={() => setWallPhoto(roomId, current.i, undefined)}>Ukloni fotku</button>}
                 <input ref={fileRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => void onPhoto(e.target.files?.[0])} />
               </div>

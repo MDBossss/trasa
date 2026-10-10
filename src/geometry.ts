@@ -64,9 +64,23 @@ export function signedArea(pts: Pt[]) {
   return s / 2
 }
 
+// Area-weighted polygon centroid (vertex average drifts on L-shaped rooms).
 export function centroid(pts: Pt[]): Pt {
-  const n = pts.length
-  return { x: pts.reduce((s, p) => s + p.x, 0) / n, y: pts.reduce((s, p) => s + p.y, 0) / n }
+  const a = signedArea(pts)
+  if (Math.abs(a) < 1e-9) {
+    const n = pts.length
+    return { x: pts.reduce((s, p) => s + p.x, 0) / n, y: pts.reduce((s, p) => s + p.y, 0) / n }
+  }
+  let cx = 0
+  let cy = 0
+  for (let i = 0; i < pts.length; i++) {
+    const p = pts[i]
+    const q = pts[(i + 1) % pts.length]
+    const f = p.x * q.y - q.x * p.y
+    cx += (p.x + q.x) * f
+    cy += (p.y + q.y) * f
+  }
+  return { x: cx / (6 * a), y: cy / (6 * a) }
 }
 
 export function midpointOfPolyline(pts: Pt[]): Pt {

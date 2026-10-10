@@ -1,11 +1,12 @@
 import { useEffect } from 'react'
 import { loadPersisted, redo, undo, useStore } from './store'
-import { Toolbar } from './components/Toolbar'
+import { Header } from './components/Header'
+import { ToolRail } from './components/ToolRail'
 import { Sidebar } from './components/Sidebar'
 import { PlanCanvas } from './components/PlanCanvas'
 import { RoomView } from './components/RoomView'
 import { fileToDataUrl } from './images'
-import { save } from './persistence'
+import { open, save } from './persistence'
 
 export default function App() {
   const view = useStore((s) => s.view)
@@ -17,6 +18,7 @@ export default function App() {
       if (!(e.metaKey || e.ctrlKey)) return
       const k = e.key.toLowerCase()
       if (k === 's') { e.preventDefault(); void save(e.shiftKey) }
+      if (k === 'o') { e.preventDefault(); void open() }
       if (k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo() }
     }
     const onUnload = (e: BeforeUnloadEvent) => { if (useStore.getState().dirty) e.preventDefault() }
@@ -36,8 +38,9 @@ export default function App() {
   if (!loaded) return null
   return (
     <div className="app" onDragOver={(e) => e.preventDefault()} onDrop={(e) => void onDrop(e)}>
-      <Toolbar />
+      <Header />
       <div className="main">
+        {view.kind === 'plan' && <ToolRail />}
         {view.kind === 'plan' ? <PlanCanvas /> : <RoomView roomId={view.roomId} wall={view.wall} />}
         <Sidebar />
       </div>

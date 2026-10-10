@@ -6,14 +6,13 @@ import useImage from 'use-image'
 import { gridStepPx, planDims, useStore } from '../store'
 import { centroid, dist, fmtMeters, midpointOfPolyline, polylineLength, snapPoint } from '../geometry'
 import type { Pt } from '../types'
-
-type ViewT = { x: number; y: number; scale: number }
+import { CanvasHud } from './CanvasHud'
+import { Icon } from './Icons'
 
 export function PlanCanvas() {
   const wrap = useRef<HTMLDivElement>(null)
   const stageRef = useRef<Konva.Stage>(null)
   const [size, setSize] = useState({ w: 800, h: 600 })
-  const [view, setView] = useState<ViewT>({ x: 0, y: 0, scale: 1 })
   const [draft, setDraft] = useState<Pt[]>([])
   const [cursor, setCursor] = useState<Pt | null>(null)
   const [space, setSpace] = useState(false)
@@ -21,6 +20,9 @@ export function PlanCanvas() {
   const fitted = useRef<string | null>(null)
 
   const project = useStore((s) => s.project)
+  const view = useStore((s) => s.camera)
+  const fitNonce = useStore((s) => s.fitNonce)
+  const setView = useStore((s) => s.setCamera)
   const tool = useStore((s) => s.tool)
   const selectedId = useStore((s) => s.selectedId)
   const showGrid = useStore((s) => s.showGrid)
@@ -42,12 +44,12 @@ export function PlanCanvas() {
   const dims = planDims(project)
   const rot = project.planRotation
   useEffect(() => {
-    const key = `${project.planImage?.length}:${rot}`
+    const key = `${project.planImage?.length}:${rot}:${fitNonce}`
     if (!img || !dims || fitted.current === key) return
     fitted.current = key
     const scale = Math.min(size.w / dims.w, size.h / dims.h) * 0.95
     setView({ scale, x: (size.w - dims.w * scale) / 2, y: (size.h - dims.h * scale) / 2 })
-  }, [img, size, project.planImage, rot, dims])
+  }, [img, size, project.planImage, rot, dims, fitNonce, setView])
 
   useEffect(() => {
     setDraft([])
@@ -89,24 +91,21 @@ export function PlanCanvas() {
       const map: Record<string, typeof tool> = { v: 'select', h: 'pan', b: 'conduit', r: 'room', c: 'calibrate', a: 'align', o: 'origin' }
       if (map[e.key]) setTool(map[e.key])
       if (e.key === 'g') useStore.getState().toggle('showGrid')
+      if (e.key === '+' || e.key === '=') useStore.getState().zoomBy(1.2, { x: size.w / 2, y: size.h / 2 })
+      if (e.key === '-') useStore.getState().zoomBy(1 / 1.2, { x: size.w / 2, y: size.h / 2 })
+      if (e.key === '0') useStore.getState().fitView()
     }
     const onUp = (e: KeyboardEvent) => { if (e.code === 'Space') setSpace(false) }
     window.addEventListener('keydown', onKey)
     window.addEventListener('keyup', onUp)
     return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onUp) }
-  }, [draft.length, selectedId, finishDraft, select, setTool, removeSelected])
+  }, [draft.length, selectedId, finishDraft, select, setTool, removeSelected, size])
 
   const onWheel = (e: KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault()
-    const st = stageRef.current!
-    const p = st.getPointerPosition()!
-    const old = st.scaleX()
+    const p = stageRef.current!.getPointerPosition()!
     const factor = e.evt.ctrlKey || e.evt.metaKey ? 1.03 : 1.1
-    const ns = e.evt.deltaY > 0 ? old / factor : old * factor
-    const scale = Math.max(0.05, Math.min(20, ns))
-    const mx = (p.x - st.x()) / old
-    const my = (p.y - st.y()) / old
-    setView({ scale, x: p.x - mx * scale, y: p.y - my * scale })
+    useStore.getState().zoomBy(e.evt.deltaY > 0 ? 1 / factor : factor, p)
   }
 
   const panning = tool === 'pan' || space
@@ -192,7 +191,8 @@ export function PlanCanvas() {
 
   return (
     <div ref={wrap} className="canvas-wrap" style={{ cursor: cursorStyle }}>
-      {!project.planImage && <div className="empty">Učitaj tlocrt (gumb gore) ili ga ispusti ovdje.</div>}
+      {!project.planImage && <div className="empty"><Icon.image width={40} height={40} /><div>Ispusti sliku tlocrta ovdje</div><div className="muted">ili meni ☰ → Učitaj tlocrt</div></div>}
+      <CanvasHud size={size} />
       <Stage
         ref={stageRef}
         width={size.w}
@@ -202,7 +202,7 @@ export function PlanCanvas() {
         scaleX={s}
         scaleY={s}
         draggable={panning}
-        onDragEnd={(e) => { if (e.target === stageRef.current) setView((v) => ({ ...v, x: e.target.x(), y: e.target.y() })) }}
+        onDragEnd={(e) => { if (e.target === stageRef.current) setView({ ...view, x: e.target.x(), y: e.target.y() }) }}
         onWheel={onWheel}
         onClick={onClick}
         onDblClick={onDblClick}
@@ -271,7 +271,19 @@ export function PlanCanvas() {
                   strokeWidth={px(isSel ? 2.5 : 1.5)}
                   dash={isSel ? [px(8), px(5)] : undefined}
                 />
-                <Text name={r.id} x={c.x} y={c.y} offsetX={0} text={r.name} fontSize={px(14)} fontStyle="bold" fill="#0d47a1" />
+                <Text
+                  name={r.id}
+                  x={c.x}
+                  y={c.y}
+                  width={px(240)}
+                  offsetX={px(120)}
+                  offsetY={px(8)}
+                  align="center"
+                  text={r.name}
+                  fontSize={px(14)}
+                  fontStyle="bold"
+                  fill="#0d47a1"
+                />
               </Group>
             )
           })}

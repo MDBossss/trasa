@@ -19,6 +19,8 @@ interface State {
   snapGrid: boolean
   snapAngle: boolean
   loaded: boolean
+  camera: { x: number; y: number; scale: number }
+  fitNonce: number
   dirty: boolean
   fileName: string | null
 
@@ -37,6 +39,9 @@ interface State {
   rotatePlan: (dir: 1 | -1) => void
   setTilt: (deg: number) => void
   markSaved: (fileName?: string) => void
+  setCamera: (c: { x: number; y: number; scale: number }) => void
+  zoomBy: (factor: number, center?: Pt) => void
+  fitView: () => void
 }
 
 export const useStore = create<State>()(
@@ -50,6 +55,8 @@ export const useStore = create<State>()(
       snapGrid: true,
       snapAngle: true,
       loaded: false,
+      camera: { x: 0, y: 0, scale: 1 },
+      fitNonce: 0,
       dirty: false,
       fileName: null,
 
@@ -109,6 +116,17 @@ export const useStore = create<State>()(
         const t = Math.max(-45, Math.min(45, Math.round(deg * 100) / 100))
         set((s) => ({ project: { ...s.project, planTilt: t } }))
       },
+      setCamera: (camera) => set({ camera }),
+      // zoom around a screen point (defaults to the current camera origin)
+      zoomBy: (factor, center) =>
+        set((s) => {
+          const c = s.camera
+          const scale = Math.max(0.05, Math.min(20, c.scale * factor))
+          const cx = center?.x ?? 0
+          const cy = center?.y ?? 0
+          return { camera: { scale, x: cx - ((cx - c.x) / c.scale) * scale, y: cy - ((cy - c.y) / c.scale) * scale } }
+        }),
+      fitView: () => set((s) => ({ fitNonce: s.fitNonce + 1 })),
       markSaved: (fileName) => set((s) => ({ dirty: false, fileName: fileName ?? s.fileName })),
       removeSelected: () =>
         set((s) => {
