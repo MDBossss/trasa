@@ -63,3 +63,14 @@ table.exits th { color: var(--muted); font-weight: 600; font-size: 11px; text-tr
 .tilt-actions { display: flex; gap: 4px; }
 .toolbar button.dirty { border-color: var(--warn); color: var(--warn); }
 .toolbar .file { font-size: 11px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: grid; place-items: center; z-index: 10; }
+.modal { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; width: 440px; max-width: 92vw; display: flex; flex-direction: column; gap: 10px; }
+.modal-head { display: flex; justify-content: space-between; align-items: center; }
+.modal h3, .modal h4 { margin: 0; }
+.modal h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+.form { display: flex; flex-direction: column; gap: 8px; }
+.form label { justify-content: space-between; }
+.form input { background: #1b1d21; color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 5px 6px; font: inherit; width: 280px; }
+.status { color: var(--accent); margin: 0; }
+.error { color: var(--danger); margin: 0; white-space: pre-wrap; }

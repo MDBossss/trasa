@@ -13,6 +13,14 @@ pnpm typecheck
 pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --port 5177)
 ```
 
+## GitHub: app na Pages, projekti u privatnom repou
+
+- App: https://mislavvv.github.io/trasa/ (deploy iz `.github/workflows/pages.yml` na svaki push na master).
+- Projekti: gumb **GitHub** u alatnoj traci sprema u `projects/<slug>/project.json` + `img/` u repo `mislavvv/trasa-projects`
+  (privatan, jer su unutra fotke kuće). Isti projekt otvoriš s bilo kojeg uređaja.
+- Token: GitHub → Settings → Developer settings → Fine-grained tokens → samo repo `trasa-projects`, permission
+  **Contents: Read and write**. Token ostaje u localStorageu tog uređaja; unosiš ga jednom po uređaju.
+
 ## Rad
 
 1. **Učitaj tlocrt** (gumb ili drag & drop slike). Gumbi ↺/↻ rotiraju tlocrt po 90°, nacrtano se rotira s njim. Grid pokriva cijelo platno pa se može crtati i izvan slike. Nakrivljen sken: **Nagib slike** u sidebaru (±1°, ±0.1°, upis), **Auto poravnaj** (traži kut pod kojim su zidovi najoštrije poravnati s gridom) ili **Poravnaj (A)**: dva klika duž zida koji treba biti ravan. Nagib pomiče samo sliku, pa poravnaj prije crtanja.

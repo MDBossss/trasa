@@ -2,7 +2,7 @@
 import { chromium } from 'playwright'
 import assert from 'node:assert/strict'
 
-const URL = process.argv[2] ?? 'http://localhost:5177/'
+const APP_URL = process.argv[2] ?? 'http://localhost:5177/'
 const SHOTS = process.env.SHOTS ?? '/tmp'
 const browser = await chromium.launch({ channel: 'chrome', headless: true })
 const page = await browser.newPage({ viewport: { width: 1400, height: 900 } })
@@ -10,7 +10,8 @@ const page = await browser.newPage({ viewport: { width: 1400, height: 900 } })
 await page.addInitScript(() => { delete window.showSaveFilePicker; delete window.showOpenFilePicker })
 const errors = []
 page.on('pageerror', (e) => errors.push(String(e)))
-page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()) })
+// expected 404s: the GitHub mock answers 404 for missing dirs/files
+page.on('console', (m) => { if (m.type() === 'error' && !/status of 404/.test(m.text())) errors.push(m.text()) })
 
 const prompts = []
 page.on('dialog', async (d) => {
@@ -28,7 +29,7 @@ process.on('uncaughtException', async (e) => {
   try { await page.screenshot({ path: `${SHOTS}/trasa-fail.png` }); console.error(JSON.stringify(await page.evaluate(() => { const p = window.__trasa.getState(); return { tool: p.tool, rooms: p.project.rooms.length, conduits: p.project.conduits.length, ppm: p.project.pxPerMeter } }))) } catch {}
   process.exit(1)
 })
-await page.goto(URL)
+await page.goto(APP_URL)
 await page.evaluate(() => new Promise((r) => { const q = indexedDB.deleteDatabase('keyval-store'); q.onsuccess = q.onerror = q.onblocked = () => r() }))
 await page.reload()
 await page.getByText('Učitaj tlocrt (gumb gore)').waitFor()
@@ -218,6 +219,69 @@ await page.locator('svg.elevation image').waitFor()
 st = await state()
 assert.equal(st.conduits[0].name, 'B1-ormar')
 assert.equal(await page.evaluate(() => window.__trasa.getState().dirty), false)
+
+// GitHub storage against an in-memory mock of the Contents API
+const repo = new Map()
+await page.route('https://api.github.com/**', async (route) => {
+  const req = route.request()
+  const url = new URL(req.url())
+  const path = decodeURIComponent(url.pathname.replace(/^\/repos\/[^/]+\/[^/]+\/contents\//, ''))
+  if (req.headers()['authorization'] !== 'Bearer tok123') return route.fulfill({ status: 401, json: { message: 'Bad credentials' } })
+  if (req.method() === 'GET') {
+    const f = repo.get(path)
+    if (f) return route.fulfill({ json: { sha: f.sha, content: f.content, encoding: 'base64', path } })
+    const names = new Map()
+    for (const k of repo.keys()) if (k.startsWith(path + '/')) { const rest = k.slice(path.length + 1); names.set(rest.split('/')[0], rest.includes('/') ? 'dir' : 'file') }
+    if (!names.size) return route.fulfill({ status: 404, json: { message: 'Not Found' } })
+    return route.fulfill({ json: [...names].map(([name, type]) => ({ name, path: `${path}/${name}`, type, sha: 'x', size: 0 })) })
+  }
+  if (req.method() === 'PUT') {
+    const body = req.postDataJSON()
+    const cur = repo.get(path)
+    if (cur && body.sha !== cur.sha) return route.fulfill({ status: 409, json: { message: 'conflict' } })
+    const sha = 'sha_' + Math.random().toString(36).slice(2)
+    repo.set(path, { sha, content: body.content })
+    return route.fulfill({ json: { content: { sha } } })
+  }
+  return route.fulfill({ status: 500 })
+})
+const before = await state()
+await page.getByText('GitHub', { exact: true }).click()
+await page.getByPlaceholder('mislavvv/trasa-projects').fill('https://github.com/mislavvv/trasa-projects')
+await page.getByPlaceholder('github_pat_…').fill('tok123')
+await page.getByText('Poveži').click()
+await page.getByText('Još nema projekata.').waitFor()
+await page.locator('.modal').getByText('Spremi "Kuća" u repo').click()
+await page.locator('.modal .list').getByText('kuca').waitFor()
+// plan and wall photo are the same PNG here, so they dedupe to one image file
+assert.deepEqual([...repo.keys()].filter((k) => !k.includes('/img/')), ['projects/kuca/project.json'])
+assert.equal([...repo.keys()].filter((k) => k.includes('/img/')).length, 1)
+const remote = JSON.parse(Buffer.from(repo.get('projects/kuca/project.json').content, 'base64').toString())
+assert.match(remote.project.planImage, /^gh:projects\/kuca\/img\/[0-9a-f]{16}\.(jpg|png)$/)
+assert.equal(remote.ui.view.kind, 'room')
+assert.equal(await page.evaluate(() => window.__trasa.getState().fileName), 'gh:kuca')
+// saving again re-uses the images and updates project.json with the sha
+const shaBefore = repo.get('projects/kuca/project.json').sha
+await page.locator('.modal').getByText('Spremi "Kuća" u repo').click()
+for (let i = 0; i < 50 && repo.get('projects/kuca/project.json').sha === shaBefore; i++) await page.waitForTimeout(100)
+assert.notEqual(repo.get('projects/kuca/project.json').sha, shaBefore)
+assert.equal(repo.size, 2)
+await page.locator('.modal-head button').click()
+
+// wipe, open from GitHub → identical project and view
+await page.getByText('Novi').click()
+await page.locator('.list').getByText('B1-ormar').waitFor({ state: 'hidden' })
+await page.evaluate(() => new Promise((r) => { const q = indexedDB.deleteDatabase('keyval-store'); q.onsuccess = q.onerror = q.onblocked = () => r() }))
+await page.getByText('GitHub', { exact: true }).click()
+await page.locator('.modal .list li', { hasText: 'kuca' }).getByText('Otvori').click()
+await page.locator('.room-head h2', { hasText: 'Dnevna' }).waitFor()
+await page.locator('.wall-head h3', { hasText: 'Zid 3' }).waitFor()
+await page.locator('svg.elevation image').waitFor()
+st = await state()
+assert.equal(st.planImage, before.planImage)
+assert.deepEqual(st.rooms[0].walls, before.rooms[0].walls)
+assert.deepEqual(st.conduits, before.conduits)
+await page.screenshot({ path: `${SHOTS}/trasa-github.png` })
 
 assert.deepEqual(errors, [], 'console/page errors')
 console.log('OK', { prompts })

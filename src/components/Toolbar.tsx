@@ -1,8 +1,9 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { redo, undo, useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { emptyProject, type Tool } from '../types'
 import { open, save } from '../persistence'
+import { GitHubPanel } from './GitHubPanel'
 
 const TOOLS: { id: Tool; label: string; key: string; hint: string }[] = [
   { id: 'select', label: 'Odaberi', key: 'V', hint: 'klik označi, Delete briše, vuci točke' },
@@ -24,6 +25,7 @@ export function Toolbar() {
   const dirty = useStore((s) => s.dirty)
   const fileName = useStore((s) => s.fileName)
   const hasPicker = 'showSaveFilePicker' in window
+  const [gh, setGh] = useState(false)
   const planInput = useRef<HTMLInputElement>(null)
   const jsonInput = useRef<HTMLInputElement>(null)
 
@@ -72,7 +74,9 @@ export function Toolbar() {
         {hasPicker && <button onClick={() => void save(true)} title="Spremi u novu datoteku">Spremi kao</button>}
         <button onClick={() => (hasPicker ? void open() : jsonInput.current?.click())}>Otvori</button>
         <input ref={jsonInput} type="file" accept=".json,application/json" hidden onChange={(e) => void open(e.target.files?.[0])} />
+        <button onClick={() => setGh(true)} title="Spremi/otvori projekte iz GitHub repoa">GitHub</button>
         {fileName && <span className="muted file">{fileName}</span>}
+        {gh && <GitHubPanel onClose={() => setGh(false)} />}
         <button className="danger" onClick={reset}>Novi</button>
       </div>
     </div>
