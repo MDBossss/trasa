@@ -112,6 +112,27 @@ await page.keyboard.press('Meta+z')
 st = await state()
 assert.deepEqual(st.conduits[0].points[1], { x: 150, y: 380 })
 
+// drag a whole conduit by its line: snapped move, then a free (Alt) move
+{
+  const a = await toScreen(250, 250)
+  const b = await toScreen(310, 250)
+  await page.mouse.move(a.x, a.y); await page.mouse.down(); await page.mouse.move(b.x, b.y, { steps: 6 }); await page.mouse.up()
+  st = await state()
+  assert.deepEqual(st.conduits[1].points, [{ x: 260, y: 200 }, { x: 360, y: 300 }])
+  assert.equal(await page.evaluate(() => window.__trasa.getState().selectedId), st.conduits[1].id)
+  await page.keyboard.press('Meta+z')
+  assert.deepEqual((await state()).conduits[1].points, [{ x: 200, y: 200 }, { x: 300, y: 300 }])
+  const c = await toScreen(313, 250)
+  await page.keyboard.down('Alt')
+  await page.mouse.move(a.x, a.y); await page.mouse.down(); await page.mouse.move(c.x, c.y, { steps: 6 }); await page.mouse.up()
+  await page.keyboard.up('Alt')
+  st = await state()
+  assert.ok(Math.abs(st.conduits[1].points[0].x - 263) < 1.5 && Math.abs(st.conduits[1].points[0].y - 200) < 1.5, JSON.stringify(st.conduits[1].points))
+  await page.keyboard.press('Meta+z')
+  assert.deepEqual((await state()).conduits[1].points, [{ x: 200, y: 200 }, { x: 300, y: 300 }])
+  await page.keyboard.press('Escape')
+}
+
 // rotate the plan: drawing follows the image (1200x800 → 800x1200)
 await openSetup(); await page.getByTitle('Rotiraj udesno').click()
 st = await state()

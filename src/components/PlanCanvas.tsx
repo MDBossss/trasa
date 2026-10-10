@@ -4,7 +4,7 @@ import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import useImage from 'use-image'
 import { gridStepPx, planDims, useStore } from '../store'
-import { centroid, dist, fmtMeters, midpointOfPolyline, polylineLength, snapPoint } from '../geometry'
+import { centroid, dist, fmtMeters, midpointOfPolyline, polylineLength, snapPoint, snapToGrid } from '../geometry'
 import type { Pt } from '../types'
 import { CanvasHud } from './CanvasHud'
 import { Icon } from './Icons'
@@ -16,7 +16,8 @@ export function PlanCanvas() {
   const [draft, setDraft] = useState<Pt[]>([])
   const [cursor, setCursor] = useState<Pt | null>(null)
   const [space, setSpace] = useState(false)
-  const [live, setLive] = useState<{ id: string; points: Pt[] } | null>(null)
+  const [alt, setAlt] = useState(false)
+  const [live, setLive] = useState<{ id: string; points: Pt[]; whole?: boolean } | null>(null)
   const fitted = useRef<string | null>(null)
 
   const project = useStore((s) => s.project)
@@ -63,9 +64,10 @@ export function PlanCanvas() {
   }, [])
 
   const origin = project.gridOrigin
+  // Alt held = free: no grid and no angle snapping
   const snapped = useCallback(
-    (p: Pt, prev: Pt | null) => snapPoint(p, prev, snapStep, snapAngle, origin),
-    [snapStep, snapAngle, origin],
+    (p: Pt, prev: Pt | null) => (alt ? p : snapPoint(p, prev, snapStep, snapAngle, origin)),
+    [snapStep, snapAngle, origin, alt],
   )
 
   const finishDraft = useCallback(() => {
@@ -82,6 +84,7 @@ export function PlanCanvas() {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement
       if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT') return
+      if (e.key === 'Alt') { setAlt(true); e.preventDefault(); return }
       if (e.code === 'Space') { setSpace(true); e.preventDefault(); return }
       if (e.key === 'Escape') { setDraft([]); select(null); return }
       if (e.key === 'Enter') { finishDraft(); return }
@@ -95,10 +98,12 @@ export function PlanCanvas() {
       if (e.key === '-') useStore.getState().zoomBy(1 / 1.2, { x: size.w / 2, y: size.h / 2 })
       if (e.key === '0') useStore.getState().fitView()
     }
-    const onUp = (e: KeyboardEvent) => { if (e.code === 'Space') setSpace(false) }
+    const onUp = (e: KeyboardEvent) => { if (e.code === 'Space') setSpace(false); if (e.key === 'Alt') setAlt(false) }
+    const onBlur = () => { setSpace(false); setAlt(false) }
+    window.addEventListener('blur', onBlur)
     window.addEventListener('keydown', onKey)
     window.addEventListener('keyup', onUp)
-    return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onUp) }
+    return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onUp); window.removeEventListener('blur', onBlur) }
   }, [draft.length, selectedId, finishDraft, select, setTool, removeSelected, size])
 
   const onWheel = (e: KonvaEventObject<WheelEvent>) => {
@@ -187,6 +192,30 @@ export function PlanCanvas() {
     }
   }
 
+  // Dragging the whole shape: the group reports the pointer delta, we snap it
+  // so the first point lands on the grid, render through `live` and reset
+  // the group to 0 so the committed points carry the move.
+  const shapeDrag = (id: string, pts: Pt[], commit: (pts: Pt[]) => void) => {
+    const moved = (e: KonvaEventObject<DragEvent>) => {
+      const d = e.target.position()
+      e.target.position({ x: 0, y: 0 })
+      let dx = d.x
+      let dy = d.y
+      if (snapStep && !alt) {
+        const first = snapToGrid({ x: pts[0].x + dx, y: pts[0].y + dy }, snapStep, origin)
+        dx = first.x - pts[0].x
+        dy = first.y - pts[0].y
+      }
+      return pts.map((q) => ({ x: q.x + dx, y: q.y + dy }))
+    }
+    return {
+      draggable: tool === 'select' && !panning,
+      onDragStart: (e: KonvaEventObject<DragEvent>) => { e.cancelBubble = true; select(id) },
+      onDragMove: (e: KonvaEventObject<DragEvent>) => { e.cancelBubble = true; setLive({ id, points: moved(e), whole: true }) },
+      onDragEnd: (e: KonvaEventObject<DragEvent>) => { e.cancelBubble = true; const p = live?.points ?? moved(e); e.target.position({ x: 0, y: 0 }); setLive(null); commit(p) },
+    }
+  }
+
   const cursorStyle = panning ? 'grab' : tool === 'select' ? 'default' : 'crosshair'
 
   return (
@@ -261,7 +290,7 @@ export function PlanCanvas() {
             const c = centroid(r.points)
             const isSel = r.id === sel
             return (
-              <Group key={r.id}>
+              <Group key={r.id} {...shapeDrag(r.id, r0.points, (points) => updateRoom(r.id, { points }))}>
                 <Line
                   name={r.id}
                   points={r.points.flatMap((p) => [p.x, p.y])}
@@ -298,7 +327,7 @@ export function PlanCanvas() {
             const a = c.points[0]
             const b = c.points[c.points.length - 1]
             return (
-              <Group key={c.id}>
+              <Group key={c.id} {...shapeDrag(c.id, c0.points, (points) => updateConduit(c.id, { points }))}>
                 {isSel && <Line points={flat} stroke="#fff" strokeWidth={px(9)} opacity={0.9} lineJoin="round" lineCap="round" />}
                 <Line
                   name={c.id}
@@ -323,7 +352,7 @@ export function PlanCanvas() {
         </Layer>
 
         <Layer>
-          {selConduit && tool === 'select' &&
+          {selConduit && tool === 'select' && !live?.whole &&
             selConduit.points.map((p, i) => (
               <Circle
                 key={i}
@@ -336,7 +365,7 @@ export function PlanCanvas() {
                 {...vertexDrag(selConduit.id, selConduit.points, i, (points) => updateConduit(selConduit.id, { points }))}
               />
             ))}
-          {selRoom && tool === 'select' &&
+          {selRoom && tool === 'select' && !live?.whole &&
             selRoom.points.map((p, i) => (
               <Circle
                 key={i}
