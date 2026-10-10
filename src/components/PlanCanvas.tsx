@@ -3,7 +3,7 @@ import { Stage, Layer, Image as KImage, Line, Circle, Rect, Shape, Label, Tag, T
 import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import useImage from 'use-image'
-import { gridStepPx, useStore } from '../store'
+import { gridStepPx, planDims, useStore } from '../store'
 import { centroid, dist, fmtMeters, midpointOfPolyline, polylineLength, snapPoint } from '../geometry'
 import type { Pt } from '../types'
 
@@ -39,12 +39,15 @@ export function PlanCanvas() {
     return () => ro.disconnect()
   }, [])
 
+  const dims = planDims(project)
+  const rot = project.planRotation
   useEffect(() => {
-    if (!img || fitted.current === project.planImage) return
-    fitted.current = project.planImage
-    const scale = Math.min(size.w / img.width, size.h / img.height) * 0.95
-    setView({ scale, x: (size.w - img.width * scale) / 2, y: (size.h - img.height * scale) / 2 })
-  }, [img, size, project.planImage])
+    const key = `${project.planImage?.length}:${rot}`
+    if (!img || !dims || fitted.current === key) return
+    fitted.current = key
+    const scale = Math.min(size.w / dims.w, size.h / dims.h) * 0.95
+    setView({ scale, x: (size.w - dims.w * scale) / 2, y: (size.h - dims.h * scale) / 2 })
+  }, [img, size, project.planImage, rot, dims])
 
   useEffect(() => {
     setDraft([])
@@ -190,24 +193,34 @@ export function PlanCanvas() {
         onMouseMove={onMove}
       >
         <Layer listening={false}>
-          {img && <KImage image={img} />}
+          {img && dims && (
+            <KImage
+              image={img}
+              rotation={rot}
+              x={rot === 90 ? dims.w : rot === 180 ? dims.w : 0}
+              y={rot === 180 ? dims.h : rot === 270 ? dims.h : 0}
+            />
+          )}
           {showGrid && step && img && (
             <Shape
               sceneFunc={(ctx, shape) => {
+                // grid covers the visible viewport, not just the image
                 let st = step
                 while (st * s < 8) st *= 5
-                const major = st * 10
-                ctx.beginPath()
-                for (let x = 0; x <= img.width; x += st) { ctx.moveTo(x, 0); ctx.lineTo(x, img.height) }
-                for (let y = 0; y <= img.height; y += st) { ctx.moveTo(0, y); ctx.lineTo(img.width, y) }
-                ctx.setAttr('strokeStyle', 'rgba(0,120,255,0.18)')
-                ctx.setAttr('lineWidth', px(1))
-                ctx.stroke()
-                ctx.beginPath()
-                for (let x = 0; x <= img.width; x += major) { ctx.moveTo(x, 0); ctx.lineTo(x, img.height) }
-                for (let y = 0; y <= img.height; y += major) { ctx.moveTo(0, y); ctx.lineTo(img.width, y) }
-                ctx.setAttr('strokeStyle', 'rgba(0,120,255,0.35)')
-                ctx.stroke()
+                const x0 = Math.floor(-view.x / s / st) * st
+                const y0 = Math.floor(-view.y / s / st) * st
+                const x1 = (size.w - view.x) / s
+                const y1 = (size.h - view.y) / s
+                const draw = (stepPx: number, style: string) => {
+                  ctx.beginPath()
+                  for (let x = Math.floor(x0 / stepPx) * stepPx; x <= x1; x += stepPx) { ctx.moveTo(x, y0); ctx.lineTo(x, y1) }
+                  for (let y = Math.floor(y0 / stepPx) * stepPx; y <= y1; y += stepPx) { ctx.moveTo(x0, y); ctx.lineTo(x1, y) }
+                  ctx.setAttr('strokeStyle', style)
+                  ctx.setAttr('lineWidth', px(1))
+                  ctx.stroke()
+                }
+                draw(st, 'rgba(0,120,255,0.18)')
+                draw(st * 10, 'rgba(0,120,255,0.35)')
                 ctx.fillStrokeShape(shape)
               }}
             />

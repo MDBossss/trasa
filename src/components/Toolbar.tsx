@@ -14,7 +14,7 @@ const TOOLS: { id: Tool; label: string; key: string; hint: string }[] = [
 export function Toolbar() {
   const tool = useStore((s) => s.tool)
   const project = useStore((s) => s.project)
-  const { setTool, patchProject, replaceProject, toggle } = useStore.getState()
+  const { setTool, patchProject, replaceProject, toggle, rotatePlan } = useStore.getState()
   const showGrid = useStore((s) => s.showGrid)
   const snapGrid = useStore((s) => s.snapGrid)
   const snapAngle = useStore((s) => s.snapAngle)
@@ -24,7 +24,7 @@ export function Toolbar() {
   const onPlan = async (f: File | undefined) => {
     if (!f) return
     const { url, w, h } = await fileToDataUrl(f, 3000)
-    patchProject({ planImage: url, planSize: { w, h } })
+    patchProject({ planImage: url, planSize: { w, h }, planRotation: 0 })
   }
 
   const exportJson = () => {
@@ -65,6 +65,12 @@ export function Toolbar() {
       <div className="spacer" />
       <div className="group">
         <button onClick={() => planInput.current?.click()}>Učitaj tlocrt</button>
+        {project.planImage && (
+          <>
+            <button onClick={() => rotatePlan(-1)} title="Rotiraj tlocrt ulijevo">↺ 90°</button>
+            <button onClick={() => rotatePlan(1)} title="Rotiraj tlocrt udesno">↻ 90°</button>
+          </>
+        )}
         <input ref={planInput} type="file" accept="image/*" hidden onChange={(e) => void onPlan(e.target.files?.[0])} />
         <button onClick={exportJson}>Export JSON</button>
         <button onClick={() => jsonInput.current?.click()}>Import JSON</button>

@@ -29,6 +29,7 @@ export interface Project {
   name: string
   planImage: string | null
   planSize: { w: number; h: number } | null
+  planRotation: 0 | 90 | 180 | 270
   pxPerMeter: number | null
   gridCm: number
   ceilingM: number
@@ -52,6 +53,7 @@ export function emptyProject(): Project {
     name: 'Kuća',
     planImage: null,
     planSize: null,
+    planRotation: 0,
     pxPerMeter: null,
     gridCm: 10,
     ceilingM: 2.6,

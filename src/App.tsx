@@ -26,7 +26,7 @@ export default function App() {
     const f = e.dataTransfer.files?.[0]
     if (!f || !f.type.startsWith('image/') || view.kind !== 'plan') return
     const { url, w, h } = await fileToDataUrl(f, 3000)
-    useStore.getState().patchProject({ planImage: url, planSize: { w, h } })
+    useStore.getState().patchProject({ planImage: url, planSize: { w, h }, planRotation: 0 })
   }
 
   if (!loaded) return null

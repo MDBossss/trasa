@@ -5,6 +5,9 @@ import { emptyProject, PALETTE, type Conduit, type Project, type Pt, type Room, 
 
 const IDB_KEY = 'trasa-project'
 
+// Fills fields added after a project was saved.
+export const normalize = (p: Project): Project => ({ ...emptyProject(), ...p, planRotation: p.planRotation ?? 0 })
+
 export const uid = () => Math.random().toString(36).slice(2, 10)
 
 interface State {
@@ -29,6 +32,7 @@ interface State {
   updateRoom: (id: string, p: Partial<Room>) => void
   setWallPhoto: (roomId: string, wall: number, photo: string | undefined) => void
   removeSelected: () => void
+  rotatePlan: (dir: 1 | -1) => void
 }
 
 export const useStore = create<State>()(
@@ -48,7 +52,7 @@ export const useStore = create<State>()(
       setView: (view) => set({ view }),
       toggle: (k) => set((s) => ({ [k]: !s[k] })),
       patchProject: (p) => set((s) => ({ project: { ...s.project, ...p } })),
-      replaceProject: (project) => set({ project, selectedId: null, view: { kind: 'plan' } }),
+      replaceProject: (project) => set({ project: normalize(project), selectedId: null, view: { kind: 'plan' } }),
 
       addConduit: (points) => {
         const id = uid()
@@ -77,6 +81,24 @@ export const useStore = create<State>()(
         if (!r) return
         get().updateRoom(roomId, { walls: { ...r.walls, [wall]: { ...r.walls[wall], photo } } })
       },
+      // Rotating the plan rotates the drawing with it, so points are remapped
+      // into the new frame and only the image render needs the stored angle.
+      rotatePlan: (dir) =>
+        set((s) => {
+          const p = s.project
+          const size = planDims(p)
+          if (!size) return {}
+          const rot = (((p.planRotation + dir * 90) % 360) + 360) % 360 as Project['planRotation']
+          const map = (q: Pt): Pt => (dir === 1 ? { x: size.h - q.y, y: q.x } : { x: q.y, y: size.w - q.x })
+          return {
+            project: {
+              ...p,
+              planRotation: rot,
+              conduits: p.conduits.map((c) => ({ ...c, points: c.points.map(map) })),
+              rooms: p.rooms.map((r) => ({ ...r, points: r.points.map(map) })),
+            },
+          }
+        }),
       removeSelected: () =>
         set((s) => {
           const id = s.selectedId
@@ -100,7 +122,7 @@ export const redo = () => useStore.temporal.getState().redo()
 
 export async function loadPersisted() {
   const p = (await idbGet(IDB_KEY)) as Project | undefined
-  if (p && p.version === 1) useStore.setState({ project: p })
+  if (p && p.version === 1) useStore.setState({ project: normalize(p) })
   useStore.setState({ loaded: true })
   useStore.temporal.getState().clear()
 }
@@ -115,4 +137,10 @@ useStore.subscribe((s, prev) => {
 export function gridStepPx(p: Project): number | null {
   if (!p.pxPerMeter) return 20
   return (p.pxPerMeter * p.gridCm) / 100
+}
+
+// Plan size in drawing coordinates (swapped for 90/270).
+export function planDims(p: Project): { w: number; h: number } | null {
+  if (!p.planSize) return null
+  return p.planRotation % 180 ? { w: p.planSize.h, h: p.planSize.w } : p.planSize
 }

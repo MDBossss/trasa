@@ -14,7 +14,7 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
 
 ## Rad
 
-1. **Učitaj tlocrt** (gumb ili drag & drop slike).
+1. **Učitaj tlocrt** (gumb ili drag & drop slike). Gumbi ↺/↻ rotiraju tlocrt po 90°, nacrtano se rotira s njim. Grid pokriva cijelo platno pa se može crtati i izvan slike.
 2. **Mjerilo (C)**: dva klika na poznatu udaljenost, upiši metre. Nakon toga grid je u cm, a duljine u metrima.
 3. **Soba (R)**: klikaj kutove, zatvori klikom na prvi kut ili Enterom.
 4. **Bužir (B)**: klikaj točke trase kroz deku, Enter ili dupli klik završi. Svaki dobije svoju boju i naziv (B1, B2...). Backspace briše zadnju točku, Esc odustaje.
