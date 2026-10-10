@@ -383,10 +383,10 @@ await page.route('https://trasa-auth.trasa-auth.workers.dev/refresh', async (rou
   return route.fulfill({ json: { access_token: 'tok123', refresh_token: 'r2', expires_at: Date.now() + 3600e3 }, headers: { 'access-control-allow-origin': '*' } })
 })
 await page.getByRole('button', { name: 'GitHub' }).click()
-await page.getByPlaceholder('mislavvv/trasa').fill('https://github.com/mislavvv/trasa')
+await page.getByPlaceholder('mdbossss/trasa').fill('https://github.com/mdbossss/trasa')
 await page.getByPlaceholder('obavezno ako je repo javan').fill('tajna')
 await page.locator('.modal-head button').click() // config is only saved on login; set it the way the login button does
-await page.evaluate(() => localStorage.setItem('trasa-github', JSON.stringify({ token: '', repo: 'mislavvv/trasa', branch: 'main', passphrase: 'tajna', auth: null })))
+await page.evaluate(() => localStorage.setItem('trasa-github', JSON.stringify({ token: '', repo: 'mdbossss/trasa', branch: 'main', passphrase: 'tajna', auth: null })))
 const ghHash = Buffer.from(JSON.stringify({ access_token: 'old', refresh_token: 'r1', expires_at: Date.now() - 1000 })).toString('base64')
 await page.goto('about:blank') // a hash-only goto would not reload; the real redirect comes from another origin
 await page.goto(`${APP_URL}#gh=${encodeURIComponent(ghHash)}`)

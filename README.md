@@ -15,7 +15,7 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
 
 ## GitHub: app na Pages, projekti u istom repou (šifrirano)
 
-- App: https://mislavvv.github.io/trasa/ (deploy iz `.github/workflows/pages.yml` na push na main, osim promjena u `projects/`).
+- App: https://mdbossss.github.io/trasa/ (deploy iz `.github/workflows/pages.yml` na push na main, osim promjena u `projects/`).
 - Projekti: gumb **GitHub** sprema u `projects/<slug>/project.json.enc` + `img/*.enc` u ovaj isti repo. Repo je javan
   (Pages na besplatnom planu), pa se sve šifrira na uređaju (AES-GCM, PBKDF2 iz lozinke) prije slanja; bez lozinke
   datoteke u repou nisu čitljive. Istu lozinku upišeš na svakom uređaju.

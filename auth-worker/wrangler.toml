@@ -7,5 +7,5 @@ binding = "CREDS"
 id = "6e3551952b2a4ef596e148c4c4fbe958"
 
 [vars]
-APP_URL = "https://mislavvv.github.io/trasa/"
-ALLOWED_ORIGINS = "https://mislavvv.github.io,http://localhost:*"
+APP_URL = "https://mdbossss.github.io/trasa/"
+ALLOWED_ORIGINS = "https://mdbossss.github.io,http://localhost:*"

@@ -4,7 +4,7 @@ import { listRemoteProjects, openRemote, saveRemote, slugify } from '../remote'
 import { useStore } from '../store'
 
 export function GitHubPanel({ onClose }: { onClose: () => void }) {
-  const [cfg, setCfg] = useState<GhConfig>(() => { const c = loadGhConfig(); return c ? { ...c, passphrase: c.passphrase ?? '' } : { token: '', repo: 'mislavvv/trasa', branch: 'main', passphrase: '' } })
+  const [cfg, setCfg] = useState<GhConfig>(() => { const c = loadGhConfig(); return c ? { ...c, passphrase: c.passphrase ?? '' } : { token: '', repo: 'mdbossss/trasa', branch: 'main', passphrase: '' } })
   const [connected, setConnected] = useState(() => { const c = loadGhConfig(); return !!c && (!!c.token || !!c.auth) })
   const [advanced, setAdvanced] = useState(false)
   const [projects, setProjects] = useState<string[] | null>(null)
@@ -54,7 +54,7 @@ export function GitHubPanel({ onClose }: { onClose: () => void }) {
         {!connected ? (
           <div className="form">
             <p className="muted">Projekti se spremaju u GitHub repo (mapa <code>projects/</code>) pa ih otvoriš s bilo kojeg uređaja.</p>
-            <label>Repo <input placeholder="mislavvv/trasa" value={cfg.repo} onChange={(e) => setCfg({ ...cfg, repo: e.target.value })} /></label>
+            <label>Repo <input placeholder="mdbossss/trasa" value={cfg.repo} onChange={(e) => setCfg({ ...cfg, repo: e.target.value })} /></label>
             <label>Grana <input value={cfg.branch} onChange={(e) => setCfg({ ...cfg, branch: e.target.value })} /></label>
             <label>Lozinka šifriranja <input type="password" placeholder="obavezno ako je repo javan" value={cfg.passphrase} onChange={(e) => setCfg({ ...cfg, passphrase: e.target.value })} /></label>
             <p className="muted">S lozinkom su datoteke u repou šifrirane (AES-GCM) na uređaju; repo može biti javan, a tlocrt i fotke ostaju privatni. Istu lozinku upišeš na svakom uređaju.</p>

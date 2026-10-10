@@ -72,7 +72,7 @@ export function consumeLoginHash(): boolean {
   if (!m) return false
   try {
     const auth = JSON.parse(atob(decodeURIComponent(m[1]))) as GhAuth
-    const cfg = loadGhConfig() ?? { token: '', repo: 'mislavvv/trasa', branch: 'main', passphrase: '' }
+    const cfg = loadGhConfig() ?? { token: '', repo: 'mdbossss/trasa', branch: 'main', passphrase: '' }
     saveGhConfig({ ...cfg, auth })
   } finally {
     history.replaceState(null, '', window.location.pathname + window.location.search)
