@@ -31,6 +31,15 @@ export function Sidebar() {
         </label>
         <label>Visina stropa (m) <input type="number" step={0.05} value={project.ceilingM} onChange={(e) => patchProject({ ceilingM: +e.target.value || 2.6 })} /></label>
         {project.planImage && (
+          <label>
+            Prozirnost tlocrta
+            <span className="tilt-controls">
+              <input type="range" min={0} max={1} step={0.05} value={project.planOpacity} onChange={(e) => patchProject({ planOpacity: +e.target.value })} />
+              <span className="muted">{Math.round(project.planOpacity * 100)}%</span>
+            </span>
+          </label>
+        )}
+        {project.planImage && (
           <div className="tilt">
             <label>
               Nagib slike

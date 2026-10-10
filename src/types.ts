@@ -31,6 +31,7 @@ export interface Project {
   planSize: { w: number; h: number } | null
   planRotation: 0 | 90 | 180 | 270
   planTilt: number
+  planOpacity: number
   pxPerMeter: number | null
   gridCm: number
   gridOrigin: Pt
@@ -57,6 +58,7 @@ export function emptyProject(): Project {
     planSize: null,
     planRotation: 0,
     planTilt: 0,
+    planOpacity: 1,
     pxPerMeter: null,
     gridCm: 10,
     gridOrigin: { x: 0, y: 0 },

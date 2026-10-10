@@ -1,10 +1,10 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useStore } from '../store'
 import { dist, projectOnSegment, signedArea } from '../geometry'
 import { fileToDataUrl } from '../images'
 import type { Conduit, Pt, Room } from '../types'
 
-interface Exit { conduit: Conduit; end: 'start' | 'end'; posM: number; distM: number }
+interface Exit { conduit: Conduit; end: 'start' | 'end'; posM: number; distM: number; offset: Pt }
 
 // A conduit endpoint is an exit on its nearest wall when within 0.5 m of it.
 // With a clockwise polygon (screen coords) wall i runs left→right as seen from inside.
@@ -24,7 +24,10 @@ function wallExits(room: Room, conduits: Conduit[], ppm: number) {
         const distM = pr.dist / ppm
         if (distM <= 0.5 && (!best || distM < best.distM)) best = { w, t: pr.t, distM }
       }
-      if (best) best.w.exits.push({ conduit: c, end, posM: (cw ? best.t : 1 - best.t) * best.w.lengthM, distM: best.distM })
+      if (best) {
+        const foot = projectOnSegment(p, best.w.a, best.w.b).point
+        best.w.exits.push({ conduit: c, end, posM: (cw ? best.t : 1 - best.t) * best.w.lengthM, distM: best.distM, offset: { x: p.x - foot.x, y: p.y - foot.y } })
+      }
     }
   }
   for (const w of walls) w.exits.sort((x, y) => x.posM - y.posM)
@@ -33,12 +36,22 @@ function wallExits(room: Room, conduits: Conduit[], ppm: number) {
 
 export function RoomView({ roomId, wall }: { roomId: string; wall: number | null }) {
   const project = useStore((s) => s.project)
-  const { setView, setWallPhoto } = useStore.getState()
+  const { setView, setWallPhoto, updateConduit } = useStore.getState()
   const room = project.rooms.find((r) => r.id === roomId)
   const ppm = project.pxPerMeter ?? 100
   const fileRef = useRef<HTMLInputElement>(null)
 
   const walls = useMemo(() => (room ? wallExits(room, project.conduits, ppm) : []), [room, project.conduits, ppm])
+  const cw = room ? signedArea(room.points) > 0 : true
+
+  // Dragging an exit along the top edge moves that conduit end on the plan,
+  // sliding it along the wall and keeping its distance from the wall.
+  const moveExit = (w: { a: Pt; b: Pt; lengthM: number }, e: Exit, posM: number) => {
+    const t = cw ? posM / w.lengthM : 1 - posM / w.lengthM
+    const p: Pt = { x: w.a.x + (w.b.x - w.a.x) * t + e.offset.x, y: w.a.y + (w.b.y - w.a.y) * t + e.offset.y }
+    const pts = e.conduit.points.map((q, i) => (i === (e.end === 'start' ? 0 : e.conduit.points.length - 1) ? p : q))
+    updateConduit(e.conduit.id, { points: pts })
+  }
   if (!room) return <div className="room-view"><p>Soba ne postoji.</p></div>
 
   const current = wall !== null ? walls[wall] : null
@@ -102,7 +115,8 @@ export function RoomView({ roomId, wall }: { roomId: string; wall: number | null
                 {room.walls[current.i]?.photo && <button className="danger" onClick={() => setWallPhoto(roomId, current.i, undefined)}>Ukloni fotku</button>}
                 <input ref={fileRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => void onPhoto(e.target.files?.[0])} />
               </div>
-              <WallElevation lengthM={current.lengthM} heightM={project.ceilingM} photo={room.walls[current.i]?.photo} exits={current.exits} />
+              <WallElevation lengthM={current.lengthM} heightM={project.ceilingM} photo={room.walls[current.i]?.photo} exits={current.exits} onMove={(e, posM) => moveExit(current, e, posM)} />
+              <p className="muted">Povuci izlaz bužira lijevo-desno po gornjem rubu da ga namjestiš prema fotki (korak 1 cm). Pomiče i kraj bužira na tlocrtu.</p>
               <table className="exits">
                 <thead><tr><th>Bužir</th><th>Kraj</th><th>Od lijevo</th><th>Od zida</th><th>Od / Do</th></tr></thead>
                 <tbody>
@@ -126,11 +140,29 @@ export function RoomView({ roomId, wall }: { roomId: string; wall: number | null
   )
 }
 
-function WallElevation({ lengthM, heightM, photo, exits }: { lengthM: number; heightM: number; photo?: string; exits: Exit[] }) {
+function WallElevation({ lengthM, heightM, photo, exits, onMove }: { lengthM: number; heightM: number; photo?: string; exits: Exit[]; onMove: (e: Exit, posM: number) => void }) {
   const W = lengthM * 100
   const H = heightM * 100
+  const svgRef = useRef<SVGSVGElement>(null)
+  const [drag, setDrag] = useState<{ idx: number; posM: number } | null>(null)
+
+  const toSvgX = (clientX: number, clientY: number) => {
+    const svg = svgRef.current!
+    const pt = new DOMPoint(clientX, clientY).matrixTransform(svg.getScreenCTM()!.inverse())
+    return pt.x
+  }
+  const clampPos = (xCm: number) => Math.max(0, Math.min(lengthM, Math.round(xCm) / 100))
+
   return (
-    <svg className="elevation" viewBox={`-20 -40 ${W + 40} ${H + 70}`} preserveAspectRatio="xMidYMid meet">
+    <svg
+      ref={svgRef}
+      className="elevation"
+      viewBox={`-20 -40 ${W + 40} ${H + 70}`}
+      preserveAspectRatio="xMidYMid meet"
+      onPointerMove={(ev) => { if (drag) setDrag({ ...drag, posM: clampPos(toSvgX(ev.clientX, ev.clientY)) }) }}
+      onPointerUp={() => { if (drag) { onMove(exits[drag.idx], drag.posM); setDrag(null) } }}
+      onPointerLeave={() => { if (drag) { onMove(exits[drag.idx], drag.posM); setDrag(null) } }}
+    >
       <rect x={0} y={0} width={W} height={H} fill="#f3f3f3" stroke="#555" strokeWidth={2} />
       {photo && <image href={photo} x={0} y={0} width={W} height={H} preserveAspectRatio="none" />}
       {Array.from({ length: Math.floor(lengthM) + 1 }, (_, i) => (
@@ -140,12 +172,17 @@ function WallElevation({ lengthM, heightM, photo, exits }: { lengthM: number; he
         </g>
       ))}
       {exits.map((e, i) => {
-        const x = e.posM * 100
+        const posM = drag?.idx === i ? drag.posM : e.posM
+        const x = posM * 100
         return (
-          <g key={i}>
+          <g key={i} className="exit" data-testid={`exit-${e.conduit.id}-${e.end}`} style={{ cursor: 'ew-resize' }}
+            onPointerDown={(ev) => { ev.preventDefault(); (ev.currentTarget.ownerSVGElement ?? ev.currentTarget).setPointerCapture?.(ev.pointerId); setDrag({ idx: i, posM: e.posM }) }}>
             <line x1={x} y1={-30} x2={x} y2={0} stroke={e.conduit.color} strokeWidth={5} />
+            {drag?.idx === i && <line x1={x} y1={0} x2={x} y2={H} stroke={e.conduit.color} strokeWidth={1.5} strokeDasharray="6 4" />}
             <circle cx={x} cy={0} r={9} fill={e.conduit.color} stroke="#fff" strokeWidth={2} />
-            <text x={x} y={-34} fontSize={13} fontWeight={700} textAnchor="middle" fill={e.conduit.color}>{e.conduit.name}</text>
+            <text x={x} y={-34} fontSize={13} fontWeight={700} textAnchor="middle" fill={e.conduit.color}>
+              {e.conduit.name}{drag?.idx === i ? ` ${posM.toFixed(2)} m` : ''}
+            </text>
           </g>
         )
       })}

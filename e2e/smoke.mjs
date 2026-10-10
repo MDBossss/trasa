@@ -117,6 +117,13 @@ assert.equal(st.planRotation, 0)
 assert.deepEqual(st.conduits[0].points, [{ x: 150, y: 120 }, { x: 150, y: 380 }])
 assert.deepEqual(st.rooms[0].points[0], { x: 100, y: 100 })
 
+// plan opacity slider drives the Konva image opacity
+await page.locator('input[type=range]').fill('0.4')
+assert.equal((await state()).planOpacity, 0.4)
+assert.equal(await page.evaluate(() => window.Konva.stages[0].findOne('Image').opacity()), 0.4)
+await page.locator('input[type=range]').fill('1')
+await page.locator('input[type=range]').blur() // keyboard shortcuts are ignored while an input has focus
+
 // grid origin: click a wall corner, then snapping and the grid go through it
 await page.keyboard.press('o')
 await clickImg(105, 107)
@@ -184,6 +191,20 @@ await page.locator('.room-mini .list li').nth(0).click()
 await page.locator('table.exits').getByText('B1-ormar').waitFor()
 await page.locator('table.exits').getByText('0.50 m').waitFor()
 await page.locator('table.exits').getByText('0.20 m').waitFor()
+// drag the exit 1 m to the right along the top edge → conduit start moves on the plan too
+const m0 = await page.locator('svg.elevation text', { hasText: /^0 m$/ }).boundingBox()
+const m1 = await page.locator('svg.elevation text', { hasText: /^1 m$/ }).boundingBox()
+const pxPerM = m1.x - m0.x
+const exitBox = await page.locator('[data-testid^="exit-"] circle').first().boundingBox()
+const ex = exitBox.x + exitBox.width / 2
+const ey = exitBox.y + exitBox.height / 2
+await page.mouse.move(ex, ey); await page.mouse.down(); await page.mouse.move(ex + pxPerM / 2, ey, { steps: 4 }); await page.mouse.move(ex + pxPerM, ey, { steps: 4 }); await page.mouse.up()
+await page.locator('table.exits').getByText(/^1\.(49|50|51|52) m$/).waitFor() // screen-pixel rounding
+st = await state()
+assert.ok(Math.abs(st.conduits[0].points[0].x - 250) < 1.5 && Math.abs(st.conduits[0].points[0].y - 120) < 0.01, JSON.stringify(st.conduits[0].points[0]))
+await page.keyboard.press('Meta+z')
+await page.locator('table.exits').getByText('0.50 m').waitFor()
+assert.deepEqual((await state()).conduits[0].points[0], { x: 150, y: 120 })
 // wall 3 (bottom): B1 end 0.2 m away; from inside, the bottom wall runs right→left, so 4.5 m from the left
 await page.locator('.room-mini .list li').nth(2).click()
 await page.locator('table.exits').getByText('4.50 m').waitFor()

@@ -6,7 +6,7 @@ import { emptyProject, PALETTE, type Conduit, type Project, type Pt, type Room, 
 const IDB_KEY = 'trasa-project'
 
 // Fills fields added after a project was saved.
-export const normalize = (p: Project): Project => ({ ...emptyProject(), ...p, planRotation: p.planRotation ?? 0, planTilt: p.planTilt ?? 0, gridOrigin: p.gridOrigin ?? { x: 0, y: 0 } })
+export const normalize = (p: Project): Project => ({ ...emptyProject(), ...p, planRotation: p.planRotation ?? 0, planTilt: p.planTilt ?? 0, gridOrigin: p.gridOrigin ?? { x: 0, y: 0 }, planOpacity: p.planOpacity ?? 1 })
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 

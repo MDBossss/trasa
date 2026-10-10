@@ -213,6 +213,7 @@ export function PlanCanvas() {
             <KImage
               image={img}
               rotation={rot + project.planTilt}
+              opacity={project.planOpacity}
               x={dims.w / 2}
               y={dims.h / 2}
               offsetX={img.width / 2}

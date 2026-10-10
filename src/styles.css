@@ -74,3 +74,4 @@ table.exits th { color: var(--muted); font-weight: 600; font-size: 11px; text-tr
 .form input { background: #1b1d21; color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 5px 6px; font: inherit; width: 280px; }
 .status { color: var(--accent); margin: 0; }
 .error { color: var(--danger); margin: 0; white-space: pre-wrap; }
+.sidebar input[type=range] { width: 110px; padding: 0; }
