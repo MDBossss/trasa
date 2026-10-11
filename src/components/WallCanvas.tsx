@@ -36,6 +36,9 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
 
   const H = project.ceilingM * 100
   const W = wall.lengthM * 100
+  // the photo keeps its aspect ratio: scaled to the wall height, centred on the wall
+  const photoW = img ? (H * img.width) / img.height : W
+  const photo0 = (W - photoW) / 2
   const elements = project.elements.filter((e) => e.roomId === roomId && e.wall === wall.i)
   const cables = project.cables.filter((c) => c.roomId === roomId && c.wall === wall.i)
   const ctx: WallCtx = { wall, elements, ceilingM: project.ceilingM }
@@ -53,12 +56,15 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
   }, [])
 
   useEffect(() => {
-    const key = `${roomId}:${wall.i}:${W}:${H}:${fitNonce}`
+    const key = `${roomId}:${wall.i}:${W}:${H}:${fitNonce}:${img ? 1 : 0}`
     if (fitted.current === key || !size.w) return
     fitted.current = key
-    const scale = Math.min(size.w / (W + 60), size.h / (H + 80)) * 0.95
-    setWallCamera({ scale, x: (size.w - W * scale) / 2, y: (size.h - H * scale) / 2 + 10 * scale })
-  }, [roomId, wall.i, W, H, size, fitNonce, setWallCamera])
+    const left = Math.min(0, photo0)
+    const right = Math.max(W, photo0 + photoW)
+    const span = right - left
+    const scale = Math.min(size.w / (span + 60), size.h / (H + 80)) * 0.95
+    setWallCamera({ scale, x: (size.w - span * scale) / 2 - left * scale, y: (size.h - H * scale) / 2 + 10 * scale })
+  }, [roomId, wall.i, W, H, size, fitNonce, setWallCamera, img, photo0, photoW])
 
   useEffect(() => { setDraft(null) }, [tool])
 
@@ -275,8 +281,9 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
         onMouseMove={onMove}
       >
         <Layer listening={false}>
-          <Rect x={0} y={0} width={W} height={H} fill="#f5f5f5" stroke="#555" strokeWidth={px(2)} />
-          {img && <KImage image={img} x={0} y={0} width={W} height={H} />}
+          <Rect x={0} y={0} width={W} height={H} fill="#f5f5f5" />
+          {img && <KImage image={img} x={photo0} y={0} width={photoW} height={H} />}
+          <Rect x={0} y={0} width={W} height={H} stroke="#555" strokeWidth={px(2)} />
           {showGrid && (
             <Shape
               sceneFunc={(ctx2, shape) => {

@@ -353,6 +353,11 @@ await page.locator('.sidebar .list li', { hasText: 'B1-ormar' }).getByText('4.50
 await page.locator('input[type=file][capture]').setInputFiles({ name: 'wall.png', mimeType: 'image/png', buffer: Buffer.from(planPng.split(',')[1], 'base64') })
 await page.waitForFunction(() => window.Konva.stages[0].findOne('Image'))
 await page.locator('.sidebar .list li', { hasText: 'Zid 3' }).getByText('foto').waitFor()
+// the 1200x800 photo keeps its 3:2 ratio: height = wall height (260 cm), width 390 cm, centred on the 500 cm wall
+{
+  const im = await page.evaluate(() => { const i = window.Konva.stages[0].findOne('Image'); return [i.x(), i.width(), i.height()] })
+  assert.deepEqual(im.map((n) => Math.round(n)), [55, 390, 260])
+}
 await page.screenshot({ path: `${SHOTS}/trasa-room.png` })
 
 // save (Cmd+S) while on wall 3 → file carries project + ui position
