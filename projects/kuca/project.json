@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-10T18:15:18.387Z",
+ "savedAt": "2026-10-11T08:15:23.673Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -111,7 +111,20 @@
       "y": 645.835609931349
      }
     ],
-    "walls": {}
+    "walls": {
+     "0": {
+      "photo": "gh:projects/kuca/img/56a2e67011478262.jpg"
+     },
+     "1": {
+      "photo": "gh:projects/kuca/img/2ef18e99bfbb72e3.jpg"
+     },
+     "2": {
+      "photo": "gh:projects/kuca/img/caf5ba70fb27887f.jpg"
+     },
+     "3": {
+      "photo": "gh:projects/kuca/img/2ee76ce6f9e0597b.jpg"
+     }
+    }
    },
    {
     "id": "j5g1ml5l",
@@ -512,11 +525,105 @@
     "note": "",
     "id": "upbmacif"
    }
+  ],
+  "categories": [
+   {
+    "id": "struja",
+    "name": "Struja",
+    "color": "#e6194b",
+    "keywords": [
+     "struja",
+     "uticnic",
+     "utičnic",
+     "prekidac",
+     "prekidač"
+    ]
+   },
+   {
+    "id": "dolaz",
+    "name": "Dolaz / napajanje",
+    "color": "#1f2430",
+    "keywords": [
+     "dolaz",
+     "napajanje",
+     "ormar",
+     "glavni"
+    ]
+   },
+   {
+    "id": "internet",
+    "name": "Internet / LAN",
+    "color": "#4363d8",
+    "keywords": [
+     "internet",
+     "lan",
+     "utp",
+     "mreza",
+     "mreža",
+     "wifi",
+     "router"
+    ]
+   },
+   {
+    "id": "tv",
+    "name": "TV / SAT",
+    "color": "#911eb4",
+    "keywords": [
+     "tv",
+     "sat",
+     "koaks",
+     "antena"
+    ]
+   },
+   {
+    "id": "rasvjeta",
+    "name": "Rasvjeta",
+    "color": "#3cb44b",
+    "keywords": [
+     "rasvjet",
+     "svjetlo",
+     "lampa",
+     "led"
+    ]
+   },
+   {
+    "id": "zvono",
+    "name": "Zvono / interfon",
+    "color": "#f58231",
+    "keywords": [
+     "zvono",
+     "interfon",
+     "portafon"
+    ]
+   },
+   {
+    "id": "alarm",
+    "name": "Alarm / kamere",
+    "color": "#fabe00",
+    "keywords": [
+     "alarm",
+     "kamer",
+     "senzor"
+    ]
+   },
+   {
+    "id": "grijanje",
+    "name": "Grijanje / termostat",
+    "color": "#9a6324",
+    "keywords": [
+     "grijanje",
+     "termostat",
+     "bojler",
+     "klima"
+    ]
+   }
   ]
  },
  "ui": {
   "view": {
-   "kind": "plan"
+   "kind": "room",
+   "roomId": "hznuei6t",
+   "wall": 3
   }
  }
 }
