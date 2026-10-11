@@ -1,6 +1,8 @@
 export type Pt = { x: number; y: number }
 
-export const DIAMETERS = [16, 20, 25, 32, 40] as const
+// 0 = no conduit: the cable runs in a chased groove / above the ceiling
+export const DIAMETERS = [16, 20, 25, 32, 40, 0] as const
+export const conduitLabel = (c: { diameter: number }) => (c.diameter ? `ø${c.diameter}` : 'žlijeb, bez bužira')
 
 export interface Conduit {
   id: string

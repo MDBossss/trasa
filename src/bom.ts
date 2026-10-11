@@ -39,7 +39,7 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
     const lenM = polylineLength(cd.points) / ppm
     if (c && inScope(c.roomId)) add(out, 'Kabeli', c.type, 'm', lenM + 2 * RESERVE_M)
     const touches = rooms.some((r) => p.cables.some((x) => x.roomId === r.id && [x.from, x.to].some((e) => e.kind === 'exit' && e.conduitId === cd.id)))
-    if (!roomId || touches) add(out, 'Bužiri', `Bužir ø${cd.diameter}`, 'm', lenM)
+    if (cd.diameter && (!roomId || touches)) add(out, 'Bužiri', `Bužir ø${cd.diameter}`, 'm', lenM)
   }
   // junction connectors
   for (const j of allJunctions(p)) {

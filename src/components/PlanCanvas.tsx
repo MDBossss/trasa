@@ -342,7 +342,7 @@ export function PlanCanvas() {
                   hitStrokeWidth={px(14)}
                   lineJoin="round"
                   lineCap="round"
-                  dash={isSel ? [px(12), px(7)] : undefined}
+                  dash={isSel ? [px(12), px(7)] : c.diameter === 0 ? [px(5), px(6)] : undefined}
                   opacity={sel && !isSel ? 0.55 : 1}
                 />
                 <Circle name={c.id} x={a.x} y={a.y} radius={px(5)} fill={c.color} stroke="#fff" strokeWidth={px(1.5)} />

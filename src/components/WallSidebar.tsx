@@ -259,7 +259,7 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
             {current.exits.map((e) => (
               <li key={`${e.conduit.id}:${e.end}`} onClick={() => { setWallTool('select'); select(e.conduit.id) }}>
                 <span className="swatch" style={{ background: e.conduit.color }} />
-                <span className="name">{e.conduit.name} <span className="muted">bužir ø{e.conduit.diameter}</span></span>
+                <span className="name">{e.conduit.name} <span className="muted">{e.conduit.diameter ? `bužir ø${e.conduit.diameter}` : 'kabel u žlijebu'}</span></span>
                 <span className="meta">{e.posM.toFixed(2)} m · {e.zM === null ? 'strop' : `h ${e.zM.toFixed(2)}`}</span>
               </li>
             ))}

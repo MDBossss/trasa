@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { conduitVisible, useStore } from '../store'
 import { fmtMeters, polylineLength } from '../geometry'
-import { DIAMETERS, type Category, type Conduit } from '../types'
+import { DIAMETERS, conduitLabel, type Category, type Conduit } from '../types'
 import { conduitTouchesRoom } from '../walls'
 import { uid } from '../store'
 import { detectSkew } from '../images'
@@ -64,7 +64,7 @@ export function Sidebar() {
             <label>
               Promjer
               <select value={conduit.diameter} onChange={(e) => updateConduit(conduit.id, { diameter: +e.target.value })}>
-                {DIAMETERS.map((d) => <option key={d} value={d}>ø{d}</option>)}
+                {DIAMETERS.map((d) => <option key={d} value={d}>{d ? `ø${d}` : 'bez bužira (kabel u žlijebu)'}</option>)}
               </select>
             </label>
           </div>
@@ -138,7 +138,7 @@ export function Sidebar() {
                       <li key={c.id} className={`${c.id === selectedId ? 'sel' : ''} ${shown ? '' : 'dim'}`} onClick={() => { setTool('select'); select(c.id) }}>
                         <span className="swatch" style={{ background: c.color }} />
                         <span className="name">{c.name}</span>
-                        <span className="meta">ø{c.diameter} · {fmtMeters(polylineLength(c.points), ppm)}</span>
+                        <span className="meta">{conduitLabel(c)} · {fmtMeters(polylineLength(c.points), ppm)}</span>
                         <button className="icon-btn eye" onClick={(e) => { e.stopPropagation(); toggleHiddenConduit(c.id) }} title={eyeOff ? 'Prikaži bužir' : 'Sakrij bužir'} aria-label={eyeOff ? `Prikaži ${c.name}` : `Sakrij ${c.name}`}>
                           {eyeOff ? <Icon.eyeOff /> : <Icon.eye />}
                         </button>

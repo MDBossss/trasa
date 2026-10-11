@@ -66,7 +66,7 @@ function RoomPages({ room, project, junctions, date }: { room: Room; project: Pr
         <table className="print-table">
           <thead><tr><th>Bužir</th><th>Kategorija</th><th>Ø</th><th>Od → do</th><th>Duljina</th></tr></thead>
           <tbody>
-            {conduits.map((c) => <tr key={c.id}><td><span className="sw" style={{ background: c.color }} />{c.name}</td><td>{project.categories.find((k) => k.id === c.categoryId)?.name ?? ''}</td><td>{c.diameter}</td><td>{c.from} → {c.to}</td><td>{(polyLen(c.points) / ppm).toFixed(1)} m</td></tr>)}
+            {conduits.map((c) => <tr key={c.id}><td><span className="sw" style={{ background: c.color }} />{c.name}</td><td>{project.categories.find((k) => k.id === c.categoryId)?.name ?? ''}</td><td>{c.diameter || 'žlijeb'}</td><td>{c.from} → {c.to}</td><td>{(polyLen(c.points) / ppm).toFixed(1)} m</td></tr>)}
           </tbody>
         </table>
       </section>
@@ -136,7 +136,7 @@ function WallPage({ room, wall, project }: { room: Room; wall: WallInfo; project
         <thead><tr><th>Element</th><th>Tip</th><th>x</th><th>visina</th><th>Napomena</th></tr></thead>
         <tbody>
           {elements.map((e) => <tr key={e.id}><td>{e.label}</td><td>{elLabel(e)}{hosted(e.id).length ? ` · unutra: ${hosted(e.id).map((h) => `${h.label} ${elLabel(h)}`).join(', ')}` : ''}</td><td>{Math.round(e.xM * 100)} cm</td><td>{Math.round(e.zM * 100)} cm</td><td>{[e.depth, e.note].filter(Boolean).join(' · ')}</td></tr>)}
-          {wall.exits.map((e) => <tr key={`${e.conduit.id}:${e.end}`}><td>{e.conduit.name}</td><td>izlaz bužira ø{e.conduit.diameter}</td><td>{Math.round(e.posM * 100)} cm</td><td>{e.zM === null ? 'strop' : `${Math.round(e.zM * 100)} cm`}</td><td /></tr>)}
+          {wall.exits.map((e) => <tr key={`${e.conduit.id}:${e.end}`}><td>{e.conduit.name}</td><td>{e.conduit.diameter ? `izlaz bužira ø${e.conduit.diameter}` : 'kabel iz žlijeba'}</td><td>{Math.round(e.posM * 100)} cm</td><td>{e.zM === null ? 'strop' : `${Math.round(e.zM * 100)} cm`}</td><td /></tr>)}
         </tbody>
       </table>
     </section>
