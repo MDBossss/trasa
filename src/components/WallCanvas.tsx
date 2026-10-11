@@ -115,10 +115,17 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       return { kind: 'exit', conduitId, end: end as 'start' | 'end' }
     }
     if (elements.some((e) => e.id === name)) return { kind: 'element', id: name }
+    if (name.startsWith('cornerin:')) { const [, corner, zM] = name.split(':'); return { kind: 'corner', corner: +corner, zM: +zM } }
     if (name.startsWith('corner:')) { const raw = toWall(); return { kind: 'corner', corner: +name.split(':')[1], zM: Math.round((raw?.zM ?? 1) * 100) / 100 } }
     return null
   }
   const leftCorner = cornerAt(wall, 'left'), rightCorner = cornerAt(wall, 'right')
+  // cables from other walls that end in one of this wall's corners and are not continued here yet
+  const cornerEnds = (c: { from: CableEnd; to: CableEnd }) => [c.from, c.to].filter((e): e is Extract<CableEnd, { kind: 'corner' }> => e.kind === 'corner')
+  const incoming = project.cables
+    .filter((c) => c.roomId === roomId && c.wall !== wall.i)
+    .flatMap((c) => cornerEnds(c).filter((e) => e.corner === leftCorner || e.corner === rightCorner).map((e) => ({ cable: c, end: e })))
+    .filter(({ end }) => !cables.some((c) => cornerEnds(c).some((e) => e.corner === end.corner && Math.abs(e.zM - end.zM) < 0.3)))
 
   const finishCable = useCallback(
     (to: CableEnd) => {
@@ -347,6 +354,18 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
               {tool === 'cable' && <Text text={`kut ${c + 1}\n→ zid ${neighbourWall(wall, x === 0 ? 'left' : 'right') + 1}`} x={x === 0 ? -38 : W - 13} y={H / 2 - px(14)} width={px(60)} fontSize={px(11)} fill="#1e88e5" />}
             </Group>
           ))}
+          {incoming.map(({ cable: c, end: e }) => {
+            const left = e.corner === leftCorner
+            const x = left ? 0 : W, y = toY({ xM: 0, zM: e.zM })
+            const name = `cornerin:${e.corner}:${e.zM}`
+            return (
+              <Group key={`in:${c.id}:${e.corner}`} name={name} x={x} y={y}>
+                <Line points={left ? [-px(40), 0, px(30), 0] : [-px(30), 0, px(40), 0]} stroke={cableColor(c, project)} strokeWidth={px(4)} dash={[px(6), px(5)]} hitStrokeWidth={px(20)} />
+                <Circle x={left ? 0 : 0} radius={px(8)} fill="#fff" stroke={cableColor(c, project)} strokeWidth={px(2.5)} />
+                <Text text={`iz zida ${c.wall + 1} ${left ? '→' : '←'} nastavi (C)`} x={left ? px(12) : -px(112)} y={-px(18)} width={px(100)} align={left ? 'left' : 'right'} fontSize={px(10)} fontStyle="bold" fill={cableColor(c, project)} />
+              </Group>
+            )
+          })}
           {cables.filter((c) => [c.from, c.to].some((e) => e.kind === 'corner')).map((c) => [c.from, c.to].filter((e): e is Extract<CableEnd, { kind: 'corner' }> => e.kind === 'corner').map((e) => {
             const pos = endPos(e, liveCtx)
             if (!pos) return null
