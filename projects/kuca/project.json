@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-11T13:03:04.151Z",
+ "savedAt": "2026-10-11T13:04:32.472Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -1255,6 +1255,26 @@
     "to": "",
     "note": "",
     "categoryId": "dolaz"
+   },
+   {
+    "id": "tro4q0lb",
+    "name": "SVJETLO VANI",
+    "color": "#3cb44b",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1658.602103980863,
+      "y": 1049.3554106727502
+     },
+     {
+      "x": 916.6611239835552,
+      "y": 1191.7789316997655
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "rasvjeta"
    }
   ],
   "rooms": [
