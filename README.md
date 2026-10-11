@@ -48,12 +48,22 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
    (obični, tipkalo, serijski, izmjenični, križni); ulogu kabela možeš ručno prepisati. **Korak po korak** vodi žilu po
    žilu (strelice ← →), desno je materijal po kutiji i provjere (kutija bez dolaza, prekidač bez svjetla, premalo žila…).
    Na dozi možeš označiti dubinu (plitka / duboka) za kasnije releje.
-10. **Lista bužira**: Svi / Po kategoriji / Po sobama. Bužir pripada sobi ako mu početak ili kraj leži u sobi ili
+10. **Pametna rasvjeta**: **Modularna doza (M)** je okvir (2M–7M) s dubinom; **Tipkalo (T)** i **Relej (R)** se
+    postave klikom na dozu/kutiju/nišu i žive u njoj. Relej (Shelly Plus 1 / 2PM / Dimmer Gen3 / i4 / RGBW PM) ima ulaze
+    SW i izlaze O: na tipkalu odaberi "Na relej" + ulaz, na svjetlu "Napaja ga" + izlaz. Iz toga aplikacija izvede koliko
+    žila kabel između kutije i doze mora nositi (L, N, PE + izlazi), piše to na kabelu ("4 potrebno · 3 ima → uzmi 5×1,5")
+    i crta dozu s relejima, tipkalima i kratkim žilama (tipkalo → SW izravno, bez stezaljke). **LED niša (N)**: traka
+    (m, W/m, 12/24 V) i napajanje × 1,2; napaja se kao svjetlo. Provjere: relej bez nule, relej u plitkoj dozi, kabel s
+    premalo žila, izlaz releja bez kabela do svjetla, klasični prekidač na releju.
+11. **Materijal** (header): popis po sobi ili za kuću (kabeli u metrima: zid + bužir + 30 cm rezerve po kraju, bužiri,
+    WAGO, doze, oprema, releji, LED). **PDF za majstora**: pregled za ispis po sobi (tlocrt sobe s bužirima, svaki zid s
+    elementima i kotama, svaka kutija i doza sa slikom i tablicom stezaljki, releji, materijal, otvorene provjere);
+    u dijalogu ispisa odaberi "Spremi kao PDF".
+12. **Lista bužira**: Svi / Po kategoriji / Po sobama. Bužir pripada sobi ako mu početak ili kraj leži u sobi ili
    najviše 10 cm izvan njezina zida. **Fokus** na sobu sakrije ostale bužire, kamera ostaje gdje je.
 
 ## Sljedeće
 
-- Pametna rasvjeta: relej (Shelly Plus 1 / 2PM / Dimmer / i4) s kanalima, modularna doza, LED niša 24 V, izvođenje broja žila, provjere za nulu i popunjenost doze.
-- Materijal po sobi i kući, PDF po sobi za majstora.
 - Strujni krugovi: osigurači, snaga po krugu, faze, tablica ormara.
+- Relej na DC strani LED niše (RGBW PM): nacrtati 24 V spoj, sad je samo u popisu.
 - Ispravljanje fotke zida (4 kuta → pravokutnik u metrima), checklist izvedbe.

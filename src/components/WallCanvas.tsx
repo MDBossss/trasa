@@ -5,7 +5,7 @@ import type { KonvaEventObject } from 'konva/lib/Node'
 import useImage from 'use-image'
 import { useStore } from '../store'
 import { cableColor, cablePath, endPos, type Exit, type WallCtx, type WallInfo } from '../walls'
-import type { CableEnd, ElementType, WallElement } from '../types'
+import { isPlace, type CableEnd, type ElementType, type WallElement } from '../types'
 import { Hud } from './Hud'
 import { activeWallTool } from './WallToolRail'
 
@@ -27,6 +27,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
   const project = useStore((s) => s.project)
   const tool = useStore((s) => s.wallTool)
   const elementType = useStore((s) => s.elementType)
+  const placeKind = useStore((s) => s.placeSwitchKind)
   const selectedId = useStore((s) => s.selectedId)
   const camera = useStore((s) => s.wallCamera)
   const fitNonce = useStore((s) => s.wallFitNonce)
@@ -39,7 +40,10 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
   // the photo keeps its aspect ratio: scaled to the wall height, centred on the wall
   const photoW = img ? (H * img.width) / img.height : W
   const photo0 = (W - photoW) / 2
-  const elements = project.elements.filter((e) => e.roomId === roomId && e.wall === wall.i)
+  const allOnWall = project.elements.filter((e) => e.roomId === roomId && e.wall === wall.i)
+  // hosted devices (relays, buttons in a frame) are drawn inside their host, not on their own
+  const elements = allOnWall.filter((e) => !e.host)
+  const hostedOf = (id: string) => allOnWall.filter((e) => e.host === id)
   const cables = project.cables.filter((c) => c.roomId === roomId && c.wall === wall.i)
   const ctx: WallCtx = { wall, elements, ceilingM: project.ceilingM }
   const s = camera.scale
@@ -134,7 +138,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       if (e.key === 'Backspace' && draft) { setDraft({ ...draft, via: draft.via.slice(0, -1) }); return }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) { removeSelected(); return }
       if (e.metaKey || e.ctrlKey) return
-      const map: Record<string, [typeof tool, ElementType?]> = { v: ['select'], h: ['pan'], k: ['element', 'box'], u: ['element', 'socket'], p: ['element', 'switch'], l: ['element', 'light'], o: ['element', 'panel'], c: ['cable'] }
+      const map: Record<string, [typeof tool, ElementType?, 'tipkalo'?]> = { v: ['select'], h: ['pan'], k: ['element', 'box'], u: ['element', 'socket'], p: ['element', 'switch'], t: ['element', 'switch', 'tipkalo'], l: ['element', 'light'], o: ['element', 'panel'], m: ['element', 'modbox'], r: ['element', 'relay'], n: ['element', 'ledpsu'], c: ['cable'] }
       if (map[e.key]) setWallTool(...map[e.key])
       if (e.key === 'g') toggle('showGrid')
       if (e.key === '+' || e.key === '=') wallZoomBy(1.2, { x: size.w / 2, y: size.h / 2 })
@@ -161,7 +165,13 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
     }
     if (tool === 'element') {
       const p = snapPos(raw)
-      addElement({ roomId, wall: wall.i, type: elementType, xM: p.xM, zM: p.zM, note: '' })
+      const name = e.target.name() || e.target.getParent()?.name() || ''
+      const hit = elements.find((x) => x.id === name)
+      // relays go into a box / frame / LED niche, buttons into a frame: click on the host places them inside
+      const canHost = hit && (elementType === 'relay' ? isPlace(hit) || hit.type === 'ledpsu' : elementType === 'switch' && hit.type === 'modbox')
+      if (canHost) { addElement({ roomId, wall: wall.i, type: elementType, xM: hit.xM, zM: hit.zM, note: '', host: hit.id, switchKind: placeKind, relayModel: elementType === 'relay' ? (hit.type === 'ledpsu' ? 'rgbw' : 'plus1') : undefined }); return }
+      if (elementType === 'relay') { select(null); return }
+      addElement({ roomId, wall: wall.i, type: elementType, xM: p.xM, zM: p.zM, note: '', switchKind: elementType === 'switch' ? placeKind : undefined })
       return
     }
     if (tool === 'cable') {
@@ -250,7 +260,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       }
     : ctx
 
-  const t = activeWallTool(tool, elementType)
+  const t = activeWallTool(tool, elementType, placeKind)
   const selCable = cables.find((c) => c.id === selectedId)
   const draftPath = draft ? [endPos(draft.from, liveCtx)!, ...draft.via, ...(cursor ? [cursor] : [])] : null
 
@@ -327,7 +337,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
           })}
         </Layer>
 
-        <Layer listening={tool === 'select' || tool === 'cable'}>
+        <Layer listening={tool === 'select' || tool === 'cable' || tool === 'element'}>
           {wall.exits.map((ex) => {
             const pos = endPos({ kind: 'exit', conduitId: ex.conduit.id, end: ex.end }, liveCtx)!
             const x = toX(pos)
@@ -346,8 +356,19 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
             const isSel = el.id === selectedId
             return (
               <Group key={el.id} name={el.id} x={toX(p)} y={toY(p)} {...elementDrag(el)}>
-                <Symbol type={el.type} selected={isSel} px={px} />
-                <Text text={el.label} x={0} y={16} offsetX={60} width={120} align="center" fontSize={px(11)} fontStyle="bold" fill="#1f2430" />
+                <Symbol type={el.type} selected={isSel} px={px} modules={el.modules} tipkalo={el.switchKind === 'tipkalo'} />
+                {hostedOf(el.id).map((h, i) => {
+                  const hs = h.id === selectedId
+                  const w = el.type === 'modbox' ? (el.modules ?? 3) * 11 : 16
+                  return (
+                    <Group key={h.id} name={h.id} x={-w / 2 + 6 + i * 12} y={el.type === 'modbox' ? 0 : -3} onClick={(ev) => { if (tool === 'select') { ev.cancelBubble = true; select(h.id) } }}>
+                      {h.type === 'relay' ? <Rect x={-5} y={-4} width={10} height={8} cornerRadius={1.5} fill={hs ? '#1e88e5' : '#2563eb'} stroke={hs ? '#fff' : '#1e40af'} strokeWidth={px(1.5)} /> : <Circle radius={4} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} />}
+                      {h.type === 'switch' && <Circle radius={1.5} fill={hs ? '#1e88e5' : '#1f2430'} />}
+                      <Text text={h.label} y={6} offsetX={30} width={60} align="center" fontSize={px(8)} fill={hs ? '#1e88e5' : '#1f2430'} />
+                    </Group>
+                  )
+                })}
+                <Text text={el.label} x={0} y={el.type === 'modbox' ? 14 : el.type === 'ledpsu' ? 10 : 16} offsetX={60} width={120} align="center" fontSize={px(11)} fontStyle="bold" fill="#1f2430" />
               </Group>
             )
           })}
@@ -377,7 +398,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
           )}
           {draftPath && draftPath.slice(0, -1).map((p, i) => <Circle key={i} x={toX(p)} y={toY(p)} radius={px(4)} fill="#333" />)}
           {cursor && tool === 'element' && !panning && (
-            <Group x={toX(cursor)} y={toY(cursor)} opacity={0.5}><Symbol type={elementType} selected={false} px={px} /></Group>
+            <Group x={toX(cursor)} y={toY(cursor)} opacity={0.5}><Symbol type={elementType} selected={false} px={px} tipkalo={placeKind === 'tipkalo'} /></Group>
           )}
         </Layer>
       </Stage>
@@ -386,16 +407,25 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
 }
 
 // IEC 60617-style symbols drawn in centimetres so they keep real-world size.
-function Symbol({ type, selected, px }: { type: ElementType; selected: boolean; px: (n: number) => number }) {
+function Symbol({ type, selected, px, modules, tipkalo }: { type: ElementType; selected: boolean; px: (n: number) => number; modules?: number; tipkalo?: boolean }) {
   const stroke = selected ? '#1e88e5' : '#1f2430'
   const sw = px(2)
   const halo = selected ? <Circle radius={13} fill="rgba(30,136,229,0.18)" /> : null
   switch (type) {
+    case 'modbox': { // frame as wide as its modules (≈22 mm each at the wall scale)
+      const w = (modules ?? 3) * 11
+      return <>{halo}<Rect x={-w / 2} y={-6} width={w} height={12} cornerRadius={1.5} fill="#fff" stroke={stroke} strokeWidth={sw} />{Array.from({ length: (modules ?? 3) - 1 }, (_, i) => <Line key={i} points={[-w / 2 + (i + 1) * 11, -6, -w / 2 + (i + 1) * 11, 6]} stroke={stroke} strokeWidth={px(1)} />)}</>
+    }
+    case 'relay':
+      return <>{halo}<Rect x={-7} y={-5} width={14} height={10} cornerRadius={2} fill="#2563eb" stroke={stroke} strokeWidth={sw} /></>
+    case 'ledpsu':
+      return <>{halo}<Rect x={-20} y={-3} width={40} height={6} fill="#fff1c7" stroke={stroke} strokeWidth={sw} /><Line points={[-14, -3, -14, 3]} stroke={stroke} strokeWidth={px(1)} /><Line points={[0, -3, 0, 3]} stroke={stroke} strokeWidth={px(1)} /><Line points={[14, -3, 14, 3]} stroke={stroke} strokeWidth={px(1)} /></>
     case 'box': // square like the physical flush box (IEC uses a circle; this is a personal planner)
       return <>{halo}<Rect x={-7} y={-7} width={14} height={14} fill="#fff" stroke={stroke} strokeWidth={sw} /><Circle radius={2.2} fill={stroke} /></>
     case 'socket':
       return <>{halo}<Arc innerRadius={0} outerRadius={7} angle={180} rotation={180} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-9, 0, 9, 0]} stroke={stroke} strokeWidth={sw} /><Line points={[0, 0, 0, 7]} stroke={stroke} strokeWidth={sw} /></>
     case 'switch':
+      if (tipkalo) return <>{halo}<Circle radius={6} fill="#fff" stroke={stroke} strokeWidth={sw} /><Circle radius={2.2} fill={stroke} /></>
       return <>{halo}<Circle radius={3.5} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[2.5, -2.5, 10, -10]} stroke={stroke} strokeWidth={sw} /><Line points={[10, -10, 13, -8]} stroke={stroke} strokeWidth={sw} /></>
     case 'light':
       return <>{halo}<Circle radius={7} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-5, -5, 5, 5]} stroke={stroke} strokeWidth={sw} /><Line points={[-5, 5, 5, -5]} stroke={stroke} strokeWidth={sw} /></>

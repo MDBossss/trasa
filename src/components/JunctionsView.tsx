@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useStore } from '../store'
-import { allJunctions, wirePlan, type Junction, type Level } from '../junction'
-import { WIRE_LABEL } from '../types'
+import { allJunctions, wirePlan, type Junction, type Level, type PlanWire } from '../junction'
+import { ELEMENT_META, WIRE_LABEL } from '../types'
 import { Icon } from './Icons'
 import { JunctionCanvas, wireSwatch } from './JunctionCanvas'
 
@@ -38,7 +38,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
     <div className="junctions">
       <aside className="sidebar junctions-list">
         <section>
-          <h3>Razvodne kutije <span className="count">{junctions.length}</span></h3>
+          <h3>Kutije i doze <span className="count">{junctions.length}</span></h3>
           {!junctions.length && <p className="muted">Nema razvodnih kutija. Otvori sobu, na fotki zida klikni gdje je kutija alatom Kutija (K), pa kabele (C) do nje.</p>}
           {project.rooms.map((r) => {
             const list = junctions.filter((x) => x.room.id === r.id)
@@ -51,7 +51,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
                     <li key={x.box.id} className={j?.box.id === x.box.id ? 'sel' : ''} onClick={() => pick(x.box.id)} tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') pick(x.box.id) }}>
                       <span className={`dot ${x.level}`} />
                       <span className="name">{x.box.label}</span>
-                      <span className="meta">zid {x.box.wall + 1} · {x.cables.length} kab.</span>
+                      <span className="meta">{x.box.type === 'modbox' ? `${x.box.modules ?? 3}M` : 'kutija'} · zid {x.box.wall + 1} · {x.cables.length} kab.{x.devices.length ? ` · ${x.devices.length} ur.` : ''}</span>
                     </li>
                   ))}
                 </ul>
@@ -78,7 +78,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
           <button onClick={() => setView({ kind: 'plan' })}><Icon.back /> Tlocrt</button>
           {j ? (
             <>
-              <h2>{j.box.label} <span className="muted">· {j.room.name}, zid {j.box.wall + 1}{j.box.depth ? ` · ${j.box.depth}` : ''}</span></h2>
+              <h2>{j.box.label} <span className="muted">· {ELEMENT_META[j.box.type].label.toLowerCase()}{j.box.type === 'modbox' ? ` ${j.box.modules ?? 3}M` : ''} · {j.room.name}, zid {j.box.wall + 1}{j.box.depth ? ` · ${j.box.depth}` : ''}</span></h2>
               <button className="mini" onClick={() => openWall(j)}>Otvori na zidu</button>
               <div className="spacer" />
               <div className="segmented" role="tablist">
@@ -96,9 +96,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
                 <button onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}><Icon.prev /> Natrag</button>
                 <span className="muted">{step + 1} / {plan.length}</span>
                 <button className="primary" onClick={() => setStep((s) => Math.min(plan.length - 1, s + 1))} disabled={step === plan.length - 1}>Sljedeća žila <Icon.next /></button>
-                <p>
-                  {acc(WIRE_LABEL[cur.color])} žilu kabela <b>{cur.cable.label}</b> ({cur.cable.sub}) ogoli 11 mm, podigni polugicu na stezaljci <b>{cur.terminal.label}</b> (221-{cur.terminal.wago}), utakni u port {cur.port + 1}, spusti polugicu.{cur.note ? ` Uloga: ${cur.note}.` : ''}
-                </p>
+                <p>{stepText(cur)}</p>
               </div>
             )}
             <div className="legend">
@@ -122,7 +120,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
             <ul className="jsteps">
               {j.terminals.map((t) => (
                 <li key={t.id} className="hdr">
-                  <span>{t.label} · 221-{t.wago}{t.chained > 1 ? ` ×${t.chained}` : ''} · {t.desc}</span>
+                  <span>{t.label} · {t.wago ? `221-${t.wago}${t.chained > 1 ? ` ×${t.chained}` : ''}` : 'izravno'} · {t.desc}</span>
                   <ul>
                     {t.wires.map((w, i) => {
                       const key = `${t.id}#${i}`
@@ -132,7 +130,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
                         <li key={key} className={cls} onMouseEnter={() => setHover(key)} onMouseLeave={() => setHover(null)} onClick={() => { setMode('steps'); setStep(n) }}>
                           <span className="n">{n + 1}</span>
                           <span className="w" style={{ background: wireSwatch(w.color) }} />
-                          <span>{w.cableLabel}<small>{WIRE_LABEL[w.color]} žila → port {i + 1}{w.note ? ` · ${w.note}` : ''}</small></span>
+                          <span>{w.kind === 'core' ? w.cableLabel : `${w.deviceLabel} · ${w.port}`}<small>{w.kind === 'core' ? `${WIRE_LABEL[w.color]} žila` : 'kratka žila'} → {t.wago ? `port ${i + 1}` : 'izravno'}{w.note ? ` · ${w.note}` : ''}</small></span>
                         </li>
                       )
                     })}
@@ -148,7 +146,8 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
             <h3>Materijal za kutiju</h3>
             <div className="bom">
               {j.bom.map((b) => <div key={b.item}><span>{b.item}</span><b>{b.qty} kom</b></div>)}
-              <div><span>Razvodna kutija 100 × 100 mm{j.box.depth === 'duboka' ? ', duboka' : ''}</span><b>1 kom</b></div>
+              <div><span>{j.box.type === 'modbox' ? `Doza modularna ${j.box.modules ?? 3}M` : 'Razvodna kutija 100 × 100 mm'}{j.box.depth === 'duboka' ? ', duboka' : j.box.depth === 'plitka' ? ', plitka' : ''}</span><b>1 kom</b></div>
+              {j.devices.filter((d) => d.kind === 'button').length > 0 && <div><span>Tipkalo / prekidač 1M</span><b>{j.devices.filter((d) => d.kind === 'button').length} kom</b></div>}
             </div>
           </section>
           <section>
@@ -165,3 +164,13 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
 
 // 'smeđa' → 'Smeđu' (accusative for the instruction sentence)
 const acc = (s: string) => (s[0].toUpperCase() + s.slice(1)).replace(/a( \d)?$/, 'u$1')
+function stepText(w: PlanWire) {
+  const t = w.terminal
+  if (w.member.kind === 'core') return `${acc(WIRE_LABEL[w.color])} žilu kabela ${w.member.cableLabel} (${w.cable?.sub ?? ''}) ogoli 11 mm, podigni polugicu na stezaljci ${t.label} (221-${t.wago}), utakni u port ${w.port + 1}, spusti polugicu.${w.note ? ` Uloga: ${w.note}.` : ''}`
+  if (!t.wago) {
+    const other = t.wires[1 - w.port]
+    const o = other?.kind === 'port' ? `${other.deviceLabel} ${other.port}` : '?'
+    return w.port === 0 ? `Kratkom ${WIRE_LABEL[w.color].replace(/a$/, 'om')} žilom spoji ${w.member.deviceLabel} ${w.member.port} izravno na ${o} (${t.desc}).` : `Druga strana iste žile: ${w.member.deviceLabel} ${w.member.port}.`
+  }
+  return `Kratku ${WIRE_LABEL[w.color].replace(/a$/, 'u')} žilu (10–15 cm) s ${w.member.deviceLabel} stezaljke ${w.member.port} utakni u stezaljku ${t.label} (221-${t.wago}), port ${w.port + 1}.${w.note ? ` ${w.note}.` : ''}`
+}

@@ -44,7 +44,17 @@ export interface Wall {
   photo?: string
 }
 
-export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel'
+export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu'
+
+// Smart relays that sit in a box: inputs are SW terminals, outputs are O terminals.
+export type RelayModel = 'plus1' | 'plus2pm' | 'dimmer' | 'i4' | 'rgbw'
+export const RELAY_MODELS: Record<RelayModel, { label: string; inputs: number; outputs: number; needsN: boolean; dim: boolean; dc: boolean; wMm: number; hMm: number }> = {
+  plus1: { label: 'Shelly Plus 1', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, wMm: 37, hMm: 42 },
+  plus2pm: { label: 'Shelly Plus 2PM', inputs: 2, outputs: 2, needsN: true, dim: false, dc: false, wMm: 37, hMm: 42 },
+  dimmer: { label: 'Shelly Dimmer Gen3', inputs: 2, outputs: 1, needsN: true, dim: true, dc: false, wMm: 37, hMm: 42 },
+  i4: { label: 'Shelly Plus i4', inputs: 4, outputs: 0, needsN: true, dim: false, dc: false, wMm: 37, hMm: 42 },
+  rgbw: { label: 'Shelly Plus RGBW PM (24 V)', inputs: 4, outputs: 4, needsN: true, dim: true, dc: true, wMm: 37, hMm: 42 },
+}
 export type SwitchKind = 'obicni' | 'serijski' | 'izmjenicni' | 'krizni' | 'tipkalo'
 export type BoxDepth = 'plitka' | 'duboka'
 
@@ -63,6 +73,22 @@ export interface WallElement {
   depth?: BoxDepth
   // for switches: ids of the lights this switch controls
   controls?: string[]
+  // element placed inside another one (relay or button in a box / modular frame); drawn at the host
+  host?: string
+  // modbox: number of modules in the frame
+  modules?: number
+  // relay
+  relayModel?: RelayModel
+  // switch wired to a relay input (1-based) instead of straight to the light
+  relayId?: string
+  relayInput?: number
+  // light / LED supply powered by a relay output (1-based) instead of a classic switch
+  feedRelayId?: string
+  feedOutput?: number
+  // LED supply + strip in a niche
+  ledM?: number
+  ledWpm?: number
+  ledV?: 12 | 24
 }
 
 export type CableEnd =
@@ -112,7 +138,14 @@ export const ELEMENT_META: Record<ElementType, { label: string; key: string; pre
   switch: { label: 'Prekidač', key: 'P', prefix: 'P', zM: 1.05 },
   light: { label: 'Svjetlo', key: 'L', prefix: 'S', zM: 2.6 },
   panel: { label: 'Ormar', key: 'O', prefix: 'RO', zM: 1.5 },
+  modbox: { label: 'Modularna doza', key: 'M', prefix: 'D', zM: 1.05 },
+  relay: { label: 'Relej', key: 'R', prefix: 'R', zM: 1.05 },
+  ledpsu: { label: 'LED niša', key: 'N', prefix: 'N', zM: 2.5 },
 }
+// places where cables are joined (have a junction drawing)
+export const PLACE_TYPES: ElementType[] = ['box', 'modbox']
+export const isPlace = (e: WallElement) => PLACE_TYPES.includes(e.type)
+export const isHosted = (e: WallElement) => !!e.host
 
 
 export interface Room {
@@ -144,7 +177,7 @@ export interface Project {
 export type Tool = 'select' | 'pan' | 'calibrate' | 'room' | 'conduit' | 'align' | 'origin'
 export type WallTool = 'select' | 'pan' | 'element' | 'cable'
 
-export type View = { kind: 'plan' } | { kind: 'room'; roomId: string; wall: number | null } | { kind: 'junctions'; elementId: string | null }
+export type View = { kind: 'plan' } | { kind: 'room'; roomId: string; wall: number | null } | { kind: 'junctions'; elementId: string | null } | { kind: 'bom' } | { kind: 'print'; roomId: string | null }
 
 export const PALETTE = [
   '#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#42d4f4',

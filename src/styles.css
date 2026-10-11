@@ -227,3 +227,40 @@ code { font: 11px ui-monospace, Menlo, monospace; background: var(--panel2); pad
 .controls { display: flex; flex-direction: column; gap: 4px; }
 .controls label.inline { justify-content: flex-start; }
 .controls label.inline input { width: auto; }
+
+/* material + print */
+.material { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.material-body { flex: 1; overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; max-width: 760px; }
+.panel-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.bom-table { border-collapse: collapse; width: 100%; }
+.bom-table td { padding: 5px 4px; border-bottom: 1px dashed var(--line); font-size: 13px; }
+.bom-table tr:last-child td { border-bottom: none; }
+.bom-table td.num, .print-table td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.print { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--canvas); }
+.print-bar { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.print-pages { flex: 1; overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; align-items: center; }
+.page { background: #fff; color: #111; width: 210mm; max-width: 100%; padding: 14mm 14mm; box-shadow: var(--shadow); border: 1px solid var(--line); box-sizing: border-box; }
+.page h1 { font-size: 20px; margin: 0 0 2px; }
+.page h2 { font-size: 15px; margin: 14px 0 6px; color: #111; }
+.page h3 { font-size: 11px; color: #555; margin: 12px 0 4px; }
+.page .muted { color: #666; font-weight: 400; }
+.print-plan { width: 100%; max-height: 90mm; background: #fafaf7; border: 1px solid #ddd; }
+.print-wall { width: 100%; max-height: 110mm; background: #fafaf7; border: 1px solid #ddd; }
+.print-junction { width: 100%; max-height: 120mm; }
+.print-table { border-collapse: collapse; width: 100%; font-size: 11.5px; margin-top: 6px; }
+.print-table th { text-align: left; font-weight: 600; color: #555; border-bottom: 1px solid #999; padding: 3px 4px; }
+.print-table td { padding: 4px; border-bottom: 1px solid #e5e5e5; vertical-align: top; }
+.print-table tr.grp td { font-weight: 700; background: #f3f1ea; }
+.print-table .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: middle; border: 1px solid rgba(0,0,0,0.2); }
+.print-bom { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11.5px; margin-top: 6px; color: #333; }
+.print-checks .check { background: #fff4df; color: #8a5a10; }
+.print-checks .check.err { background: #fde8e6; color: #b03a2e; }
+@media print {
+  html, body, #root, .app, .main, .print, .print-pages { height: auto; overflow: visible; background: #fff; }
+  .header, .print-bar { display: none !important; }
+  .print-pages { padding: 0; gap: 0; display: block; }
+  .page { width: auto; max-width: none; box-shadow: none; border: none; padding: 0; page-break-after: always; break-after: page; }
+  .page:last-child { page-break-after: auto; }
+  .print-junction, .print-wall, .print-plan { page-break-inside: avoid; break-inside: avoid; }
+  @page { size: A4; margin: 14mm; }
+}

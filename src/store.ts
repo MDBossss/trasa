@@ -16,6 +16,7 @@ interface State {
   tool: Tool
   wallTool: WallTool
   elementType: ElementType
+  placeSwitchKind?: 'tipkalo'
   wallCamera: { x: number; y: number; scale: number }
   wallFitNonce: number
   selectedId: string | null
@@ -35,7 +36,7 @@ interface State {
   fileName: string | null
 
   setTool: (t: Tool) => void
-  setWallTool: (t: WallTool, type?: ElementType) => void
+  setWallTool: (t: WallTool, type?: ElementType, placeSwitchKind?: 'tipkalo') => void
   setWallCamera: (c: { x: number; y: number; scale: number }) => void
   wallZoomBy: (factor: number, center?: Pt) => void
   wallFitView: () => void
@@ -93,7 +94,7 @@ export const useStore = create<State>()(
       fileName: null,
 
       setTool: (tool) => set({ tool, selectedId: null }),
-      setWallTool: (wallTool, type) => set((s) => ({ wallTool, elementType: type ?? s.elementType, selectedId: null })),
+      setWallTool: (wallTool, type, placeSwitchKind) => set((s) => ({ wallTool, elementType: type ?? s.elementType, placeSwitchKind: type ? placeSwitchKind : s.placeSwitchKind, selectedId: null })),
       setWallCamera: (wallCamera) => set({ wallCamera }),
       wallZoomBy: (factor, center) =>
         set((s) => {
@@ -235,13 +236,20 @@ export const useStore = create<State>()(
           }
           const rooms = p.rooms.filter((r) => r.id !== id)
           const roomGone = rooms.length !== p.rooms.length
+          const gone = new Set([id, ...p.elements.filter((e) => e.host === id).map((e) => e.id)])
+          const unref = (e: WallElement): WallElement => ({
+            ...e,
+            controls: e.controls?.filter((x) => !gone.has(x)),
+            relayId: e.relayId && gone.has(e.relayId) ? undefined : e.relayId,
+            feedRelayId: e.feedRelayId && gone.has(e.feedRelayId) ? undefined : e.feedRelayId,
+          })
           return {
             selectedId: null,
             project: {
               ...p,
               conduits: p.conduits.filter((c) => c.id !== id),
               rooms,
-              elements: p.elements.filter((e) => e.id !== id && !(roomGone && e.roomId === id)),
+              elements: p.elements.filter((e) => !gone.has(e.id) && !(roomGone && e.roomId === id)).map(unref),
               cables: p.cables.filter((c) => c.id !== id && !(roomGone && c.roomId === id)).map((c) => ({ ...c, from: freeEnd(c.from), to: freeEnd(c.to) })),
             },
           }

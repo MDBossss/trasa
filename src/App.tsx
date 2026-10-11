@@ -6,6 +6,8 @@ import { Sidebar } from './components/Sidebar'
 import { PlanCanvas } from './components/PlanCanvas'
 import { RoomView } from './components/RoomView'
 import { JunctionsView } from './components/JunctionsView'
+import { MaterialView } from './components/MaterialView'
+import { PrintView } from './components/PrintView'
 import { fileToDataUrl } from './images'
 import { open, save } from './persistence'
 import { consumeLoginHash } from './github'
@@ -51,8 +53,12 @@ export default function App() {
           </>
         ) : view.kind === 'room' ? (
           <RoomView roomId={view.roomId} wall={view.wall} />
-        ) : (
+        ) : view.kind === 'junctions' ? (
           <JunctionsView elementId={view.elementId} />
+        ) : view.kind === 'bom' ? (
+          <MaterialView />
+        ) : (
+          <PrintView roomId={view.roomId} />
         )}
       </div>
     </div>
