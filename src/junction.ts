@@ -180,7 +180,7 @@ export function devicesIn(place: WallElement, p: Project): Device[] {
         const ports = m.dc ? ['L', 'N'] : ['L', ...(m.needsN ? ['N'] : []), ...Array.from({ length: m.inputs }, (_, i) => `SW${i + 1}`), ...Array.from({ length: m.outputs }, (_, i) => (m.outputs === 1 ? 'O' : `O${i + 1}`))]
         return { el: e, label: `${e.label} ${m.label}`, ports, wMm: 37, hMm: 14, kind: 'relay' as const }
       }
-      if (e.type === 'socket') { const k = SOCKET_KINDS[e.socketKind ?? 'schuko']; return { el: e, label: `${e.label} ${k.label.toLowerCase()} utičnica`, ports: ['L', 'N', 'PE'], wMm: k.modules * 11, hMm: 18, kind: 'socket' as const } }
+      if (e.type === 'socket') { const k = SOCKET_KINDS[e.socketKind ?? 'schuko']; return { el: e, label: `${e.label} ${k.label.toLowerCase()} utičnica`, ports: ['L', 'N', 'PE', 'L′', 'N′', 'PE′'], wMm: Math.max(24, k.modules * 11), hMm: 18, kind: 'socket' as const } }
       return { el: e, label: `${e.label} ${(e.switchKind ?? 'obicni') === 'tipkalo' ? 'tipkalo' : 'prekidač'}`, ports: ['1', '2', '3'].slice(0, (e.switchKind === 'serijski' || e.switchKind === 'izmjenicni') ? 3 : 2), wMm: 14, hMm: 18, kind: 'button' as const }
     })
 }
@@ -197,7 +197,16 @@ function devicePorts(d: Device, p: Project, checks: Check[]): PortMember[] {
     for (let n = 1; n <= m.outputs; n++) out.push({ port: m.outputs === 1 ? 'O' : `O${n}`, terminal: `O:${d.el.id}:${n}`, color: 'black', note: `izlaz ${n}` })
     return out
   }
-  if (d.kind === 'socket') return [{ port: 'L', terminal: 'L', color: 'brown' }, { port: 'N', terminal: 'N', color: 'blue' }, { port: 'PE', terminal: 'PE', color: 'gnye' }]
+  if (d.kind === 'socket') {
+    // sockets have double terminals per pole: the first one hangs on L/N/PE, the next ones loop from the previous socket
+    const chain = p.elements.filter((e) => e.host === d.el.host && e.type === 'socket')
+    const i = chain.findIndex((e) => e.id === d.el.id)
+    const prev = i > 0 ? chain[i - 1] : null
+    const inT = (pole: string) => (prev ? `CH:${pole}:${prev.id}` : pole)
+    const out: PortMember[] = [{ port: 'L', terminal: inT('L'), color: 'brown', note: prev ? `s ${prev.label}` : undefined }, { port: 'N', terminal: inT('N'), color: 'blue', note: prev ? `s ${prev.label}` : undefined }, { port: 'PE', terminal: inT('PE'), color: 'gnye', note: prev ? `s ${prev.label}` : undefined }]
+    if (i < chain.length - 1) { const nx = chain[i + 1]; for (const pole of ['L', 'N', 'PE'] as const) out.push({ port: `${pole}′`, terminal: `CH:${pole}:${d.el.id}`, color: pole === 'L' ? 'brown' : pole === 'N' ? 'blue' : 'gnye', note: `dalje na ${nx.label}` }) }
+    return out
+  }
   const sig = switchSignals(d.el, p, checks, 3)
   if (!sig.length) return out
   return sig.map((s, i) => ({ port: `${i + 1}`, terminal: s.terminal, color: i === 0 && s.terminal === 'L' ? 'brown' : 'black', note: s.note }))
@@ -258,6 +267,7 @@ export function terminalMeta(id: string, p: Project): { label: string; desc: str
   if (id === 'PE') return { label: 'PE', desc: 'zaštitni' }
   if (id.startsWith('PARK')) return { label: '·', desc: 'parkirano' }
   const [kind, a, b] = id.split(':')
+  if (kind === 'CH') return { label: a, desc: `provlačenje ${el(p, b)?.label ?? ''} → sljedeća utičnica` }
   if (kind === 'PUT1' || kind === 'PUT2') return { label: kind === 'PUT1' ? 'p1' : 'p2', desc: `putna ${kind.slice(-1)} · ${el(p, a)?.label ?? '?'}` }
   if (kind === 'O') { const r = el(p, a); const lights = p.elements.filter((e) => e.feedRelayId === a && (e.feedOutput ?? 1) === +b); return { label: lights.map((l) => l.label).join('+') || `O${b}`, desc: `${r?.label ?? 'relej'} izlaz ${b} → svjetlo` } }
   if (kind === 'I') { const r = el(p, a); return { label: `SW${b}`, desc: `${r?.label ?? 'relej'} ulaz ${b} ← tipkalo` } }
@@ -272,7 +282,9 @@ export function terminalMeta(id: string, p: Project): { label: string; desc: str
 // fitting order: feed first, then what it feeds
 const ROLE_ORDER: Role[] = ['feed', 'pass', 'socket', 'light', 'switch', 'lowv', 'unknown']
 const SIDE_ORDER: Side[] = ['top', 'right', 'bottom', 'left']
-const ORDER = (id: string) => (id === 'L' ? 0 : id === 'N' ? 1 : id === 'PE' ? 2 : id.startsWith('O:') ? 3 : id.startsWith('SW') ? 4 : id.startsWith('I:') ? 5 : id.startsWith('PUT') ? 6 : 7)
+// loop-through terminals follow the socket order in the frame, L N PE per socket
+const chainPos = (id: string, p: Project) => (id.startsWith('CH:') ? p.elements.findIndex((e) => e.id === id.split(':')[2]) * 3 + ['L', 'N', 'PE'].indexOf(id.split(':')[1]) : 0)
+const ORDER = (id: string) => (id === 'L' ? 0 : id === 'N' ? 1 : id === 'PE' ? 2 : id.startsWith('O:') ? 3 : id.startsWith('SW') ? 4 : id.startsWith('I:') ? 5 : id.startsWith('PUT') ? 6 : id.startsWith('CH:') ? 7 : 8)
 
 export function junctionFor(box: WallElement, p: Project): Junction {
   const room = p.rooms.find((r) => r.id === box.roomId)!
@@ -324,15 +336,15 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   if (devices.filter((d) => d.kind === 'relay').length > 2) checks.push({ level: 'warn', text: `${devices.filter((d) => d.kind === 'relay').length} releja u jednoj dozi: provjeri stane li uz stezaljke.` })
 
   const terminals: Terminal[] = [...map.entries()]
-    .sort((a, b) => ORDER(a[0]) - ORDER(b[0]) || a[0].localeCompare(b[0]))
+    .sort((a, b) => ORDER(a[0]) - ORDER(b[0]) || chainPos(a[0], p) - chainPos(b[0], p) || a[0].localeCompare(b[0]))
     .map(([id, wires]) => {
       const n = wires.length
-      const direct = n === 2 && wires.every((w) => w.kind === 'port')
+      const direct = n === 2 && wires.some((w) => w.kind === 'port') && !id.startsWith('PARK')
       const wago: Terminal['wago'] = direct ? 0 : n <= 2 ? 412 : n <= 3 ? 413 : 415
       const chained = n <= 5 ? 1 : 1 + Math.ceil((n - 5) / 4)
       const meta = terminalMeta(id, p)
       if (id.startsWith('SW:?')) checks.push({ level: 'warn', text: `${meta.desc}: povratna nema para.` })
-      else if (!LNPE.includes(id) && !id.startsWith('PARK') && n === 1) {
+      else if (!LNPE.includes(id) && !id.startsWith('PARK') && !id.startsWith('CH:') && n === 1) {
         const w = wires[0]
         checks.push({ level: 'warn', text: `Stezaljka ${meta.label} (${meta.desc}): samo ${w.kind === 'core' ? w.cableLabel : `${w.deviceLabel} ${w.port}`}, nedostaje druga strana.` })
       }

@@ -168,11 +168,12 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
 const acc = (s: string) => (s[0].toUpperCase() + s.slice(1)).replace(/a( \d)?$/, 'u$1')
 function stepText(w: PlanWire) {
   const t = w.terminal
-  if (w.member.kind === 'core') return `${acc(WIRE_LABEL[w.color])} žilu kabela ${w.member.cableLabel} (${w.cable?.sub ?? ''}) ogoli 11 mm, podigni polugicu na stezaljci ${t.label} (221-${t.wago}), utakni u port ${w.port + 1}, spusti polugicu.${w.note ? ` Uloga: ${w.note}.` : ''}`
   if (!t.wago) {
-    const other = t.wires[1 - w.port]
-    const o = other?.kind === 'port' ? `${other.deviceLabel} ${other.port}` : '?'
+    const other = t.wires[1 - w.port] as PlanWire['member'] | undefined
+    const o = !other ? '?' : other.kind === 'port' ? `${other.deviceLabel} ${other.port}` : other.cableLabel
+    if (w.member.kind === 'core') return `${acc(WIRE_LABEL[w.color])} žilu kabela ${w.member.cableLabel} ogoli i utakni izravno u ${o} (${t.desc}), bez stezaljke.`
     return w.port === 0 ? `Kratkom ${WIRE_LABEL[w.color].replace(/a$/, 'om')} žilom spoji ${w.member.deviceLabel} ${w.member.port} izravno na ${o} (${t.desc}).` : `Druga strana iste žile: ${w.member.deviceLabel} ${w.member.port}.`
   }
+  if (w.member.kind === 'core') return `${acc(WIRE_LABEL[w.color])} žilu kabela ${w.member.cableLabel} (${w.cable?.sub ?? ''}) ogoli 11 mm, podigni polugicu na stezaljci ${t.label} (221-${t.wago}), utakni u port ${w.port + 1}, spusti polugicu.${w.note ? ` Uloga: ${w.note}.` : ''}`
   return `Kratku ${WIRE_LABEL[w.color].replace(/a$/, 'u')} žilu (10–15 cm) s ${w.member.deviceLabel} stezaljke ${w.member.port} utakni u stezaljku ${t.label} (221-${t.wago}), port ${w.port + 1}.${w.note ? ` ${w.note}.` : ''}`
 }

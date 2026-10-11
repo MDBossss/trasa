@@ -92,11 +92,11 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
   }
   const endOf = (w: PlanWire) => {
     if (w.terminal.wago) { const pw = placedWago(w.terminal); return pw ? wagoPort(pw, w.port) : null }
-    // direct jumper between two device ports: the wire goes to the other member
+    // direct connection: the wire goes from member 0 to member 1 (a device port); member 1 draws nothing
     const other = w.terminal.wires[1 - w.port]
-    if (!other || other.kind !== 'port' || w.port === 1) return null
-    const pd = placedDev(other.deviceId)
-    return pd ? devPort(pd, other.port) : null
+    if (!other || w.port === 1) return null
+    if (other.kind === 'port') { const pd = placedDev(other.deviceId); return pd ? devPort(pd, other.port) : null }
+    return null
   }
 
   return (
