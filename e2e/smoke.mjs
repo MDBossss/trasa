@@ -364,6 +364,55 @@ await page.keyboard.press('Meta+z')
 assert.equal((await state()).elements.length, 2)
 await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
 
+// junctions (Spojevi): switch P1 controls light S1; the box derives roles, terminals and WAGOs from the drawing
+{
+  const ids = await page.evaluate(() => {
+    const s = window.__trasa.getState()
+    const room = s.project.rooms[0].id
+    const box = s.project.elements.find((e) => e.type === 'box')
+    const p1 = s.addElement({ roomId: room, wall: 0, type: 'switch', xM: 2.5, zM: 1.05, note: '', switchKind: 'obicni' })
+    const s1 = s.addElement({ roomId: room, wall: 0, type: 'light', xM: 3.5, zM: 2.5, note: '' })
+    s.updateElement(p1, { controls: [s1] })
+    s.addCable({ roomId: room, wall: 0, type: 'NYM-O 3x1.5', from: { kind: 'element', id: box.id }, to: { kind: 'element', id: p1 }, via: [], note: '' })
+    s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'element', id: box.id }, to: { kind: 'element', id: s1 }, via: [], note: '' })
+    return { box: box.id, p1, s1 }
+  })
+  await page.getByRole('button', { name: 'Spojevi' }).click()
+  await page.locator('.junctions-list .list li', { hasText: 'K1' }).locator('.dot.ok').waitFor()
+  await page.getByText('Sve žile uparene: 5 stezaljki, 4 kabela.').waitFor()
+  await page.locator('.bom', { hasText: 'WAGO 221-413' }).getByText('3 kom').waitFor()
+  await page.locator('.bom', { hasText: 'WAGO 221-412' }).getByText('2 kom').waitFor()
+  assert.equal(await page.locator('.jc-wire').count(), 12)
+  await page.locator('.jsteps', { hasText: 'B1-ormar ← dolaz' }).waitFor()
+  await page.locator('.jsteps li.hdr', { hasText: 'S1 · 221-412 · povratna P1 → svjetlo' }).waitFor()
+  // step mode: first wire is the feed's brown core into L; → advances
+  await page.getByRole('tab', { name: 'Korak po korak' }).click()
+  await page.locator('.stepbar').getByText('1 / 12').waitFor()
+  await page.locator('.stepbar p').getByText(/Smeđu žilu kabela B1-ormar ← dolaz .* stezaljci L \(221-413\), utakni u port 1/).waitFor()
+  await page.keyboard.press('ArrowRight')
+  await page.locator('.stepbar').getByText('2 / 12').waitFor()
+  assert.equal(await page.locator('.jc-wire.dim').count(), 10)
+  // unlink the light: the switch and the light both get warnings, the dot turns yellow
+  await page.evaluate(({ p1 }) => window.__trasa.getState().updateElement(p1, { controls: [] }), ids)
+  await page.locator('.junctions-list .list li', { hasText: 'K1' }).locator('.dot.warn').waitFor()
+  await page.locator('.junctions-list .checks').getByText(/Prekidač P1 ne pali nijedno svjetlo/).waitFor()
+  await page.locator('.junctions-list .checks').getByText(/Svjetlo S1 ne pali nijedan prekidač/).waitFor()
+  await page.evaluate(({ p1, s1 }) => window.__trasa.getState().updateElement(p1, { controls: [s1] }), ids)
+  await page.locator('.junctions-list .list li', { hasText: 'K1' }).locator('.dot.ok').waitFor()
+  await page.screenshot({ path: `${SHOTS}/trasa-junction.png` })
+  // back to the wall with the box selected; the wall props show the derived role and the switch's lights
+  await page.getByRole('button', { name: 'Otvori na zidu' }).click()
+  await page.locator('.props h3', { hasText: 'Razvodna kutija' }).waitFor()
+  await page.evaluate(({ p1 }) => window.__trasa.getState().select(p1), ids)
+  await page.locator('.props .controls input[type=checkbox]').waitFor()
+  assert.equal(await page.locator('.props .controls input[type=checkbox]').isChecked(), true)
+  await page.evaluate(() => { const s = window.__trasa.getState(); s.select(s.project.cables[1].id) })
+  await page.locator('.props select', { hasText: 'izvedeno: Utičnica' }).waitFor()
+  // cleanup so the rest of the test sees the same elements as before
+  await page.evaluate(({ p1, s1 }) => { const s = window.__trasa.getState(); s.select(p1); s.removeSelected(); s.select(s1); s.removeSelected(); const p = s.project; s.patchProject({ cables: p.cables.slice(0, 2) }); s.select(null) }, ids)
+  assert.equal((await state()).elements.length, 2)
+}
+
 // wall 3 (bottom): B1 end 0.2 m away; from inside, the bottom wall runs right→left, so 4.5 m from the left
 await page.locator('.sidebar .list li', { hasText: 'Zid 3' }).click()
 await page.locator('.sidebar .list li', { hasText: 'B1-ormar' }).getByText('4.50 m · strop').waitFor()

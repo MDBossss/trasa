@@ -10,7 +10,8 @@ export function Header() {
   const project = useStore((s) => s.project)
   const dirty = useStore((s) => s.dirty)
   const fileName = useStore((s) => s.fileName)
-  const { patchProject, replaceProject } = useStore.getState()
+  const { patchProject, replaceProject, setView } = useStore.getState()
+  const view = useStore((s) => s.view)
   const [menu, setMenu] = useState(false)
   const openGitHub = useStore((s) => s.openGitHub)
   const [gh, setGhState] = useState(false)
@@ -73,6 +74,12 @@ export function Header() {
       <span className={`save-state ${dirty ? 'dirty' : ''}`} title={fileName ?? 'nije spremljeno u datoteku'}>
         {dirty ? 'Nespremljeno' : 'Spremljeno'}{fileName ? ` · ${fileName.replace(/^gh:/, 'GitHub/')}` : ''}
       </span>
+      <div className="spacer" />
+      <nav className="segmented view-nav" aria-label="Pogled">
+        <button className={view.kind === 'plan' ? 'on' : ''} aria-pressed={view.kind === 'plan'} onClick={() => setView({ kind: 'plan' })}>Tlocrt</button>
+        <button className={view.kind === 'room' ? 'on' : ''} aria-pressed={view.kind === 'room'} disabled={!project.rooms.length} title={project.rooms.length ? 'Zidovi sobe' : 'Nacrtaj sobu na tlocrtu'} onClick={() => { if (view.kind !== 'room') setView({ kind: 'room', roomId: project.rooms[0].id, wall: 0 }) }}>Sobe</button>
+        <button className={view.kind === 'junctions' ? 'on' : ''} aria-pressed={view.kind === 'junctions'} onClick={() => setView({ kind: 'junctions', elementId: null })}>Spojevi</button>
+      </nav>
       <div className="spacer" />
       <button className="primary" onClick={() => void save()} title="Spremi (⌘S)"><Icon.save /> Spremi</button>
       <button onClick={() => setGh(true)} title="Projekti u GitHub repou"><Icon.cloud /> GitHub</button>

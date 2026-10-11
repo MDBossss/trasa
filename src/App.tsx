@@ -5,6 +5,7 @@ import { ToolRail } from './components/ToolRail'
 import { Sidebar } from './components/Sidebar'
 import { PlanCanvas } from './components/PlanCanvas'
 import { RoomView } from './components/RoomView'
+import { JunctionsView } from './components/JunctionsView'
 import { fileToDataUrl } from './images'
 import { open, save } from './persistence'
 import { consumeLoginHash } from './github'
@@ -48,8 +49,10 @@ export default function App() {
             <PlanCanvas />
             <Sidebar />
           </>
-        ) : (
+        ) : view.kind === 'room' ? (
           <RoomView roomId={view.roomId} wall={view.wall} />
+        ) : (
+          <JunctionsView elementId={view.elementId} />
         )}
       </div>
     </div>

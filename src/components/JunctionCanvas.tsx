@@ -1,0 +1,159 @@
+import { useMemo } from 'react'
+import { WIRE_HEX, type WireColor } from '../types'
+import type { BoxCable, Junction, PlanWire, Side, Terminal } from '../junction'
+
+// Top-down view into the open box, drawn to scale in millimetres: cables enter from the rim,
+// each core bends to its WAGO 221 port. Layout is automatic from the junction data.
+
+const WAGO = { 412: { w: 13.0, n: 2 }, 413: { w: 18.7, n: 3 }, 415: { w: 30.0, n: 5 } } as const
+const DEPTH = 18.6
+const S = 4 // px per mm
+
+type Placed = { t: Terminal; x: number; y: number; w: number; flip: boolean; ports: number }
+
+function wagoWidth(t: Terminal) { return WAGO[t.wago].w * t.chained + (t.chained - 1) * 2 }
+
+// Greedy packing into three rows (top, bottom, middle); the box grows when they overflow.
+function layout(terminals: Terminal[]): { W: number; H: number; placed: Placed[]; overflow: boolean } {
+  for (const W of [100, 150, 200]) {
+    const H = W
+    const rows: { y: number; flip: boolean; x: number; items: Placed[] }[] = [
+      { y: 6, flip: false, x: 5, items: [] },
+      { y: H - 6 - DEPTH, flip: true, x: 5, items: [] },
+      { y: H / 2 - DEPTH / 2, flip: false, x: 5, items: [] },
+    ]
+    let ok = true
+    for (const t of terminals) {
+      const w = wagoWidth(t)
+      const row = rows.find((r) => r.x + w <= W - 5)
+      if (!row) { ok = false; break }
+      row.items.push({ t, x: row.x, y: row.y, w, flip: row.flip, ports: WAGO[t.wago].n * t.chained })
+      row.x += w + 4
+    }
+    if (ok) return { W, H, placed: rows.flatMap((r) => r.items), overflow: W > 100 }
+  }
+  return { W: 200, H: 200, placed: [], overflow: true }
+}
+
+const entryOf = (side: Side, i: number, n: number, W: number, H: number) => {
+  const t = (i + 1) / (n + 1)
+  if (side === 'top') return { p: [W * t, 0], n: [0, 1] }
+  if (side === 'bottom') return { p: [W * t, H], n: [0, -1] }
+  if (side === 'left') return { p: [0, H * t], n: [1, 0] }
+  return { p: [W, H * t], n: [-1, 0] }
+}
+
+export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick }: {
+  j: Junction; plan: PlanWire[]; mode: 'all' | 'steps'; step: number; hover: string | null
+  onHover: (k: string | null) => void; onPick: (i: number) => void
+}) {
+  const lay = useMemo(() => layout(j.terminals), [j.terminals])
+  const { W, H } = lay
+  const OX = 110, OY = 150
+  const mm = (v: number) => v * S
+  const px = (x: number, y: number): [number, number] => [OX + mm(x), OY + mm(y)]
+  const sides: Record<Side, BoxCable[]> = { top: [], bottom: [], left: [], right: [] }
+  for (const c of j.cables) sides[c.side].push(c)
+  const entry = (c: BoxCable) => { const arr = sides[c.side]; return entryOf(c.side, arr.indexOf(c), arr.length, W, H) }
+  const portPos = (pl: Placed, i: number) => {
+    const pitch = pl.w / pl.ports
+    return { x: pl.x + pitch * (i + 0.5), y: pl.flip ? pl.y : pl.y + DEPTH, n: pl.flip ? [0, -1] : [0, 1] }
+  }
+  const placedOf = (t: Terminal) => lay.placed.find((p) => p.t.id === t.id)
+  const vbW = OX + mm(W) + 190
+  const vbH = OY + mm(H) + (sides.bottom.length ? 200 : 60)
+  const [bx, by] = px(0, 0)
+  const idx = (k: string) => plan.findIndex((w) => w.key === k)
+  const wireState = (k: string) => {
+    const i = idx(k)
+    if (mode === 'steps') return i > step ? 'dim' : i === step ? 'hl' : ''
+    if (hover) return hover === k ? 'hl' : hover.startsWith('cable:') ? (plan[i].cable.cable.id === hover.slice(6) ? 'hl' : 'dim') : 'dim'
+    return ''
+  }
+
+  return (
+    <svg className="junction-svg" viewBox={`0 0 ${vbW} ${vbH}`} role="img" aria-label={`Otvorena kutija ${j.box.label}`}>
+      <rect x={bx - mm(6)} y={by - mm(6)} width={mm(W + 12)} height={mm(H + 12)} rx={10} fill="#e4e1d8" stroke="#b9b5aa" />
+      <rect x={bx} y={by} width={mm(W)} height={mm(H)} rx={6} fill="#f3f1ea" stroke="#8e8a80" strokeWidth={2} />
+      {[[4, 4], [W - 4, 4], [4, H - 4], [W - 4, H - 4]].map(([cx, cy], i) => { const [x, y] = px(cx, cy); return <circle key={i} cx={x} cy={y} r={5} fill="#cfcbc0" stroke="#9a968c" /> })}
+
+      {j.cables.map((c) => {
+        const e = entry(c)
+        const od = c.cores.length >= 5 ? 11 : /2[.,]5/.test(c.sub) ? 10 : 8.5
+        const a = [e.p[0] - e.n[0] * 30, e.p[1] - e.n[1] * 30], b = [e.p[0] + e.n[0] * 9, e.p[1] + e.n[1] * 9]
+        const [x1, y1] = px(a[0], a[1]), [x2, y2] = px(b[0], b[1])
+        const [lx, ly] = px(e.p[0] - e.n[0] * 36, e.p[1] - e.n[1] * 36)
+        const anchor = c.side === 'left' ? 'end' : c.side === 'right' ? 'start' : 'middle'
+        const dy = c.side === 'top' ? -6 : c.side === 'bottom' ? 14 : 4
+        const dim = hover && hover !== `cable:${c.cable.id}` && !plan.some((w) => w.key === hover && w.cable.cable.id === c.cable.id)
+        return (
+          <g key={c.cable.id} className={`jc-cable ${dim && mode === 'all' ? 'dim' : ''}`} onMouseEnter={() => onHover(`cable:${c.cable.id}`)} onMouseLeave={() => onHover(null)}>
+            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#9a978f" strokeWidth={mm(od) + 2} strokeLinecap="round" />
+            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#d9d7cf" strokeWidth={mm(od)} strokeLinecap="round" />
+            <text x={lx} y={ly + dy} textAnchor={anchor} fontSize={11} fontWeight={600} fill="currentColor">{c.label}</text>
+            <text x={lx} y={ly + dy + 13} textAnchor={anchor} fontSize={10} fill="var(--muted)">{c.sub} · {roleShort(c)}</text>
+          </g>
+        )
+      })}
+
+      <g>
+        {plan.map((w) => {
+          const pl = placedOf(w.terminal)
+          if (!pl) return null
+          const e = entry(w.cable)
+          const a = { x: e.p[0] + e.n[0] * 9, y: e.p[1] + e.n[1] * 9, n: e.n }
+          const b = portPos(pl, w.port)
+          const k = 22
+          const [x1, y1] = px(a.x, a.y), [c1x, c1y] = px(a.x + a.n[0] * k, a.y + a.n[1] * k), [c2x, c2y] = px(b.x + b.n[0] * k, b.y + b.n[1] * k), [x2, y2] = px(b.x, b.y)
+          const d = `M${x1},${y1} C${c1x},${c1y} ${c2x},${c2y} ${x2},${y2}`
+          const sw = /2[.,]5/.test(w.cable.sub) ? mm(3.4) : mm(2.8)
+          const [ex, ey] = px(b.x - b.n[0] * 11, b.y - b.n[1] * 11)
+          return (
+            <g key={w.key} className={`jc-wire ${wireState(w.key)}`} onMouseEnter={() => onHover(w.key)} onMouseLeave={() => onHover(null)} onClick={() => onPick(idx(w.key))}>
+              <path d={d} fill="none" stroke="rgba(0,0,0,.25)" strokeWidth={sw + 2} strokeLinecap="round" />
+              <path d={d} fill="none" stroke={WIRE_HEX[w.color]} strokeWidth={sw} strokeLinecap="round" />
+              {w.color === 'gnye' && <path d={d} fill="none" stroke="#f2d31b" strokeWidth={sw} strokeDasharray="7 9" />}
+              <line x1={x2} y1={y2} x2={ex} y2={ey} stroke="#c8803c" strokeWidth={sw * 0.55} strokeLinecap="round" />
+              <title>{w.cable.label}: {w.color} → {w.terminal.label}{w.note ? ` (${w.note})` : ''}</title>
+            </g>
+          )
+        })}
+      </g>
+
+      {lay.placed.map((pl, pi) => {
+        const [x, y] = px(pl.x, pl.y)
+        const pitch = pl.w / pl.ports
+        const rowIdx = lay.placed.filter((q, qi) => qi < pi && q.y === pl.y).length
+        const capDy = rowIdx % 2 ? 12 : 0
+        const cap = `${pl.w >= 25 ? `221-${pl.t.wago} · ` : ''}${pl.t.chained > 1 ? `×${pl.t.chained} ` : ''}${pl.t.desc}`
+        return (
+          <g key={pl.t.id}>
+            <rect x={x + 2} y={y + 3} width={mm(pl.w)} height={mm(DEPTH)} rx={3} fill="rgba(0,0,0,.18)" />
+            <rect x={x} y={y} width={mm(pl.w)} height={mm(DEPTH)} rx={3} fill="rgba(255,255,255,.62)" stroke="#4a4a4a" strokeWidth={1.2} />
+            {Array.from({ length: pl.ports }, (_, i) => {
+              const lx = x + mm(pitch * i + 0.6), lw = mm(pitch - 1.2)
+              const used = i < pl.t.wires.length
+              return (
+                <g key={i}>
+                  <rect x={lx} y={pl.flip ? y + mm(DEPTH - 7.5) : y + mm(1)} width={lw} height={mm(6.5)} rx={2} fill={used ? '#f28c28' : '#f7b377'} stroke="#b35a0c" strokeWidth={0.8} />
+                  <rect x={lx + lw * 0.2} y={pl.flip ? y : y + mm(DEPTH) - mm(3)} width={lw * 0.6} height={mm(3)} fill={used ? '#2b2b2b' : '#777'} />
+                </g>
+              )
+            })}
+            <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(5.5) : y + mm(DEPTH - 3.5)} textAnchor="middle" fontSize={10} fontWeight={600} fill="#222">{pl.t.label}</text>
+            <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(DEPTH) + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">{cap}</text>
+          </g>
+        )
+      })}
+
+      <line x1={bx} y1={by + mm(H + 8) + 6} x2={bx + mm(20)} y2={by + mm(H + 8) + 6} stroke="currentColor" strokeWidth={1.5} />
+      <text x={bx + mm(20) + 6} y={by + mm(H + 8) + 10} fontSize={10} fill="var(--muted)">20 mm{lay.overflow ? ` · kutija ${W} × ${H} mm (100 × 100 je premala)` : ''}</text>
+    </svg>
+  )
+}
+
+function roleShort(c: BoxCable) {
+  return ({ feed: 'dolaz', pass: 'prolaz', socket: 'utičnica', light: 'svjetlo', switch: 'prekidač', lowv: 'slaba struja', unknown: '?' } as Record<string, string>)[c.role]
+}
+
+export const wireSwatch = (c: WireColor) => (c === 'gnye' ? 'repeating-linear-gradient(90deg,#2e8b3a 0 3px,#f2d31b 3px 6px)' : WIRE_HEX[c])

@@ -41,10 +41,19 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
    počinje, klikovi dodaju vodoravne/okomite lomove, klik na element završava; kabel je vezan za oba kraja i prati
    ih pri pomicanju. Desno: fotka zida, svojstva
    odabira (tip, oznaka, pozicija, vrsta prekidača, tip kabela, duljina) i lista svega na zidu.
-9. **Lista bužira**: Svi / Po kategoriji / Po sobama. Bužir pripada sobi ako mu početak ili kraj leži u sobi ili
+9. **Spojevi** (gumb u headeru): za svaku razvodnu kutiju slika u mjerilu (100 × 100 mm, WAGO 221-412/413/415 s pravim
+   dimenzijama, žile u bojama po HD 308) izvedena iz nacrtanog: kabel vezan na kutiju dobije ulogu iz onoga što mu je na
+   drugom kraju (utičnica, svjetlo, prekidač, bužir kategorije Dolaz = napajanje, bužir do kutije u drugoj sobi = prolaz),
+   a žile se grupiraju na stezaljke L / N / PE / povratna / putne / parkirano. Na prekidaču označi **Pali svjetla** i vrstu
+   (obični, tipkalo, serijski, izmjenični, križni); ulogu kabela možeš ručno prepisati. **Korak po korak** vodi žilu po
+   žilu (strelice ← →), desno je materijal po kutiji i provjere (kutija bez dolaza, prekidač bez svjetla, premalo žila…).
+   Na dozi možeš označiti dubinu (plitka / duboka) za kasnije releje.
+10. **Lista bužira**: Svi / Po kategoriji / Po sobama. Bužir pripada sobi ako mu početak ili kraj leži u sobi ili
    najviše 10 cm izvan njezina zida. **Fokus** na sobu sakrije ostale bužire, kamera ostaje gdje je.
 
 ## Sljedeće
 
-- ispravljanje fotke zida (4 kuta → pravokutnik u metrima)
-- strujni krugovi i tablica ormara, BOM u metrima, checklist izvedbe, PDF export po sobi
+- Pametna rasvjeta: relej (Shelly Plus 1 / 2PM / Dimmer / i4) s kanalima, modularna doza, LED niša 24 V, izvođenje broja žila, provjere za nulu i popunjenost doze.
+- Materijal po sobi i kući, PDF po sobi za majstora.
+- Strujni krugovi: osigurači, snaga po krugu, faze, tablica ormara.
+- Ispravljanje fotke zida (4 kuta → pravokutnik u metrima), checklist izvedbe.

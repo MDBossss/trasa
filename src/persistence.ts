@@ -31,6 +31,7 @@ export function applySaveFile(f: SaveFile) {
   st.replaceProject(f.project)
   const v = f.ui?.view
   if (v?.kind === 'room' && useStore.getState().project.rooms.some((r) => r.id === v.roomId)) st.setView(v)
+  if (v?.kind === 'junctions') st.setView(v)
   st.markSaved()
 }
 

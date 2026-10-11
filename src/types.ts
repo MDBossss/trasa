@@ -45,7 +45,8 @@ export interface Wall {
 }
 
 export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel'
-export type SwitchKind = 'obicni' | 'serijski' | 'izmjenicni' | 'krizni'
+export type SwitchKind = 'obicni' | 'serijski' | 'izmjenicni' | 'krizni' | 'tipkalo'
+export type BoxDepth = 'plitka' | 'duboka'
 
 // Placed on a wall: x from the left (inside view), z from the floor, metres.
 export interface WallElement {
@@ -58,6 +59,10 @@ export interface WallElement {
   zM: number
   note: string
   switchKind?: SwitchKind
+  // flush box depth as seen on the photo; a relay later needs 'duboka'
+  depth?: BoxDepth
+  // for switches: ids of the lights this switch controls
+  controls?: string[]
 }
 
 export type CableEnd =
@@ -74,9 +79,32 @@ export interface Cable {
   to: CableEnd
   via: { xM: number; zM: number }[]
   note: string
+  // what the cable does in the box; 'auto' derives it from its ends
+  role?: CableRole
 }
 
-export const CABLE_TYPES = ['NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-J 5x1.5', 'NYM-J 5x2.5', 'NYM-J 4x1.5', 'UTP cat6', 'koaks', 'zvono 2x0.75', 'ostalo']
+export type CableRole = 'auto' | 'feed' | 'pass' | 'socket' | 'light' | 'switch' | 'lowv'
+export const CABLE_ROLES: Record<Exclude<CableRole, 'auto'>, string> = {
+  feed: 'Dolaz (napajanje)', pass: 'Prolaz u drugu kutiju', socket: 'Utičnica', light: 'Svjetlo', switch: 'Prekidač', lowv: 'Slaba struja',
+}
+
+export type WireColor = 'brown' | 'blue' | 'gnye' | 'black' | 'grey' | 'black2' | 'grey2' | 'other'
+// core colours by cable type (HD 308 S2); NYM-O has no PE: brown / black / grey
+export function coreColors(type: string): WireColor[] {
+  const t = type.toLowerCase()
+  if (/utp|koaks|zvono|ostalo/.test(t)) return []
+  const m = /(\d)\s*[x×]/.exec(t)
+  const n = m ? +m[1] : 3
+  if (t.includes('nym-o')) return n <= 3 ? ['brown', 'black', 'grey'] : ['brown', 'black', 'grey', 'black2']
+  if (n <= 3) return ['brown', 'blue', 'gnye']
+  if (n === 4) return ['brown', 'black', 'blue', 'gnye']
+  if (n === 5) return ['brown', 'black', 'grey', 'blue', 'gnye']
+  return ['brown', 'black', 'grey', 'black2', 'grey2', 'blue', 'gnye']
+}
+export const WIRE_LABEL: Record<WireColor, string> = { brown: 'smeđa', blue: 'plava', gnye: 'žuto-zelena', black: 'crna', grey: 'siva', black2: 'crna 2', grey2: 'siva 2', other: 'žila' }
+export const WIRE_HEX: Record<WireColor, string> = { brown: '#6b3a1e', blue: '#1f4fb3', gnye: '#2e8b3a', black: '#222', grey: '#8c8c8c', black2: '#3a3a3a', grey2: '#a5a5a5', other: '#c9a' }
+
+export const CABLE_TYPES = ['NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-O 3x1.5', 'NYM-J 5x1.5', 'NYM-J 5x2.5', 'NYM-J 7x1.5', 'NYM-J 4x1.5', 'UTP cat6', 'koaks', 'zvono 2x0.75', 'ostalo']
 
 export const ELEMENT_META: Record<ElementType, { label: string; key: string; prefix: string; zM: number }> = {
   box: { label: 'Razvodna kutija', key: 'K', prefix: 'K', zM: 2.3 },
@@ -116,7 +144,7 @@ export interface Project {
 export type Tool = 'select' | 'pan' | 'calibrate' | 'room' | 'conduit' | 'align' | 'origin'
 export type WallTool = 'select' | 'pan' | 'element' | 'cable'
 
-export type View = { kind: 'plan' } | { kind: 'room'; roomId: string; wall: number | null }
+export type View = { kind: 'plan' } | { kind: 'room'; roomId: string; wall: number | null } | { kind: 'junctions'; elementId: string | null }
 
 export const PALETTE = [
   '#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#42d4f4',

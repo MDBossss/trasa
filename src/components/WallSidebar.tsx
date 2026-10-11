@@ -2,20 +2,25 @@ import { useRef } from 'react'
 import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
-import { CABLE_TYPES, ELEMENT_META, type Room, type SwitchKind } from '../types'
+import { CABLE_ROLES, CABLE_TYPES, ELEMENT_META, type BoxDepth, type CableRole, type Room, type SwitchKind } from '../types'
+import { resolveCable, roleLabel } from '../junction'
 import { Icon } from './Icons'
 
 const SWITCH_KINDS: { id: SwitchKind; label: string; wires: string }[] = [
-  { id: 'obicni', label: 'Obični', wires: '2 žile do prekidača' },
-  { id: 'serijski', label: 'Serijski', wires: '3 žile' },
-  { id: 'izmjenicni', label: 'Izmjenični', wires: '3 žile između prekidača' },
-  { id: 'krizni', label: 'Križni', wires: '4 žile' },
+  { id: 'obicni', label: 'Obični', wires: 'L + povratna' },
+  { id: 'tipkalo', label: 'Tipkalo', wires: 'za relej (Shelly), L + povratna' },
+  { id: 'serijski', label: 'Serijski', wires: 'L + 2 povratne, 2 svjetla' },
+  { id: 'izmjenicni', label: 'Izmjenični', wires: 'L/povratna + 2 putne, par prekidača' },
+  { id: 'krizni', label: 'Križni', wires: '4 putne, između izmjeničnih' },
 ]
+const DEPTHS: { id: BoxDepth; label: string }[] = [{ id: 'plitka', label: 'Plitka' }, { id: 'duboka', label: 'Duboka (60 mm, za relej)' }]
 
 export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo[]; wall: number | null }) {
   const project = useStore((s) => s.project)
   const selectedId = useStore((s) => s.selectedId)
   const { select, setView, setWallPhoto, updateElement, updateCable, removeSelected, setWallTool } = useStore.getState()
+  const roomLights = project.elements.filter((e) => e.type === 'light' && e.roomId === room.id)
+  const controllers = (lightId: string) => project.elements.filter((e) => e.type === 'switch' && e.controls?.includes(lightId))
   const fileRef = useRef<HTMLInputElement>(null)
   const current = wall !== null ? walls[wall] : null
   const elements = current ? project.elements.filter((e) => e.roomId === room.id && e.wall === current.i) : []
@@ -94,13 +99,41 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
             </select>
           </label>
           {el.type === 'switch' && (
+            <>
+              <label>
+                Vrsta
+                <select value={el.switchKind ?? 'obicni'} onChange={(e) => updateElement(el.id, { switchKind: e.target.value as SwitchKind })}>
+                  {SWITCH_KINDS.map((k) => <option key={k.id} value={k.id}>{k.label} · {k.wires}</option>)}
+                </select>
+              </label>
+              <div className="controls">
+                <span className="muted">Pali svjetla</span>
+                {!roomLights.length && <span className="muted">(nema svjetala u sobi, postavi Svjetlo (L) na zid)</span>}
+                {roomLights.map((l) => {
+                  const on = el.controls?.includes(l.id) ?? false
+                  return (
+                    <label key={l.id} className="inline">
+                      <input type="checkbox" checked={on} onChange={(e) => updateElement(el.id, { controls: e.target.checked ? [...(el.controls ?? []), l.id] : (el.controls ?? []).filter((x) => x !== l.id) })} />
+                      {l.label} <span className="muted">zid {l.wall + 1}</span>
+                    </label>
+                  )
+                })}
+              </div>
+            </>
+          )}
+          {el.type === 'light' && (
+            <div className="stat"><span>Pali ga</span><b>{controllers(el.id).map((s) => s.label).join(', ') || '—'}</b><span className="muted">označi na prekidaču</span></div>
+          )}
+          {(el.type === 'box' || el.type === 'socket' || el.type === 'switch') && (
             <label>
-              Vrsta
-              <select value={el.switchKind ?? 'obicni'} onChange={(e) => updateElement(el.id, { switchKind: e.target.value as SwitchKind })}>
-                {SWITCH_KINDS.map((k) => <option key={k.id} value={k.id}>{k.label} · {k.wires}</option>)}
+              Doza
+              <select value={el.depth ?? ''} onChange={(e) => updateElement(el.id, { depth: (e.target.value || undefined) as BoxDepth | undefined })}>
+                <option value="">nije označeno</option>
+                {DEPTHS.map((d) => <option key={d.id} value={d.id}>{d.label}</option>)}
               </select>
             </label>
           )}
+          {el.type === 'box' && <button onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori kutiju (spojevi)</button>}
           <div className="field-row">
             <label>Od lijevo (m) <input type="number" step={0.01} value={el.xM} onChange={(e) => updateElement(el.id, { xM: +e.target.value || 0 })} /></label>
             <label>Visina (m) <input type="number" step={0.01} value={el.zM} onChange={(e) => updateElement(el.id, { zM: +e.target.value || 0 })} /></label>
@@ -123,6 +156,19 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
           </label>
           <div className="stat"><span>Od</span><b>{endLabel(cable.from, project)}</b></div>
           <div className="stat"><span>Do</span><b>{endLabel(cable.to, project)}</b></div>
+          {(() => {
+            const box = [cable.from, cable.to].map((e) => (e.kind === 'element' ? project.elements.find((x) => x.id === e.id) : undefined)).find((x) => x?.type === 'box')
+            const derived = box ? resolveCable(cable, box, project).role : null
+            return (
+              <label>
+                Uloga u kutiji
+                <select value={cable.role ?? 'auto'} onChange={(e) => updateCable(cable.id, { role: e.target.value as CableRole })}>
+                  <option value="auto">{derived ? `izvedeno: ${roleLabel(derived)}` : 'izvedeno (kad je vezan na kutiju)'}</option>
+                  {(Object.keys(CABLE_ROLES) as Exclude<CableRole, 'auto'>[]).map((r) => <option key={r} value={r}>{CABLE_ROLES[r]}</option>)}
+                </select>
+              </label>
+            )
+          })()}
           <div className="stat"><span>Duljina na zidu</span><b>{cableLengthM(cable, ctx).toFixed(2)} m</b><span className="muted">{cable.via.length} lomova</span></div>
           <label>Bilješka <textarea rows={2} value={cable.note} onChange={(e) => updateCable(cable.id, { note: e.target.value })} /></label>
         </section>
