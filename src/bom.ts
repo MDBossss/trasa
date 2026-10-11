@@ -1,6 +1,6 @@
 import { polylineLength } from './geometry'
 import { allJunctions } from './junction'
-import { ELEMENT_META, RELAY_MODELS, type Project } from './types'
+import { ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, type Project } from './types'
 import { cableLengthM, wallExits } from './walls'
 
 // Bill of materials summed from the drawing: cable metres (wall runs + conduit runs + reserve),
@@ -55,7 +55,7 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
       case 'modbox': add(out, 'Doze i kutije', `Doza modularna ${e.modules ?? 3}M${depth}`, 'kom', 1); break
       case 'socket':
         if (!e.host) add(out, 'Doze i kutije', `Doza Ø60${depth}`, 'kom', 1)
-        add(out, 'Oprema', e.host ? 'Utičnica 2M (u modularnoj)' : 'Utičnica', 'kom', 1); break
+        add(out, 'Oprema', `Utičnica ${SOCKET_KINDS[e.socketKind ?? 'schuko'].label.toLowerCase()} ${SOCKET_KINDS[e.socketKind ?? 'schuko'].modules}M${e.host ? ' (u modularnoj)' : ''}`, 'kom', 1); break
       case 'switch':
         if (!e.host) add(out, 'Doze i kutije', `Doza Ø60${depth}`, 'kom', 1)
         add(out, 'Oprema', e.switchKind === 'tipkalo' ? 'Tipkalo' : `Prekidač ${e.switchKind ?? 'obični'}`, 'kom', 1); break

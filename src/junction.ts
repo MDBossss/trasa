@@ -1,4 +1,4 @@
-import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, coreColors, isPlace, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor } from './types'
+import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isPlace, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor } from './types'
 
 // Everything a box needs: which cables enter it, what each core goes to, which devices sit inside
 // and which WAGO 221 connectors (or direct jumpers) that takes. Derived from the drawing, nothing is stored.
@@ -180,7 +180,7 @@ export function devicesIn(place: WallElement, p: Project): Device[] {
         const ports = m.dc ? ['L', 'N'] : ['L', ...(m.needsN ? ['N'] : []), ...Array.from({ length: m.inputs }, (_, i) => `SW${i + 1}`), ...Array.from({ length: m.outputs }, (_, i) => (m.outputs === 1 ? 'O' : `O${i + 1}`))]
         return { el: e, label: `${e.label} ${m.label}`, ports, wMm: 37, hMm: 14, kind: 'relay' as const }
       }
-      if (e.type === 'socket') return { el: e, label: `${e.label} utičnica`, ports: ['L', 'N', 'PE'], wMm: 22, hMm: 18, kind: 'socket' as const }
+      if (e.type === 'socket') { const k = SOCKET_KINDS[e.socketKind ?? 'schuko']; return { el: e, label: `${e.label} ${k.label.toLowerCase()} utičnica`, ports: ['L', 'N', 'PE'], wMm: k.modules * 11, hMm: 18, kind: 'socket' as const } }
       return { el: e, label: `${e.label} ${(e.switchKind ?? 'obicni') === 'tipkalo' ? 'tipkalo' : 'prekidač'}`, ports: ['1', '2', '3'].slice(0, (e.switchKind === 'serijski' || e.switchKind === 'izmjenicni') ? 3 : 2), wMm: 14, hMm: 18, kind: 'button' as const }
     })
 }
@@ -320,6 +320,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
       add(pm.terminal, { kind: 'port', deviceId: d.el.id, deviceLabel: d.label, port: pm.port, color: pm.color, note: pm.note })
     }
   }
+  if (box.type === 'modbox') { const used = devices.reduce((n, d) => n + modulesOf(d.el), 0); if (used > (box.modules ?? 3)) checks.push({ level: 'err', text: `Doza je ${box.modules ?? 3}M, a unutra je ${used}M (šuko 2M, tipkalo i euro 1M). Uzmi veću dozu ili makni element.` }) }
   if (devices.filter((d) => d.kind === 'relay').length > 2) checks.push({ level: 'warn', text: `${devices.filter((d) => d.kind === 'relay').length} releja u jednoj dozi: provjeri stane li uz stezaljke.` })
 
   const terminals: Terminal[] = [...map.entries()]

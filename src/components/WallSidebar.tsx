@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
-import { CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, isPlace, type BoxDepth, type CableRole, type RelayModel, type Room, type SwitchKind } from '../types'
+import { CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, type BoxDepth, type CableRole, type RelayModel, type Room, type SocketKind, type SwitchKind } from '../types'
 import { cableNeeds, resolveCable, roleLabel, terminalMeta } from '../junction'
 import { Icon } from './Icons'
 
@@ -161,6 +161,15 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
               <div className="stat"><span>Releji u niši</span><b>{project.elements.filter((h) => h.host === el.id).map((h) => `${h.label} ${RELAY_MODELS[h.relayModel ?? 'rgbw'].label}`).join(', ') || '—'}</b></div>
             </>
           )}
+          {el.type === 'socket' && (
+            <label>
+              Vrsta
+              <select value={el.socketKind ?? 'schuko'} onChange={(e) => updateElement(el.id, { socketKind: e.target.value as SocketKind })}>
+                {(Object.keys(SOCKET_KINDS) as SocketKind[]).map((k) => <option key={k} value={k}>{SOCKET_KINDS[k].label} · {SOCKET_KINDS[k].modules}M</option>)}
+              </select>
+            </label>
+          )}
+          {el.type === 'modbox' && (() => { const used = project.elements.filter((h) => h.host === el.id).reduce((n, h) => n + modulesOf(h), 0); return <div className={`stat ${used > (el.modules ?? 3) ? 'warn' : ''}`}><span>Zauzeto</span><b>{used} / {el.modules ?? 3} M</b><span className="muted">{project.elements.filter((h) => h.host === el.id).map((h) => h.label).join(', ') || 'prazno'}</span></div> })()}
           {el.type === 'modbox' && (
             <label>
               Moduli

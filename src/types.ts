@@ -57,6 +57,10 @@ export const RELAY_MODELS: Record<RelayModel, { label: string; inputs: number; o
 }
 export type SwitchKind = 'obicni' | 'serijski' | 'izmjenicni' | 'krizni' | 'tipkalo'
 export type BoxDepth = 'plitka' | 'duboka'
+export type SocketKind = 'schuko' | 'euro'
+export const SOCKET_KINDS: Record<SocketKind, { label: string; modules: number }> = { schuko: { label: 'Šuko', modules: 2 }, euro: { label: 'Euro', modules: 1 } }
+// modules an element takes inside a modular frame
+export const modulesOf = (e: WallElement) => (e.type === 'socket' ? SOCKET_KINDS[e.socketKind ?? 'schuko'].modules : e.type === 'switch' ? 1 : 0)
 
 // Placed on a wall: x from the left (inside view), z from the floor, metres.
 export interface WallElement {
@@ -85,6 +89,8 @@ export interface WallElement {
   // light / LED supply powered by a relay output (1-based) instead of a classic switch
   feedRelayId?: string
   feedOutput?: number
+  // socket: schuko takes 2 modules in a frame, euro 1
+  socketKind?: SocketKind
   // LED supply + strip in a niche
   ledM?: number
   ledWpm?: number
