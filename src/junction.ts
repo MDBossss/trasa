@@ -317,8 +317,8 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   for (const d of sorted) {
     const m = d.kind === 'relay' ? RELAY_MODELS[d.el.relayModel ?? 'plus1'] : null
     if (m?.needsN && !hasN) checks.push({ level: 'err', text: `${d.label} treba nulu (N), a u dozu ne dolazi nula. Dovedi 3×1,5 ili 5×1,5 s N iz razvodne kutije.` })
-    if (m && box.depth === 'plitka') checks.push({ level: 'err', text: `${d.label} ne stane u plitku dozu. Označi dozu kao duboku (60 mm) ili preseli relej u razvodnu kutiju.` })
-    if (m && !box.depth && box.type !== 'box') checks.push({ level: 'warn', text: `${d.label}: označi dubinu doze (relej traži duboku, 60 mm).` })
+    if (m && box.depth === 'plitka') checks.push({ level: 'err', text: `${d.label} ne stane u standardnu dozu (≈50 mm). Uzmi duboku (TEM PM7-65 / 65 mm) ili preseli relej u razvodnu kutiju.` })
+    if (m && !box.depth && box.type !== 'box') checks.push({ level: 'warn', text: `${d.label}: označi dubinu doze (relej traži duboku, ≥65 mm).` })
     for (const pm of devicePorts(d, p, checks)) {
       const optional = d.kind === 'relay' && (pm.terminal.startsWith('O:') || pm.terminal.startsWith('I:'))
       if (optional && !map.has(pm.terminal)) {

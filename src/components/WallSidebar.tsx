@@ -13,7 +13,7 @@ const SWITCH_KINDS: { id: SwitchKind; label: string; wires: string }[] = [
   { id: 'izmjenicni', label: 'Izmjenični', wires: 'L/povratna + 2 putne, par prekidača' },
   { id: 'krizni', label: 'Križni', wires: '4 putne, između izmjeničnih' },
 ]
-const DEPTHS: { id: BoxDepth; label: string }[] = [{ id: 'plitka', label: 'Plitka' }, { id: 'duboka', label: 'Duboka (60 mm, za relej)' }]
+const DEPTHS: { id: BoxDepth; label: string }[] = [{ id: 'plitka', label: 'Standardna (≈50 mm)' }, { id: 'duboka', label: 'Duboka (≥65 mm, za relej)' }]
 
 export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo[]; wall: number | null }) {
   const project = useStore((s) => s.project)
@@ -174,7 +174,7 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
             <label>
               Moduli
               <select value={el.modules ?? 3} onChange={(e) => updateElement(el.id, { modules: +e.target.value })}>
-                {[2, 3, 4, 7].map((m) => <option key={m} value={m}>{m}M</option>)}
+                {[1, 2, 3, 4, 7].map((m) => <option key={m} value={m}>{m}M{m === 3 ? ' (TEM PM3)' : m === 4 ? ' (TEM PM4)' : m === 7 ? ' (TEM PM7)' : ''}</option>)}
               </select>
             </label>
           )}

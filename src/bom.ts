@@ -52,7 +52,7 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
     const depth = e.depth ? `, ${e.depth}` : ''
     switch (e.type) {
       case 'box': add(out, 'Doze i kutije', `Razvodna kutija 100 × 100 mm${depth}`, 'kom', 1); break
-      case 'modbox': add(out, 'Doze i kutije', `Doza modularna ${e.modules ?? 3}M${depth}`, 'kom', 1); break
+      case 'modbox': { const m = e.modules ?? 3; add(out, 'Doze i kutije', `Doza modularna ${m}M${m === 3 ? ' (TEM PM3)' : m === 4 ? ' (TEM PM4)' : m === 7 ? (e.depth === 'duboka' ? ' (TEM PM7-65)' : ' (TEM PM7)') : ''}${depth}`, 'kom', 1); add(out, 'Oprema', `Nosivi okvir + ukrasni okvir ${m}M`, 'kom', 1); break }
       case 'socket':
         if (!e.host) add(out, 'Doze i kutije', `Doza Ø60${depth}`, 'kom', 1)
         add(out, 'Oprema', `Utičnica ${SOCKET_KINDS[e.socketKind ?? 'schuko'].label.toLowerCase()} ${SOCKET_KINDS[e.socketKind ?? 'schuko'].modules}M${e.host ? ' (u modularnoj)' : ''}`, 'kom', 1); break

@@ -446,7 +446,7 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   await page.locator('.props .stat', { hasText: '4 potrebno · 5 ima' }).waitFor()
   // phase 3: material for the house and the print preview
   await page.getByRole('button', { name: 'Materijal' }).click()
-  await page.locator('.bom-table tr', { hasText: 'Doza modularna 3M, duboka' }).getByText('1 kom').waitFor()
+  await page.locator('.bom-table tr', { hasText: 'Doza modularna 3M (TEM PM3), duboka' }).getByText('1 kom').waitFor()
   await page.locator('.bom-table tr', { hasText: 'Shelly Plus 1' }).getByText('1 kom').waitFor()
   await page.locator('.bom-table tr', { hasText: 'Tipkalo' }).getByText('1 kom').waitFor()
   await page.locator('.bom-table tr', { hasText: 'NYM-J 5x1.5' }).getByText(/m$/).waitFor()
