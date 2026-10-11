@@ -209,7 +209,7 @@ export function devicesIn(place: WallElement, p: Project): Device[] {
         return { el: e, label: `${e.label} ${m.label}`, ports, wMm: 37, hMm: 14, kind: 'relay' as const }
       }
       if (e.type === 'socket') { const k = SOCKET_KINDS[e.socketKind ?? 'schuko']; return { el: e, label: `${e.label} ${k.label.toLowerCase()} utičnica`, ports: ['L', 'N', 'PE', 'L′', 'N′', 'PE′'], wMm: Math.max(24, k.modules * 11), hMm: 18, kind: 'socket' as const } }
-      return { el: e, label: `${e.label} ${(e.switchKind ?? 'obicni') === 'tipkalo' ? 'tipkalo' : 'prekidač'}`, ports: ['1', '2', '3'].slice(0, (e.switchKind === 'serijski' || e.switchKind === 'izmjenicni') ? 3 : 2), wMm: 14, hMm: 18, kind: 'button' as const }
+      return { el: e, label: `${e.label} ${(e.switchKind ?? 'obicni') === 'tipkalo' ? 'tipkalo' : 'prekidač'}${(e.modules ?? 1) > 1 ? ` ${e.modules}M` : ''}`, ports: ['1', '2', '3'].slice(0, (e.switchKind === 'serijski' || e.switchKind === 'izmjenicni') ? 3 : 2), wMm: Math.max(14, (e.modules ?? 1) * 11), hMm: 18, kind: 'button' as const }
     })
 }
 

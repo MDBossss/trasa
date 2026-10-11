@@ -62,7 +62,7 @@ export type BoxDepth = 'plitka' | 'duboka'
 export type SocketKind = 'schuko' | 'euro'
 export const SOCKET_KINDS: Record<SocketKind, { label: string; modules: number }> = { schuko: { label: 'Šuko', modules: 2 }, euro: { label: 'Euro', modules: 1 } }
 // modules an element takes inside a modular frame
-export const modulesOf = (e: WallElement) => (e.type === 'socket' ? SOCKET_KINDS[e.socketKind ?? 'schuko'].modules : e.type === 'switch' ? 1 : 0)
+export const modulesOf = (e: WallElement) => (e.type === 'socket' ? SOCKET_KINDS[e.socketKind ?? 'schuko'].modules : e.type === 'switch' ? (e.modules ?? 1) : 0)
 
 // Placed on a wall: x from the left (inside view), z from the floor, metres.
 export interface WallElement {
@@ -81,7 +81,7 @@ export interface WallElement {
   controls?: string[]
   // element placed inside another one (relay or button in a box / modular frame); drawn at the host
   host?: string
-  // modbox: number of modules in the frame
+  // modbox: number of modules in the frame; switch: how many modules it takes (1 or 2)
   modules?: number
   // relay
   relayModel?: RelayModel

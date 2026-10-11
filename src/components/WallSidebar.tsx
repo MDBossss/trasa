@@ -123,6 +123,15 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
                   </select>
                 </label>
               )}
+              {el.host && (
+                <label>
+                  Širina
+                  <select value={el.modules ?? 1} onChange={(e) => updateElement(el.id, { modules: +e.target.value })}>
+                    <option value={1}>1M</option>
+                    <option value={2}>2M</option>
+                  </select>
+                </label>
+              )}
               <div className="controls" hidden={!!el.relayId}>
                 <span className="muted">Pali svjetla</span>
                 {!roomLights.length && <span className="muted">(nema svjetala u sobi, postavi Svjetlo (L) na zid)</span>}

@@ -58,7 +58,7 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
         add(out, 'Oprema', `Utičnica ${SOCKET_KINDS[e.socketKind ?? 'schuko'].label.toLowerCase()} ${SOCKET_KINDS[e.socketKind ?? 'schuko'].modules}M${e.host ? ' (u modularnoj)' : ''}`, 'kom', 1); break
       case 'switch':
         if (!e.host) add(out, 'Doze i kutije', `Doza Ø60${depth}`, 'kom', 1)
-        add(out, 'Oprema', e.switchKind === 'tipkalo' ? 'Tipkalo' : `Prekidač ${e.switchKind ?? 'obični'}`, 'kom', 1); break
+        add(out, 'Oprema', `${e.switchKind === 'tipkalo' ? 'Tipkalo' : `Prekidač ${e.switchKind ?? 'obični'}`}${e.host ? ` ${e.modules ?? 1}M` : ''}`, 'kom', 1); break
       case 'light': add(out, 'Oprema', 'Svjetlo (rasvjetno mjesto)', 'kom', 1); break
       case 'panel': add(out, 'Oprema', ELEMENT_META.panel.label, 'kom', 1); break
       case 'relay': add(out, 'Releji', RELAY_MODELS[e.relayModel ?? 'plus1'].label, 'kom', 1); break
