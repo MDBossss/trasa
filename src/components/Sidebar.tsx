@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { conduitVisible, useStore } from '../store'
 import { fmtMeters, polylineLength } from '../geometry'
-import { DIAMETERS, type Category } from '../types'
+import { DIAMETERS, type Category, type Conduit } from '../types'
+import { conduitTouchesRoom } from '../walls'
 import { uid } from '../store'
 import { detectSkew } from '../images'
 import { Icon } from './Icons'
@@ -11,8 +13,12 @@ export function Sidebar() {
   const focusRoomId = useStore((s) => s.focusRoomId)
   const hiddenCategories = useStore((s) => s.hiddenCategories)
   const hiddenConduits = useStore((s) => s.hiddenConduits)
-  const { setFocusRoom, toggleHiddenCategory, toggleHiddenConduit } = useStore.getState()
-  const vis = (c: typeof project.conduits[number]) => conduitVisible(c, { project, focusRoomId, hiddenCategories, hiddenConduits, selectedId: null })
+  const soloCategory = useStore((s) => s.soloCategory)
+  const { setFocusRoom, toggleHiddenCategory, toggleHiddenConduit, setSoloCategory } = useStore.getState()
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
+  const [listMode, setListModeState] = useState<'all' | 'category' | 'room'>(() => { try { return (localStorage.getItem('trasa-list-mode') as 'all') || 'all' } catch { return 'all' } })
+  const setListMode = (m: typeof listMode) => { setListModeState(m); try { localStorage.setItem('trasa-list-mode', m) } catch { /* private mode */ } }
+  const vis = (c: typeof project.conduits[number]) => conduitVisible(c, { project, focusRoomId, hiddenCategories, hiddenConduits, selectedId: null, soloCategory })
   const hiddenByFocus = project.conduits.filter((c) => !vis(c)).length
   const { select, patchProject, updateConduit, updateRoom, removeSelected, setView, setTool, setTilt, rotatePlan, setCategories } = useStore.getState()
   const conduit = project.conduits.find((c) => c.id === selectedId)
@@ -21,6 +27,20 @@ export function Sidebar() {
   const hasPlan = !!project.planImage
   const setupDone = hasPlan && !!ppm
   const originSet = !!(project.gridOrigin.x || project.gridOrigin.y)
+  // list groups: by category (uncategorised last) or by room (a conduit can enter two rooms)
+  type Group = { id: string; name: string; color?: string; items: Conduit[]; kind: 'category' | 'room' | 'all' }
+  const groups: Group[] =
+    listMode === 'category'
+      ? [
+          ...project.categories.map((cat) => ({ id: cat.id, name: cat.name, color: cat.color, kind: 'category' as const, items: project.conduits.filter((c) => c.categoryId === cat.id) })),
+          { id: '', name: 'Bez kategorije', color: '#9aa0ab', kind: 'category' as const, items: project.conduits.filter((c) => !c.categoryId || !project.categories.some((x) => x.id === c.categoryId)) },
+        ].filter((g) => g.items.length > 0)
+      : listMode === 'room'
+        ? [
+            ...project.rooms.map((r) => ({ id: r.id, name: r.name, kind: 'room' as const, items: project.conduits.filter((c) => conduitTouchesRoom(c, r, ppm)) })),
+            { id: '', name: 'Izvan soba', kind: 'room' as const, items: project.conduits.filter((c) => !project.rooms.some((r) => conduitTouchesRoom(c, r, ppm))) },
+          ].filter((g) => g.items.length > 0)
+        : [{ id: 'all', name: 'Svi', kind: 'all' as const, items: project.conduits }]
 
   return (
     <aside className="sidebar">
@@ -69,39 +89,67 @@ export function Sidebar() {
 
       <section>
         <h3>Bužiri <span className="count">{project.conduits.length - hiddenByFocus}{hiddenByFocus ? ` / ${project.conduits.length}` : ''}</span>
-          {(focusRoomId || hiddenCategories.length > 0 || hiddenConduits.length > 0) && (
-            <button className="mini" onClick={() => { setFocusRoom(null); hiddenCategories.forEach(toggleHiddenCategory); hiddenConduits.forEach(toggleHiddenConduit) }}>Prikaži sve</button>
+          {(focusRoomId || soloCategory !== null || hiddenCategories.length > 0 || hiddenConduits.length > 0) && (
+            <button className="mini" onClick={() => { setFocusRoom(null); setSoloCategory(null); hiddenCategories.forEach(toggleHiddenCategory); hiddenConduits.forEach(toggleHiddenConduit) }}>Prikaži sve</button>
           )}
         </h3>
         {project.conduits.length === 0 && <p className="muted">Alat Bužir (B), pa klikaj trasu po tlocrtu.</p>}
-        {project.categories.some((cat) => project.conduits.some((c) => c.categoryId === cat.id)) && (
-          <div className="legend">
-            {project.categories.filter((cat) => project.conduits.some((c) => c.categoryId === cat.id)).map((cat) => {
-              const off = hiddenCategories.includes(cat.id)
-              return (
-                <button key={cat.id} className={`legend-item ${off ? 'off' : ''}`} onClick={() => toggleHiddenCategory(cat.id)} title={off ? 'Prikaži kategoriju' : 'Sakrij kategoriju'} aria-pressed={!off}>
-                  <span className="swatch" style={{ background: cat.color }} />{cat.name}
-                </button>
-              )
-            })}
+        {project.conduits.length > 0 && (
+          <div className="segmented" role="tablist" aria-label="Prikaz bužira">
+            {([['all', 'Svi'], ['category', 'Po kategoriji'], ['room', 'Po sobama']] as const).map(([m, label]) => (
+              <button key={m} role="tab" aria-selected={listMode === m} className={listMode === m ? 'active' : ''} onClick={() => setListMode(m)}>{label}</button>
+            ))}
           </div>
         )}
-        <ul className="list">
-          {project.conduits.map((c) => {
-            const shown = vis(c)
-            const eyeOff = hiddenConduits.includes(c.id)
-            return (
-              <li key={c.id} className={`${c.id === selectedId ? 'sel' : ''} ${shown ? '' : 'dim'}`} onClick={() => { setTool('select'); select(c.id) }}>
-                <span className="swatch" style={{ background: c.color }} />
-                <span className="name">{c.name}</span>
-                <span className="meta">ø{c.diameter} · {fmtMeters(polylineLength(c.points), ppm)}</span>
-                <button className="icon-btn eye" onClick={(e) => { e.stopPropagation(); toggleHiddenConduit(c.id) }} title={eyeOff ? 'Prikaži bužir' : 'Sakrij bužir'} aria-label={eyeOff ? `Prikaži ${c.name}` : `Sakrij ${c.name}`}>
-                  {eyeOff ? <Icon.eyeOff /> : <Icon.eye />}
-                </button>
-              </li>
-            )
-          })}
-        </ul>
+        {groups.map((g) => {
+          const off = g.kind === 'category' && g.id !== '' && hiddenCategories.includes(g.id)
+          const solo = g.kind === 'category' ? soloCategory === g.id : g.kind === 'room' ? focusRoomId === g.id && g.id !== '' : false
+          const open = g.kind === 'all' || !collapsed[g.id]
+          const setSolo = () => (g.kind === 'category' ? setSoloCategory(solo ? null : g.id) : setFocusRoom(solo ? null : g.id))
+          return (
+            <div key={g.id} className={`group ${off ? 'off' : ''} ${solo ? 'solo' : ''} ${g.kind === 'all' ? 'flat' : ''}`}>
+              {g.kind !== 'all' && (
+                <div className="group-head" onClick={() => setCollapsed({ ...collapsed, [g.id]: open })}>
+                  <Icon.chevron className={`chev ${open ? 'open' : ''}`} />
+                  {g.color && <span className="swatch" style={{ background: g.color }} />}
+                  <span className="name">{g.name}</span>
+                  <span className="count">{g.items.length}</span>
+                  {!(g.kind === 'room' && g.id === '') && (
+                    <button className={`mini solo-btn ${solo ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); setSolo() }}
+                      title={solo ? 'Prikaži sve' : g.kind === 'room' ? 'Prikaži samo bužire ove sobe i zumiraj' : 'Prikaži samo ovu kategoriju'} aria-label={`Samo ${g.name}`} aria-pressed={solo}>
+                      {g.kind === 'room' ? <><Icon.focus /> Fokus</> : 'Samo'}
+                    </button>
+                  )}
+                  {g.kind === 'room' && g.id !== '' && <button className="mini" onClick={(e) => { e.stopPropagation(); setView({ kind: 'room', roomId: g.id, wall: 0 }) }}>Otvori</button>}
+                  {g.kind === 'category' && g.id !== '' && (
+                    <button className="icon-btn eye" onClick={(e) => { e.stopPropagation(); if (e.altKey) setSolo(); else toggleHiddenCategory(g.id) }}
+                      title={off ? 'Prikaži kategoriju (Alt+klik = samo ova)' : 'Sakrij kategoriju (Alt+klik = samo ova)'} aria-label={off ? `Prikaži ${g.name}` : `Sakrij ${g.name}`}>
+                      {off ? <Icon.eyeOff /> : <Icon.eye />}
+                    </button>
+                  )}
+                </div>
+              )}
+              {open && (
+                <ul className="list">
+                  {g.items.map((c) => {
+                    const shown = vis(c)
+                    const eyeOff = hiddenConduits.includes(c.id)
+                    return (
+                      <li key={c.id} className={`${c.id === selectedId ? 'sel' : ''} ${shown ? '' : 'dim'}`} onClick={() => { setTool('select'); select(c.id) }}>
+                        <span className="swatch" style={{ background: c.color }} />
+                        <span className="name">{c.name}</span>
+                        <span className="meta">ø{c.diameter} · {fmtMeters(polylineLength(c.points), ppm)}</span>
+                        <button className="icon-btn eye" onClick={(e) => { e.stopPropagation(); toggleHiddenConduit(c.id) }} title={eyeOff ? 'Prikaži bužir' : 'Sakrij bužir'} aria-label={eyeOff ? `Prikaži ${c.name}` : `Sakrij ${c.name}`}>
+                          {eyeOff ? <Icon.eyeOff /> : <Icon.eye />}
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </div>
+          )
+        })}
       </section>
 
       <section>

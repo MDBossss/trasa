@@ -11,7 +11,8 @@ export function CanvasHud({ size }: { size: { w: number; h: number } }) {
   const hasPlan = useStore((s) => !!s.project.planImage)
   const focusRoom = useStore((s) => s.project.rooms.find((r) => r.id === s.focusRoomId))
   const hiddenCount = useStore((s) => s.hiddenCategories.length + s.hiddenConduits.length)
-  const { toggle, zoomBy, fitView, setFocusRoom } = useStore.getState()
+  const solo = useStore((s) => (s.soloCategory === '' ? { name: 'Bez kategorije' } : s.project.categories.find((c) => c.id === s.soloCategory)))
+  const { toggle, zoomBy, fitView, setFocusRoom, setSoloCategory } = useStore.getState()
   const center = { x: size.w / 2, y: size.h / 2 }
   const t = TOOLS.find((x) => x.id === tool)!
   return (
@@ -29,6 +30,7 @@ export function CanvasHud({ size }: { size: { w: number; h: number } }) {
       chips={
         <>
           {focusRoom && <button className="chip" onClick={() => setFocusRoom(null)} title="Prikaži sve (Esc)">Fokus: {focusRoom.name} · samo bužiri te sobe ✕</button>}
+          {solo && <button className="chip" onClick={() => setSoloCategory(null)} title="Prikaži sve kategorije (Esc)">Samo: {solo.name} ✕</button>}
           {hiddenCount > 0 && <span className="chip muted">{hiddenCount} skriveno</span>}
         </>
       }

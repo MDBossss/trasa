@@ -24,6 +24,7 @@ interface State {
   focusRoomId: string | null
   hiddenCategories: string[]
   hiddenConduits: string[]
+  soloCategory: string | null
   snapGrid: boolean
   snapAngle: boolean
   loaded: boolean
@@ -48,6 +49,7 @@ interface State {
   setFocusRoom: (id: string | null) => void
   toggleHiddenCategory: (id: string) => void
   toggleHiddenConduit: (id: string) => void
+  setSoloCategory: (id: string | null) => void
   patchProject: (p: Partial<Project>) => void
   replaceProject: (p: Project) => void
   addConduit: (points: Pt[]) => string
@@ -80,6 +82,7 @@ export const useStore = create<State>()(
       focusRoomId: null,
       hiddenCategories: [],
       hiddenConduits: [],
+      soloCategory: null,
       snapGrid: true,
       snapAngle: true,
       loaded: false,
@@ -124,6 +127,7 @@ export const useStore = create<State>()(
       toggle: (k) => set((s) => ({ [k]: !s[k] })),
       setFocusRoom: (focusRoomId) => set({ focusRoomId }),
       toggleHiddenCategory: (id) => set((s) => ({ hiddenCategories: s.hiddenCategories.includes(id) ? s.hiddenCategories.filter((x) => x !== id) : [...s.hiddenCategories, id] })),
+      setSoloCategory: (soloCategory) => set({ soloCategory }),
       toggleHiddenConduit: (id) => set((s) => ({ hiddenConduits: s.hiddenConduits.includes(id) ? s.hiddenConduits.filter((x) => x !== id) : [...s.hiddenConduits, id] })),
       patchProject: (p) => set((s) => ({ project: { ...s.project, ...p } })),
       replaceProject: (project) => set({ project: normalize(project), selectedId: null, view: { kind: 'plan' } }),
@@ -282,8 +286,9 @@ export function planDims(p: Project): { w: number; h: number } | null {
 }
 
 // Visibility on the plan: eye toggles and room focus; the selected conduit always shows.
-export function conduitVisible(c: Conduit, s: Pick<State, 'project' | 'focusRoomId' | 'hiddenCategories' | 'hiddenConduits' | 'selectedId'>) {
+export function conduitVisible(c: Conduit, s: Pick<State, 'project' | 'focusRoomId' | 'hiddenCategories' | 'hiddenConduits' | 'selectedId' | 'soloCategory'>) {
   if (c.id === s.selectedId) return true
+  if (s.soloCategory && (c.categoryId ?? '') !== s.soloCategory) return false
   if (s.hiddenConduits.includes(c.id)) return false
   if (c.categoryId && s.hiddenCategories.includes(c.categoryId)) return false
   if (s.focusRoomId) {

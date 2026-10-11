@@ -32,6 +32,7 @@ export function PlanCanvas() {
   const focusRoomId = useStore((s) => s.focusRoomId)
   const hiddenCategories = useStore((s) => s.hiddenCategories)
   const hiddenConduits = useStore((s) => s.hiddenConduits)
+  const soloCategory = useStore((s) => s.soloCategory)
   const { select, setTool, addConduit, addRoom, updateConduit, updateRoom, patchProject, removeSelected, setTilt } = useStore.getState()
 
   const [img] = useImage(project.planImage ?? '')
@@ -100,7 +101,7 @@ export function PlanCanvas() {
       if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT') return
       if (e.key === 'Alt') { setAlt(true); e.preventDefault(); return }
       if (e.code === 'Space') { setSpace(true); e.preventDefault(); return }
-      if (e.key === 'Escape') { if (draft.length) setDraft([]); else if (selectedId) select(null); else useStore.getState().setFocusRoom(null); return }
+      if (e.key === 'Escape') { if (draft.length) setDraft([]); else if (selectedId) select(null); else if (useStore.getState().soloCategory !== null) useStore.getState().setSoloCategory(null); else useStore.getState().setFocusRoom(null); return }
       if (e.key === 'Enter') { finishDraft(); return }
       if (e.key === 'Backspace' && draft.length) { setDraft((d) => d.slice(0, -1)); return }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) { removeSelected(); return }
@@ -334,7 +335,7 @@ export function PlanCanvas() {
         </Layer>
 
         <Layer listening={tool === 'select'}>
-          {project.conduits.filter((c) => conduitVisible(c, { project, focusRoomId, hiddenCategories, hiddenConduits, selectedId })).map((c0) => {
+          {project.conduits.filter((c) => conduitVisible(c, { project, focusRoomId, hiddenCategories, hiddenConduits, selectedId, soloCategory })).map((c0) => {
             const c = live?.id === c0.id ? { ...c0, points: live.points } : c0
             const isSel = c.id === sel
             const mid = midpointOfPolyline(c.points)
