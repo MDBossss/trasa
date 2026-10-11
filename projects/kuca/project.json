@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-11T21:05:14.101Z",
+ "savedAt": "2026-10-11T22:03:16.089Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -1923,7 +1923,42 @@
     "note": "",
     "id": "og3gmqfn",
     "label": "D2",
-    "modules": 4
+    "modules": 4,
+    "depth": "plitka"
+   },
+   {
+    "roomId": "hznuei6t",
+    "wall": 3,
+    "type": "socket",
+    "xM": 0.99,
+    "zM": 0.77,
+    "note": "",
+    "host": "og3gmqfn",
+    "id": "48bep3b4",
+    "label": "U1"
+   },
+   {
+    "roomId": "hznuei6t",
+    "wall": 3,
+    "type": "socket",
+    "xM": 0.99,
+    "zM": 0.77,
+    "note": "",
+    "host": "og3gmqfn",
+    "id": "tywcsa1x",
+    "label": "U2",
+    "socketKind": "schuko",
+    "depth": "plitka"
+   },
+   {
+    "roomId": "hznuei6t",
+    "wall": 0,
+    "type": "light",
+    "xM": 0.4,
+    "zM": 2.34,
+    "note": "",
+    "id": "719oqxqh",
+    "label": "S1"
    }
   ],
   "cables": [
@@ -2017,6 +2052,23 @@
     ],
     "note": "",
     "id": "fdgq408b"
+   },
+   {
+    "roomId": "hznuei6t",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "719oqxqh"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "lly5q7dw",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "qudiqky8"
    }
   ],
   "categories": [
