@@ -181,7 +181,7 @@ await page.keyboard.press('v'); await page.keyboard.press('Meta+z')
 await openSetup(); await page.locator('.steps li').nth(2).getByText('Reset').click()
 assert.deepEqual((await state()).gridOrigin, { x: 0, y: 0 })
 
-// room focus: only conduits entering Dnevna stay on the canvas (B3 at x=-100 does not), camera zooms to the room
+// room focus: only conduits entering Dnevna stay on the canvas (B3 at x=-100 does not), camera stays put
 {
   const linesOnCanvas = () => page.evaluate(() => window.Konva.stages[0].find('Line').filter((l) => l.name() && !l.closed()).map((l) => l.name()))
   const ids = (await state()).conduits.map((c) => c.id)
@@ -190,7 +190,7 @@ assert.deepEqual((await state()).gridOrigin, { x: 0, y: 0 })
   await page.getByRole('button', { name: 'Fokus Dnevna' }).click()
   await page.getByText('Fokus: Dnevna').waitFor()
   assert.deepEqual((await linesOnCanvas()).sort(), [ids[0], ids[1]].sort())
-  assert.notEqual((await page.evaluate(() => window.__trasa.getState().camera)).scale, camBefore.scale)
+  assert.deepEqual(await page.evaluate(() => window.__trasa.getState().camera), camBefore)
   // list by category: group eye hides its conduits; the eye on a single conduit too
   await page.getByRole('tab', { name: 'Po kategoriji' }).click()
   await page.getByRole('button', { name: 'Sakrij Dolaz / napajanje' }).click()

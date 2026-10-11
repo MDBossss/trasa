@@ -1,10 +1,13 @@
+// an end outside the polygon counts only within this distance of a wall (ends inside always count)
+export const ROOM_TOL_M = 0.1
+
 import { dist, pointInPolygon, projectOnSegment, signedArea } from './geometry'
 import type { Cable, CableEnd, Conduit, Project, Pt, Room, WallElement } from './types'
 
 export interface Exit { conduit: Conduit; end: 'start' | 'end'; posM: number; distM: number; offset: Pt; zM: number | null }
 export interface WallInfo { i: number; a: Pt; b: Pt; lengthM: number; exits: Exit[] }
 
-// A conduit endpoint is an exit on its nearest wall when within 0.5 m of it.
+// A conduit endpoint is an exit on its nearest wall (inside: within 0.5 m, outside: ROOM_TOL_M).
 // With a clockwise polygon (screen coords) wall i runs left→right as seen from inside.
 export function wallExits(room: Room, conduits: Conduit[], ppm: number): WallInfo[] {
   const n = room.points.length
@@ -16,11 +19,12 @@ export function wallExits(room: Room, conduits: Conduit[], ppm: number): WallInf
   for (const c of conduits) {
     for (const end of ['start', 'end'] as const) {
       const p: Pt = end === 'start' ? c.points[0] : c.points[c.points.length - 1]
+      const inside = pointInPolygon(p, room.points)
       let best: { w: WallInfo; t: number; distM: number } | null = null
       for (const w of walls) {
         const pr = projectOnSegment(p, w.a, w.b)
         const distM = pr.dist / ppm
-        if (distM <= 0.5 && (!best || distM < best.distM)) best = { w, t: pr.t, distM }
+        if (distM <= (inside ? 0.5 : ROOM_TOL_M) && (!best || distM < best.distM)) best = { w, t: pr.t, distM }
       }
       if (best) {
         const foot = projectOnSegment(p, best.w.a, best.w.b).point
@@ -72,7 +76,7 @@ export function cableColor(c: Cable, p: Project) {
 
 // A conduit "enters" a room when either end is inside it or within 0.5 m of one of its walls.
 export function conduitTouchesRoom(c: Conduit, room: Room, ppm: number | null) {
-  const tol = (ppm ?? 100) * 0.5
+  const tol = (ppm ?? 100) * ROOM_TOL_M
   const ends = [c.points[0], c.points[c.points.length - 1]]
   return ends.some((p) => {
     if (pointInPolygon(p, room.points)) return true

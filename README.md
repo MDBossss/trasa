@@ -41,6 +41,8 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
    počinje, klikovi dodaju vodoravne/okomite lomove, klik na element završava; kabel je vezan za oba kraja i prati
    ih pri pomicanju. Desno: fotka zida, svojstva
    odabira (tip, oznaka, pozicija, vrsta prekidača, tip kabela, duljina) i lista svega na zidu.
+9. **Lista bužira**: Svi / Po kategoriji / Po sobama. Bužir pripada sobi ako mu početak ili kraj leži u sobi ili
+   najviše 10 cm izvan njezina zida. **Fokus** na sobu sakrije ostale bužire, kamera ostaje gdje je.
 
 ## Sljedeće
 

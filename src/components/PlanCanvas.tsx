@@ -4,7 +4,7 @@ import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import useImage from 'use-image'
 import { conduitVisible, gridStepPx, planDims, useStore } from '../store'
-import { bounds, centroid, dist, fmtMeters, midpointOfPolyline, polylineLength, snapPoint, snapToGrid } from '../geometry'
+import { centroid, dist, fmtMeters, midpointOfPolyline, polylineLength, snapPoint, snapToGrid } from '../geometry'
 import type { Pt } from '../types'
 import { CanvasHud } from './CanvasHud'
 import { Icon } from './Icons'
@@ -59,17 +59,6 @@ export function PlanCanvas() {
   useEffect(() => {
     setDraft([])
   }, [tool])
-
-  // focusing a room zooms the camera to it
-  useEffect(() => {
-    const room = project.rooms.find((r) => r.id === focusRoomId)
-    if (!room || !size.w) return
-    const b = bounds(room.points)
-    const w = b.maxX - b.minX
-    const h = b.maxY - b.minY
-    const scale = Math.min(size.w / (w * 1.3), size.h / (h * 1.3), 20)
-    setView({ scale, x: size.w / 2 - (b.minX + w / 2) * scale, y: size.h / 2 - (b.minY + h / 2) * scale })
-  }, [focusRoomId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toImg = useCallback((): Pt | null => {
     const st = stageRef.current

@@ -160,7 +160,7 @@ export function Sidebar() {
             <li key={r.id} className={`${r.id === selectedId ? 'sel' : ''} ${focusRoomId === r.id ? 'focused' : ''}`} onClick={() => { setTool('select'); select(r.id) }}>
               <span className="name">{r.name}</span>
               <span className="meta">{Object.values(r.walls).filter((w) => w.photo).length}/{r.points.length} fotki</span>
-              <button className={`icon-btn ${focusRoomId === r.id ? 'on' : ''}`} onClick={(e) => { e.stopPropagation(); setFocusRoom(focusRoomId === r.id ? null : r.id) }} title={focusRoomId === r.id ? 'Prikaži sve sobe' : 'Fokusiraj sobu: samo njezini bužiri, zumiraj'} aria-label={`Fokus ${r.name}`} aria-pressed={focusRoomId === r.id}><Icon.focus /></button>
+              <button className={`icon-btn ${focusRoomId === r.id ? 'on' : ''}`} onClick={(e) => { e.stopPropagation(); setFocusRoom(focusRoomId === r.id ? null : r.id) }} title={focusRoomId === r.id ? 'Prikaži sve sobe' : 'Fokusiraj sobu: samo njezini bužiri'} aria-label={`Fokus ${r.name}`} aria-pressed={focusRoomId === r.id}><Icon.focus /></button>
               <button className="mini" onClick={(e) => { e.stopPropagation(); setView({ kind: 'room', roomId: r.id, wall: 0 }) }}>Otvori</button>
             </li>
           ))}
