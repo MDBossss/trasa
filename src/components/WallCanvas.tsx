@@ -168,7 +168,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       const name = e.target.name() || e.target.getParent()?.name() || ''
       const hit = elements.find((x) => x.id === name)
       // relays go into a box / frame / LED niche, buttons into a frame: click on the host places them inside
-      const canHost = hit && (elementType === 'relay' ? isPlace(hit) || hit.type === 'ledpsu' : elementType === 'switch' && hit.type === 'modbox')
+      const canHost = hit && (elementType === 'relay' ? isPlace(hit) || hit.type === 'ledpsu' : (elementType === 'switch' || elementType === 'socket') && hit.type === 'modbox')
       if (canHost) { addElement({ roomId, wall: wall.i, type: elementType, xM: hit.xM, zM: hit.zM, note: '', host: hit.id, switchKind: placeKind, relayModel: elementType === 'relay' ? (hit.type === 'ledpsu' ? 'rgbw' : 'plus1') : undefined }); return }
       if (elementType === 'relay') { select(null); return }
       addElement({ roomId, wall: wall.i, type: elementType, xM: p.xM, zM: p.zM, note: '', switchKind: elementType === 'switch' ? placeKind : undefined })
@@ -362,7 +362,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
                   const w = el.type === 'modbox' ? (el.modules ?? 3) * 11 : 16
                   return (
                     <Group key={h.id} name={h.id} x={-w / 2 + 6 + i * 12} y={el.type === 'modbox' ? 0 : -3} onClick={(ev) => { if (tool === 'select') { ev.cancelBubble = true; select(h.id) } }}>
-                      {h.type === 'relay' ? <Rect x={-5} y={-4} width={10} height={8} cornerRadius={1.5} fill={hs ? '#1e88e5' : '#2563eb'} stroke={hs ? '#fff' : '#1e40af'} strokeWidth={px(1.5)} /> : <Circle radius={4} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} />}
+                      {h.type === 'relay' ? <Rect x={-5} y={-4} width={10} height={8} cornerRadius={1.5} fill={hs ? '#1e88e5' : '#2563eb'} stroke={hs ? '#fff' : '#1e40af'} strokeWidth={px(1.5)} /> : h.type === 'socket' ? <Rect x={-5} y={-5} width={10} height={10} cornerRadius={2} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} /> : <Circle radius={4} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} />}
                       {h.type === 'switch' && <Circle radius={1.5} fill={hs ? '#1e88e5' : '#1f2430'} />}
                       <Text text={h.label} y={6} offsetX={30} width={60} align="center" fontSize={px(8)} fill={hs ? '#1e88e5' : '#1f2430'} />
                     </Group>

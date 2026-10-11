@@ -22,7 +22,7 @@ export interface BoxCable {
   wires: Wire[]
   far: { element?: WallElement; room?: Room; conduit?: Conduit; place?: WallElement }
 }
-export interface Device { el: WallElement; label: string; ports: string[]; wMm: number; hMm: number; kind: 'relay' | 'button' }
+export interface Device { el: WallElement; label: string; ports: string[]; wMm: number; hMm: number; kind: 'relay' | 'button' | 'socket' }
 export type TerminalWire =
   | { kind: 'core'; cableId: string; cableLabel: string; color: WireColor; note?: string }
   | { kind: 'port'; deviceId: string; deviceLabel: string; port: string; color: WireColor; note?: string }
@@ -173,13 +173,14 @@ function sideOf(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallElement
 // Devices sitting inside a place: relays and buttons with host = place.
 export function devicesIn(place: WallElement, p: Project): Device[] {
   return p.elements
-    .filter((e) => e.host === place.id && (e.type === 'relay' || e.type === 'switch'))
+    .filter((e) => e.host === place.id && (e.type === 'relay' || e.type === 'switch' || e.type === 'socket'))
     .map((e) => {
       if (e.type === 'relay') {
         const m = RELAY_MODELS[e.relayModel ?? 'plus1']
         const ports = m.dc ? ['L', 'N'] : ['L', ...(m.needsN ? ['N'] : []), ...Array.from({ length: m.inputs }, (_, i) => `SW${i + 1}`), ...Array.from({ length: m.outputs }, (_, i) => (m.outputs === 1 ? 'O' : `O${i + 1}`))]
         return { el: e, label: `${e.label} ${m.label}`, ports, wMm: 37, hMm: 14, kind: 'relay' as const }
       }
+      if (e.type === 'socket') return { el: e, label: `${e.label} utičnica`, ports: ['L', 'N', 'PE'], wMm: 22, hMm: 18, kind: 'socket' as const }
       return { el: e, label: `${e.label} ${(e.switchKind ?? 'obicni') === 'tipkalo' ? 'tipkalo' : 'prekidač'}`, ports: ['1', '2', '3'].slice(0, (e.switchKind === 'serijski' || e.switchKind === 'izmjenicni') ? 3 : 2), wMm: 14, hMm: 18, kind: 'button' as const }
     })
 }
@@ -196,6 +197,7 @@ function devicePorts(d: Device, p: Project, checks: Check[]): PortMember[] {
     for (let n = 1; n <= m.outputs; n++) out.push({ port: m.outputs === 1 ? 'O' : `O${n}`, terminal: `O:${d.el.id}:${n}`, color: 'black', note: `izlaz ${n}` })
     return out
   }
+  if (d.kind === 'socket') return [{ port: 'L', terminal: 'L', color: 'brown' }, { port: 'N', terminal: 'N', color: 'blue' }, { port: 'PE', terminal: 'PE', color: 'gnye' }]
   const sig = switchSignals(d.el, p, checks, 3)
   if (!sig.length) return out
   return sig.map((s, i) => ({ port: `${i + 1}`, terminal: s.terminal, color: i === 0 && s.terminal === 'L' ? 'brown' : 'black', note: s.note }))
@@ -299,7 +301,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
     add(w.terminal === 'PARK' ? `PARK:${bc.cable.id}:${w.color}` : w.terminal, { kind: 'core', cableId: bc.cable.id, cableLabel: bc.label, color: w.color, note: w.note })
   }
   // buttons first (they create the I:/SW: demands), then relays whose SW/O ports only join when something uses them
-  const sorted = [...devices].sort((a, b) => (a.kind === 'button' ? 0 : 1) - (b.kind === 'button' ? 0 : 1))
+  const sorted = [...devices].sort((a, b) => (a.kind === 'relay' ? 1 : 0) - (b.kind === 'relay' ? 1 : 0))
   for (const d of sorted) {
     const m = d.kind === 'relay' ? RELAY_MODELS[d.el.relayModel ?? 'plus1'] : null
     if (m?.needsN && !hasN) checks.push({ level: 'err', text: `${d.label} treba nulu (N), a u dozu ne dolazi nula. Dovedi 3×1,5 ili 5×1,5 s N iz razvodne kutije.` })

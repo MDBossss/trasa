@@ -53,7 +53,9 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
     switch (e.type) {
       case 'box': add(out, 'Doze i kutije', `Razvodna kutija 100 × 100 mm${depth}`, 'kom', 1); break
       case 'modbox': add(out, 'Doze i kutije', `Doza modularna ${e.modules ?? 3}M${depth}`, 'kom', 1); break
-      case 'socket': add(out, 'Doze i kutije', `Doza Ø60${depth}`, 'kom', 1); add(out, 'Oprema', 'Utičnica', 'kom', 1); break
+      case 'socket':
+        if (!e.host) add(out, 'Doze i kutije', `Doza Ø60${depth}`, 'kom', 1)
+        add(out, 'Oprema', e.host ? 'Utičnica 2M (u modularnoj)' : 'Utičnica', 'kom', 1); break
       case 'switch':
         if (!e.host) add(out, 'Doze i kutije', `Doza Ø60${depth}`, 'kom', 1)
         add(out, 'Oprema', e.switchKind === 'tipkalo' ? 'Tipkalo' : `Prekidač ${e.switchKind ?? 'obični'}`, 'kom', 1); break

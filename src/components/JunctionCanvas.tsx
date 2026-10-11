@@ -30,7 +30,7 @@ function layout(j: Junction): { W: number; H: number; placed: Placed[]; overflow
     if (H >= 100) rows.push({ y: H / 2 - DEPTH / 2, flip: false, x: 5, items: [], h: DEPTH })
     let ok = true
     for (const it of items) {
-      const pref = it.kind === 'device' && it.d.kind === 'button' ? [...rows].reverse() : rows
+      const pref = it.kind === 'device' && it.d.kind !== 'relay' ? [...rows].reverse() : rows
       const row = pref.find((r) => r.x + it.w <= W - 5)
       if (!row) { ok = false; break }
       row.items.push({ ...it, x: row.x, y: row.flip ? row.y + DEPTH - it.h : row.y, flip: row.flip })
@@ -175,7 +175,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
           )
         }
         const d = pl.d
-        const isBtn = d.kind === 'button'
+        const isBtn = d.kind !== 'relay'
         const pitch = pl.w / d.ports.length
         return (
           <g key={d.el.id}>

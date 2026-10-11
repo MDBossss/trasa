@@ -148,6 +148,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
               {j.bom.map((b) => <div key={b.item}><span>{b.item}</span><b>{b.qty} kom</b></div>)}
               <div><span>{j.box.type === 'modbox' ? `Doza modularna ${j.box.modules ?? 3}M` : 'Razvodna kutija 100 × 100 mm'}{j.box.depth === 'duboka' ? ', duboka' : j.box.depth === 'plitka' ? ', plitka' : ''}</span><b>1 kom</b></div>
               {j.devices.filter((d) => d.kind === 'button').length > 0 && <div><span>Tipkalo / prekidač 1M</span><b>{j.devices.filter((d) => d.kind === 'button').length} kom</b></div>}
+              {j.devices.filter((d) => d.kind === 'socket').length > 0 && <div><span>Utičnica 2M</span><b>{j.devices.filter((d) => d.kind === 'socket').length} kom</b></div>}
             </div>
           </section>
           <section>

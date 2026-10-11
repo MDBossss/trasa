@@ -8,7 +8,7 @@ export const WALL_TOOLS: WallToolDef[] = [
   { id: 'select', label: 'Odaberi', key: 'V', icon: 'cursor', hint: 'Klik označi · vuci element, izlaz bužira ili točku kabela · Alt = bez snapa · Delete briše' },
   { id: 'pan', label: 'Pomakni', key: 'H', icon: 'hand', hint: 'Vuci platno · ili drži Space · kotačić zumira' },
   { id: 'element', type: 'box', label: ELEMENT_META.box.label, key: 'K', icon: 'box', hint: 'Klik postavi kutiju · Esc natrag na Odaberi' },
-  { id: 'element', type: 'socket', label: ELEMENT_META.socket.label, key: 'U', icon: 'socket', hint: 'Klik postavi utičnicu' },
+  { id: 'element', type: 'socket', label: ELEMENT_META.socket.label, key: 'U', icon: 'socket', hint: 'Klik postavi utičnicu · klik na modularnu dozu stavi je u nju' },
   { id: 'element', type: 'switch', label: ELEMENT_META.switch.label, key: 'P', icon: 'switch', hint: 'Klik postavi prekidač · klik na modularnu dozu stavi ga u nju' },
   { id: 'element', type: 'switch', switchKind: 'tipkalo', label: 'Tipkalo', key: 'T', icon: 'button', hint: 'Klik postavi tipkalo (za relej) · klik na modularnu dozu stavi ga u nju' },
   { id: 'element', type: 'light', label: ELEMENT_META.light.label, key: 'L', icon: 'light', hint: 'Klik postavi svjetlo' },
