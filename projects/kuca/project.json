@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-11T08:27:43.426Z",
+ "savedAt": "2026-10-11T08:30:24.438Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -427,7 +427,26 @@
       "y": 783.4664922140798
      }
     ],
-    "walls": {}
+    "walls": {
+     "0": {
+      "photo": "gh:projects/kuca/img/4acfa3358209df17.jpg"
+     },
+     "1": {
+      "photo": "gh:projects/kuca/img/fdc74b77b93d01bb.jpg"
+     },
+     "2": {
+      "photo": "gh:projects/kuca/img/ca836872856d0be2.jpg"
+     },
+     "3": {
+      "photo": "gh:projects/kuca/img/998c896232712825.jpg"
+     },
+     "4": {
+      "photo": "gh:projects/kuca/img/463d98284417f858.jpg"
+     },
+     "5": {
+      "photo": "gh:projects/kuca/img/9dec1fcdf04959c5.jpg"
+     }
+    }
    },
    {
     "id": "akuvhdws",
@@ -697,8 +716,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "z6exkgda",
-   "wall": 3
+   "roomId": "icogq6ir",
+   "wall": 5
   }
  }
 }
