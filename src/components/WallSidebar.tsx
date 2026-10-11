@@ -226,6 +226,7 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
           </label>
           <div className="stat"><span>Od</span><b>{endLabel(cable.from, project)}</b></div>
           <div className="stat"><span>Do</span><b>{endLabel(cable.to, project)}</b></div>
+          {(['from', 'to'] as const).map((k) => { const e = cable[k]; return e.kind === 'corner' ? <label key={k}>Visina u kutu (m) <input type="number" step={0.01} value={e.zM} onChange={(ev) => updateCable(cable.id, { [k]: { ...e, zM: +ev.target.value || 0 } })} /></label> : null })}
           {(() => {
             const needs = cableNeeds(cable, project)
             if (needs) return (

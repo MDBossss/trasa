@@ -5,7 +5,10 @@ import { dist, pointInPolygon, projectOnSegment, signedArea } from './geometry'
 import type { Cable, CableEnd, Conduit, Project, Pt, Room, WallElement } from './types'
 
 export interface Exit { conduit: Conduit; end: 'start' | 'end'; posM: number; distM: number; offset: Pt; zM: number | null }
-export interface WallInfo { i: number; a: Pt; b: Pt; lengthM: number; exits: Exit[] }
+export interface WallInfo { i: number; n: number; cw: boolean; a: Pt; b: Pt; lengthM: number; exits: Exit[] }
+// corner index at the left/right edge of a wall as seen from inside, and the wall that continues there
+export const cornerAt = (w: Pick<WallInfo, 'i' | 'n' | 'cw'>, side: 'left' | 'right') => ((side === 'left') === w.cw ? w.i : (w.i + 1) % w.n)
+export const neighbourWall = (w: Pick<WallInfo, 'i' | 'n' | 'cw'>, side: 'left' | 'right') => (((side === 'left') === w.cw ? w.i - 1 : w.i + 1) + w.n) % w.n
 
 // A conduit endpoint is an exit on its nearest wall (inside: within 0.5 m, outside: ROOM_TOL_M).
 // With a clockwise polygon (screen coords) wall i runs left→right as seen from inside.
@@ -14,7 +17,7 @@ export function wallExits(room: Room, conduits: Conduit[], ppm: number): WallInf
   const cw = signedArea(room.points) > 0
   const walls: WallInfo[] = room.points.map((a, i) => {
     const b = room.points[(i + 1) % n]
-    return { i, a, b, lengthM: dist(a, b) / ppm, exits: [] }
+    return { i, n, cw, a, b, lengthM: dist(a, b) / ppm, exits: [] }
   })
   for (const c of conduits) {
     for (const end of ['start', 'end'] as const) {
@@ -40,6 +43,11 @@ export interface WallCtx { wall: WallInfo; elements: WallElement[]; ceilingM: nu
 
 export function endPos(end: CableEnd, ctx: WallCtx): { xM: number; zM: number } | null {
   if (end.kind === 'free') return { xM: end.xM, zM: end.zM }
+  if (end.kind === 'corner') {
+    if (end.corner === cornerAt(ctx.wall, 'left')) return { xM: 0, zM: end.zM }
+    if (end.corner === cornerAt(ctx.wall, 'right')) return { xM: ctx.wall.lengthM, zM: end.zM }
+    return null
+  }
   if (end.kind === 'element') {
     const el = ctx.elements.find((e) => e.id === end.id)
     return el ? { xM: el.xM, zM: el.zM } : null
@@ -65,6 +73,7 @@ export function cableLengthM(c: Cable, ctx: WallCtx) {
 
 export function endLabel(end: CableEnd, p: Project) {
   if (end.kind === 'free') return 'slobodan kraj'
+  if (end.kind === 'corner') return `kut ${end.corner + 1} (dalje na susjedni zid)`
   if (end.kind === 'element') return p.elements.find((e) => e.id === end.id)?.label ?? '?'
   return `${p.conduits.find((c) => c.id === end.conduitId)?.name ?? '?'} (bužir)`
 }

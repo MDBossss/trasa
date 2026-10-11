@@ -44,6 +44,36 @@ function throughConduit(p: Project, conduitId: string, end: 'start' | 'end') {
   return { cable: c, end: e }
 }
 
+// The other wall's cable that continues from the same corner at about the same height.
+function throughCorner(p: Project, c: Cable, end: Extract<CableEnd, { kind: 'corner' }>) {
+  const cands = p.cables.filter((x) => x.id !== c.id && x.roomId === c.roomId && x.wall !== c.wall && [x.from, x.to].some((e) => e.kind === 'corner' && e.corner === end.corner && Math.abs(e.zM - end.zM) < 0.3))
+  const x = cands.sort((a, b) => cornerDz(a, end) - cornerDz(b, end))[0]
+  if (!x) return null
+  const mine = x.from.kind === 'corner' && x.from.corner === end.corner ? x.from : x.to
+  return { cable: x, end: mine === x.from ? x.to : x.from }
+}
+const cornerDz = (x: Cable, end: { corner: number; zM: number }) => Math.min(...[x.from, x.to].filter((e): e is Extract<CableEnd, { kind: 'corner' }> => e.kind === 'corner' && e.corner === end.corner).map((e) => Math.abs(e.zM - end.zM)))
+
+// Follow a cable end through conduits and corners to what it finally lands on.
+function follow(p: Project, c: Cable, end: CableEnd, hops = 0): { end: CableEnd; via: string[]; cable: Cable } {
+  if (hops > 8) return { end, via: [], cable: c }
+  if (end.kind === 'corner') {
+    const t = throughCorner(p, c, end)
+    if (!t) return { end, via: [], cable: c }
+    const r = follow(p, t.cable, t.end, hops + 1)
+    return { end: r.end, via: [`kut ${end.corner + 1}`, ...r.via], cable: r.cable }
+  }
+  if (end.kind === 'exit') {
+    const cd = p.conduits.find((x) => x.id === end.conduitId)
+    if (!cd || cd.categoryId === 'dolaz') return { end, via: [], cable: c }
+    const t = throughConduit(p, cd.id, end.end)
+    if (!t) return { end, via: [cd.name], cable: c }
+    const r = follow(p, t.cable, t.end, hops + 1)
+    return { end: r.end, via: [cd.name, ...r.via], cable: r.cable }
+  }
+  return { end, via: [], cable: c }
+}
+
 function roleOfElement(e: WallElement): Role {
   switch (e.type) {
     case 'socket': return 'socket'
@@ -69,20 +99,17 @@ export function resolveCable(c: Cable, box: WallElement, p: Project): Omit<BoxCa
     const name = `${target.label} ${ELEMENT_META[target.type].label.toLowerCase()}`
     label = cd ? `${cd.name} ${role === 'feed' ? '←' : '→'} ${target.label}${room && room.id !== box.roomId ? ` (${room.name})` : ''}` : name
   }
-  if (end.kind === 'element') {
-    const e = el(p, end.id)
-    if (e) classify(e)
-  } else if (end.kind === 'exit') {
-    const cd = p.conduits.find((x) => x.id === end.conduitId)
-    far = { conduit: cd }
-    if (cd?.categoryId === 'dolaz') { role = 'feed'; label = `${cd.name} ← dolaz` }
-    else if (cd) {
-      const t = throughConduit(p, cd.id, end.end)
-      const tEnd = t?.end
-      const e = tEnd?.kind === 'element' ? el(p, tEnd.id) : undefined
-      if (e) classify(e, cd)
-      else label = `${cd.name} → ?`
-    }
+  const cd0 = end.kind === 'exit' ? p.conduits.find((x) => x.id === end.conduitId) : undefined
+  if (cd0?.categoryId === 'dolaz') { role = 'feed'; label = `${cd0.name} ← dolaz`; far = { conduit: cd0 } }
+  else {
+    const f = follow(p, c, end)
+    const e = f.end.kind === 'element' ? el(p, f.end.id) : undefined
+    if (e) {
+      classify(e, cd0)
+      if (!cd0 && f.via.length) label = `${f.via.join(' · ')} → ${e.label}`
+    } else if (f.via.length) label = `${f.via.join(' · ')} → ?`
+    else if (end.kind === 'corner') label = `kut ${end.corner + 1} → ?`
+    far = { ...far, conduit: cd0 }
   }
   if (cores.length === 0) role = 'lowv'
   if (c.role && c.role !== 'auto') role = c.role
@@ -163,6 +190,7 @@ function sideOf(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallElement
   const end = otherEnd(bc.cable, box)
   if (end.kind === 'exit') return { side: 'top', order: bc.far.conduit ? bc.far.conduit.points[0].x : 0 }
   if (end.kind === 'free') return { side: 'bottom', order: end.xM }
+  if (end.kind === 'corner') return { side: end.corner === box.wall ? 'left' : 'right', order: -end.zM }
   const e = bc.far.element
   if (!e || e.roomId !== box.roomId || e.wall !== box.wall) return { side: 'top', order: 0 }
   const dx = e.xM - box.xM, dz = e.zM - box.zM
@@ -234,7 +262,7 @@ export function crossSignals(a: WallElement, b: WallElement, p: Project): string
 
 export interface CableNeeds { signals: string[]; needed: number; has: number; suggest: string; places: [WallElement, WallElement] }
 export function cableNeeds(c: Cable, p: Project): CableNeeds | null {
-  const ends = [c.from, c.to].map((e) => (e.kind === 'element' ? el(p, e.id) : undefined))
+  const ends = [c.from, c.to].map((e) => { const f = follow(p, c, e).end; return f.kind === 'element' ? el(p, f.id) : undefined })
   const places = ends.map((e) => (e?.host ? el(p, e.host) : e)).filter((e): e is WallElement => !!e && isPlace(e))
   if (places.length !== 2 || places[0].id === places[1].id) return null
   const signals = crossSignals(places[0], places[1], p)

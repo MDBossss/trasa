@@ -16,7 +16,7 @@ export const WALL_TOOLS: WallToolDef[] = [
   { id: 'element', type: 'modbox', label: ELEMENT_META.modbox.label, key: 'M', icon: 'modbox', hint: 'Klik postavi modularnu dozu (okvir za tipkala i releje)' },
   { id: 'element', type: 'relay', label: ELEMENT_META.relay.label, key: 'R', icon: 'relay', hint: 'Klik na kutiju, dozu ili LED nišu stavi relej (Shelly) u nju' },
   { id: 'element', type: 'ledpsu', label: ELEMENT_META.ledpsu.label, key: 'N', icon: 'led', hint: 'Klik postavi LED nišu (traka 24 V + napajanje)' },
-  { id: 'cable', label: 'Kabel', key: 'C', icon: 'cable', hint: 'Klik na izlaz bužira ili element počinje · klikovi dodaju lomove (vodoravno/okomito) · klik na element završi · Enter = slobodan kraj · Esc odustani' },
+  { id: 'cable', label: 'Kabel', key: 'C', icon: 'cable', hint: 'Klik na izlaz bužira ili element počinje · klikovi dodaju lomove · klik na element završi · klik na rub zida = kut, nastavak na susjednom zidu · Enter = slobodan kraj' },
 ]
 
 const GROUPS: number[][] = [[0, 1], [2, 3, 4, 5, 6, 7], [8, 9, 10], [11]]

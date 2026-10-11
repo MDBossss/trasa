@@ -4,7 +4,7 @@ import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import useImage from 'use-image'
 import { useStore } from '../store'
-import { cableColor, cablePath, endPos, type Exit, type WallCtx, type WallInfo } from '../walls'
+import { cableColor, cablePath, cornerAt, endPos, neighbourWall, type Exit, type WallCtx, type WallInfo } from '../walls'
 import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement } from '../types'
 import { Hud } from './Hud'
 import { activeWallTool } from './WallToolRail'
@@ -115,8 +115,10 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       return { kind: 'exit', conduitId, end: end as 'start' | 'end' }
     }
     if (elements.some((e) => e.id === name)) return { kind: 'element', id: name }
+    if (name.startsWith('corner:')) { const raw = toWall(); return { kind: 'corner', corner: +name.split(':')[1], zM: Math.round((raw?.zM ?? 1) * 100) / 100 } }
     return null
   }
+  const leftCorner = cornerAt(wall, 'left'), rightCorner = cornerAt(wall, 'right')
 
   const finishCable = useCallback(
     (to: CableEnd) => {
@@ -338,6 +340,23 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
         </Layer>
 
         <Layer listening={tool === 'select' || tool === 'cable' || tool === 'element'}>
+          {[{ c: leftCorner, x: 0 }, { c: rightCorner, x: W }].map(({ c, x }) => (
+            <Group key={`corner:${c}`} name={`corner:${c}`}>
+              <Rect x={x - px(14)} y={0} width={px(28)} height={H} fill={tool === 'cable' ? 'rgba(30,136,229,0.12)' : 'transparent'} />
+              {tool === 'cable' && <Text text={`kut ${c + 1}\n→ zid ${neighbourWall(wall, x === 0 ? 'left' : 'right') + 1}`} x={x === 0 ? px(4) : x - px(64)} y={H / 2} width={px(60)} align={x === 0 ? 'left' : 'right'} fontSize={px(11)} fill="#1e88e5" />}
+            </Group>
+          ))}
+          {cables.filter((c) => [c.from, c.to].some((e) => e.kind === 'corner')).map((c) => [c.from, c.to].filter((e): e is Extract<CableEnd, { kind: 'corner' }> => e.kind === 'corner').map((e) => {
+            const pos = endPos(e, liveCtx)
+            if (!pos) return null
+            const left = pos.xM === 0
+            return (
+              <Group key={`${c.id}:${e.corner}`} x={toX(pos)} y={toY(pos)}>
+                <Line points={left ? [0, 0, -px(14), 0] : [0, 0, px(14), 0]} stroke={cableColor(c, project)} strokeWidth={px(3.5)} dash={[px(4), px(4)]} />
+                <Text text={`zid ${neighbourWall(wall, left ? 'left' : 'right') + 1} ${left ? '←' : '→'}`} x={left ? px(2) : -px(62)} y={-px(16)} width={px(60)} align={left ? 'left' : 'right'} fontSize={px(10)} fill="#555" />
+              </Group>
+            )
+          }))}
           {wall.exits.map((ex) => {
             const pos = endPos({ kind: 'exit', conduitId: ex.conduit.id, end: ex.end }, liveCtx)!
             const x = toX(pos)

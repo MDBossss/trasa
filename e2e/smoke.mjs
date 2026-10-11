@@ -463,6 +463,32 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   // cleanup: remove the frame (takes T1 and R1 with it), the extra cable, P1 and S1
   await page.evaluate(({ d1, c }) => { const s = window.__trasa.getState(); s.select(d1); s.removeSelected(); s.patchProject({ cables: s.project.cables.filter((x) => x.id !== c) }) }, ids2)
   assert.equal((await state()).elements.filter((e) => e.host).length, 0)
+
+  // corner: a cable from K1 ends on the right edge of wall 1 and continues on wall 2 to a frame D2
+  const d2 = await page.evaluate(() => { const s = window.__trasa.getState(); return s.addElement({ roomId: s.project.rooms[0].id, wall: 1, type: 'modbox', xM: 2, zM: 1.05, note: '', modules: 3 }) })
+  await page.evaluate(() => { const s = window.__trasa.getState(); s.setView({ kind: 'room', roomId: s.project.rooms[0].id, wall: 0 }); s.select(null) })
+  await page.keyboard.press('c')
+  await clickWall(1.5, 2.32)
+  await clickWall(5.0, 1.05)
+  st = await state()
+  let last = st.cables[st.cables.length - 1]
+  assert.deepEqual(last.from, { kind: 'element', id: st.elements[0].id })
+  assert.equal(last.to.kind, 'corner'); assert.equal(last.to.corner, 1); assert.ok(Math.abs(last.to.zM - 1.05) < 0.03, JSON.stringify(last.to))
+  await page.locator('.sidebar .list li', { hasText: 'Zid 2' }).click()
+  await page.keyboard.press('c')
+  await clickWall(0, 1.05)
+  await clickWall(2, 1.05)
+  st = await state()
+  last = st.cables[st.cables.length - 1]
+  assert.equal(last.from.kind, 'corner'); assert.equal(last.from.corner, 1); assert.deepEqual(last.to, { kind: 'element', id: d2 })
+  await page.locator('.props', { hasText: 'Kabel' }).getByText('kut 2 (dalje na susjedni zid)').waitFor()
+  await page.getByRole('button', { name: 'Spojevi' }).click()
+  await page.locator('.junctions-list .list li', { hasText: 'K1' }).click()
+  await page.locator('.jsteps', { hasText: /kut 2 → D\d/ }).waitFor()
+  await page.locator('.junctions-list .list li', { hasText: /^D\d/ }).click()
+  await page.locator('.jsteps', { hasText: 'kut 2 → K1' }).waitFor()
+  await page.evaluate((d2) => { const s = window.__trasa.getState(); s.select(d2); s.removeSelected(); s.patchProject({ cables: s.project.cables.slice(0, 2) }); s.setView({ kind: 'room', roomId: s.project.rooms[0].id, wall: 0 }) }, d2)
+  assert.equal((await state()).cables.length, 2)
   // cleanup so the rest of the test sees the same elements as before
   await page.evaluate(({ s1 }) => { const s = window.__trasa.getState(); s.select(s1); s.removeSelected(); const p = s.project; s.patchProject({ cables: p.cables.slice(0, 2) }); s.select(null) }, ids)
   assert.equal((await state()).elements.length, 2)

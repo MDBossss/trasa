@@ -3,7 +3,7 @@ import useImage from 'use-image'
 import { useStore } from '../store'
 import { bomFor } from '../bom'
 import { allJunctions, wirePlan, type Junction } from '../junction'
-import { cablePath, conduitTouchesRoom, wallExits, type WallInfo } from '../walls'
+import { cablePath, conduitTouchesRoom, cornerAt, wallExits, type WallInfo } from '../walls'
 import { bounds } from '../geometry'
 import { ELEMENT_META, RELAY_MODELS, WIRE_LABEL, type Project, type Room, type WallElement } from '../types'
 import { Icon } from './Icons'
@@ -124,6 +124,7 @@ function WallPage({ room, wall, project }: { room: Room; wall: WallInfo; project
             <text x={x(e.posM)} y={-32} fontSize={12} textAnchor="middle" fill={e.conduit.color} fontWeight={700}>{e.conduit.name}</text>
           </g>
         ))}
+        {cables.flatMap((c) => [c.from, c.to].filter((e) => e.kind === 'corner').map((e, i) => { const pos = e.kind === 'corner' ? ({ xM: e.corner === cornerAt(wall, 'left') ? 0 : wall.lengthM, zM: e.zM }) : null; return pos ? <text key={`${c.id}${i}`} x={x(pos.xM)} y={y(pos.zM) - 6} fontSize={10} textAnchor={pos.xM === 0 ? 'start' : 'end'} fill="#555">{pos.xM === 0 ? '← kut' : 'kut →'}</text> : null }))}
         {elements.map((e) => (
           <g key={e.id}>
             <circle cx={x(e.xM)} cy={y(e.zM)} r={9} fill="#fff" stroke="#111" strokeWidth={2} />

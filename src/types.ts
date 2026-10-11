@@ -103,6 +103,8 @@ export type CableEnd =
   | { kind: 'element'; id: string }
   | { kind: 'exit'; conduitId: string; end: 'start' | 'end' }
   | { kind: 'free'; xM: number; zM: number }
+  // the cable runs on around the room corner: corner k sits between wall k-1 and wall k
+  | { kind: 'corner'; corner: number; zM: number }
 
 export interface Cable {
   id: string

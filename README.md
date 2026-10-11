@@ -39,7 +39,8 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
    **Utičnica (U)**, **Prekidač (P)**, **Svjetlo (L)**, **Ormar (O)** postavljaju element klikom (snap 1 cm i
    poravnanje s drugim elementima po x i visini; fotka je okvirna, pa nema snapa na apsolutne visine). **Kabel (C)**: klik na izlaz bužira ili element
    počinje, klikovi dodaju vodoravne/okomite lomove, klik na element završava; kabel je vezan za oba kraja i prati
-   ih pri pomicanju. Desno: fotka zida, svojstva
+   ih pri pomicanju. Klik na **rub zida** završi kabel u kutu: na susjednom zidu se pojavi na istoj visini i tamo ga
+   nastaviš drugim kabelom (spojevi i materijal ga prate kroz kut, visinu u kutu mijenjaš u svojstvima). Desno: fotka zida, svojstva
    odabira (tip, oznaka, pozicija, vrsta prekidača, tip kabela, duljina) i lista svega na zidu.
 9. **Spojevi** (gumb u headeru): za svaku razvodnu kutiju slika u mjerilu (100 × 100 mm, WAGO 221-412/413/415 s pravim
    dimenzijama, žile u bojama po HD 308) izvedena iz nacrtanog: kabel vezan na kutiju dobije ulogu iz onoga što mu je na
