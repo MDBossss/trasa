@@ -78,9 +78,11 @@ export function endLabel(end: CableEnd, p: Project) {
   return `${p.conduits.find((c) => c.id === end.conduitId)?.name ?? '?'} (bužir)`
 }
 
+// cables on a conduit take its colour; the rest get a strong orange that reads on photos and bare walls
+export const CABLE_COLOR = '#ff6d00'
 export function cableColor(c: Cable, p: Project) {
-  for (const end of [c.from, c.to]) if (end.kind === 'exit') return p.conduits.find((x) => x.id === end.conduitId)?.color ?? '#555'
-  return '#555'
+  for (const end of [c.from, c.to]) if (end.kind === 'exit') return p.conduits.find((x) => x.id === end.conduitId)?.color ?? CABLE_COLOR
+  return CABLE_COLOR
 }
 
 // A conduit "enters" a room when either end is inside it or within 0.5 m of one of its walls.

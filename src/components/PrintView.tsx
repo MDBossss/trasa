@@ -3,7 +3,7 @@ import useImage from 'use-image'
 import { useStore } from '../store'
 import { bomFor } from '../bom'
 import { allJunctions, wirePlan, type Junction } from '../junction'
-import { cablePath, conduitTouchesRoom, cornerAt, wallExits, type WallInfo } from '../walls'
+import { cableColor, cablePath, conduitTouchesRoom, cornerAt, wallExits, type WallInfo } from '../walls'
 import { bounds } from '../geometry'
 import { ELEMENT_META, RELAY_MODELS, WIRE_LABEL, type Project, type Room, type WallElement } from '../types'
 import { Icon } from './Icons'
@@ -117,7 +117,7 @@ function WallPage({ room, wall, project }: { room: Room; wall: WallInfo; project
       <h2>{room.name} · zid {wall.i + 1} <span className="muted">· {wall.lengthM.toFixed(2)} × {project.ceilingM} m, x od lijevog kuta gledano iznutra, visina od poda</span></h2>
       <svg className="print-wall" viewBox={`${left - 10} -40 ${right - left + 20} ${H + 70}`}>
         {img ? <image href={photo} x={photo0} y={0} width={photoW} height={H} preserveAspectRatio="none" /> : <rect x={0} y={0} width={W} height={H} fill="#f3f1ea" stroke="#999" />}
-        {cables.map((c) => { const path = cablePath(c, ctx); return path ? <polyline key={c.id} points={path.map((p) => `${x(p.xM)},${y(p.zM)}`).join(' ')} fill="none" stroke="#111" strokeWidth={3} strokeLinejoin="round" /> : null })}
+        {cables.map((c) => { const path = cablePath(c, ctx); return path ? <g key={c.id}><polyline points={path.map((p) => `${x(p.xM)},${y(p.zM)}`).join(' ')} fill="none" stroke="#fff" strokeWidth={6} strokeLinejoin="round" /><polyline points={path.map((p) => `${x(p.xM)},${y(p.zM)}`).join(' ')} fill="none" stroke={cableColor(c, project)} strokeWidth={3} strokeLinejoin="round" /></g> : null })}
         {wall.exits.map((e) => (
           <g key={`${e.conduit.id}:${e.end}`}>
             <line x1={x(e.posM)} y1={-30} x2={x(e.posM)} y2={y(e.zM ?? project.ceilingM)} stroke={e.conduit.color} strokeWidth={5} />

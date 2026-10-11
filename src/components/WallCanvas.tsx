@@ -4,7 +4,7 @@ import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import useImage from 'use-image'
 import { useStore } from '../store'
-import { cableColor, cablePath, cornerAt, endPos, neighbourWall, type Exit, type WallCtx, type WallInfo } from '../walls'
+import { CABLE_COLOR, cableColor, cablePath, cornerAt, endPos, neighbourWall, type Exit, type WallCtx, type WallInfo } from '../walls'
 import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement } from '../types'
 import { Hud } from './Hud'
 import { activeWallTool } from './WallToolRail'
@@ -340,7 +340,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
             const flat = path.flatMap((p) => [toX(p), toY(p)])
             return (
               <Group key={c.id}>
-                {isSel && <Line points={flat} stroke="#fff" strokeWidth={px(9)} lineJoin="round" lineCap="round" />}
+                <Line points={flat} stroke="#fff" strokeWidth={px(isSel ? 9 : 6)} opacity={isSel ? 1 : 0.85} lineJoin="round" lineCap="round" />
                 <Line name={c.id} points={flat} stroke={color} strokeWidth={px(3.5)} hitStrokeWidth={px(14)} lineJoin="round" lineCap="round" dash={isSel ? [px(10), px(6)] : undefined} />
               </Group>
             )
@@ -437,9 +437,12 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
 
         <Layer listening={false}>
           {draftPath && draftPath.length >= 2 && (
-            <Line points={draftPath.flatMap((p) => [toX(p), toY(p)])} stroke="#333" strokeWidth={px(3)} dash={[px(8), px(5)]} lineJoin="round" />
+            <>
+              <Line points={draftPath.flatMap((p) => [toX(p), toY(p)])} stroke="#fff" strokeWidth={px(6)} opacity={0.85} lineJoin="round" />
+              <Line points={draftPath.flatMap((p) => [toX(p), toY(p)])} stroke={CABLE_COLOR} strokeWidth={px(3)} dash={[px(8), px(5)]} lineJoin="round" />
+            </>
           )}
-          {draftPath && draftPath.slice(0, -1).map((p, i) => <Circle key={i} x={toX(p)} y={toY(p)} radius={px(4)} fill="#333" />)}
+          {draftPath && draftPath.slice(0, -1).map((p, i) => <Circle key={i} x={toX(p)} y={toY(p)} radius={px(4)} fill={CABLE_COLOR} stroke="#fff" strokeWidth={px(1.5)} />)}
           {cursor && tool === 'element' && !panning && (
             <Group x={toX(cursor)} y={toY(cursor)} opacity={0.5}><Symbol type={elementType} selected={false} px={px} tipkalo={placeKind === 'tipkalo'} /></Group>
           )}
