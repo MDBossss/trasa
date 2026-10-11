@@ -281,9 +281,11 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
         onMouseMove={onMove}
       >
         <Layer listening={false}>
-          <Rect x={0} y={0} width={W} height={H} fill="#f5f5f5" />
-          {img && <KImage image={img} x={photo0} y={0} width={photoW} height={H} />}
-          <Rect x={0} y={0} width={W} height={H} stroke="#555" strokeWidth={px(2)} />
+          {img ? (
+            <KImage image={img} x={photo0} y={0} width={photoW} height={H} />
+          ) : (
+            <Rect x={0} y={0} width={W} height={H} fill="#f5f5f5" stroke="#555" strokeWidth={px(2)} />
+          )}
           {showGrid && (
             <Shape
               sceneFunc={(ctx2, shape) => {
