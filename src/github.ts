@@ -108,9 +108,14 @@ export async function ghGetBytes(cfg: GhConfig, path: string): Promise<{ sha: st
   if (!meta) return null
   const j = (await meta.json()) as { sha: string; content?: string; encoding?: string }
   if (j.encoding === 'base64' && j.content) return { sha: j.sha, bytes: b64ToBytes(j.content.replace(/\n/g, '')) }
-  // files over 1 MB come back without content; fetch raw
-  const raw = await api(cfg, `${path}?ref=${cfg.branch}`, {}, 'application/vnd.github.raw+json')
-  if (!raw) return null
+  // Files over 1 MB come back without content. The raw bytes are fetched from
+  // the blobs endpoint: a different URL, so the browser cache cannot hand back
+  // the JSON answer above (same URL + different Accept did exactly that).
+  const raw = await fetch(`https://api.github.com/repos/${cfg.repo}/git/blobs/${j.sha}`, {
+    cache: 'no-store',
+    headers: { Authorization: `Bearer ${await bearer(cfg)}`, Accept: 'application/vnd.github.raw+json', 'X-GitHub-Api-Version': '2022-11-28' },
+  })
+  if (!raw.ok) throw new GhError(raw.status, `GitHub ${raw.status} pri dohvatu datoteke ${path}`)
   return { sha: j.sha, bytes: new Uint8Array(await raw.arrayBuffer()) }
 }
 

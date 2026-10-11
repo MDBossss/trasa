@@ -389,10 +389,19 @@ let lastPut = 0
 await page.route('https://api.github.com/**', async (route) => {
   const req = route.request()
   const url = new URL(req.url())
+  if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' } })
   const path = decodeURIComponent(url.pathname.replace(/^\/repos\/[^/]+\/[^/]+\/contents\//, ''))
   if (req.headers()['authorization'] !== 'Bearer tok123') return route.fulfill({ status: 401, json: { message: 'Bad credentials' } })
+  if (url.pathname.includes('/git/blobs/')) {
+    const sha = url.pathname.split('/git/blobs/')[1]
+    const f = [...repo.values()].find((x) => x.sha === sha)
+    if (!f) return route.fulfill({ status: 404, json: { message: 'Not Found' } })
+    return route.fulfill({ status: 200, body: Buffer.from(f.content, 'base64'), headers: { 'content-type': 'application/vnd.github.raw+json', 'access-control-allow-origin': '*' } })
+  }
   if (req.method() === 'GET') {
     const f = repo.get(path)
+    // GitHub omits content for files over 1 MB; the mock does it for images so the blobs path is exercised
+    if (f && path.includes('/img/')) return route.fulfill({ json: { sha: f.sha, content: '', encoding: 'none', path, size: f.content.length } })
     if (f) return route.fulfill({ json: { sha: f.sha, content: f.content, encoding: 'base64', path } })
     const names = new Map()
     for (const k of repo.keys()) if (k.startsWith(path + '/')) { const rest = k.slice(path.length + 1); names.set(rest.split('/')[0], rest.includes('/') ? 'dir' : 'file') }

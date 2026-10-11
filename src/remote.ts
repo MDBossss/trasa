@@ -89,10 +89,11 @@ export async function openRemote(cfg: GhConfig, slug: string, onStatus: (s: stri
     onStatus(`Učitavam sliku ${++n}…`)
     const p = ref.slice(3)
     const cached = (await idbGet(`img:${p}`)) as string | undefined
-    if (cached) return cached
+    if (cached && looksLikeImage(cached)) return cached
     const img = await fetchFile(cfg, p)
     if (!img) return undefined
     const url = bytesToDataUrl(p.endsWith('.png') ? 'image/png' : 'image/jpeg', img.bytes)
+    if (!looksLikeImage(url)) throw new Error(`Datoteka ${p} nije slika`)
     void idbSet(`img:${p}`, url)
     return url
   }
@@ -112,4 +113,10 @@ export async function openRemote(cfg: GhConfig, slug: string, onStatus: (s: stri
   applySaveFile({ ...file, project })
   useStore.getState().markSaved(`gh:${slug}`)
   onStatus('')
+}
+
+// base64 of JPEG starts with /9j/, PNG with iVBOR; anything else is not image data
+function looksLikeImage(dataUrl: string) {
+  const b = dataUrl.slice(dataUrl.indexOf(',') + 1, dataUrl.indexOf(',') + 6)
+  return b.startsWith('/9j/') || b.startsWith('iVBOR')
 }
