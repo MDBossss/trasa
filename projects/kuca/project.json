@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-11T08:32:47.604Z",
+ "savedAt": "2026-10-11T08:38:04.268Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -734,9 +734,7 @@
  },
  "ui": {
   "view": {
-   "kind": "room",
-   "roomId": "akuvhdws",
-   "wall": 7
+   "kind": "plan"
   }
  }
 }
