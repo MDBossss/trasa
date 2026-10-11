@@ -350,8 +350,8 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
         <Layer listening={tool === 'select' || tool === 'cable' || tool === 'element'}>
           {[{ c: leftCorner, x: 0 }, { c: rightCorner, x: W }].map(({ c, x }) => (
             <Group key={`corner:${c}`} name={`corner:${c}`}>
-              <Rect x={x === 0 ? -40 : W - 15} y={0} width={55} height={H} fill={tool === 'cable' ? 'rgba(30,136,229,0.14)' : 'transparent'} stroke={tool === 'cable' ? '#1e88e5' : undefined} strokeWidth={px(1)} dash={[px(4), px(4)]} />
-              {tool === 'cable' && <Text text={`kut ${c + 1}\n→ zid ${neighbourWall(wall, x === 0 ? 'left' : 'right') + 1}`} x={x === 0 ? -38 : W - 13} y={H / 2 - px(14)} width={px(60)} fontSize={px(11)} fill="#1e88e5" />}
+              <Rect x={x === 0 ? -12 : W - 8} y={0} width={20} height={H} fill={tool === 'cable' ? 'rgba(30,136,229,0.14)' : 'transparent'} stroke={tool === 'cable' ? '#1e88e5' : undefined} strokeWidth={px(1)} dash={[px(4), px(4)]} />
+              {tool === 'cable' && <Text text={`kut ${c + 1}\n→ zid ${neighbourWall(wall, x === 0 ? 'left' : 'right') + 1}`} x={x === 0 ? px(4) : W - px(64)} y={H / 2 - px(14)} width={px(60)} align={x === 0 ? 'left' : 'right'} fontSize={px(11)} fill="#1e88e5" />}
             </Group>
           ))}
           {incoming.map(({ cable: c, end: e }) => {
