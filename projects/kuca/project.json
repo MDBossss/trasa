@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-11T12:06:24.424Z",
+ "savedAt": "2026-10-11T12:31:55.883Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -46,7 +46,7 @@
    {
     "id": "z5hc27kp",
     "name": "SVJETLO 1",
-    "color": "#4363d8",
+    "color": "#3cb44b",
     "diameter": 20,
     "points": [
      {
@@ -63,7 +63,8 @@
     "note": "",
     "exitZ": {
      "start": 1.74
-    }
+    },
+    "categoryId": "rasvjeta"
    },
    {
     "id": "mticy06y",
@@ -128,6 +129,481 @@
     "from": "",
     "to": "",
     "note": ""
+   },
+   {
+    "id": "6she46hx",
+    "name": "SVJETLO ULAZ 2",
+    "color": "#3cb44b",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 911.8502478841713,
+      "y": 1521.1668106611146
+     },
+     {
+      "x": 968.5292972324189,
+      "y": 1603.8532808952766
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "rasvjeta"
+   },
+   {
+    "id": "g4yul0vy",
+    "name": "SVJETLO ULAZ 1",
+    "color": "#3cb44b",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 919.770343327621,
+      "y": 1520.0353684549073
+     },
+     {
+      "x": 1245.0905058239807,
+      "y": 1609.7917117546046
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "rasvjeta"
+   },
+   {
+    "id": "a5pqhsnu",
+    "name": "SVJETLO VANI KOD JURE",
+    "color": "#3cb44b",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 907.3244790593428,
+      "y": 1541.5327703728424
+     },
+     {
+      "x": 530.270446215523,
+      "y": 976.0373017649509
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "rasvjeta"
+   },
+   {
+    "id": "sttep0d7",
+    "name": "SVJETLO IZNAD GARAZE VANI",
+    "color": "#3cb44b",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 906.1930368531357,
+      "y": 1556.2415190535348
+     },
+     {
+      "x": 644.2383859354501,
+      "y": 1752.9630066365364
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "rasvjeta"
+   },
+   {
+    "id": "s8yl2bgn",
+    "name": "DOLAZ ULAZ VANI",
+    "color": "#ff0000",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 910.7188056779642,
+      "y": 1532.4812327231857
+     },
+     {
+      "x": 906.1715357531419,
+      "y": 1132.42894171452
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "dolaz"
+   },
+   {
+    "id": "d3mxdiis",
+    "name": "SVJETLO STROP",
+    "color": "#3cb44b",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 884.6956349352007,
+      "y": 1027.8580087548153
+     },
+     {
+      "x": 713.7842097469552,
+      "y": 1064.879338161332
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "rasvjeta"
+   },
+   {
+    "id": "flf315qr",
+    "name": "ZID KOD TV STROP",
+    "color": "#b37c1e",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 884.6956349352007,
+      "y": 1033.5152197858508
+     },
+     {
+      "x": 595.9989827869417,
+      "y": 948.8977542736384
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": ""
+   },
+   {
+    "id": "szzrhwbv",
+    "name": "ZID IZNAD KREVETA",
+    "color": "#800000",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 884.6956349352007,
+      "y": 1041.4353152293006
+     },
+     {
+      "x": 835.0051425701341,
+      "y": 1195.7770581438065
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": ""
+   },
+   {
+    "id": "h1edv1eg",
+    "name": "DOLAZ INTERNET S1",
+    "color": "#4363d8",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 906.1930368531357,
+      "y": 1056.1440639099928
+     },
+     {
+      "x": 588.125838699966,
+      "y": 949.4601217084223
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "internet"
+   },
+   {
+    "id": "ye0vjx37",
+    "name": "SVJETLO ORMAR STROP",
+    "color": "#3cb44b",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 884.6956349352007,
+      "y": 828.7241804623642
+     },
+     {
+      "x": 701.7240605263304,
+      "y": 898.28468514308
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "rasvjeta"
+   },
+   {
+    "id": "p50mu8dy",
+    "name": "PLAFON UZ INTERNET",
+    "color": "#7a3100",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 884.6956349352007,
+      "y": 836.6442759058139
+     },
+     {
+      "x": 613.4323732652452,
+      "y": 712.141064229582
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": ""
+   },
+   {
+    "id": "krmsn70i",
+    "name": "DOLAZ ORMAR S2 1/2",
+    "color": "#ff0000",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 883.5641927289936,
+      "y": 842.3014869368494
+     },
+     {
+      "x": 905.2111760078576,
+      "y": 1142.4838363346607
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "dolaz"
+   },
+   {
+    "id": "l8mc27r8",
+    "name": "DOLAZ INTERNET S2",
+    "color": "#4363d8",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 606.360852208252,
+      "y": 711.0541910168249
+     },
+     {
+      "x": 907.1669899699846,
+      "y": 1049.9086421273162
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "internet"
+   },
+   {
+    "id": "r4791nmt",
+    "name": "DOLAZ ORMAR S2 2/2",
+    "color": "#ff0000",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 883.5641927289936,
+      "y": 649.9563118816411
+     },
+     {
+      "x": 905.2394789168989,
+      "y": 1152.011386547443
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "dolaz"
+   },
+   {
+    "id": "3qupgdrk",
+    "name": "SVJETLO KREVET",
+    "color": "#3cb44b",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 883.5641927289936,
+      "y": 642.0362164381913
+     },
+     {
+      "x": 718.3510207933944,
+      "y": 599.4715973127336
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "rasvjeta"
+   },
+   {
+    "id": "27xc6393",
+    "name": "ZID IZNAD KREVETA",
+    "color": "#911eb4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 883.5641927289936,
+      "y": 631.8532365823273
+     },
+     {
+      "x": 580.216073484717,
+      "y": 585.2518233250756
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": ""
+   },
+   {
+    "id": "8xytnpbh",
+    "name": "DOLAZ INTERNET S2 2",
+    "color": "#4363d8",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 847.3580421303661,
+      "y": 520.9719003740307
+     },
+     {
+      "x": 904.2237807749233,
+      "y": 1069.7398370474218
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "internet"
+   },
+   {
+    "id": "lly5q7dw",
+    "name": "SVJETLO WC",
+    "color": "#3cb44b",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 957.1079361324556,
+      "y": 561.7038197974866
+     },
+     {
+      "x": 908.8624581107372,
+      "y": 619.3576704264444
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "rasvjeta"
+   },
+   {
+    "id": "jumeuvh9",
+    "name": "DOLAZ ORMAR WC",
+    "color": "#ff0000",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 908.4559212655499,
+      "y": 626.1960255512918
+     },
+     {
+      "x": 905.8393588834734,
+      "y": 1162.0039817202824
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "dolaz"
+   },
+   {
+    "id": "ekqsram4",
+    "name": "SVJETLO STROP",
+    "color": "#3cb44b",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1020.4686996800538,
+      "y": 672.5851560057832
+     },
+     {
+      "x": 1148.443071871387,
+      "y": 617.0903460059966
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "rasvjeta"
+   },
+   {
+    "id": "yatmgerb",
+    "name": "ZID KOTLOVNICA",
+    "color": "#469990",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1022.731584092468,
+      "y": 659.0078495312979
+     },
+     {
+      "x": 1285.2383119050705,
+      "y": 537.733991290324
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": ""
+   },
+   {
+    "id": "7plj5715",
+    "name": "DOLAZ ORMAR S3",
+    "color": "#ff0000",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1021.6001418862609,
+      "y": 664.6650605623335
+     },
+     {
+      "x": 904.3278092698416,
+      "y": 1170.3175045952576
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "dolaz"
+   },
+   {
+    "id": "xk8z0yfs",
+    "name": "DOLAZ INTERNET S3",
+    "color": "#4363d8",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1191.316472817327,
+      "y": 761.9690902961448
+     },
+     {
+      "x": 906.5951336902895,
+      "y": 1065.2648064478433
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "internet"
+   },
+   {
+    "id": "it8y3736",
+    "name": "SVJETLO KRIZNI",
+    "color": "#3cb44b",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 912.9816900903784,
+      "y": 763.1005325023519
+     },
+     {
+      "x": 909.7674786632163,
+      "y": 1233.5429746098819
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "rasvjeta"
    }
   ],
   "rooms": [
