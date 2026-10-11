@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-11T13:29:12.429Z",
+ "savedAt": "2026-10-11T21:05:14.101Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -1174,7 +1174,7 @@
       "y": 792.3444172072237
      },
      {
-      "x": 1216.2082013538834,
+      "x": 1201.439182022881,
       "y": 1088.8259955992492
      }
     ],
@@ -1182,8 +1182,7 @@
     "to": "",
     "note": "",
     "exitZ": {
-     "start": 1.69,
-     "end": 2.41
+     "start": 1.69
     }
    },
    {
@@ -1892,7 +1891,41 @@
     }
    }
   ],
-  "elements": [],
+  "elements": [
+   {
+    "roomId": "hznuei6t",
+    "wall": 1,
+    "type": "modbox",
+    "xM": 0.69,
+    "zM": 0.52,
+    "note": "",
+    "id": "lkt84tqp",
+    "label": "D1",
+    "modules": 4,
+    "depth": "plitka"
+   },
+   {
+    "roomId": "hznuei6t",
+    "wall": 3,
+    "type": "box",
+    "xM": 0.54,
+    "zM": 1.94,
+    "note": "",
+    "id": "09rpvzkl",
+    "label": "K1"
+   },
+   {
+    "roomId": "hznuei6t",
+    "wall": 3,
+    "type": "modbox",
+    "xM": 0.99,
+    "zM": 0.77,
+    "note": "",
+    "id": "og3gmqfn",
+    "label": "D2",
+    "modules": 4
+   }
+  ],
   "cables": [
    {
     "roomId": "c2b55x6m",
@@ -1929,6 +1962,61 @@
     "via": [],
     "note": "",
     "id": "upbmacif"
+   },
+   {
+    "roomId": "hznuei6t",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "jumeuvh9",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "09rpvzkl"
+    },
+    "via": [],
+    "note": "",
+    "id": "z6xizsu7"
+   },
+   {
+    "roomId": "hznuei6t",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "09rpvzkl"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "lly5q7dw",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "o7s9su9w"
+   },
+   {
+    "roomId": "hznuei6t",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "09rpvzkl"
+    },
+    "to": {
+     "kind": "element",
+     "id": "og3gmqfn"
+    },
+    "via": [
+     {
+      "xM": 0.54,
+      "zM": 0.77
+     }
+    ],
+    "note": "",
+    "id": "fdgq408b"
    }
   ],
   "categories": [
@@ -2026,7 +2114,9 @@
  },
  "ui": {
   "view": {
-   "kind": "plan"
+   "kind": "room",
+   "roomId": "hznuei6t",
+   "wall": 3
   }
  }
 }
