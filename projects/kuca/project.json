@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-11T13:04:32.472Z",
+ "savedAt": "2026-10-11T13:13:12.398Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -41,7 +41,8 @@
     "note": "",
     "exitZ": {
      "start": 1.77
-    }
+    },
+    "categoryId": "rasvjeta"
    },
    {
     "id": "z5hc27kp",
@@ -1004,7 +1005,7 @@
    {
     "id": "94j2bpxj",
     "name": "RAZVOD",
-    "color": "#3cb44b",
+    "color": "#af6612",
     "diameter": 20,
     "points": [
      {
