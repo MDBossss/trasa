@@ -1,13 +1,20 @@
-import { useStore } from '../store'
+import { conduitVisible, useStore } from '../store'
 import { fmtMeters, polylineLength } from '../geometry'
-import { DIAMETERS } from '../types'
+import { DIAMETERS, type Category } from '../types'
+import { uid } from '../store'
 import { detectSkew } from '../images'
 import { Icon } from './Icons'
 
 export function Sidebar() {
   const project = useStore((s) => s.project)
   const selectedId = useStore((s) => s.selectedId)
-  const { select, patchProject, updateConduit, updateRoom, removeSelected, setView, setTool, setTilt, rotatePlan } = useStore.getState()
+  const focusRoomId = useStore((s) => s.focusRoomId)
+  const hiddenCategories = useStore((s) => s.hiddenCategories)
+  const hiddenConduits = useStore((s) => s.hiddenConduits)
+  const { setFocusRoom, toggleHiddenCategory, toggleHiddenConduit } = useStore.getState()
+  const vis = (c: typeof project.conduits[number]) => conduitVisible(c, { project, focusRoomId, hiddenCategories, hiddenConduits, selectedId: null })
+  const hiddenByFocus = project.conduits.filter((c) => !vis(c)).length
+  const { select, patchProject, updateConduit, updateRoom, removeSelected, setView, setTool, setTilt, rotatePlan, setCategories } = useStore.getState()
   const conduit = project.conduits.find((c) => c.id === selectedId)
   const room = project.rooms.find((r) => r.id === selectedId)
   const ppm = project.pxPerMeter
@@ -25,8 +32,15 @@ export function Sidebar() {
             <button className="icon-btn danger" onClick={removeSelected} title="Obriši (Delete)" aria-label="Obriši bužir"><Icon.trash /></button>
           </div>
           <label>Naziv <input value={conduit.name} onChange={(e) => updateConduit(conduit.id, { name: e.target.value })} /></label>
+          <label>
+            Kategorija
+            <select value={conduit.categoryId ?? ''} onChange={(e) => updateConduit(conduit.id, { categoryId: e.target.value || undefined })}>
+              <option value="">(bez, vlastita boja)</option>
+              {project.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </label>
           <div className="field-row">
-            <label>Boja <input type="color" value={conduit.color} onChange={(e) => updateConduit(conduit.id, { color: e.target.value })} /></label>
+            <label>Boja <input type="color" value={conduit.color} onChange={(e) => updateConduit(conduit.id, { color: e.target.value, categoryId: undefined })} /></label>
             <label>
               Promjer
               <select value={conduit.diameter} onChange={(e) => updateConduit(conduit.id, { diameter: +e.target.value })}>
@@ -54,16 +68,39 @@ export function Sidebar() {
       )}
 
       <section>
-        <h3>Bužiri <span className="count">{project.conduits.length}</span></h3>
+        <h3>Bužiri <span className="count">{project.conduits.length - hiddenByFocus}{hiddenByFocus ? ` / ${project.conduits.length}` : ''}</span>
+          {(focusRoomId || hiddenCategories.length > 0 || hiddenConduits.length > 0) && (
+            <button className="mini" onClick={() => { setFocusRoom(null); hiddenCategories.forEach(toggleHiddenCategory); hiddenConduits.forEach(toggleHiddenConduit) }}>Prikaži sve</button>
+          )}
+        </h3>
         {project.conduits.length === 0 && <p className="muted">Alat Bužir (B), pa klikaj trasu po tlocrtu.</p>}
+        {project.categories.some((cat) => project.conduits.some((c) => c.categoryId === cat.id)) && (
+          <div className="legend">
+            {project.categories.filter((cat) => project.conduits.some((c) => c.categoryId === cat.id)).map((cat) => {
+              const off = hiddenCategories.includes(cat.id)
+              return (
+                <button key={cat.id} className={`legend-item ${off ? 'off' : ''}`} onClick={() => toggleHiddenCategory(cat.id)} title={off ? 'Prikaži kategoriju' : 'Sakrij kategoriju'} aria-pressed={!off}>
+                  <span className="swatch" style={{ background: cat.color }} />{cat.name}
+                </button>
+              )
+            })}
+          </div>
+        )}
         <ul className="list">
-          {project.conduits.map((c) => (
-            <li key={c.id} className={c.id === selectedId ? 'sel' : ''} onClick={() => { setTool('select'); select(c.id) }}>
-              <span className="swatch" style={{ background: c.color }} />
-              <span className="name">{c.name}</span>
-              <span className="meta">ø{c.diameter} · {fmtMeters(polylineLength(c.points), ppm)}</span>
-            </li>
-          ))}
+          {project.conduits.map((c) => {
+            const shown = vis(c)
+            const eyeOff = hiddenConduits.includes(c.id)
+            return (
+              <li key={c.id} className={`${c.id === selectedId ? 'sel' : ''} ${shown ? '' : 'dim'}`} onClick={() => { setTool('select'); select(c.id) }}>
+                <span className="swatch" style={{ background: c.color }} />
+                <span className="name">{c.name}</span>
+                <span className="meta">ø{c.diameter} · {fmtMeters(polylineLength(c.points), ppm)}</span>
+                <button className="icon-btn eye" onClick={(e) => { e.stopPropagation(); toggleHiddenConduit(c.id) }} title={eyeOff ? 'Prikaži bužir' : 'Sakrij bužir'} aria-label={eyeOff ? `Prikaži ${c.name}` : `Sakrij ${c.name}`}>
+                  {eyeOff ? <Icon.eyeOff /> : <Icon.eye />}
+                </button>
+              </li>
+            )
+          })}
         </ul>
       </section>
 
@@ -72,14 +109,30 @@ export function Sidebar() {
         {project.rooms.length === 0 && <p className="muted">Alat Soba (R), pa klikaj kutove.</p>}
         <ul className="list">
           {project.rooms.map((r) => (
-            <li key={r.id} className={r.id === selectedId ? 'sel' : ''} onClick={() => { setTool('select'); select(r.id) }}>
+            <li key={r.id} className={`${r.id === selectedId ? 'sel' : ''} ${focusRoomId === r.id ? 'focused' : ''}`} onClick={() => { setTool('select'); select(r.id) }}>
               <span className="name">{r.name}</span>
               <span className="meta">{Object.values(r.walls).filter((w) => w.photo).length}/{r.points.length} fotki</span>
+              <button className={`icon-btn ${focusRoomId === r.id ? 'on' : ''}`} onClick={(e) => { e.stopPropagation(); setFocusRoom(focusRoomId === r.id ? null : r.id) }} title={focusRoomId === r.id ? 'Prikaži sve sobe' : 'Fokusiraj sobu: samo njezini bužiri, zumiraj'} aria-label={`Fokus ${r.name}`} aria-pressed={focusRoomId === r.id}><Icon.focus /></button>
               <button className="mini" onClick={(e) => { e.stopPropagation(); setView({ kind: 'room', roomId: r.id, wall: 0 }) }}>Otvori</button>
             </li>
           ))}
         </ul>
       </section>
+
+      <details className="setup">
+        <summary>
+          <Icon.chevron className="chev" />
+          <h3>Kategorije bužira</h3>
+          <span className="muted">{project.categories.length}</span>
+        </summary>
+        <p className="muted cat-hint">Bužir čiji naziv sadrži ključnu riječ dobije kategoriju i njezinu boju. Ključne riječi odvoji zarezom.</p>
+        <ul className="cat-list">
+          {project.categories.map((c) => (
+            <CategoryRow key={c.id} c={c} onChange={(n) => setCategories(project.categories.map((x) => (x.id === c.id ? n : x)))} onRemove={() => setCategories(project.categories.filter((x) => x.id !== c.id))} />
+          ))}
+        </ul>
+        <div className="cat-actions"><button className="mini" onClick={() => setCategories([...project.categories, { id: uid(), name: 'Nova', color: '#808080', keywords: [] }])}>+ Kategorija</button></div>
+      </details>
 
       <details className="setup" open={!setupDone}>
         <summary>
@@ -154,4 +207,15 @@ function autoAlign(src: string, setTilt: (deg: number) => void) {
   const img = new Image()
   img.onload = () => setTilt(-detectSkew(img))
   img.src = src
+}
+
+function CategoryRow({ c, onChange, onRemove }: { c: Category; onChange: (c: Category) => void; onRemove: () => void }) {
+  return (
+    <li className="cat-row">
+      <input type="color" value={c.color} onChange={(e) => onChange({ ...c, color: e.target.value })} aria-label="Boja kategorije" />
+      <input className="cat-name" value={c.name} onChange={(e) => onChange({ ...c, name: e.target.value })} aria-label="Naziv kategorije" />
+      <input className="cat-kw" value={c.keywords.join(', ')} placeholder="ključne riječi" onChange={(e) => onChange({ ...c, keywords: e.target.value.split(',').map((k) => k.trim()).filter(Boolean) })} aria-label="Ključne riječi" />
+      <button className="icon-btn danger" onClick={onRemove} title="Obriši kategoriju" aria-label="Obriši kategoriju"><Icon.trash /></button>
+    </li>
+  )
 }

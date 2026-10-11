@@ -1,4 +1,4 @@
-import { dist, projectOnSegment, signedArea } from './geometry'
+import { dist, pointInPolygon, projectOnSegment, signedArea } from './geometry'
 import type { Cable, CableEnd, Conduit, Project, Pt, Room, WallElement } from './types'
 
 export interface Exit { conduit: Conduit; end: 'start' | 'end'; posM: number; distM: number; offset: Pt; zM: number | null }
@@ -68,4 +68,17 @@ export function endLabel(end: CableEnd, p: Project) {
 export function cableColor(c: Cable, p: Project) {
   for (const end of [c.from, c.to]) if (end.kind === 'exit') return p.conduits.find((x) => x.id === end.conduitId)?.color ?? '#555'
   return '#555'
+}
+
+// A conduit "enters" a room when either end is inside it or within 0.5 m of one of its walls.
+export function conduitTouchesRoom(c: Conduit, room: Room, ppm: number | null) {
+  const tol = (ppm ?? 100) * 0.5
+  const ends = [c.points[0], c.points[c.points.length - 1]]
+  return ends.some((p) => {
+    if (pointInPolygon(p, room.points)) return true
+    for (let i = 0; i < room.points.length; i++) {
+      if (projectOnSegment(p, room.points[i], room.points[(i + 1) % room.points.length]).dist <= tol) return true
+    }
+    return false
+  })
 }

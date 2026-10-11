@@ -101,3 +101,19 @@ export function fmtMeters(px: number, pxPerMeter: number | null) {
   if (!pxPerMeter) return `${Math.round(px)} px`
   return `${(px / pxPerMeter).toFixed(2)} m`
 }
+
+export function pointInPolygon(p: Pt, pts: Pt[]) {
+  let inside = false
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const a = pts[i]
+    const b = pts[j]
+    if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) inside = !inside
+  }
+  return inside
+}
+
+export function bounds(pts: Pt[]) {
+  const xs = pts.map((p) => p.x)
+  const ys = pts.map((p) => p.y)
+  return { minX: Math.min(...xs), minY: Math.min(...ys), maxX: Math.max(...xs), maxY: Math.max(...ys) }
+}

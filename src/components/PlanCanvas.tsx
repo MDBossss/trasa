@@ -3,8 +3,8 @@ import { Stage, Layer, Image as KImage, Line, Circle, Rect, Shape, Label, Tag, T
 import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import useImage from 'use-image'
-import { gridStepPx, planDims, useStore } from '../store'
-import { centroid, dist, fmtMeters, midpointOfPolyline, polylineLength, snapPoint, snapToGrid } from '../geometry'
+import { conduitVisible, gridStepPx, planDims, useStore } from '../store'
+import { bounds, centroid, dist, fmtMeters, midpointOfPolyline, polylineLength, snapPoint, snapToGrid } from '../geometry'
 import type { Pt } from '../types'
 import { CanvasHud } from './CanvasHud'
 import { Icon } from './Icons'
@@ -29,6 +29,9 @@ export function PlanCanvas() {
   const showGrid = useStore((s) => s.showGrid)
   const snapGrid = useStore((s) => s.snapGrid)
   const snapAngle = useStore((s) => s.snapAngle)
+  const focusRoomId = useStore((s) => s.focusRoomId)
+  const hiddenCategories = useStore((s) => s.hiddenCategories)
+  const hiddenConduits = useStore((s) => s.hiddenConduits)
   const { select, setTool, addConduit, addRoom, updateConduit, updateRoom, patchProject, removeSelected, setTilt } = useStore.getState()
 
   const [img] = useImage(project.planImage ?? '')
@@ -55,6 +58,17 @@ export function PlanCanvas() {
   useEffect(() => {
     setDraft([])
   }, [tool])
+
+  // focusing a room zooms the camera to it
+  useEffect(() => {
+    const room = project.rooms.find((r) => r.id === focusRoomId)
+    if (!room || !size.w) return
+    const b = bounds(room.points)
+    const w = b.maxX - b.minX
+    const h = b.maxY - b.minY
+    const scale = Math.min(size.w / (w * 1.3), size.h / (h * 1.3), 20)
+    setView({ scale, x: size.w / 2 - (b.minX + w / 2) * scale, y: size.h / 2 - (b.minY + h / 2) * scale })
+  }, [focusRoomId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toImg = useCallback((): Pt | null => {
     const st = stageRef.current
@@ -86,7 +100,7 @@ export function PlanCanvas() {
       if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT') return
       if (e.key === 'Alt') { setAlt(true); e.preventDefault(); return }
       if (e.code === 'Space') { setSpace(true); e.preventDefault(); return }
-      if (e.key === 'Escape') { setDraft([]); select(null); return }
+      if (e.key === 'Escape') { if (draft.length) setDraft([]); else if (selectedId) select(null); else useStore.getState().setFocusRoom(null); return }
       if (e.key === 'Enter') { finishDraft(); return }
       if (e.key === 'Backspace' && draft.length) { setDraft((d) => d.slice(0, -1)); return }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) { removeSelected(); return }
@@ -289,8 +303,9 @@ export function PlanCanvas() {
             const r = live?.id === r0.id ? { ...r0, points: live.points } : r0
             const c = centroid(r.points)
             const isSel = r.id === sel
+            const dimmed = !!focusRoomId && focusRoomId !== r.id
             return (
-              <Group key={r.id} {...shapeDrag(r.id, r0.points, (points) => updateRoom(r.id, { points }))}>
+              <Group key={r.id} opacity={dimmed ? 0.3 : 1} {...shapeDrag(r.id, r0.points, (points) => updateRoom(r.id, { points }))}>
                 <Line
                   name={r.id}
                   points={r.points.flatMap((p) => [p.x, p.y])}
@@ -319,7 +334,7 @@ export function PlanCanvas() {
         </Layer>
 
         <Layer listening={tool === 'select'}>
-          {project.conduits.map((c0) => {
+          {project.conduits.filter((c) => conduitVisible(c, { project, focusRoomId, hiddenCategories, hiddenConduits, selectedId })).map((c0) => {
             const c = live?.id === c0.id ? { ...c0, points: live.points } : c0
             const isSel = c.id === sel
             const mid = midpointOfPolyline(c.points)

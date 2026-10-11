@@ -6,6 +6,7 @@ export interface Conduit {
   id: string
   name: string
   color: string
+  categoryId?: string
   diameter: number
   points: Pt[]
   from: string
@@ -13,6 +14,30 @@ export interface Conduit {
   note: string
   // height from floor (m) where each end leaves the wall; undefined = ceiling
   exitZ?: { start?: number; end?: number }
+}
+
+// A category gives conduits a constant colour; keywords in the conduit name assign it automatically.
+export interface Category {
+  id: string
+  name: string
+  color: string
+  keywords: string[]
+}
+
+export const DEFAULT_CATEGORIES: Category[] = [
+  { id: 'struja', name: 'Struja', color: '#e6194b', keywords: ['struja', 'uticnic', 'utičnic', 'prekidac', 'prekidač'] },
+  { id: 'dolaz', name: 'Dolaz / napajanje', color: '#1f2430', keywords: ['dolaz', 'napajanje', 'ormar', 'glavni'] },
+  { id: 'internet', name: 'Internet / LAN', color: '#4363d8', keywords: ['internet', 'lan', 'utp', 'mreza', 'mreža', 'wifi', 'router'] },
+  { id: 'tv', name: 'TV / SAT', color: '#911eb4', keywords: ['tv', 'sat', 'koaks', 'antena'] },
+  { id: 'rasvjeta', name: 'Rasvjeta', color: '#3cb44b', keywords: ['rasvjet', 'svjetlo', 'lampa', 'led'] },
+  { id: 'zvono', name: 'Zvono / interfon', color: '#f58231', keywords: ['zvono', 'interfon', 'portafon'] },
+  { id: 'alarm', name: 'Alarm / kamere', color: '#fabe00', keywords: ['alarm', 'kamer', 'senzor'] },
+  { id: 'grijanje', name: 'Grijanje / termostat', color: '#9a6324', keywords: ['grijanje', 'termostat', 'bojler', 'klima'] },
+]
+
+export function matchCategory(name: string, categories: Category[]): Category | undefined {
+  const n = name.toLowerCase()
+  return categories.find((c) => c.keywords.some((k) => k && n.includes(k.toLowerCase())))
 }
 
 export interface Wall {
@@ -85,6 +110,7 @@ export interface Project {
   rooms: Room[]
   elements: WallElement[]
   cables: Cable[]
+  categories: Category[]
 }
 
 export type Tool = 'select' | 'pan' | 'calibrate' | 'room' | 'conduit' | 'align' | 'origin'
@@ -115,5 +141,6 @@ export function emptyProject(): Project {
     rooms: [],
     elements: [],
     cables: [],
+    categories: DEFAULT_CATEGORIES.map((c) => ({ ...c, keywords: [...c.keywords] })),
   }
 }

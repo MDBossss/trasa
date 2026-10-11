@@ -52,7 +52,7 @@ const toScreen = async (x, y) => page.evaluate(([x, y]) => {
 }, [x, y])
 const clickImg = async (x, y) => { const p = await toScreen(x, y); await page.mouse.move(p.x, p.y); await page.mouse.click(p.x, p.y) }
 const state = () => page.evaluate(() => window.__trasa.getState().project)
-const openSetup = () => page.evaluate(() => { document.querySelector('details.setup').open = true })
+const openSetup = () => page.evaluate(() => { document.querySelectorAll('details.setup').forEach((d) => { d.open = true }) })
 const menu = async (label) => { await page.getByRole('button', { name: 'Datoteka' }).click(); await page.getByText(label).click() }
 
 // calibrate: 500 px = 5 m → 100 px/m
@@ -96,6 +96,19 @@ await clickImg(150, 250)
 await page.locator('.props h3', { hasText: 'Bužir' }).waitFor()
 const nameInput = page.locator('.props input').first()
 assert.equal(await nameInput.inputValue(), 'B1')
+await nameInput.fill('B1-ormar')
+await page.locator('.list').getByText('B1-ormar').waitFor()
+// "ormar" is a keyword of the Dolaz category → constant colour; "internet" switches it; a custom colour clears the category
+st = await state()
+assert.deepEqual([st.conduits[0].categoryId, st.conduits[0].color], ['dolaz', '#1f2430'])
+await nameInput.fill('Internet dnevna')
+st = await state()
+assert.deepEqual([st.conduits[0].categoryId, st.conduits[0].color], ['internet', '#4363d8'])
+await page.locator('.props select').first().selectOption('tv')
+assert.deepEqual((await state()).conduits[0].categoryId, 'tv')
+await page.locator('.props input[type=color]').fill('#123456')
+st = await state()
+assert.deepEqual([st.conduits[0].categoryId, st.conduits[0].color], [undefined, '#123456'])
 await nameInput.fill('B1-ormar')
 await page.locator('.list').getByText('B1-ormar').waitFor()
 
@@ -167,6 +180,28 @@ assert.deepEqual(st.conduits[2].points, [{ x: 155, y: 117 }, { x: 155, y: 297 }]
 await page.keyboard.press('v'); await page.keyboard.press('Meta+z')
 await openSetup(); await page.locator('.steps li').nth(2).getByText('Reset').click()
 assert.deepEqual((await state()).gridOrigin, { x: 0, y: 0 })
+
+// room focus: only conduits entering Dnevna stay on the canvas (B3 at x=-100 does not), camera zooms to the room
+{
+  const linesOnCanvas = () => page.evaluate(() => window.Konva.stages[0].find('Line').filter((l) => l.name() && !l.closed()).map((l) => l.name()))
+  const ids = (await state()).conduits.map((c) => c.id)
+  assert.deepEqual((await linesOnCanvas()).sort(), [...ids].sort())
+  const camBefore = await page.evaluate(() => window.__trasa.getState().camera)
+  await page.getByRole('button', { name: 'Fokus Dnevna' }).click()
+  await page.getByText('Fokus: Dnevna').waitFor()
+  assert.deepEqual((await linesOnCanvas()).sort(), [ids[0], ids[1]].sort())
+  assert.notEqual((await page.evaluate(() => window.__trasa.getState().camera)).scale, camBefore.scale)
+  // hiding a category removes its conduits; the eye on a single conduit too
+  await page.locator('.legend-item', { hasText: 'Dolaz' }).click()
+  assert.deepEqual(await linesOnCanvas(), [ids[1]])
+  await page.locator('.legend-item', { hasText: 'Dolaz' }).click()
+  await page.getByRole('button', { name: 'Sakrij B2' }).click()
+  assert.deepEqual(await linesOnCanvas(), [ids[0]])
+  await page.getByText('Prikaži sve', { exact: true }).click()
+  await page.getByText('Fokus: Dnevna').waitFor({ state: 'hidden' })
+  assert.deepEqual((await linesOnCanvas()).sort(), [...ids].sort())
+  await page.getByRole('button', { name: 'Uklopi' }).click()
+}
 
 // HUD zoom buttons and fit
 const s0 = (await page.evaluate(() => window.__trasa.getState().camera)).scale

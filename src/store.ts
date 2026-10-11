@@ -1,12 +1,13 @@
 import { create } from 'zustand'
 import { temporal } from 'zundo'
 import { get as idbGet, set as idbSet } from 'idb-keyval'
-import { emptyProject, PALETTE, ELEMENT_META, type Cable, type Conduit, type ElementType, type Project, type Pt, type Room, type Tool, type View, type WallElement, type WallTool } from './types'
+import { conduitTouchesRoom } from './walls'
+import { emptyProject, PALETTE, ELEMENT_META, DEFAULT_CATEGORIES, matchCategory, type Category, type Cable, type Conduit, type ElementType, type Project, type Pt, type Room, type Tool, type View, type WallElement, type WallTool } from './types'
 
 const IDB_KEY = 'trasa-project'
 
 // Fills fields added after a project was saved.
-export const normalize = (p: Project): Project => ({ ...emptyProject(), ...p, planRotation: p.planRotation ?? 0, planTilt: p.planTilt ?? 0, gridOrigin: p.gridOrigin ?? { x: 0, y: 0 }, planOpacity: p.planOpacity ?? 1, elements: p.elements ?? [], cables: p.cables ?? [] })
+export const normalize = (p: Project): Project => ({ ...emptyProject(), ...p, planRotation: p.planRotation ?? 0, planTilt: p.planTilt ?? 0, gridOrigin: p.gridOrigin ?? { x: 0, y: 0 }, planOpacity: p.planOpacity ?? 1, elements: p.elements ?? [], cables: p.cables ?? [], categories: p.categories ?? DEFAULT_CATEGORIES.map((c) => ({ ...c, keywords: [...c.keywords] })) })
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 
@@ -20,6 +21,9 @@ interface State {
   selectedId: string | null
   view: View
   showGrid: boolean
+  focusRoomId: string | null
+  hiddenCategories: string[]
+  hiddenConduits: string[]
   snapGrid: boolean
   snapAngle: boolean
   loaded: boolean
@@ -41,10 +45,14 @@ interface State {
   select: (id: string | null) => void
   setView: (v: View) => void
   toggle: (k: 'showGrid' | 'snapGrid' | 'snapAngle') => void
+  setFocusRoom: (id: string | null) => void
+  toggleHiddenCategory: (id: string) => void
+  toggleHiddenConduit: (id: string) => void
   patchProject: (p: Partial<Project>) => void
   replaceProject: (p: Project) => void
   addConduit: (points: Pt[]) => string
   updateConduit: (id: string, p: Partial<Conduit>) => void
+  setCategories: (c: Category[]) => void
   addRoom: (points: Pt[], name: string) => string
   updateRoom: (id: string, p: Partial<Room>) => void
   setWallPhoto: (roomId: string, wall: number, photo: string | undefined) => void
@@ -69,6 +77,9 @@ export const useStore = create<State>()(
       selectedId: null,
       view: { kind: 'plan' },
       showGrid: true,
+      focusRoomId: null,
+      hiddenCategories: [],
+      hiddenConduits: [],
       snapGrid: true,
       snapAngle: true,
       loaded: false,
@@ -111,6 +122,9 @@ export const useStore = create<State>()(
       select: (selectedId) => set({ selectedId }),
       setView: (view) => set({ view }),
       toggle: (k) => set((s) => ({ [k]: !s[k] })),
+      setFocusRoom: (focusRoomId) => set({ focusRoomId }),
+      toggleHiddenCategory: (id) => set((s) => ({ hiddenCategories: s.hiddenCategories.includes(id) ? s.hiddenCategories.filter((x) => x !== id) : [...s.hiddenCategories, id] })),
+      toggleHiddenConduit: (id) => set((s) => ({ hiddenConduits: s.hiddenConduits.includes(id) ? s.hiddenConduits.filter((x) => x !== id) : [...s.hiddenConduits, id] })),
       patchProject: (p) => set((s) => ({ project: { ...s.project, ...p } })),
       replaceProject: (project) => set({ project: normalize(project), selectedId: null, view: { kind: 'plan' } }),
 
@@ -125,9 +139,37 @@ export const useStore = create<State>()(
         })
         return id
       },
+      // Renaming re-matches the category by keywords; picking a category sets its colour.
       updateConduit: (id, p) =>
         set((s) => ({
-          project: { ...s.project, conduits: s.project.conduits.map((c) => (c.id === id ? { ...c, ...p } : c)) },
+          project: {
+            ...s.project,
+            conduits: s.project.conduits.map((c) => {
+              if (c.id !== id) return c
+              let next = { ...c, ...p }
+              if (p.name !== undefined && p.categoryId === undefined) {
+                const cat = matchCategory(p.name, s.project.categories)
+                if (cat) next = { ...next, categoryId: cat.id, color: cat.color }
+              }
+              if (p.categoryId !== undefined) {
+                const cat = s.project.categories.find((x) => x.id === p.categoryId)
+                if (cat) next = { ...next, color: cat.color }
+              }
+              return next
+            }),
+          },
+        })),
+      setCategories: (categories) =>
+        set((s) => ({
+          project: {
+            ...s.project,
+            categories,
+            // conduits follow their category's colour
+            conduits: s.project.conduits.map((c) => {
+              const cat = categories.find((x) => x.id === c.categoryId)
+              return cat ? { ...c, color: cat.color } : c
+            }),
+          },
         })),
       addRoom: (points, name) => {
         const id = uid()
@@ -237,4 +279,16 @@ export function gridStepPx(p: Project): number | null {
 export function planDims(p: Project): { w: number; h: number } | null {
   if (!p.planSize) return null
   return p.planRotation % 180 ? { w: p.planSize.h, h: p.planSize.w } : p.planSize
+}
+
+// Visibility on the plan: eye toggles and room focus; the selected conduit always shows.
+export function conduitVisible(c: Conduit, s: Pick<State, 'project' | 'focusRoomId' | 'hiddenCategories' | 'hiddenConduits' | 'selectedId'>) {
+  if (c.id === s.selectedId) return true
+  if (s.hiddenConduits.includes(c.id)) return false
+  if (c.categoryId && s.hiddenCategories.includes(c.categoryId)) return false
+  if (s.focusRoomId) {
+    const room = s.project.rooms.find((r) => r.id === s.focusRoomId)
+    if (room && !conduitTouchesRoom(c, room, s.project.pxPerMeter)) return false
+  }
+  return true
 }

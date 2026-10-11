@@ -4,8 +4,8 @@ import { Icon, type IconName } from './Icons'
 
 export interface HudToggle { icon: IconName; on: boolean; title: string; onClick: () => void }
 
-export function Hud({ scale, onZoomIn, onZoomOut, onFit, toggles, hint, extra }: {
-  scale: number; onZoomIn: () => void; onZoomOut: () => void; onFit: () => void; toggles: HudToggle[]; hint: ReactNode; extra?: ReactNode
+export function Hud({ scale, onZoomIn, onZoomOut, onFit, toggles, hint, extra, chips }: {
+  scale: number; onZoomIn: () => void; onZoomOut: () => void; onFit: () => void; toggles: HudToggle[]; hint: ReactNode; extra?: ReactNode; chips?: ReactNode
 }) {
   return (
     <>
@@ -31,6 +31,7 @@ export function Hud({ scale, onZoomIn, onZoomOut, onFit, toggles, hint, extra }:
         </div>
       </div>
       <div className="hud hud-hint">{hint}</div>
+      {chips && <div className="hud hud-chips">{chips}</div>}
     </>
   )
 }
