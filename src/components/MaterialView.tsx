@@ -1,17 +1,61 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useStore } from '../store'
-import { bomFor } from '../bom'
+import { bomFor, type BomLine } from '../bom'
 import { allJunctions } from '../junction'
 import { Icon } from './Icons'
+
+// Shopping list, not just a table: tick off what is bought (kept per device), see which room needs what,
+// packaging hints for the shop, and the list as text / CSV for the phone or the supplier.
+
+const fmt = (l: { unit: 'm' | 'kom'; qty: number }) => (l.unit === 'm' ? `${l.qty.toFixed(1).replace('.', ',')} m` : `${l.qty} kom`)
+function packHint(l: BomLine): string | null {
+  if (l.group === 'Stezaljke' && l.item.startsWith('WAGO')) return 'pakiranje 50 / 100 kom'
+  if (l.group === 'Kabeli') return l.qty >= 40 ? 'kolut 50 / 100 m' : 'metraža'
+  if (l.group === 'Bužiri') return /ø(16|20)/.test(l.item) ? 'kolut 100 m' : 'kolut 50 m'
+  if (l.group === 'LED' && l.item.startsWith('LED traka')) return 'rola 5 m'
+  return null
+}
 
 export function MaterialView() {
   const project = useStore((s) => s.project)
   const { setView } = useStore.getState()
   const [roomId, setRoomId] = useState<string | null>(null)
+  const [hideDone, setHideDone] = useState(false)
+  const [copied, setCopied] = useState(false)
   const lines = useMemo(() => bomFor(project, roomId), [project, roomId])
+  // per-room split of every line, shown when the whole house is listed
+  const byRoom = useMemo(() => {
+    const m = new Map<string, { room: string; qty: number }[]>()
+    if (roomId) return m
+    for (const r of project.rooms) for (const l of bomFor(project, r.id)) {
+      const k = `${l.group}|${l.item}`
+      if (!m.has(k)) m.set(k, [])
+      m.get(k)!.push({ room: r.name, qty: l.qty })
+    }
+    return m
+  }, [project, roomId])
   const checks = useMemo(() => allJunctions(project).flatMap((j) => j.checks.filter((c) => c.level !== 'ok').map((c) => ({ ...c, j }))).filter((c) => !roomId || c.j.room.id === roomId), [project, roomId])
   const groups = [...new Set(lines.map((l) => l.group))]
-  const fmt = (l: { unit: 'm' | 'kom'; qty: number }) => (l.unit === 'm' ? `${l.qty.toFixed(1).replace('.', ',')} m` : `${l.qty} kom`)
+  const scope = roomId ? project.rooms.find((r) => r.id === roomId)?.name ?? '' : 'cijela kuća'
+
+  // bought items live in this browser only: a shopping aid, not project data
+  const doneKey = `trasa-bought:${project.name}`
+  const [done, setDone] = useState<Set<string>>(() => { try { return new Set(JSON.parse(localStorage.getItem(doneKey) ?? '[]')) } catch { return new Set() } })
+  useEffect(() => { try { localStorage.setItem(doneKey, JSON.stringify([...done])) } catch { /* private mode */ } }, [done, doneKey])
+  const key = (l: BomLine) => `${l.group}|${l.item}`
+  const toggle = (l: BomLine) => setDone((d) => { const n = new Set(d); n.has(key(l)) ? n.delete(key(l)) : n.add(key(l)); return n })
+  const nDone = lines.filter((l) => done.has(key(l))).length
+
+  const asText = () => groups.map((g) => `${g.toUpperCase()}\n${lines.filter((l) => l.group === g).map((l) => `${done.has(key(l)) ? '[x]' : '[ ]'} ${l.item} · ${fmt(l)}`).join('\n')}`).join('\n\n')
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(`Materijal · ${project.name} · ${scope}\n\n${asText()}`); setCopied(true); setTimeout(() => setCopied(false), 1500) } catch { window.prompt('Kopiraj:', asText()) }
+  }
+  // semicolon + decimal comma: what a Croatian Excel opens without asking
+  const csv = () => {
+    const rows = [['Grupa', 'Stavka', 'Količina', 'Jedinica', 'Nabavljeno'], ...lines.map((l) => [l.group, l.item, String(l.qty).replace('.', ','), l.unit, done.has(key(l)) ? 'da' : 'ne'])]
+    const blob = new Blob(['﻿' + rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(';')).join('\r\n')], { type: 'text/csv;charset=utf-8' })
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `materijal-${project.name}-${scope}.csv`.replace(/\s+/g, '-'); a.click(); URL.revokeObjectURL(a.href)
+  }
 
   return (
     <div className="material">
@@ -27,18 +71,53 @@ export function MaterialView() {
       </div>
       <div className="material-body">
         {!lines.length && <p className="muted">Nema materijala: nacrtaj bužire, kutije, elemente i kabele.</p>}
-        {groups.map((g) => (
-          <section key={g} className="panel-card">
-            <h3>{g}</h3>
-            <table className="bom-table">
-              <tbody>
-                {lines.filter((l) => l.group === g).map((l) => (
-                  <tr key={l.item}><td>{l.item}</td><td className="num">{fmt(l)}</td></tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
-        ))}
+        {lines.length > 0 && (
+          <div className="mat-bar">
+            <span className="mat-progress"><b>{nDone}</b> / {lines.length} nabavljeno</span>
+            <label className="inline"><input type="checkbox" checked={hideDone} onChange={(e) => setHideDone(e.target.checked)} /> sakrij nabavljeno</label>
+            <div className="spacer" />
+            <button className="mini" onClick={() => void copy()} title="Popis kao tekst, za poruku ili bilješke">{copied ? <><Icon.check /> Kopirano</> : <>Kopiraj popis ({scope})</>}</button>
+            <button className="mini" onClick={csv} title="Tablica za Excel (; i decimalni zarez)">Preuzmi CSV</button>
+            {nDone > 0 && <button className="mini" onClick={() => setDone(new Set())}>Poništi kvačice</button>}
+          </div>
+        )}
+        {groups.map((g) => {
+          const gl = lines.filter((l) => l.group === g)
+          const shown = hideDone ? gl.filter((l) => !done.has(key(l))) : gl
+          if (!shown.length) return null
+          return (
+            <section key={g} className="panel-card">
+              <h3>{g} <span className="count">{gl.filter((l) => done.has(key(l))).length} / {gl.length}</span></h3>
+              <table className="bom-table">
+                <tbody>
+                  {shown.map((l) => {
+                    const isDone = done.has(key(l))
+                    // conduits (and anything not tied to a room) show up as "ostalo" so the split adds up to the total
+                    const rooms = [...(byRoom.get(key(l)) ?? [])]
+                    const rest = l.qty - rooms.reduce((a, r) => a + r.qty, 0)
+                    if (rooms.length && rest > 0.01) rooms.push({ room: 'ostalo', qty: Math.round(rest * 2) / 2 })
+                    const hint = packHint(l)
+                    return (
+                      <tr key={l.item} className={isDone ? 'done' : ''}>
+                        <td className="chk"><input type="checkbox" checked={isDone} onChange={() => toggle(l)} aria-label={`Nabavljeno: ${l.item}`} /></td>
+                        <td>
+                          <div className="mat-item">{l.item}</div>
+                          {rooms.length > 1 || hint ? (
+                            <div className="mat-sub">
+                              {rooms.length > 1 && <span>{rooms.map((r) => `${r.room} ${fmt({ unit: l.unit, qty: r.qty })}`).join(' · ')}</span>}
+                              {hint && <span className="mat-pack">{hint}</span>}
+                            </div>
+                          ) : null}
+                        </td>
+                        <td className="num">{fmt(l)}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </section>
+          )
+        })}
         {checks.length > 0 && (
           <section className="panel-card">
             <h3>Otvorene provjere <span className="count">{checks.length}</span></h3>
@@ -47,7 +126,7 @@ export function MaterialView() {
             </div>
           </section>
         )}
-        <p className="muted">Kabeli: duljina po zidu + bužir + 30 cm rezerve po kraju u kutiji, zaokruženo na 0,5 m. Bužir se broji jednom, uz kabel na njegovom početku.</p>
+        <p className="muted">Kabeli: duljina po zidu + bužir + 30 cm rezerve po kraju u kutiji, zaokruženo na 0,5 m. Bužir se broji jednom, uz kabel na njegovom početku. Kvačice "nabavljeno" ostaju samo na ovom uređaju.</p>
       </div>
     </div>
   )
