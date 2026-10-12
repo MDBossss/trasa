@@ -50,16 +50,16 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
    žilu (strelice ← →), desno je materijal po kutiji i provjere (kutija bez dolaza, prekidač bez svjetla, premalo žila…).
    Na dozi možeš označiti dubinu (plitka / duboka) za kasnije releje.
 10. **Pametna rasvjeta**: **Modularna doza (M)** je okvir (2M–7M) s dubinom; **Tipkalo (T)** i **Relej (R)** se
-    postave klikom na dozu/kutiju/nišu i žive u njoj. Relej (Shelly Plus 1, 1 Gen4, 2PM, Dimmer Gen3, i4, RGBW PM; Sonoff
-    ZBMINIR2 i ZBMINIL2 za Zigbee) crta se s pravim stezaljkama: Shelly L N SW I O, Sonoff L N Lout Nout S1 S2 (tipkalo
-    na S1/S2 je niski napon, bez faze; ZBMINIL2 radi bez nule). Shelly ima ulaze SW i izlaze O: na tipkalu odaberi "Na relej" + ulaz, na svjetlu "Napaja ga" + izlaz. Iz toga aplikacija izvede koliko
+    postave klikom na dozu/kutiju/nišu i žive u njoj. Relej: **Sonoff ZBMINIR2** (Zigbee, za svjetla; stezaljke L N Lout Nout
+    S1 S2, tipkalo na S1/S2 je niski napon bez faze), **Shelly 1 Gen4** (Zigbee, jedini sa suhim kontaktom, za vrata;
+    L N SW I O) i Shelly Plus RGBW PM za LED nišu. Stariji save-ovi s Plus 1 / 2PM / Dimmer / i4 se učitaju kao Gen4. Shelly ima ulaze SW i izlaze O: na tipkalu odaberi "Na relej" + ulaz, na svjetlu "Napaja ga" + izlaz. Iz toga aplikacija izvede koliko
     žila kabel između kutije i doze mora nositi (L, N, PE + izlazi), piše to na kabelu ("4 potrebno · 3 ima → uzmi 5×1,5")
     i crta dozu s relejima, tipkalima i kratkim žilama (tipkalo → SW izravno, bez stezaljke). **LED niša (N)**: traka
     (m, W/m, 12/24 V) i napajanje × 1,2; napaja se kao svjetlo. Provjere: relej bez nule, relej u plitkoj dozi, kabel s
     premalo žila, izlaz releja bez kabela do svjetla, klasični prekidač na releju.
     **Vrata / motor (D)**: upravljačka jedinica rolo ili sekcijskih vrata; na njoj odaberi "Pali ga relej" (samo Shelly
-    Plus 1). Taj Shelly tada radi kao suhi kontakt: I i O idu na "impuls" jedinice (stezaljke IMP1/IMP2, bez napona),
-    kabel do vrata 5×1,5 (L N PE + 2 impuls). Shelly Plus 1 u modu svjetla crta se s premosnicom L → I.
+    1 Gen4). Taj Shelly tada radi kao suhi kontakt: I i O idu na "impuls" jedinice (stezaljke IMP1/IMP2, bez napona),
+    kabel do vrata 5×1,5 (L N PE + 2 impuls). Shelly Gen4 u modu svjetla crta se s premosnicom L → I.
 11. **Materijal** (header): popis po sobi ili za kuću (kabeli u metrima: zid + bužir + 30 cm rezerve po kraju, bez bužira,
     WAGO, doze, oprema, releji, LED). **PDF za majstora**: pregled za ispis po sobi (tlocrt sobe s bužirima, svaki zid s
     elementima i kotama, svaka kutija i doza sa slikom i tablicom stezaljki, releji, materijal, otvorene provjere);

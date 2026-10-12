@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { WIRE_HEX, type WireColor, RELAY_LOOK, relayBrand } from '../types'
+import { WIRE_HEX, type WireColor, RELAY_LOOK, relayBrand, relayModelOf } from '../types'
 import type { BoxCable, Device, Junction, PlanWire, Side, Terminal } from '../junction'
 
 // Top-down view into the open box, drawn to scale in millimetres: cables enter from the rim,
@@ -195,7 +195,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
         }
         const d = pl.d
         const isBtn = d.kind !== 'relay'
-        const look = isBtn ? { fill: '#fafaf7', stroke: '#555', text: '#333' } : RELAY_LOOK[relayBrand(d.el.relayModel ?? 'plus1')]
+        const look = isBtn ? { fill: '#fafaf7', stroke: '#555', text: '#333' } : RELAY_LOOK[relayBrand(relayModelOf(d.el))]
         const pitch = pl.w / d.ports.length
         return (
           <g key={d.el.id}>

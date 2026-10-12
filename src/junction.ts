@@ -1,4 +1,4 @@
-import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isPlace, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf } from './types'
+import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isPlace, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, relayModelOf } from './types'
 
 // Everything a box needs: which cables enter it, what each core goes to, which devices sit inside
 // and which WAGO 221 connectors (or direct jumpers) that takes. Derived from the drawing, nothing is stored.
@@ -139,7 +139,7 @@ function switchSignals(sw: WallElement, p: Project, checks: Check[], usable: num
     const r = el(p, sw.relayId)
     if (!r) checks.push({ level: 'err', text: `${sw.label}: relej više ne postoji.` })
     if (kind !== 'tipkalo') checks.push({ level: 'warn', text: `${sw.label} je ${kind} na releju: koristi tipkalo ili postavi relej u "toggle/edge" način.` })
-    if (r && RELAY_MODELS[r.relayModel ?? 'plus1'].swLow) return [{ terminal: `SI:${sw.relayId}:1:1`, note: `na ${r.label} S1` }, { terminal: `SI:${sw.relayId}:1:2`, note: `na ${r.label} S2` }]
+    if (r && RELAY_MODELS[relayModelOf(r)].swLow) return [{ terminal: `SI:${sw.relayId}:1:1`, note: `na ${r.label} S1` }, { terminal: `SI:${sw.relayId}:1:2`, note: `na ${r.label} S2` }]
     return [{ terminal: 'L', note: 'dovod' }, { terminal: `I:${sw.relayId}:${sw.relayInput ?? 1}`, note: `na ${r?.label ?? 'relej'} SW${sw.relayInput ?? 1}` }]
   }
   const lights = (sw.controls ?? []).map((id) => el(p, id)).filter((x): x is WallElement => !!x)
@@ -222,7 +222,7 @@ export function devicesIn(place: WallElement, p: Project): Device[] {
     .filter((e) => e.host === place.id && (e.type === 'relay' || e.type === 'switch' || e.type === 'socket'))
     .map((e) => {
       if (e.type === 'relay') {
-        const m = RELAY_MODELS[e.relayModel ?? 'plus1']
+        const m = RELAY_MODELS[relayModelOf(e)]
         return { el: e, label: `${e.label} ${m.label}`, ports: m.ports, wMm: Math.max(37, m.ports.length * 7), hMm: 14, kind: 'relay' as const }
       }
       if (e.type === 'socket') { const k = SOCKET_KINDS[e.socketKind ?? 'schuko']; return { el: e, label: `${e.label} ${k.label.toLowerCase()} utičnica`, ports: ['L', 'N', 'PE', 'L′', 'N′', 'PE′'], wMm: Math.max(24, k.modules * 11), hMm: 18, kind: 'socket' as const } }
@@ -234,7 +234,7 @@ type PortMember = { port: string; terminal: string; color: WireColor; note?: str
 function devicePorts(d: Device, p: Project, checks: Check[]): PortMember[] {
   const out: PortMember[] = []
   if (d.kind === 'relay') {
-    const m = RELAY_MODELS[d.el.relayModel ?? 'plus1']
+    const m = RELAY_MODELS[relayModelOf(d.el)]
     out.push({ port: 'L', terminal: 'L', color: 'brown' })
     if (m.needsN) out.push({ port: 'N', terminal: 'N', color: 'blue' })
     if (m.dc) return out
@@ -365,7 +365,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
     })
     .sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role) || SIDE_ORDER.indexOf(a.side) - SIDE_ORDER.indexOf(b.side) || a.order - b.order)
   const devices = devicesIn(box, p)
-  for (const d of devices) if (d.kind === 'relay' && !RELAY_MODELS[d.el.relayModel ?? 'plus1'].dry && pulseTarget(d.el, p)) checks.push({ level: 'err', text: `${d.el.label}: suhi kontakt za vrata imaju samo Shelly Plus 1 / 1 Gen4; ${RELAY_MODELS[d.el.relayModel ?? 'plus1'].label} pali fazom.` })
+  for (const d of devices) if (d.kind === 'relay' && !RELAY_MODELS[relayModelOf(d.el)].dry && pulseTarget(d.el, p)) checks.push({ level: 'err', text: `${d.el.label}: suhi kontakt za vrata ima samo Shelly 1 Gen4; ${RELAY_MODELS[relayModelOf(d.el)].label} pali fazom.` })
   const feeds = cables.filter((c) => c.role === 'feed').length
   const hasL = cables.some((c) => c.wires.some((w) => w.terminal === 'L'))
   const hasN = cables.some((c) => c.wires.some((w) => w.terminal === 'N'))
@@ -383,7 +383,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   // buttons first (they create the I:/SW: demands), then relays whose SW/O ports only join when something uses them
   const sorted = [...devices].sort((a, b) => (a.kind === 'relay' ? 1 : 0) - (b.kind === 'relay' ? 1 : 0))
   for (const d of sorted) {
-    const m = d.kind === 'relay' ? RELAY_MODELS[d.el.relayModel ?? 'plus1'] : null
+    const m = d.kind === 'relay' ? RELAY_MODELS[relayModelOf(d.el)] : null
     if (m?.needsN && !hasN) checks.push({ level: 'err', text: `${d.label} treba nulu (N), a u dozu ne dolazi nula. Dovedi 3×1,5 ili 5×1,5 s N iz razvodne kutije.` })
     if (m && box.depth === 'plitka') checks.push({ level: 'err', text: `${d.label} ne stane u standardnu dozu (≈50 mm). Uzmi duboku (TEM PM7-65 / 65 mm) ili preseli relej u razvodnu kutiju.` })
     if (m && !box.depth && box.type !== 'box') checks.push({ level: 'warn', text: `${d.label}: označi dubinu doze (relej traži duboku, ≥65 mm).` })
@@ -424,7 +424,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
     })
   const bom = new Map<string, number>()
   for (const t of terminals) if (t.wago) bom.set(`WAGO 221-${t.wago}`, (bom.get(`WAGO 221-${t.wago}`) ?? 0) + t.chained)
-  for (const d of devices) if (d.kind === 'relay') { const k = RELAY_MODELS[d.el.relayModel ?? 'plus1'].label; bom.set(k, (bom.get(k) ?? 0) + 1) }
+  for (const d of devices) if (d.kind === 'relay') { const k = RELAY_MODELS[relayModelOf(d.el)].label; bom.set(k, (bom.get(k) ?? 0) + 1) }
   const level: Level = checks.some((c) => c.level === 'err') ? 'err' : checks.some((c) => c.level === 'warn') ? 'warn' : 'ok'
   if (level === 'ok' && cables.length) checks.push({ level: 'ok', text: `Sve žile uparene: ${terminals.length} stezaljki, ${cables.length} kabela${devices.length ? `, ${devices.length} uređaja` : ''}.` })
   return { box, room, cables, devices, terminals, checks, bom: [...bom.entries()].sort().map(([item, qty]) => ({ item, qty })), level }

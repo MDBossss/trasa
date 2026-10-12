@@ -5,7 +5,7 @@ import { bomFor } from '../bom'
 import { allJunctions, wirePlan, type Junction } from '../junction'
 import { cableColor, cablePath, conduitTouchesRoom, cornerAt, wallExits, type WallInfo } from '../walls'
 import { bounds } from '../geometry'
-import { ELEMENT_META, RELAY_MODELS, WIRE_LABEL, type Project, type Room, type WallElement } from '../types'
+import { ELEMENT_META, RELAY_MODELS, WIRE_LABEL, type Project, type Room, type WallElement, relayModelOf } from '../types'
 import { Icon } from './Icons'
 import { JunctionCanvas } from './JunctionCanvas'
 
@@ -79,7 +79,7 @@ function RoomPages({ room, project, junctions, date }: { room: Room; project: Pr
             <thead><tr><th>Relej</th><th>Model</th><th>Gdje</th><th>Ulazi (tipkala)</th><th>Izlazi (svjetla)</th><th>Način</th></tr></thead>
             <tbody>
               {relays.map((r) => {
-                const m = RELAY_MODELS[r.relayModel ?? 'plus1']
+                const m = RELAY_MODELS[relayModelOf(r)]
                 const ins = project.elements.filter((s) => s.relayId === r.id)
                 const outs = project.elements.filter((l) => l.feedRelayId === r.id)
                 return <tr key={r.id}><td>{r.label}</td><td>{m.label}</td><td>{project.elements.find((e) => e.id === r.host)?.label ?? '?'}</td><td>{ins.map((s) => `SW${s.relayInput ?? 1} ← ${s.label}`).join(', ') || '—'}</td><td>{outs.map((l) => `O${l.feedOutput ?? 1} → ${l.label}`).join(', ') || '—'}</td><td>{ins.every((s) => s.switchKind === 'tipkalo') ? 'button / momentary' : 'switch / edge'}</td></tr>
@@ -196,6 +196,6 @@ function Checks({ junctions }: { junctions: Junction[] }) {
   )
 }
 
-const elLabel = (e: WallElement) => (e.type === 'relay' ? RELAY_MODELS[e.relayModel ?? 'plus1'].label : e.switchKind === 'tipkalo' ? 'tipkalo' : ELEMENT_META[e.type].label.toLowerCase())
+const elLabel = (e: WallElement) => (e.type === 'relay' ? RELAY_MODELS[relayModelOf(e)].label : e.switchKind === 'tipkalo' ? 'tipkalo' : ELEMENT_META[e.type].label.toLowerCase())
 const polyLen = (pts: { x: number; y: number }[]) => pts.reduce((s, p, i) => (i ? s + Math.hypot(p.x - pts[i - 1].x, p.y - pts[i - 1].y) : 0), 0)
 const WIRE_HEX_PRINT: Record<string, string> = { brown: '#6b3a1e', blue: '#1f4fb3', gnye: '#2e8b3a', black: '#222', grey: '#8c8c8c', black2: '#3a3a3a', grey2: '#a5a5a5', other: '#c9a' }

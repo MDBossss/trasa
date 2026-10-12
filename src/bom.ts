@@ -1,6 +1,6 @@
 import { polylineLength } from './geometry'
 import { allJunctions } from './junction'
-import { ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, type Project } from './types'
+import { ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, type Project, relayModelOf } from './types'
 import { cableLengthM, wallExits } from './walls'
 
 // Bill of materials summed from the drawing: cable metres (wall runs + conduit runs + reserve),
@@ -58,7 +58,7 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
         add(out, 'Prekidači', `${e.switchKind === 'tipkalo' ? 'Tipkalo' : `Prekidač ${e.switchKind ?? 'obični'}`}${e.host ? ` ${e.modules ?? 1}M` : ''}`, 'kom', 1); break
       case 'light': add(out, 'Svjetla', 'Svjetlo (rasvjetno mjesto)', 'kom', 1); break
       case 'panel': add(out, 'Ostalo', ELEMENT_META.panel.label, 'kom', 1); break
-      case 'relay': add(out, 'Releji', RELAY_MODELS[e.relayModel ?? 'plus1'].label, 'kom', 1); break
+      case 'relay': add(out, 'Releji', RELAY_MODELS[relayModelOf(e)].label, 'kom', 1); break
       case 'ledpsu': {
         const m = e.ledM ?? 5, w = e.ledWpm ?? 10
         add(out, 'LED', `LED traka ${e.ledV ?? 24} V COB (${w} W/m)`, 'm', m)

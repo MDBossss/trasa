@@ -49,22 +49,20 @@ export interface Wall {
 export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'motor'
 
 // Smart relays that sit in a box: inputs are SW terminals, outputs are O terminals.
-export type RelayModel = 'plus1' | 'gen4' | 'plus2pm' | 'dimmer' | 'i4' | 'rgbw' | 'zbminir2' | 'zbminil2'
+export type RelayModel = 'gen4' | 'zbminir2' | 'rgbw'
 // dry: relay contact is potential-free (I/O), usable as an impulse for a door unit
 // swLow: the button input is a low-voltage pair (S1/S2) instead of L-referenced SW
+export const RELAY_MODELS: Record<RelayModel, { label: string; inputs: number; outputs: number; needsN: boolean; dim: boolean; dc: boolean; dry: boolean; swLow: boolean; ports: string[]; wMm: number; hMm: number }> = {
+  zbminir2: { label: 'Sonoff ZBMINIR2 (Zigbee)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: false, swLow: true, ports: ['L', 'N', 'Lout', 'Nout', 'S1', 'S2'], wMm: 40, hMm: 33 },
+  gen4: { label: 'Shelly 1 Gen4 (Zigbee, suhi kontakt)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: true, swLow: false, ports: ['L', 'N', 'SW1', 'I', 'O'], wMm: 37, hMm: 42 },
+  rgbw: { label: 'Shelly Plus RGBW PM (24 V)', inputs: 4, outputs: 4, needsN: true, dim: true, dc: true, dry: false, swLow: false, ports: ['L', 'N'], wMm: 37, hMm: 42 },
+}
+// older saves may carry models that are no longer offered; they land on the nearest current one
+const LEGACY_RELAY: Record<string, RelayModel> = { plus1: 'gen4', plus2pm: 'gen4', dimmer: 'gen4', i4: 'gen4', zbminil2: 'zbminir2' }
 export type RelayBrand = 'shelly' | 'sonoff'
 export const RELAY_LOOK: Record<RelayBrand, { fill: string; stroke: string; text: string }> = { shelly: { fill: '#2563eb', stroke: '#1e40af', text: '#fff' }, sonoff: { fill: '#f0862b', stroke: '#b85e12', text: '#fff' } }
 export const relayBrand = (m: RelayModel): RelayBrand => (m.startsWith('zb') ? 'sonoff' : 'shelly')
-export const RELAY_MODELS: Record<RelayModel, { label: string; inputs: number; outputs: number; needsN: boolean; dim: boolean; dc: boolean; dry: boolean; swLow: boolean; ports: string[]; wMm: number; hMm: number }> = {
-  plus1: { label: 'Shelly Plus 1 (Wi‑Fi)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: true, swLow: false, ports: ['L', 'N', 'SW1', 'I', 'O'], wMm: 37, hMm: 42 },
-  gen4: { label: 'Shelly 1 Gen4 (Zigbee / Wi‑Fi)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: true, swLow: false, ports: ['L', 'N', 'SW1', 'I', 'O'], wMm: 37, hMm: 42 },
-  plus2pm: { label: 'Shelly Plus 2PM', inputs: 2, outputs: 2, needsN: true, dim: false, dc: false, dry: false, swLow: false, ports: ['L', 'N', 'SW1', 'SW2', 'O1', 'O2'], wMm: 37, hMm: 42 },
-  dimmer: { label: 'Shelly Dimmer Gen3', inputs: 2, outputs: 1, needsN: true, dim: true, dc: false, dry: false, swLow: false, ports: ['L', 'N', 'SW1', 'SW2', 'O'], wMm: 37, hMm: 42 },
-  i4: { label: 'Shelly Plus i4', inputs: 4, outputs: 0, needsN: true, dim: false, dc: false, dry: false, swLow: false, ports: ['L', 'N', 'SW1', 'SW2', 'SW3', 'SW4'], wMm: 37, hMm: 42 },
-  rgbw: { label: 'Shelly Plus RGBW PM (24 V)', inputs: 4, outputs: 4, needsN: true, dim: true, dc: true, dry: false, swLow: false, ports: ['L', 'N'], wMm: 37, hMm: 42 },
-  zbminir2: { label: 'Sonoff ZBMINIR2 (Zigbee)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: false, swLow: true, ports: ['L', 'N', 'Lout', 'Nout', 'S1', 'S2'], wMm: 40, hMm: 33 },
-  zbminil2: { label: 'Sonoff ZBMINIL2 (Zigbee, bez nule)', inputs: 1, outputs: 1, needsN: false, dim: false, dc: false, dry: false, swLow: true, ports: ['L', 'Lout', 'S1', 'S2'], wMm: 40, hMm: 33 },
-}
+export const relayModelOf = (e: { relayModel?: string }): RelayModel => (e.relayModel && e.relayModel in RELAY_MODELS ? (e.relayModel as RelayModel) : LEGACY_RELAY[e.relayModel ?? ''] ?? 'zbminir2')
 export type SwitchKind = 'obicni' | 'serijski' | 'izmjenicni' | 'krizni' | 'tipkalo'
 export type BoxDepth = 'plitka' | 'duboka'
 export type SocketKind = 'schuko' | 'euro'
@@ -92,7 +90,7 @@ export interface WallElement {
   // modbox: number of modules in the frame; switch: how many modules it takes (1 or 2)
   modules?: number
   // relay
-  relayModel?: RelayModel
+  relayModel?: RelayModel | string
   // switch wired to a relay input (1-based) instead of straight to the light
   relayId?: string
   relayInput?: number

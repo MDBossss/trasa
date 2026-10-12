@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
-import { CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, type BoxDepth, type CableRole, type RelayModel, type Room, type SocketKind, type SwitchKind } from '../types'
+import { CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, type BoxDepth, type CableRole, type RelayModel, type Room, type SocketKind, type SwitchKind, relayModelOf } from '../types'
 import { cableNeeds, resolveCable, roleLabel, terminalMeta } from '../junction'
 import { Icon } from './Icons'
 
@@ -112,14 +112,14 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
                 Na relej
                 <select value={el.relayId ?? ''} onChange={(e) => updateElement(el.id, { relayId: e.target.value || undefined, relayInput: e.target.value ? el.relayInput ?? 1 : undefined })}>
                   <option value="">bez releja (klasično)</option>
-                  {relays.map((r) => <option key={r.id} value={r.id}>{r.label} {RELAY_MODELS[r.relayModel ?? 'plus1'].label} · u {hostLabel(r.host)}</option>)}
+                  {relays.map((r) => <option key={r.id} value={r.id}>{r.label} {RELAY_MODELS[relayModelOf(r)].label} · u {hostLabel(r.host)}</option>)}
                 </select>
               </label>
               {el.relayId && (
                 <label>
                   Ulaz releja
                   <select value={el.relayInput ?? 1} onChange={(e) => updateElement(el.id, { relayInput: +e.target.value })}>
-                    {Array.from({ length: RELAY_MODELS[relays.find((r) => r.id === el.relayId)?.relayModel ?? 'plus1'].inputs }, (_, i) => <option key={i} value={i + 1}>SW{i + 1}</option>)}
+                    {Array.from({ length: RELAY_MODELS[relayModelOf(relays.find((r) => r.id === el.relayId) ?? {})].inputs }, (_, i) => <option key={i} value={i + 1}>SW{i + 1}</option>)}
                   </select>
                 </label>
               )}
@@ -153,7 +153,7 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
                 Napaja ga
                 <select value={el.feedRelayId ? `${el.feedRelayId}:${el.feedOutput ?? 1}` : ''} onChange={(e) => { const [r, n] = e.target.value.split(':'); updateElement(el.id, { feedRelayId: r || undefined, feedOutput: r ? +n : undefined }) }}>
                   <option value="">prekidač (klasično)</option>
-                  {relays.flatMap((r) => Array.from({ length: RELAY_MODELS[r.relayModel ?? 'plus1'].outputs }, (_, i) => <option key={`${r.id}:${i + 1}`} value={`${r.id}:${i + 1}`}>{r.label} {RELAY_MODELS[r.relayModel ?? 'plus1'].label} · izlaz O{i + 1} · u {hostLabel(r.host)}</option>))}
+                  {relays.flatMap((r) => Array.from({ length: RELAY_MODELS[relayModelOf(r)].outputs }, (_, i) => <option key={`${r.id}:${i + 1}`} value={`${r.id}:${i + 1}`}>{r.label} {RELAY_MODELS[relayModelOf(r)].label} · izlaz O{i + 1} · u {hostLabel(r.host)}</option>))}
                 </select>
               </label>
               {!el.feedRelayId && <div className="stat"><span>Pali ga</span><b>{controllers(el.id).map((s) => s.label).join(', ') || '—'}</b><span className="muted">označi na prekidaču</span></div>}
@@ -165,10 +165,10 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
                 Pali ga relej
                 <select value={el.feedRelayId ?? ''} onChange={(e) => updateElement(el.id, { feedRelayId: e.target.value || undefined, feedOutput: undefined })}>
                   <option value="">nitko (samo daljinski)</option>
-                  {relays.filter((r) => RELAY_MODELS[r.relayModel ?? 'plus1'].dry).map((r) => <option key={r.id} value={r.id}>{r.label} {RELAY_MODELS[r.relayModel ?? 'plus1'].label} · u {hostLabel(r.host)}</option>)}
+                  {relays.filter((r) => RELAY_MODELS[relayModelOf(r)].dry).map((r) => <option key={r.id} value={r.id}>{r.label} {RELAY_MODELS[relayModelOf(r)].label} · u {hostLabel(r.host)}</option>)}
                 </select>
               </label>
-              <p className="muted">Jedinica vrata dobiva L N PE i dvije žile "impuls" s I i O releja (suhi kontakt, bez napona). Kabel 5×1,5. Shelly: Auto OFF 0,5 s. Tipkalo veži na taj relej ("Na relej"). Sonoff Zigbee releji nemaju suhi kontakt, zato nisu u izboru.</p>
+              <p className="muted">Jedinica vrata dobiva L N PE i dvije žile "impuls" s I i O releja (suhi kontakt, bez napona). Kabel 5×1,5. Shelly: Auto OFF 0,5 s. Tipkalo veži na taj relej ("Na relej"). Sonoff nema suhi kontakt, zato za vrata nije u izboru.</p>
             </>
           )}
           {el.type === 'ledpsu' && (
@@ -179,7 +179,7 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
               </div>
               <label>Napon <select value={el.ledV ?? 24} onChange={(e) => updateElement(el.id, { ledV: +e.target.value as 12 | 24 })}><option value={24}>24 V (preporuka)</option><option value={12}>12 V</option></select></label>
               <div className="stat"><span>Napajanje</span><b>≥ {Math.ceil(((el.ledM ?? 5) * (el.ledWpm ?? 10) * 1.2) / 10) * 10} W</b><span className="muted">{(el.ledM ?? 5) * (el.ledWpm ?? 10)} W trake × 1,2</span></div>
-              <div className="stat"><span>Releji u niši</span><b>{project.elements.filter((h) => h.host === el.id).map((h) => `${h.label} ${RELAY_MODELS[h.relayModel ?? 'rgbw'].label}`).join(', ') || '—'}</b></div>
+              <div className="stat"><span>Releji u niši</span><b>{project.elements.filter((h) => h.host === el.id).map((h) => `${h.label} ${RELAY_MODELS[relayModelOf(h)].label}`).join(', ') || '—'}</b></div>
             </>
           )}
           {el.type === 'socket' && (
@@ -203,7 +203,7 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
             <>
               <label>
                 Model
-                <select value={el.relayModel ?? 'plus1'} onChange={(e) => updateElement(el.id, { relayModel: e.target.value as RelayModel })}>
+                <select value={relayModelOf(el)} onChange={(e) => updateElement(el.id, { relayModel: e.target.value as RelayModel })}>
                   {(Object.keys(RELAY_MODELS) as RelayModel[]).map((m) => <option key={m} value={m}>{RELAY_MODELS[m].label} · {RELAY_MODELS[m].inputs} ul. / {RELAY_MODELS[m].outputs} izl.</option>)}
                 </select>
               </label>
@@ -211,7 +211,7 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
               <div className="stat"><span>U</span><b>{hostLabel(el.host)}</b><span className="muted">klikni relejem na drugu kutiju da ga preseliš</span></div>
               <div className="stat"><span>Ulazi</span><b>{project.elements.filter((s) => s.relayId === el.id).map((s) => `${s.label}→SW${s.relayInput ?? 1}`).join(', ') || '—'}</b></div>
               <div className="stat"><span>Izlazi</span><b>{project.elements.filter((l) => l.feedRelayId === el.id).map((l) => `O${l.feedOutput ?? 1}→${l.label}`).join(', ') || '—'}</b></div>
-              {RELAY_MODELS[el.relayModel ?? 'plus1'].dc && <p className="muted">24 V strana: traka i napajanje u niši, 230 V dolaz na L/N. Tipkala preko mreže (Plus i4) ili na DC ulaze.</p>}
+              {RELAY_MODELS[relayModelOf(el)].dc && <p className="muted">24 V strana: traka i napajanje u niši, 230 V dolaz na L/N. Tipkala preko mreže (Plus i4) ili na DC ulaze.</p>}
             </>
           )}
           {el.type === 'modbox' && <button onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori dozu (spojevi)</button>}
@@ -288,7 +288,7 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
             ))}
             {elements.map((e) => (
               <li key={e.id} className={e.id === selectedId ? 'sel' : ''} onClick={() => { setWallTool('select'); select(e.id) }}>
-                <span className="name">{e.label} <span className="muted">{e.type === 'relay' ? RELAY_MODELS[e.relayModel ?? 'plus1'].label : e.switchKind === 'tipkalo' ? 'tipkalo' : ELEMENT_META[e.type].label.toLowerCase()}</span></span>
+                <span className="name">{e.label} <span className="muted">{e.type === 'relay' ? RELAY_MODELS[relayModelOf(e)].label : e.switchKind === 'tipkalo' ? 'tipkalo' : ELEMENT_META[e.type].label.toLowerCase()}</span></span>
                 <span className="meta">{e.host ? `u ${hostLabel(e.host)}` : `${e.xM.toFixed(2)} m · h ${e.zM.toFixed(2)}`}</span>
               </li>
             ))}
