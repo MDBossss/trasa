@@ -278,13 +278,10 @@ code { font: 11px ui-monospace, Menlo, monospace; background: var(--panel2); pad
 .pb-card h3 { margin: 0 0 4px; font-size: 10px; color: #555; }
 .pb-plan { width: 100%; max-height: 50mm; background: #fafaf7; }
 .pb-legend { display: flex; flex-direction: column; gap: 3px; }
-.pb-legend span, .pb-wire { display: inline-flex; align-items: center; gap: 5px; }
-.pb-legend i, .pb-wire i { width: 14px; height: 5px; border-radius: 2px; display: inline-block; flex: none; }
-.pb-wire { margin-right: 10px; }
+.pb-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.pb-legend i { width: 14px; height: 5px; border-radius: 2px; display: inline-block; flex: none; }
 .pb-main { min-width: 0; }
-.pb-junction { width: 100%; max-height: 118mm; display: block; }
-.pb-terminals { font-size: 10px; }
-.pb-terminals td { padding: 2px 4px; }
+.pb-junction { width: 100%; max-height: 150mm; display: block; }
 .print-box-mode .page .print-table th { font-size: 10px; }
 @media print {
   .print-box-mode .page-landscape { width: auto; padding: 0; }

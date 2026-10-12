@@ -405,6 +405,8 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   await page.locator('.page-landscape h1', { hasText: 'K1' }).waitFor()
   await page.locator('.pb-card', { hasText: 'Gdje je' }).waitFor()
   assert.equal(await page.locator('.pb-junction').count(), 1)
+  assert.equal(await page.locator('.pb-terminals').count(), 0)
+  await page.screenshot({ path: `${SHOTS}/trasa-printbox.png`, fullPage: true })
   await page.getByRole('button', { name: 'Natrag na spojeve' }).click()
   await page.locator('.junctions-list .list li', { hasText: 'K1' }).waitFor()
   // back to the wall with the box selected; the wall props show the derived role and the switch's lights

@@ -3,7 +3,7 @@ import { useStore } from '../store'
 import { allJunctions, wirePlan } from '../junction'
 import { conduitTouchesRoom, wallExits } from '../walls'
 import { bounds } from '../geometry'
-import { ELEMENT_META, WIRE_LABEL } from '../types'
+import { ELEMENT_META } from '../types'
 import { Icon } from './Icons'
 import { JunctionCanvas, wireSwatch } from './JunctionCanvas'
 
@@ -20,8 +20,10 @@ export function PrintBoxView({ elementId }: { elementId: string }) {
   const walls = wallExits(room, project.conduits, ppm)
   const w = walls[j.box.wall]
   const conduits = project.conduits.filter((c) => conduitTouchesRoom(c, room, project.pxPerMeter))
-  const b = bounds([...room.points, ...conduits.flatMap((c) => c.points)])
-  const pad = 30
+  // crop to the room plus 1 m around it; conduits running further away are clipped
+  const b = bounds(room.points)
+  const pad = ppm
+  const vb = { x: b.minX - pad, y: b.minY - pad, w: b.maxX - b.minX + 2 * pad, h: b.maxY - b.minY + 2 * pad }
   // the box sits on its wall at xM from the wall's left end (seen from inside)
   const t = w ? (w.cw ? j.box.xM / w.lengthM : 1 - j.box.xM / w.lengthM) : 0
   const dot = w ? { x: w.a.x + (w.b.x - w.a.x) * t, y: w.a.y + (w.b.y - w.a.y) * t } : null
@@ -49,11 +51,14 @@ export function PrintBoxView({ elementId }: { elementId: string }) {
             <aside className="pb-side">
               <div className="pb-card">
                 <h3>Gdje je</h3>
-                <svg viewBox={`${b.minX - pad} ${b.minY - pad} ${b.maxX - b.minX + 2 * pad} ${b.maxY - b.minY + 2 * pad}`} className="pb-plan">
+                <svg viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`} className="pb-plan">
+                  <defs><clipPath id="pb-crop"><rect x={vb.x} y={vb.y} width={vb.w} height={vb.h} /></clipPath></defs>
                   <polygon points={room.points.map((p) => `${p.x},${p.y}`).join(' ')} fill="#f3f1ea" stroke="#333" strokeWidth={2} />
                   {w && <line x1={w.a.x} y1={w.a.y} x2={w.b.x} y2={w.b.y} stroke="#1e88e5" strokeWidth={6} strokeLinecap="round" />}
                   {walls.map((x) => <text key={x.i} x={(x.a.x + x.b.x) / 2} y={(x.a.y + x.b.y) / 2 + 4} fontSize={13} textAnchor="middle" fill={x.i === j.box.wall ? '#fff' : '#1e88e5'} fontWeight={700}>{x.i + 1}</text>)}
-                  {conduits.map((c) => <polyline key={c.id} points={c.points.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={c.color} strokeWidth={3} strokeLinejoin="round" opacity={0.8} />)}
+                  <g clipPath="url(#pb-crop)">
+                    {conduits.map((c) => <polyline key={c.id} points={c.points.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={c.color} strokeWidth={3} strokeLinejoin="round" opacity={0.8} />)}
+                  </g>
                   {dot && <><circle cx={dot.x} cy={dot.y} r={9} fill="#ff6d00" stroke="#fff" strokeWidth={2} /><text x={dot.x} y={dot.y - 13} fontSize={12} textAnchor="middle" fontWeight={700} fill="#ff6d00">{j.box.label}</text></>}
                 </svg>
                 <div className="muted">{room.name}, zid {j.box.wall + 1}{j.box.zM > project.ceilingM - 0.5 ? ', uz strop' : j.box.zM < 0.6 ? ', nisko' : ', na visini prekidača'}</div>
@@ -81,18 +86,6 @@ export function PrintBoxView({ elementId }: { elementId: string }) {
               <JunctionCanvas className="pb-junction" j={j} plan={plan} mode="all" step={0} hover={null} onHover={() => {}} onPick={() => {}} />
             </main>
           </div>
-          <table className="print-table pb-terminals">
-            <thead><tr><th>Stezaljka</th><th>WAGO</th><th>Što se spaja</th></tr></thead>
-            <tbody>
-              {j.terminals.map((tm) => (
-                <tr key={tm.id}>
-                  <td><b>{tm.label}</b> <span className="muted">{tm.desc}</span></td>
-                  <td>{tm.wago ? `221-${tm.wago}${tm.chained > 1 ? ` ×${tm.chained}` : ''}` : 'izravno'}</td>
-                  <td>{tm.wires.map((x, i) => <span key={i} className="pb-wire"><i style={{ background: wireSwatch(x.color) }} />{x.kind === 'core' ? `${x.cableLabel}, ${WIRE_LABEL[x.color]}` : `${x.deviceLabel} ${x.port}`}{x.note ? ` (${x.note})` : ''}</span>)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
           {j.checks.some((c) => c.level !== 'ok') && (
             <div className="print-checks">{j.checks.filter((c) => c.level !== 'ok').map((c, i) => <div key={i} className={`check ${c.level}`}><span>{c.level === 'err' ? '✕' : '⚠'}</span><span>{c.text}</span></div>)}</div>
           )}
