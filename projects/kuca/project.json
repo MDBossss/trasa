@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-12T19:29:45.940Z",
+ "savedAt": "2026-10-12T19:48:52.145Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -104,7 +104,7 @@
      },
      {
       "x": 412.42786782353784,
-      "y": 1420.4684543086819
+      "y": 1436.3086451955814
      }
     ],
     "from": "",
@@ -112,7 +112,7 @@
     "note": "",
     "exitZ": {
      "start": 1.9,
-     "end": 2.06
+     "end": 2.05
     }
    },
    {
@@ -2197,6 +2197,41 @@
     "relayModel": "zbminir2",
     "id": "8qsx0who",
     "label": "R4"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 3,
+    "type": "modbox",
+    "xM": 1.33,
+    "zM": 0.64,
+    "note": "",
+    "id": "ivrs19no",
+    "label": "D5",
+    "modules": 4
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 3,
+    "type": "socket",
+    "xM": 1.33,
+    "zM": 0.64,
+    "note": "",
+    "host": "ivrs19no",
+    "id": "vhqj6hpp",
+    "label": "U5",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 3,
+    "type": "socket",
+    "xM": 1.33,
+    "zM": 0.64,
+    "note": "",
+    "host": "ivrs19no",
+    "id": "ac4vys5u",
+    "label": "U6",
+    "slotOrder": 1
    }
   ],
   "cables": [
@@ -2568,7 +2603,7 @@
    {
     "roomId": "c2b55x6m",
     "wall": 1,
-    "type": "NYM-J 5x1.5",
+    "type": "NYM-J 7x1.5",
     "from": {
      "kind": "element",
      "id": "zda0udtf"
@@ -2597,6 +2632,28 @@
     "via": [],
     "note": "",
     "id": "mjbdavyn"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "g5az26vl",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "ivrs19no"
+    },
+    "via": [
+     {
+      "xM": 2.6,
+      "zM": 0.61
+     }
+    ],
+    "note": "",
+    "id": "likhbsrr"
    }
   ],
   "categories": [
@@ -2695,9 +2752,8 @@
  },
  "ui": {
   "view": {
-   "kind": "room",
-   "roomId": "c2b55x6m",
-   "wall": 1
+   "kind": "junctions",
+   "elementId": "91pjtv3y"
   }
  }
 }
