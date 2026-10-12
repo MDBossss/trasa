@@ -297,30 +297,41 @@ function cablePlaces(c: Cable, p: Project): [WallElement, WallElement] | null {
   return places.length === 2 && places[0].id !== places[1].id ? [places[0], places[1]] : null
 }
 
-// Places reachable from `start` over place-to-place cables, not crossing cable `skip`.
-function reachable(start: WallElement, p: Project, skip: string): WallElement[] {
-  const seen = new Map<string, WallElement>([[start.id, start]])
-  const queue = [start]
-  while (queue.length) {
-    const cur = queue.shift()!
-    for (const c of p.cables) {
-      if (c.id === skip) continue
-      const pl = cablePlaces(c, p)
-      if (!pl) continue
-      const other = pl[0].id === cur.id ? pl[1] : pl[1].id === cur.id ? pl[0] : null
-      if (other && !seen.has(other.id)) { seen.set(other.id, other); queue.push(other) }
+// Which cables carry which extra signal: for every signal wanted in two or more places, the cables on the
+// shortest paths joining those places (first place as root). Rings of boxes therefore do not duplicate signals.
+const carriersCache = new WeakMap<Project, Map<string, Set<string>>>()
+function signalCarriers(p: Project): Map<string, Set<string>> {
+  const hit = carriersCache.get(p)
+  if (hit) return hit
+  const places = p.elements.filter(isPlace)
+  const edges = p.cables.map((c) => ({ c, pl: cablePlaces(c, p) })).filter((e): e is { c: Cable; pl: [WallElement, WallElement] } => !!e.pl)
+  const adj = new Map<string, { to: string; cable: string }[]>()
+  for (const { c, pl } of edges) {
+    adj.set(pl[0].id, [...(adj.get(pl[0].id) ?? []), { to: pl[1].id, cable: c.id }])
+    adj.set(pl[1].id, [...(adj.get(pl[1].id) ?? []), { to: pl[0].id, cable: c.id }])
+  }
+  const wants = new Map<string, string[]>()
+  for (const pl of places) for (const sgn of localSignals(pl, p)) if (!LNPE.includes(sgn)) wants.set(sgn, [...(wants.get(sgn) ?? []), pl.id])
+  const out = new Map<string, Set<string>>()
+  for (const [sgn, ids] of wants) {
+    if (ids.length < 2) continue
+    // BFS from the first place; parent links give the path to every other place that wants the signal
+    const parent = new Map<string, { from: string; cable: string } | null>([[ids[0], null]])
+    const queue = [ids[0]]
+    while (queue.length) { const cur = queue.shift()!; for (const e of adj.get(cur) ?? []) if (!parent.has(e.to)) { parent.set(e.to, { from: cur, cable: e.cable }); queue.push(e.to) } }
+    for (const id of ids.slice(1)) {
+      let cur = id
+      while (parent.get(cur)) { const st = parent.get(cur)!; if (!out.has(st.cable)) out.set(st.cable, new Set()); out.get(st.cable)!.add(sgn); cur = st.from }
     }
   }
-  return [...seen.values()]
+  carriersCache.set(p, out)
+  return out
 }
 
-// Signals a place-to-place cable must carry: L N PE plus every signal wanted on both sides of it,
-// counting whole chains of boxes (a button in a frame can reach a relay two boxes away).
+// Signals a place-to-place cable must carry: L N PE plus the extra signals routed over it.
 export function crossSignals(a: WallElement, b: WallElement, p: Project, cableId?: string): string[] {
-  const side = (x: WallElement) => { const out = new Set<string>(); for (const pl of cableId ? reachable(x, p, cableId) : [x]) for (const s of localSignals(pl, p)) out.add(s); return out }
-  const sa = side(a), sb = side(b)
-  const shared = [...sa].filter((s) => sb.has(s) && !LNPE.includes(s)).sort()
-  return [...LNPE, ...shared]
+  if (!cableId) { const sa = localSignals(a, p), sb = localSignals(b, p); return [...LNPE, ...[...sa].filter((s) => sb.has(s) && !LNPE.includes(s)).sort()] }
+  return [...LNPE, ...[...(signalCarriers(p).get(cableId) ?? [])].sort()]
 }
 
 export interface CableNeeds { signals: string[]; needed: number; has: number; suggest: string; places: [WallElement, WallElement] }
@@ -450,7 +461,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
       const lone = n === 1 && wires[0].kind === 'core' && LNPE.includes(id)
       const cap = (id.startsWith('PARK') || lone) && spareCoresOf(p) === 'cap'
       const wago: Terminal['wago'] = direct || cap ? 0 : n <= 2 ? 412 : n <= 3 ? 413 : 415
-      const chained = n <= 5 ? 1 : 1 + Math.ceil((n - 5) / 4)
+      const chained = n <= 5 ? 1 : Math.ceil((n - 2) / 3)
       const meta = terminalMeta(id, p)
       if (cap && lone) meta.desc = `${meta.desc}, sam`
       if (id.startsWith('SW:?')) checks.push({ level: 'warn', text: `${meta.desc}: povratna nema para.` })
@@ -485,3 +496,14 @@ export function wirePlan(j: Junction): PlanWire[] {
   })
   return out
 }
+
+// Physical port of member `i` on a (possibly chained) WAGO: units are bridged first-port ↔ last-port,
+// so unit 0 holds members on ports 1–4, middle units on 2–4, the last unit on 2–5.
+export function wagoSlot(t: Terminal, i: number): { unit: number; port: number } {
+  if (t.chained <= 1) return { unit: 0, port: i }
+  if (i < 4) return { unit: 0, port: i }
+  let rem = i - 4
+  for (let u = 1; u < t.chained - 1; u++) { if (rem < 3) return { unit: u, port: rem + 1 }; rem -= 3 }
+  return { unit: t.chained - 1, port: rem + 1 }
+}
+export const wagoSlotLabel = (t: Terminal, i: number) => { const s = wagoSlot(t, i); return t.chained > 1 ? `WAGO ${s.unit + 1}, port ${s.port + 1}` : `port ${s.port + 1}` }

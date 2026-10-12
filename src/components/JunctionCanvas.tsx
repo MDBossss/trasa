@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { WIRE_HEX, WIRE_LABEL, type WireColor, RELAY_LOOK, relayBrand, relayModelOf } from '../types'
-import type { BoxCable, Device, Junction, PlanWire, Side, Terminal } from '../junction'
+import { wagoSlot, type BoxCable, type Device, type Junction, type PlanWire, type Side, type Terminal } from '../junction'
 
 // Top-down view into the open box, drawn to scale in millimetres: cables enter from the rim,
 // each core bends to its WAGO 221 port; relays and buttons sit inside with short jumpers.
@@ -15,7 +15,8 @@ const CAP_W = 4, CAP_H = 12 // tape / small cap on a folded-back spare core: ~1 
 export const CAP_COLOR = '#7c3aed'
 type Placed = Item & { x: number; y: number; flip: boolean }
 
-function wagoWidth(t: Terminal) { return WAGO[t.wago as 412 | 413 | 415].w * t.chained + (t.chained - 1) * 2 }
+const GAP = 4 // mm between bridged WAGO units
+function wagoWidth(t: Terminal) { return WAGO[t.wago as 412 | 413 | 415].w * t.chained + (t.chained - 1) * GAP }
 
 // Greedy packing into rows (top, bottom, middle); the box grows when they overflow.
 function layout(j: Junction): { W: number; H: number; placed: Placed[]; overflow: boolean } {
@@ -64,11 +65,12 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
   const sides: Record<Side, BoxCable[]> = { top: [], bottom: [], left: [], right: [] }
   for (const c of j.cables) sides[c.side].push(c)
   const entry = (c: BoxCable) => { const arr = sides[c.side]; return entryOf(c.side, arr.indexOf(c), arr.length, W, H) }
-  const wagoPort = (pl: Placed & { kind: 'wago' }, i: number) => {
-    const ports = WAGO[pl.t.wago as 412 | 413 | 415].n * pl.t.chained
-    const pitch = pl.w / ports
-    return { x: pl.x + pitch * (i + 0.5), y: pl.flip ? pl.y : pl.y + DEPTH, n: pl.flip ? [0, -1] : [0, 1] }
+  const unitW = (t: Terminal) => WAGO[t.wago as 412 | 413 | 415].w
+  const portXY = (pl: Placed & { kind: 'wago' }, unit: number, port: number) => {
+    const pitch = unitW(pl.t) / WAGO[pl.t.wago as 412 | 413 | 415].n
+    return { x: pl.x + unit * (unitW(pl.t) + GAP) + pitch * (port + 0.5), y: pl.flip ? pl.y : pl.y + DEPTH, n: pl.flip ? [0, -1] : [0, 1] }
   }
+  const wagoPort = (pl: Placed & { kind: 'wago' }, i: number) => { const sl = wagoSlot(pl.t, i); return portXY(pl, sl.unit, sl.port) }
   const devPort = (pl: Placed & { kind: 'device' }, port: string) => {
     const i = Math.max(0, pl.d.ports.indexOf(port))
     const pitch = pl.w / pl.d.ports.length
@@ -160,24 +162,41 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
         const rowIdx = lay.placed.filter((q, qi) => qi < pi && q.flip === pl.flip && Math.abs(q.y - pl.y) < 20).length
         const capDy = rowIdx % 2 ? 12 : 0
         if (pl.kind === 'wago') {
-          const ports = WAGO[pl.t.wago as 412 | 413 | 415].n * pl.t.chained
-          const pitch = pl.w / ports
-          const cap = `${pl.w >= 25 ? `221-${pl.t.wago} · ` : ''}${pl.t.chained > 1 ? `×${pl.t.chained} ` : ''}${pl.t.desc}`
+          const n = WAGO[pl.t.wago as 412 | 413 | 415].n, uw = unitW(pl.t), pitch = uw / n, k = pl.t.chained
+          const cap = `${pl.w >= 25 ? `221-${pl.t.wago} · ` : ''}${k > 1 ? `×${k} s premosnicom · ` : ''}${pl.t.desc}`
+          const usedPorts = new Set<string>()
+          pl.t.wires.forEach((_, i) => { const sl = wagoSlot(pl.t, i); usedPorts.add(`${sl.unit}:${sl.port}`) })
+          for (let u = 0; u < k - 1; u++) { usedPorts.add(`${u}:${n - 1}`); usedPorts.add(`${u + 1}:0`) }
+          const bridgeColor = pl.t.id === 'L' ? WIRE_HEX.brown : pl.t.id === 'N' ? WIRE_HEX.blue : pl.t.id === 'PE' ? WIRE_HEX.gnye : WIRE_HEX.black
           return (
             <g key={pl.t.id}>
-              <rect x={x + 2} y={y + 3} width={mm(pl.w)} height={mm(DEPTH)} rx={3} fill="rgba(0,0,0,.18)" />
-              <rect x={x} y={y} width={mm(pl.w)} height={mm(DEPTH)} rx={3} fill="rgba(255,255,255,.62)" stroke="#4a4a4a" strokeWidth={1.2} />
-              {Array.from({ length: ports }, (_, i) => {
-                const lx = x + mm(pitch * i + 0.6), lw = mm(pitch - 1.2)
-                const used = i < pl.t.wires.length
+              {Array.from({ length: k }, (_, u) => {
+                const ux = x + mm(u * (uw + GAP))
                 return (
-                  <g key={i}>
-                    <rect x={lx} y={pl.flip ? y + mm(DEPTH - 7.5) : y + mm(1)} width={lw} height={mm(6.5)} rx={2} fill={used ? '#f28c28' : '#f7b377'} stroke="#b35a0c" strokeWidth={0.8} />
-                    <rect x={lx + lw * 0.2} y={pl.flip ? y : y + mm(DEPTH) - mm(3)} width={lw * 0.6} height={mm(3)} fill={used ? '#2b2b2b' : '#777'} />
+                  <g key={u}>
+                    <rect x={ux + 2} y={y + 3} width={mm(uw)} height={mm(DEPTH)} rx={3} fill="rgba(0,0,0,.18)" />
+                    <rect x={ux} y={y} width={mm(uw)} height={mm(DEPTH)} rx={3} fill="rgba(255,255,255,.62)" stroke="#4a4a4a" strokeWidth={1.2} />
+                    {Array.from({ length: n }, (_, i) => {
+                      const lx = ux + mm(pitch * i + 0.6), lw = mm(pitch - 1.2)
+                      const used = usedPorts.has(`${u}:${i}`)
+                      return (
+                        <g key={i}>
+                          <rect x={lx} y={pl.flip ? y + mm(DEPTH - 7.5) : y + mm(1)} width={lw} height={mm(6.5)} rx={2} fill={used ? '#f28c28' : '#f7b377'} stroke="#b35a0c" strokeWidth={0.8} />
+                          <rect x={lx + lw * 0.2} y={pl.flip ? y : y + mm(DEPTH) - mm(3)} width={lw * 0.6} height={mm(3)} fill={used ? '#2b2b2b' : '#777'} />
+                        </g>
+                      )
+                    })}
+                    <text x={ux + mm(uw) / 2} y={pl.flip ? y + mm(5.5) : y + mm(DEPTH - 3.5)} textAnchor="middle" fontSize={10} fontWeight={600} fill="#222">{pl.t.label}</text>
                   </g>
                 )
               })}
-              <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(5.5) : y + mm(DEPTH - 3.5)} textAnchor="middle" fontSize={10} fontWeight={600} fill="#222">{pl.t.label}</text>
+              {Array.from({ length: k - 1 }, (_, u) => {
+                // bridge: last port of unit u to first port of unit u+1, looped out of the wire side
+                const a = portXY(pl, u, n - 1), b = portXY(pl, u + 1, 0)
+                const [ax, ay] = px(a.x, a.y), [bx2, by2] = px(b.x, b.y)
+                const dy = (pl.flip ? -1 : 1) * mm(9)
+                return <path key={u} d={`M${ax},${ay} C${ax},${ay + dy} ${bx2},${by2 + dy} ${bx2},${by2}`} fill="none" stroke={bridgeColor} strokeWidth={mm(2.8)} strokeLinecap="round" />
+              })}
               <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(DEPTH) + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">{cap}</text>
             </g>
           )

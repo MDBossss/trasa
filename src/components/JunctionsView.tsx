@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useStore } from '../store'
-import { allJunctions, wirePlan, type Junction, type Level, type PlanWire } from '../junction'
+import { allJunctions, wagoSlotLabel, wirePlan, type Junction, type Level, type PlanWire } from '../junction'
 import { ELEMENT_META, WIRE_LABEL } from '../types'
 import { Icon } from './Icons'
 import { CAP_COLOR, JunctionCanvas, wireSwatch } from './JunctionCanvas'
@@ -55,7 +55,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
                         <li key={key} className={cls} onMouseEnter={() => setHover(key)} onMouseLeave={() => setHover(null)} onClick={() => { setMode('steps'); setStep(n) }}>
                           <span className="n">{n + 1}</span>
                           <span className="w" style={{ background: wireSwatch(w.color) }} />
-                          <span>{w.kind === 'core' ? w.cableLabel : `${w.deviceLabel} · ${w.port}`}<small>{w.kind === 'core' ? `${WIRE_LABEL[w.color]} žila` : 'kratka žila'} → {t.wago ? `port ${i + 1}` : t.cap ? 'kapica' : 'izravno'}{w.note ? ` · ${w.note}` : ''}</small></span>
+                          <span>{w.kind === 'core' ? w.cableLabel : `${w.deviceLabel} · ${w.port}`}<small>{w.kind === 'core' ? `${WIRE_LABEL[w.color]} žila` : 'kratka žila'} → {t.wago ? wagoSlotLabel(t, i) : t.cap ? 'kapica' : 'izravno'}{w.note ? ` · ${w.note}` : ''}</small></span>
                         </li>
                       )
                     })}
@@ -221,6 +221,6 @@ function stepText(w: PlanWire) {
     if (w.member.kind === 'core') return `${acc(WIRE_LABEL[w.color])} žilu kabela ${w.member.cableLabel} ogoli i utakni izravno u ${o} (${t.desc}), bez stezaljke.`
     return w.port === 0 ? `Kratkom ${WIRE_LABEL[w.color].replace(/a$/, 'om')} žilom spoji ${w.member.deviceLabel} ${w.member.port} izravno na ${o} (${t.desc}).` : `Druga strana iste žile: ${w.member.deviceLabel} ${w.member.port}.`
   }
-  if (w.member.kind === 'core') return `${acc(WIRE_LABEL[w.color])} žilu kabela ${w.member.cableLabel} (${w.cable?.sub ?? ''}) ogoli 11 mm, podigni polugicu na stezaljci ${t.label} (221-${t.wago}), utakni u port ${w.port + 1}, spusti polugicu.${w.note ? ` Uloga: ${w.note}.` : ''}`
-  return `Kratku ${WIRE_LABEL[w.color].replace(/a$/, 'u')} žilu (10–15 cm) s ${w.member.deviceLabel} stezaljke ${w.member.port} utakni u stezaljku ${t.label} (221-${t.wago}), port ${w.port + 1}.${w.note ? ` ${w.note}.` : ''}`
+  if (w.member.kind === 'core') return `${acc(WIRE_LABEL[w.color])} žilu kabela ${w.member.cableLabel} (${w.cable?.sub ?? ''}) ogoli 11 mm, podigni polugicu na stezaljci ${t.label} (221-${t.wago}${t.chained > 1 ? `, ${t.chained} spojena premosnicom` : ''}), utakni u ${wagoSlotLabel(t, w.port)}, spusti polugicu.${w.note ? ` Uloga: ${w.note}.` : ''}`
+  return `Kratku ${WIRE_LABEL[w.color].replace(/a$/, 'u')} žilu (10–15 cm) s ${w.member.deviceLabel} stezaljke ${w.member.port} utakni u stezaljku ${t.label} (221-${t.wago}), ${wagoSlotLabel(t, w.port)}.${w.note ? ` ${w.note}.` : ''}`
 }
