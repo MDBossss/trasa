@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-12T19:14:07.745Z",
+ "savedAt": "2026-10-12T19:29:45.940Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2079,7 +2079,7 @@
     "roomId": "c2b55x6m",
     "wall": 1,
     "type": "modbox",
-    "xM": 1.82,
+    "xM": 1.83,
     "zM": 1.25,
     "note": "",
     "id": "zda0udtf",
@@ -2114,36 +2114,89 @@
    {
     "roomId": "c2b55x6m",
     "wall": 1,
-    "type": "switch",
-    "xM": 1.84,
-    "zM": 1.25,
-    "note": "",
-    "host": "zda0udtf",
-    "switchKind": "tipkalo",
-    "id": "ymujmfqf",
-    "label": "P2"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "switch",
-    "xM": 1.84,
-    "zM": 1.25,
-    "note": "",
-    "host": "zda0udtf",
-    "switchKind": "tipkalo",
-    "id": "pgb9kdlz",
-    "label": "P3"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
     "type": "light",
     "xM": 2.7500000000000018,
     "zM": 2.12,
     "note": "",
     "id": "ewqjx5w7",
-    "label": "S2"
+    "label": "S2",
+    "feedRelayId": "8qsx0who",
+    "feedOutput": 1
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "switch",
+    "xM": 1.83,
+    "zM": 1.25,
+    "note": "",
+    "host": "zda0udtf",
+    "switchKind": "tipkalo",
+    "id": "fqk5yd0q",
+    "label": "P2",
+    "slotOrder": 2,
+    "relayId": "fhyg0oqp",
+    "relayInput": 1
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "switch",
+    "xM": 1.83,
+    "zM": 1.25,
+    "note": "",
+    "host": "zda0udtf",
+    "switchKind": "tipkalo",
+    "id": "xa3uuyi1",
+    "label": "P3",
+    "slotOrder": 1,
+    "gapBefore": 3,
+    "relayId": "x5r0u0de",
+    "relayInput": 1
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "switch",
+    "xM": 1.83,
+    "zM": 1.25,
+    "note": "",
+    "host": "zda0udtf",
+    "switchKind": "tipkalo",
+    "id": "ldj5swi6",
+    "label": "P4",
+    "slotOrder": 0,
+    "relayId": "8qsx0who",
+    "relayInput": 1,
+    "controls": [
+     "ewqjx5w7",
+     "327e9lo5"
+    ],
+    "modules": 2
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 3,
+    "type": "light",
+    "xM": 1.7499999999999991,
+    "zM": 2.22,
+    "note": "",
+    "id": "327e9lo5",
+    "label": "S3",
+    "feedRelayId": "8qsx0who",
+    "feedOutput": 1
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "relay",
+    "xM": 1.83,
+    "zM": 1.25,
+    "note": "",
+    "host": "zda0udtf",
+    "relayModel": "zbminir2",
+    "id": "8qsx0who",
+    "label": "R4"
    }
   ],
   "cables": [
@@ -2515,7 +2568,7 @@
    {
     "roomId": "c2b55x6m",
     "wall": 1,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 5x1.5",
     "from": {
      "kind": "element",
      "id": "zda0udtf"
@@ -2527,6 +2580,23 @@
     "via": [],
     "note": "",
     "id": "m264llsv"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "327e9lo5"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "z5hc27kp",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "mjbdavyn"
    }
   ],
   "categories": [
