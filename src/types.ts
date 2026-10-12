@@ -46,7 +46,7 @@ export interface Wall {
   photo?: string
 }
 
-export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu'
+export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'motor'
 
 // Smart relays that sit in a box: inputs are SW terminals, outputs are O terminals.
 export type RelayModel = 'plus1' | 'plus2pm' | 'dimmer' | 'i4' | 'rgbw'
@@ -119,9 +119,9 @@ export interface Cable {
   role?: CableRole
 }
 
-export type CableRole = 'auto' | 'feed' | 'pass' | 'socket' | 'light' | 'switch' | 'lowv'
+export type CableRole = 'auto' | 'feed' | 'pass' | 'socket' | 'light' | 'switch' | 'motor' | 'lowv'
 export const CABLE_ROLES: Record<Exclude<CableRole, 'auto'>, string> = {
-  feed: 'Dolaz (napajanje)', pass: 'Prolaz u drugu kutiju', socket: 'Utičnica', light: 'Svjetlo', switch: 'Prekidač', lowv: 'Slaba struja',
+  feed: 'Dolaz (napajanje)', pass: 'Prolaz u drugu kutiju', socket: 'Utičnica', light: 'Svjetlo', switch: 'Prekidač', motor: 'Vrata / motor (napajanje + impuls)', lowv: 'Slaba struja',
 }
 
 export type WireColor = 'brown' | 'blue' | 'gnye' | 'black' | 'grey' | 'black2' | 'grey2' | 'other'
@@ -151,6 +151,8 @@ export const ELEMENT_META: Record<ElementType, { label: string; key: string; pre
   modbox: { label: 'Modularna doza', key: 'M', prefix: 'D', zM: 1.05 },
   relay: { label: 'Relej', key: 'R', prefix: 'R', zM: 1.05 },
   ledpsu: { label: 'LED niša', key: 'N', prefix: 'N', zM: 2.5 },
+  // garage door / roller shutter control unit: fed L N PE, driven by a dry-contact pulse from a Shelly Plus 1
+  motor: { label: 'Vrata / motor', key: 'D', prefix: 'V', zM: 2.3 },
 }
 // places where cables are joined (have a junction drawing)
 export const PLACE_TYPES: ElementType[] = ['box', 'modbox']

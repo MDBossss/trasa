@@ -153,7 +153,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       if (e.key === 'Backspace' && draft) { setDraft({ ...draft, via: draft.via.slice(0, -1) }); return }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) { removeSelected(); return }
       if (e.metaKey || e.ctrlKey) return
-      const map: Record<string, [typeof tool, ElementType?, 'tipkalo'?]> = { v: ['select'], h: ['pan'], k: ['element', 'box'], u: ['element', 'socket'], p: ['element', 'switch'], t: ['element', 'switch', 'tipkalo'], l: ['element', 'light'], o: ['element', 'panel'], m: ['element', 'modbox'], r: ['element', 'relay'], n: ['element', 'ledpsu'], c: ['cable'] }
+      const map: Record<string, [typeof tool, ElementType?, 'tipkalo'?]> = { v: ['select'], h: ['pan'], k: ['element', 'box'], u: ['element', 'socket'], p: ['element', 'switch'], t: ['element', 'switch', 'tipkalo'], l: ['element', 'light'], o: ['element', 'panel'], m: ['element', 'modbox'], r: ['element', 'relay'], n: ['element', 'ledpsu'], d: ['element', 'motor'], c: ['cable'] }
       if (map[e.key]) setWallTool(...map[e.key])
       if (e.key === 'g') toggle('showGrid')
       if (e.key === '+' || e.key === '=') wallZoomBy(1.2, { x: size.w / 2, y: size.h / 2 })
@@ -486,6 +486,8 @@ function Symbol({ type, selected, px, modules, tipkalo }: { type: ElementType; s
       return <>{halo}<Circle radius={3.5} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[2.5, -2.5, 10, -10]} stroke={stroke} strokeWidth={sw} /><Line points={[10, -10, 13, -8]} stroke={stroke} strokeWidth={sw} /></>
     case 'light':
       return <>{halo}<Circle radius={7} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-5, -5, 5, 5]} stroke={stroke} strokeWidth={sw} /><Line points={[-5, 5, 5, -5]} stroke={stroke} strokeWidth={sw} /></>
+    case 'motor': // control unit box with the motor circle: M in a box
+      return <>{halo}<Rect x={-11} y={-7} width={22} height={14} cornerRadius={2} fill="#fff" stroke={stroke} strokeWidth={sw} /><Circle x={-4} radius={3.5} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-6, 1.5, -4, -1.5, -2, 1.5]} stroke={stroke} strokeWidth={px(1.2)} /><Line points={[2, -4, 8, -4, 2, 4, 8, 4]} stroke={stroke} strokeWidth={px(1.2)} /></>
     case 'panel':
       return <>{halo}<Rect x={-10} y={-15} width={20} height={30} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-6, -7, 6, -7]} stroke={stroke} strokeWidth={sw} /><Line points={[-6, 0, 6, 0]} stroke={stroke} strokeWidth={sw} /><Line points={[-6, 7, 6, 7]} stroke={stroke} strokeWidth={sw} /></>
   }

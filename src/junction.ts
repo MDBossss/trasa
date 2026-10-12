@@ -78,6 +78,7 @@ function roleOfElement(e: WallElement): Role {
   switch (e.type) {
     case 'socket': return 'socket'
     case 'light': case 'ledpsu': return 'light'
+    case 'motor': return 'motor'
     case 'switch': return 'switch'
     case 'box': case 'modbox': return 'pass'
     case 'panel': return 'feed'
@@ -115,6 +116,9 @@ export function resolveCable(c: Cable, box: WallElement, p: Project): Omit<BoxCa
   if (c.role && c.role !== 'auto') role = c.role
   return { cable: c, label, sub: c.type, role, cores, far }
 }
+
+// A Plus 1 whose output drives a door control unit works as a dry contact (I/O), not as a phase switch.
+export const pulseTarget = (relay: WallElement, p: Project) => p.elements.find((e) => e.type === 'motor' && e.feedRelayId === relay.id)
 
 // Terminal id for the phase that feeds a light (relay output or classic switch return).
 function lightTerminal(light: WallElement, p: Project): { id: string; by?: WallElement } {
@@ -167,6 +171,19 @@ function leafWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, p: Project, c
   if (role === 'lowv') return cores.map((c) => ({ color: c, terminal: null, note: 'slaba struja, prolazi' }))
   if (role === 'unknown') { checks.push({ level: 'warn', text: `${bc.label}: ne znam što je na drugom kraju kabela ${bc.sub}, žile parkirane.` }); return cores.map((c) => park(c, 'nepoznato')) }
   if (role === 'feed' || role === 'socket' || role === 'pass') return cores.map(lnpe)
+  if (role === 'motor') {
+    // L N PE feed the control unit; the next two cores are the pulse loop from the relay's I and O
+    const m = bc.far.element
+    const relay = m?.feedRelayId ? el(p, m.feedRelayId) : undefined
+    if (m && !relay) checks.push({ level: 'warn', text: `Vrata ${m.label}: nitko ih ne pali. Odaberi relej (Shelly Plus 1) pod "Pali ga relej".` })
+    const spare = cores.filter((c) => c !== 'brown' && c !== 'blue' && c !== 'gnye')
+    if (m && relay && spare.length < 2) checks.push({ level: 'err', text: `Kabel do ${m.label} (${bc.sub}) nema 2 slobodne žile za impuls: uzmi 5×1,5.` })
+    return cores.map((c) => {
+      if (c === 'brown' || c === 'blue' || c === 'gnye') return lnpe(c)
+      const k = spare.indexOf(c)
+      return relay && k < 2 ? { color: c, terminal: `IMP:${relay.id}:${k + 1}`, note: `impuls ${k + 1}` } : park(c)
+    })
+  }
   if (role === 'light') {
     const light = bc.far.element
     const t = light ? lightTerminal(light, p) : { id: 'SW:?' }
@@ -205,7 +222,7 @@ export function devicesIn(place: WallElement, p: Project): Device[] {
     .map((e) => {
       if (e.type === 'relay') {
         const m = RELAY_MODELS[e.relayModel ?? 'plus1']
-        const ports = m.dc ? ['L', 'N'] : ['L', ...(m.needsN ? ['N'] : []), ...Array.from({ length: m.inputs }, (_, i) => `SW${i + 1}`), ...Array.from({ length: m.outputs }, (_, i) => (m.outputs === 1 ? 'O' : `O${i + 1}`))]
+        const ports = m.dc ? ['L', 'N'] : ['L', ...(m.needsN ? ['N'] : []), ...Array.from({ length: m.inputs }, (_, i) => `SW${i + 1}`), ...((e.relayModel ?? 'plus1') === 'plus1' ? ['I'] : []), ...Array.from({ length: m.outputs }, (_, i) => (m.outputs === 1 ? 'O' : `O${i + 1}`))]
         return { el: e, label: `${e.label} ${m.label}`, ports, wMm: 37, hMm: 14, kind: 'relay' as const }
       }
       if (e.type === 'socket') { const k = SOCKET_KINDS[e.socketKind ?? 'schuko']; return { el: e, label: `${e.label} ${k.label.toLowerCase()} utičnica`, ports: ['L', 'N', 'PE', 'L′', 'N′', 'PE′'], wMm: Math.max(24, k.modules * 11), hMm: 18, kind: 'socket' as const } }
@@ -222,6 +239,18 @@ function devicePorts(d: Device, p: Project, checks: Check[]): PortMember[] {
     if (m.needsN) out.push({ port: 'N', terminal: 'N', color: 'blue' })
     if (m.dc) return out
     for (let i = 1; i <= m.inputs; i++) out.push({ port: `SW${i}`, terminal: `I:${d.el.id}:${i}`, color: 'black', note: `ulaz ${i}` })
+    if ((d.el.relayModel ?? 'plus1') === 'plus1') {
+      const motor = pulseTarget(d.el, p)
+      if (motor) {
+        // dry contact: I and O go straight to the door unit's pulse input, no phase on them
+        out.push({ port: 'I', terminal: `IMP:${d.el.id}:1`, color: 'black', note: `impuls za ${motor.label}` })
+        out.push({ port: 'O', terminal: `IMP:${d.el.id}:2`, color: 'grey', note: `impuls za ${motor.label}` })
+        return out
+      }
+      // phase switching: a short jumper bridges L to I on the device
+      out.push({ port: 'L', terminal: `JMP:${d.el.id}`, color: 'brown', note: 'premosnica L → I' })
+      out.push({ port: 'I', terminal: `JMP:${d.el.id}`, color: 'brown' })
+    }
     for (let n = 1; n <= m.outputs; n++) out.push({ port: m.outputs === 1 ? 'O' : `O${n}`, terminal: `O:${d.el.id}:${n}`, color: 'black', note: `izlaz ${n}` })
     return out
   }
@@ -293,6 +322,8 @@ export function terminalMeta(id: string, p: Project): { label: string; desc: str
   if (id === 'L') return { label: 'L', desc: 'faza' }
   if (id === 'N') return { label: 'N', desc: 'nula' }
   if (id === 'PE') return { label: 'PE', desc: 'zaštitni' }
+  if (id.startsWith('JMP:')) return { label: 'L→I', desc: 'premosnica na Shellyju (pali fazom)' }
+  if (id.startsWith('IMP:')) { const [, rid, n] = id.split(':'); return { label: `IMP${n}`, desc: `impuls ${el(p, rid)?.label ?? ''}: suhi kontakt, bez napona` } }
   if (id.startsWith('PARK')) return spareCoresOf(p) === 'cap' ? { label: '·', desc: 'rezerva' } : { label: '·', desc: 'parkirano' }
   const [kind, a, b] = id.split(':')
   if (kind === 'CH') return { label: a, desc: `provlačenje ${el(p, b)?.label ?? ''} → sljedeća utičnica` }
@@ -308,7 +339,7 @@ export function terminalMeta(id: string, p: Project): { label: string; desc: str
 }
 
 // fitting order: feed first, then what it feeds
-const ROLE_ORDER: Role[] = ['feed', 'pass', 'socket', 'light', 'switch', 'lowv', 'unknown']
+const ROLE_ORDER: Role[] = ['feed', 'pass', 'socket', 'light', 'motor', 'switch', 'lowv', 'unknown']
 const SIDE_ORDER: Side[] = ['top', 'right', 'bottom', 'left']
 // loop-through terminals follow the socket order in the frame, L N PE per socket
 const chainPos = (id: string, p: Project) => (id.startsWith('CH:') ? p.elements.findIndex((e) => e.id === id.split(':')[2]) * 3 + ['L', 'N', 'PE'].indexOf(id.split(':')[1]) : 0)
@@ -326,6 +357,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
     })
     .sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role) || SIDE_ORDER.indexOf(a.side) - SIDE_ORDER.indexOf(b.side) || a.order - b.order)
   const devices = devicesIn(box, p)
+  for (const d of devices) if (d.kind === 'relay' && (d.el.relayModel ?? 'plus1') !== 'plus1' && pulseTarget(d.el, p)) checks.push({ level: 'err', text: `${d.el.label}: suhi kontakt za vrata ima samo Shelly Plus 1, ${RELAY_MODELS[d.el.relayModel ?? 'plus1'].label} pali fazom.` })
   const feeds = cables.filter((c) => c.role === 'feed').length
   const hasL = cables.some((c) => c.wires.some((w) => w.terminal === 'L'))
   const hasN = cables.some((c) => c.wires.some((w) => w.terminal === 'N'))

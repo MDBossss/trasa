@@ -56,6 +56,9 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
     i crta dozu s relejima, tipkalima i kratkim žilama (tipkalo → SW izravno, bez stezaljke). **LED niša (N)**: traka
     (m, W/m, 12/24 V) i napajanje × 1,2; napaja se kao svjetlo. Provjere: relej bez nule, relej u plitkoj dozi, kabel s
     premalo žila, izlaz releja bez kabela do svjetla, klasični prekidač na releju.
+    **Vrata / motor (D)**: upravljačka jedinica rolo ili sekcijskih vrata; na njoj odaberi "Pali ga relej" (samo Shelly
+    Plus 1). Taj Shelly tada radi kao suhi kontakt: I i O idu na "impuls" jedinice (stezaljke IMP1/IMP2, bez napona),
+    kabel do vrata 5×1,5 (L N PE + 2 impuls). Shelly Plus 1 u modu svjetla crta se s premosnicom L → I.
 11. **Materijal** (header): popis po sobi ili za kuću (kabeli u metrima: zid + bužir + 30 cm rezerve po kraju, bez bužira,
     WAGO, doze, oprema, releji, LED). **PDF za majstora**: pregled za ispis po sobi (tlocrt sobe s bužirima, svaki zid s
     elementima i kotama, svaka kutija i doza sa slikom i tablicom stezaljki, releji, materijal, otvorene provjere);

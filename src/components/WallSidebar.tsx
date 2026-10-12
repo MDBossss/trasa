@@ -159,6 +159,18 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
               {!el.feedRelayId && <div className="stat"><span>Pali ga</span><b>{controllers(el.id).map((s) => s.label).join(', ') || '—'}</b><span className="muted">označi na prekidaču</span></div>}
             </>
           )}
+          {el.type === 'motor' && (
+            <>
+              <label>
+                Pali ga relej
+                <select value={el.feedRelayId ?? ''} onChange={(e) => updateElement(el.id, { feedRelayId: e.target.value || undefined, feedOutput: undefined })}>
+                  <option value="">nitko (samo daljinski)</option>
+                  {relays.filter((r) => (r.relayModel ?? 'plus1') === 'plus1').map((r) => <option key={r.id} value={r.id}>{r.label} Shelly Plus 1 · u {hostLabel(r.host)}</option>)}
+                </select>
+              </label>
+              <p className="muted">Jedinica vrata dobiva L N PE i dvije žile "impuls" s I i O Shellyja (suhi kontakt, bez napona). Kabel 5×1,5. Shelly: Auto OFF 0,5 s. Tipkalo veži na taj Shelly ("Na relej").</p>
+            </>
+          )}
           {el.type === 'ledpsu' && (
             <>
               <div className="field-row">
@@ -195,6 +207,7 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
                   {(Object.keys(RELAY_MODELS) as RelayModel[]).map((m) => <option key={m} value={m}>{RELAY_MODELS[m].label} · {RELAY_MODELS[m].inputs} ul. / {RELAY_MODELS[m].outputs} izl.</option>)}
                 </select>
               </label>
+              {(() => { const m = project.elements.find((x) => x.type === 'motor' && x.feedRelayId === el.id); return <div className="stat"><span>Mod</span><b>{m ? `impuls (suhi kontakt I/O) za ${m.label}` : 'pali fazom (premosnica L → I)'}</b></div> })()}
               <div className="stat"><span>U</span><b>{hostLabel(el.host)}</b><span className="muted">klikni relejem na drugu kutiju da ga preseliš</span></div>
               <div className="stat"><span>Ulazi</span><b>{project.elements.filter((s) => s.relayId === el.id).map((s) => `${s.label}→SW${s.relayInput ?? 1}`).join(', ') || '—'}</b></div>
               <div className="stat"><span>Izlazi</span><b>{project.elements.filter((l) => l.feedRelayId === el.id).map((l) => `O${l.feedOutput ?? 1}→${l.label}`).join(', ') || '—'}</b></div>

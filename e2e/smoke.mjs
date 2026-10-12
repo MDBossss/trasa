@@ -458,8 +458,34 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   await page.locator('.jsteps li.hdr', { hasText: 'SW1 · izravno · R1 ulaz 1 ← tipkalo' }).waitFor()
   await page.locator('.jsteps li.hdr', { hasText: 'S1 · izravno · R1 izlaz 1 → svjetlo' }).waitFor()
   await page.locator('.bom div', { hasText: 'Shelly Plus 1' }).getByText('1 kom').waitFor()
-  await page.getByText('Sve žile uparene: 6 stezaljki, 1 kabela, 2 uređaja.').waitFor()
+  // the Plus 1 shows its I terminal; in light mode a short jumper bridges L to I on the device
+  await page.locator('.jsteps li.hdr', { hasText: 'L→I · izravno · premosnica na Shellyju' }).waitFor()
+  await page.getByText('Sve žile uparene: 7 stezaljki, 1 kabela, 2 uređaja.').waitFor()
   await page.screenshot({ path: `${SHOTS}/trasa-doza.png` })
+  // garage door: a Plus 1 in K1 drives a door unit V1 as a dry contact (I/O → impuls), fed by a 5×1,5
+  const gar = await page.evaluate(({ box }) => {
+    // (box id comes from the first junction block)
+    const s = window.__trasa.getState()
+    const room = s.project.rooms[0].id
+    const r2 = s.addElement({ roomId: room, wall: 0, type: 'relay', xM: 2, zM: 2.3, note: '', host: box, relayModel: 'plus1' })
+    const v1 = s.addElement({ roomId: room, wall: 0, type: 'motor', xM: 4.2, zM: 2.3, note: '', feedRelayId: r2 })
+    const c = s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: v1 }, via: [], note: '' })
+    return { r2, v1, c }
+  }, ids)
+  await page.locator('.junctions-list .list li', { hasText: 'K1' }).click()
+  await page.locator('.junctions-list .checks').getByText(/Kabel do V1 \(NYM-J 3x1.5\) nema 2 slobodne žile za impuls: uzmi 5×1,5/).waitFor()
+  await page.evaluate(({ c }) => window.__trasa.getState().updateCable(c, { type: 'NYM-J 5x1.5' }), gar)
+  await page.locator('.jsteps li.hdr', { hasText: 'IMP1 · izravno · impuls R2: suhi kontakt, bez napona' }).waitFor()
+  await page.locator('.jsteps li.hdr', { hasText: 'IMP2 · izravno · impuls R2: suhi kontakt, bez napona' }).waitFor()
+  assert.equal(await page.locator('.jsteps li.hdr', { hasText: 'L→I' }).count(), 0, 'R2 in pulse mode has no L→I jumper (R1 with its jumper sits in D1)')
+  await page.locator('.bom div', { hasText: 'Shelly Plus 1' }).getByText('1 kom').waitFor()
+  await page.screenshot({ path: `${SHOTS}/trasa-vrata.png` })
+  // the door props offer only Plus 1 relays
+  await page.evaluate(({ v1 }) => { const s = window.__trasa.getState(); s.setView({ kind: 'room', roomId: s.project.rooms[0].id, wall: 0 }); s.select(v1) }, gar)
+  await page.locator('.props h3', { hasText: 'Vrata / motor' }).waitFor()
+  await page.locator('.props label', { hasText: 'Pali ga relej' }).locator('option', { hasText: 'R2 Shelly Plus 1' }).waitFor({ state: 'attached' })
+  await page.evaluate(({ v1, r2, c }) => { const s = window.__trasa.getState(); s.patchProject({ cables: s.project.cables.filter((x) => x.id !== c), elements: s.project.elements.filter((e) => e.id !== v1 && e.id !== r2) }) }, gar)
+  await page.getByRole('button', { name: 'Spojevi' }).click()
   // K1 now has an O terminal pairing the cable's black core with the light's brown
   await page.locator('.junctions-list .list li', { hasText: 'K1' }).click()
   await page.locator('.jsteps li.hdr', { hasText: 'S1 · 221-412 · R1 izlaz 1 → svjetlo' }).waitFor()
