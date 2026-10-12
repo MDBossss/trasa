@@ -70,6 +70,37 @@ export const SOCKET_KINDS: Record<SocketKind, { label: string; modules: number }
 // position inside a modular frame: explicit order (left → right) and empty modules kept free on the left
 export const hostedFront = (elements: WallElement[], hostId: string) =>
   elements.map((e, i) => ({ e, i })).filter(({ e }) => e.host === hostId && e.type !== 'relay').sort((a, b) => (a.e.slotOrder ?? 1e9) - (b.e.slotOrder ?? 1e9) || a.i - b.i).map(({ e }) => e)
+// A new front element takes the first free run of modules it fits in (gaps first, then the end);
+// returns the elements with slotOrder / gapBefore rebuilt for that frame.
+export function placeInFrame(elements: WallElement[], hostId: string, newId: string): WallElement[] {
+  const size = (e: WallElement) => Math.max(1, modulesOf(e))
+  const front = hostedFront(elements, hostId)
+  const fresh = front.find((e) => e.id === newId)
+  if (!fresh) return elements
+  const others = front.filter((e) => e.id !== newId)
+  let pos = 0
+  const placed = others.map((e) => { pos += e.gapBefore ?? 0; const st = pos; pos += size(e); return { e, st } })
+  // first gap that fits, else right after the last one
+  let st = -1, cursor = 0
+  for (const q of placed) { if (q.st - cursor >= size(fresh)) { st = cursor; break } cursor = q.st + size(q.e) }
+  if (st < 0) st = cursor
+  const all = [...placed, { e: fresh, st }].sort((a, b) => a.st - b.st)
+  const patch = new Map<string, Partial<WallElement>>()
+  let end = 0
+  all.forEach(({ e, st: s2 }, k) => { patch.set(e.id, { slotOrder: k, gapBefore: s2 - end || undefined }); end = s2 + size(e) })
+  return elements.map((e) => (patch.has(e.id) ? { ...e, ...patch.get(e.id) } : e))
+}
+// After one element changes width, the others keep their absolute modules; only a real overlap pushes a neighbour.
+export function keepFramePositions(before: WallElement[], after: WallElement[], hostId: string): WallElement[] {
+  const size = (e: WallElement) => Math.max(1, modulesOf(e))
+  const starts = new Map<string, number>()
+  let pos = 0
+  for (const e of hostedFront(before, hostId)) { pos += e.gapBefore ?? 0; starts.set(e.id, pos); pos += size(e) }
+  const patch = new Map<string, Partial<WallElement>>()
+  let end = 0
+  hostedFront(after, hostId).forEach((e, k) => { const st = Math.max(starts.get(e.id) ?? end, end); patch.set(e.id, { slotOrder: k, gapBefore: st - end || undefined }); end = st + size(e) })
+  return after.map((e) => (patch.has(e.id) ? { ...e, ...patch.get(e.id) } : e))
+}
 // modules an element takes inside a modular frame
 export const modulesOf = (e: WallElement) => (e.type === 'socket' ? SOCKET_KINDS[e.socketKind ?? 'schuko'].modules : e.type === 'switch' ? (e.modules ?? 1) : 0)
 

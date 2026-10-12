@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { temporal } from 'zundo'
 import { get as idbGet, set as idbSet } from 'idb-keyval'
 import { conduitTouchesRoom } from './walls'
-import { emptyProject, PALETTE, ELEMENT_META, DEFAULT_CATEGORIES, matchCategory, type Category, type Cable, type Conduit, type ElementType, type Project, type Pt, type Room, type Tool, type View, type WallElement, type WallTool, relayModelOf } from './types'
+import { emptyProject, PALETTE, ELEMENT_META, DEFAULT_CATEGORIES, matchCategory, type Category, type Cable, type Conduit, type ElementType, type Project, type Pt, type Room, type Tool, type View, type WallElement, type WallTool, relayModelOf, placeInFrame, keepFramePositions } from './types'
 
 const IDB_KEY = 'trasa-project'
 
@@ -112,12 +112,20 @@ export const useStore = create<State>()(
         set((s) => {
           const n = s.project.elements.filter((x) => x.type === e.type).length + 1
           const label = e.label ?? `${ELEMENT_META[e.type].prefix}${n}`
-          return { project: { ...s.project, elements: [...s.project.elements, { ...e, id, label }] }, selectedId: id }
+          let elements = [...s.project.elements, { ...e, id, label }]
+          if (e.host && (e.type === 'switch' || e.type === 'socket')) elements = placeInFrame(elements, e.host, id)
+          return { project: { ...s.project, elements }, selectedId: id }
         })
         return id
       },
       updateElement: (id, p) =>
-        set((s) => ({ project: { ...s.project, elements: s.project.elements.map((e) => (e.id === id ? { ...e, ...p } : e)) } })),
+        set((s) => {
+          const before = s.project.elements
+          let elements = before.map((e) => (e.id === id ? { ...e, ...p } : e))
+          const el = elements.find((e) => e.id === id)
+          if (el?.host && (p.modules !== undefined || p.socketKind !== undefined)) elements = keepFramePositions(before, elements, el.host)
+          return { project: { ...s.project, elements } }
+        }),
       addCable: (c) => {
         const id = uid()
         set((s) => ({ project: { ...s.project, cables: [...s.project.cables, { ...c, id }] }, selectedId: id }))
