@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-12T05:45:06.298Z",
+ "savedAt": "2026-10-12T09:48:13.904Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2360,13 +2360,12 @@
      "klima"
     ]
    }
-  ]
+  ],
+  "spareCores": "cap"
  },
  "ui": {
   "view": {
-   "kind": "room",
-   "roomId": "hznuei6t",
-   "wall": 2
+   "kind": "plan"
   }
  }
 }
