@@ -462,6 +462,15 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   await page.locator('.jsteps li.hdr', { hasText: 'L→I · izravno · premosnica na Shellyju' }).waitFor()
   await page.getByText('Sve žile uparene: 7 stezaljki, 1 kabela, 2 uređaja.').waitFor()
   await page.screenshot({ path: `${SHOTS}/trasa-doza.png` })
+  // the same frame with a Sonoff ZBMINIR2: the button goes to S1/S2 (low voltage), the light leaves on Lout, no L→I jumper
+  await page.evaluate(({ r1 }) => window.__trasa.getState().updateElement(r1, { relayModel: 'zbminir2' }), ids2)
+  await page.locator('.jsteps li.hdr', { hasText: 'S1 · izravno · tipkalo → R1 S1, niski napon' }).waitFor()
+  await page.locator('.jsteps li.hdr', { hasText: 'S2 · izravno · tipkalo → R1 S2, niski napon' }).waitFor()
+  assert.equal(await page.locator('.jsteps li.hdr', { hasText: 'L→I' }).count(), 0)
+  await page.locator('.bom div', { hasText: 'Sonoff ZBMINIR2' }).getByText('1 kom').waitFor()
+  await page.screenshot({ path: `${SHOTS}/trasa-sonoff.png` })
+  await page.evaluate(({ r1 }) => window.__trasa.getState().updateElement(r1, { relayModel: 'plus1' }), ids2)
+  await page.locator('.jsteps li.hdr', { hasText: 'L→I' }).waitFor()
   // garage door: a Plus 1 in K1 drives a door unit V1 as a dry contact (I/O → impuls), fed by a 5×1,5
   const gar = await page.evaluate(({ box }) => {
     // (box id comes from the first junction block)

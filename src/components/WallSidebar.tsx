@@ -165,10 +165,10 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
                 Pali ga relej
                 <select value={el.feedRelayId ?? ''} onChange={(e) => updateElement(el.id, { feedRelayId: e.target.value || undefined, feedOutput: undefined })}>
                   <option value="">nitko (samo daljinski)</option>
-                  {relays.filter((r) => (r.relayModel ?? 'plus1') === 'plus1').map((r) => <option key={r.id} value={r.id}>{r.label} Shelly Plus 1 · u {hostLabel(r.host)}</option>)}
+                  {relays.filter((r) => RELAY_MODELS[r.relayModel ?? 'plus1'].dry).map((r) => <option key={r.id} value={r.id}>{r.label} {RELAY_MODELS[r.relayModel ?? 'plus1'].label} · u {hostLabel(r.host)}</option>)}
                 </select>
               </label>
-              <p className="muted">Jedinica vrata dobiva L N PE i dvije žile "impuls" s I i O Shellyja (suhi kontakt, bez napona). Kabel 5×1,5. Shelly: Auto OFF 0,5 s. Tipkalo veži na taj Shelly ("Na relej").</p>
+              <p className="muted">Jedinica vrata dobiva L N PE i dvije žile "impuls" s I i O releja (suhi kontakt, bez napona). Kabel 5×1,5. Shelly: Auto OFF 0,5 s. Tipkalo veži na taj relej ("Na relej"). Sonoff Zigbee releji nemaju suhi kontakt, zato nisu u izboru.</p>
             </>
           )}
           {el.type === 'ledpsu' && (

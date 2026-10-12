@@ -49,13 +49,18 @@ export interface Wall {
 export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'motor'
 
 // Smart relays that sit in a box: inputs are SW terminals, outputs are O terminals.
-export type RelayModel = 'plus1' | 'plus2pm' | 'dimmer' | 'i4' | 'rgbw'
-export const RELAY_MODELS: Record<RelayModel, { label: string; inputs: number; outputs: number; needsN: boolean; dim: boolean; dc: boolean; wMm: number; hMm: number }> = {
-  plus1: { label: 'Shelly Plus 1', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, wMm: 37, hMm: 42 },
-  plus2pm: { label: 'Shelly Plus 2PM', inputs: 2, outputs: 2, needsN: true, dim: false, dc: false, wMm: 37, hMm: 42 },
-  dimmer: { label: 'Shelly Dimmer Gen3', inputs: 2, outputs: 1, needsN: true, dim: true, dc: false, wMm: 37, hMm: 42 },
-  i4: { label: 'Shelly Plus i4', inputs: 4, outputs: 0, needsN: true, dim: false, dc: false, wMm: 37, hMm: 42 },
-  rgbw: { label: 'Shelly Plus RGBW PM (24 V)', inputs: 4, outputs: 4, needsN: true, dim: true, dc: true, wMm: 37, hMm: 42 },
+export type RelayModel = 'plus1' | 'gen4' | 'plus2pm' | 'dimmer' | 'i4' | 'rgbw' | 'zbminir2' | 'zbminil2'
+// dry: relay contact is potential-free (I/O), usable as an impulse for a door unit
+// swLow: the button input is a low-voltage pair (S1/S2) instead of L-referenced SW
+export const RELAY_MODELS: Record<RelayModel, { label: string; inputs: number; outputs: number; needsN: boolean; dim: boolean; dc: boolean; dry: boolean; swLow: boolean; ports: string[]; wMm: number; hMm: number }> = {
+  plus1: { label: 'Shelly Plus 1 (Wi‑Fi)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: true, swLow: false, ports: ['L', 'N', 'SW1', 'I', 'O'], wMm: 37, hMm: 42 },
+  gen4: { label: 'Shelly 1 Gen4 (Zigbee / Wi‑Fi)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: true, swLow: false, ports: ['L', 'N', 'SW1', 'I', 'O'], wMm: 37, hMm: 42 },
+  plus2pm: { label: 'Shelly Plus 2PM', inputs: 2, outputs: 2, needsN: true, dim: false, dc: false, dry: false, swLow: false, ports: ['L', 'N', 'SW1', 'SW2', 'O1', 'O2'], wMm: 37, hMm: 42 },
+  dimmer: { label: 'Shelly Dimmer Gen3', inputs: 2, outputs: 1, needsN: true, dim: true, dc: false, dry: false, swLow: false, ports: ['L', 'N', 'SW1', 'SW2', 'O'], wMm: 37, hMm: 42 },
+  i4: { label: 'Shelly Plus i4', inputs: 4, outputs: 0, needsN: true, dim: false, dc: false, dry: false, swLow: false, ports: ['L', 'N', 'SW1', 'SW2', 'SW3', 'SW4'], wMm: 37, hMm: 42 },
+  rgbw: { label: 'Shelly Plus RGBW PM (24 V)', inputs: 4, outputs: 4, needsN: true, dim: true, dc: true, dry: false, swLow: false, ports: ['L', 'N'], wMm: 37, hMm: 42 },
+  zbminir2: { label: 'Sonoff ZBMINIR2 (Zigbee)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: false, swLow: true, ports: ['L', 'N', 'Lout', 'Nout', 'S1', 'S2'], wMm: 40, hMm: 33 },
+  zbminil2: { label: 'Sonoff ZBMINIL2 (Zigbee, bez nule)', inputs: 1, outputs: 1, needsN: false, dim: false, dc: false, dry: false, swLow: true, ports: ['L', 'Lout', 'S1', 'S2'], wMm: 40, hMm: 33 },
 }
 export type SwitchKind = 'obicni' | 'serijski' | 'izmjenicni' | 'krizni' | 'tipkalo'
 export type BoxDepth = 'plitka' | 'duboka'
