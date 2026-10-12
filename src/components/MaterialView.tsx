@@ -5,15 +5,9 @@ import { allJunctions } from '../junction'
 import { Icon } from './Icons'
 
 // Shopping list, not just a table: tick off what is bought (kept per device), see which room needs what,
-// packaging hints for the shop, and the list as text / CSV for the phone or the supplier.
+// and the list as text / CSV for the phone or the supplier.
 
 const fmt = (l: { unit: 'm' | 'kom'; qty: number }) => (l.unit === 'm' ? `${l.qty.toFixed(1).replace('.', ',')} m` : `${l.qty} kom`)
-function packHint(l: BomLine): string | null {
-  if (l.group === 'Stezaljke' && l.item.startsWith('WAGO')) return 'pakiranje 50 / 100 kom'
-  if (l.group === 'Kabeli') return l.qty >= 40 ? 'kolut 50 / 100 m' : 'metraža'
-  if (l.group === 'LED' && l.item.startsWith('LED traka')) return 'rola 5 m'
-  return null
-}
 
 export function MaterialView() {
   const project = useStore((s) => s.project)
@@ -95,16 +89,14 @@ export function MaterialView() {
                     const rooms = [...(byRoom.get(key(l)) ?? [])]
                     const rest = l.qty - rooms.reduce((a, r) => a + r.qty, 0)
                     if (rooms.length && rest > 0.01) rooms.push({ room: 'ostalo', qty: Math.round(rest * 2) / 2 })
-                    const hint = packHint(l)
                     return (
                       <tr key={l.item} className={isDone ? 'done' : ''}>
                         <td className="chk"><input type="checkbox" checked={isDone} onChange={() => toggle(l)} aria-label={`Nabavljeno: ${l.item}`} /></td>
                         <td>
                           <div className="mat-item">{l.item}</div>
-                          {rooms.length > 1 || hint ? (
+                          {rooms.length > 1 ? (
                             <div className="mat-sub">
                               {rooms.length > 1 && <span>{rooms.map((r) => `${r.room} ${fmt({ unit: l.unit, qty: r.qty })}`).join(' · ')}</span>}
-                              {hint && <span className="mat-pack">{hint}</span>}
                             </div>
                           ) : null}
                         </td>
@@ -114,7 +106,6 @@ export function MaterialView() {
                   })}
                 </tbody>
               </table>
-              {g === 'Stezaljke' && <WagoLegend />}
             </section>
           )
         })}
@@ -133,21 +124,3 @@ export function MaterialView() {
   )
 }
 
-// What the codes mean: WAGO 221 lever connectors, the last digit is the number of wires (0,14–4 mm², 32 A)
-const WAGOS = [
-  { code: '221-412', n: 2, use: 'dvije žile: produžetak, spoj dvaju kabela' },
-  { code: '221-413', n: 3, use: 'tri žile: npr. dolaz + 2 odvoda' },
-  { code: '221-415', n: 5, use: 'pet žila: glavne L / N / PE stezaljke u kutiji' },
-]
-function WagoLegend() {
-  return (
-    <div className="wago-legend">
-      {WAGOS.map((w) => (
-        <div key={w.code} className="wago-card">
-          <b>{w.code}</b><small>{w.n} žile · {w.use.split(': ')[1]}</small>
-        </div>
-      ))}
-      <p className="muted">Serija 221: polugica gore → ogoljena žila (11 mm) unutra → polugica dolje. Za 1,5 i 2,5 mm², krute i fine žile. Zadnja znamenka = broj žila.</p>
-    </div>
-  )
-}
