@@ -290,18 +290,44 @@ function localSignals(place: WallElement, p: Project): Set<string> {
 }
 
 // Signals a place-to-place cable must carry: L N PE plus whatever both sides want.
-export function crossSignals(a: WallElement, b: WallElement, p: Project): string[] {
-  const sa = localSignals(a, p), sb = localSignals(b, p)
+// Which places a cable joins (both ends resolved through conduits / corners / hosted elements).
+function cablePlaces(c: Cable, p: Project): [WallElement, WallElement] | null {
+  const ends = [c.from, c.to].map((e) => { const f = follow(p, c, e).end; return f.kind === 'element' ? el(p, f.id) : undefined })
+  const places = ends.map((e) => (e?.host ? el(p, e.host) : e)).filter((e): e is WallElement => !!e && isPlace(e))
+  return places.length === 2 && places[0].id !== places[1].id ? [places[0], places[1]] : null
+}
+
+// Places reachable from `start` over place-to-place cables, not crossing cable `skip`.
+function reachable(start: WallElement, p: Project, skip: string): WallElement[] {
+  const seen = new Map<string, WallElement>([[start.id, start]])
+  const queue = [start]
+  while (queue.length) {
+    const cur = queue.shift()!
+    for (const c of p.cables) {
+      if (c.id === skip) continue
+      const pl = cablePlaces(c, p)
+      if (!pl) continue
+      const other = pl[0].id === cur.id ? pl[1] : pl[1].id === cur.id ? pl[0] : null
+      if (other && !seen.has(other.id)) { seen.set(other.id, other); queue.push(other) }
+    }
+  }
+  return [...seen.values()]
+}
+
+// Signals a place-to-place cable must carry: L N PE plus every signal wanted on both sides of it,
+// counting whole chains of boxes (a button in a frame can reach a relay two boxes away).
+export function crossSignals(a: WallElement, b: WallElement, p: Project, cableId?: string): string[] {
+  const side = (x: WallElement) => { const out = new Set<string>(); for (const pl of cableId ? reachable(x, p, cableId) : [x]) for (const s of localSignals(pl, p)) out.add(s); return out }
+  const sa = side(a), sb = side(b)
   const shared = [...sa].filter((s) => sb.has(s) && !LNPE.includes(s)).sort()
   return [...LNPE, ...shared]
 }
 
 export interface CableNeeds { signals: string[]; needed: number; has: number; suggest: string; places: [WallElement, WallElement] }
 export function cableNeeds(c: Cable, p: Project): CableNeeds | null {
-  const ends = [c.from, c.to].map((e) => { const f = follow(p, c, e).end; return f.kind === 'element' ? el(p, f.id) : undefined })
-  const places = ends.map((e) => (e?.host ? el(p, e.host) : e)).filter((e): e is WallElement => !!e && isPlace(e))
-  if (places.length !== 2 || places[0].id === places[1].id) return null
-  const signals = crossSignals(places[0], places[1], p)
+  const places = cablePlaces(c, p)
+  if (!places) return null
+  const signals = crossSignals(places[0], places[1], p, c.id)
   const has = coreColors(c.type).length
   const needed = signals.length
   const suggest = needed <= 3 ? '3×1,5' : needed <= 5 ? '5×1,5' : needed <= 7 ? '7×1,5' : `${needed} žila (dva kabela)`
@@ -310,7 +336,7 @@ export function cableNeeds(c: Cable, p: Project): CableNeeds | null {
 
 function crossWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallElement, p: Project, checks: Check[]): Wire[] {
   const far = bc.far.place!
-  const signals = crossSignals(box, far, p)
+  const signals = crossSignals(box, far, p, bc.cable.id)
   const cores = bc.cores
   const extras = signals.filter((s) => !LNPE.includes(s))
   const spare = cores.filter((c) => !['brown', 'blue', 'gnye'].includes(c))

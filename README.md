@@ -54,7 +54,8 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
     S1 S2, tipkalo na S1/S2 je niski napon bez faze), **Shelly 1 Gen4** (Zigbee, jedini sa suhim kontaktom, za vrata;
     L N SW I O) i Shelly Plus RGBW PM za LED nišu. Stariji save-ovi s Plus 1 / 2PM / Dimmer / i4 se učitaju kao Gen4. Shelly ima ulaze SW i izlaze O: na tipkalu odaberi "Na relej" + ulaz, na svjetlu "Napaja ga" + izlaz. Iz toga aplikacija izvede koliko
     žila kabel između kutije i doze mora nositi (L, N, PE + izlazi), piše to na kabelu ("4 potrebno · 3 ima → uzmi 5×1,5")
-    i crta dozu s relejima, tipkalima i kratkim žilama (tipkalo → SW izravno, bez stezaljke). Mjesto u okviru: na tipkalu/utičnici ◀ ▶ mijenja redoslijed, "Praznih lijevo" ostavlja prazne module;
+    i crta dozu s relejima, tipkalima i kratkim žilama (tipkalo → SW izravno, bez stezaljke). Signal tipkala putuje
+    kroz lanac kutija (doza → K1 → K2): svaki kabel na putu ga nosi, usputna kutija ga samo prolazi kroz WAGO 412. Mjesto u okviru: na tipkalu/utičnici ◀ ▶ mijenja redoslijed, "Praznih lijevo" ostavlja prazne module;
     slika spoja i provlačenje utičnica slijede isti redoslijed. **LED niša (N)**: traka
     (m, W/m, 12/24 V) i napajanje × 1,2; napaja se kao svjetlo. Provjere: relej bez nule, relej u plitkoj dozi, kabel s
     premalo žila, izlaz releja bez kabela do svjetla, klasični prekidač na releju.
