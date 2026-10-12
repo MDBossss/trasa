@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { Fragment, useRef } from 'react'
 import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
@@ -21,6 +21,17 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
   const { select, setView, setWallPhoto, updateElement, updateCable, removeSelected, setWallTool } = useStore.getState()
   const roomLights = project.elements.filter((e) => (e.type === 'light' || e.type === 'ledpsu') && e.roomId === room.id)
   const relays = project.elements.filter((e) => e.type === 'relay')
+  const roomName = (id: string) => project.rooms.find((r) => r.id === id)?.name ?? '?'
+  // relays of this room first, the rest grouped by room (a hallway relay may sit next door)
+  const relayGroups = (list: typeof relays, render: (r: typeof relays[number]) => React.ReactNode) => {
+    const here = list.filter((r) => r.roomId === room.id), there = list.filter((r) => r.roomId !== room.id)
+    return (
+      <>
+        {here.length > 0 && <optgroup label="U ovoj sobi">{here.map(render)}</optgroup>}
+        {there.length > 0 && <optgroup label="Ostale sobe">{there.map(render)}</optgroup>}
+      </>
+    )
+  }
   const hostLabel = (id?: string) => project.elements.find((e) => e.id === id)?.label ?? '?'
   const controllers = (lightId: string) => project.elements.filter((e) => e.type === 'switch' && e.controls?.includes(lightId))
   const fileRef = useRef<HTMLInputElement>(null)
@@ -112,7 +123,7 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
                 Na relej
                 <select value={el.relayId ?? ''} onChange={(e) => updateElement(el.id, { relayId: e.target.value || undefined, relayInput: e.target.value ? el.relayInput ?? 1 : undefined })}>
                   <option value="">bez releja (klasično)</option>
-                  {relays.map((r) => <option key={r.id} value={r.id}>{r.label} {RELAY_MODELS[relayModelOf(r)].label} · u {hostLabel(r.host)}</option>)}
+                  {relayGroups(relays, (r) => <option key={r.id} value={r.id}>{r.label} {RELAY_MODELS[relayModelOf(r)].label} · u {hostLabel(r.host)}{r.roomId !== room.id ? ` (${roomName(r.roomId)})` : ''}</option>)}
                 </select>
               </label>
               {el.relayId && (
@@ -154,7 +165,7 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
                 Napaja ga
                 <select value={el.feedRelayId ? `${el.feedRelayId}:${el.feedOutput ?? 1}` : ''} onChange={(e) => { const [r, n] = e.target.value.split(':'); updateElement(el.id, { feedRelayId: r || undefined, feedOutput: r ? +n : undefined }) }}>
                   <option value="">prekidač (klasično)</option>
-                  {relays.flatMap((r) => Array.from({ length: RELAY_MODELS[relayModelOf(r)].outputs }, (_, i) => <option key={`${r.id}:${i + 1}`} value={`${r.id}:${i + 1}`}>{r.label} {RELAY_MODELS[relayModelOf(r)].label} · izlaz O{i + 1} · u {hostLabel(r.host)}</option>))}
+                  {relayGroups(relays.filter((r) => RELAY_MODELS[relayModelOf(r)].outputs > 0), (r) => <Fragment key={r.id}>{Array.from({ length: RELAY_MODELS[relayModelOf(r)].outputs }, (_, i) => <option key={`${r.id}:${i + 1}`} value={`${r.id}:${i + 1}`}>{r.label} {RELAY_MODELS[relayModelOf(r)].label} · izlaz O{i + 1} · u {hostLabel(r.host)}{r.roomId !== room.id ? ` (${roomName(r.roomId)})` : ''}</option>)}</Fragment>)}
                 </select>
               </label>
               {!el.feedRelayId && <div className="stat"><span>Pali ga</span><b>{controllers(el.id).map((s) => s.label).join(', ') || '—'}</b><span className="muted">označi na prekidaču</span></div>}
@@ -166,7 +177,7 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
                 Pali ga relej
                 <select value={el.feedRelayId ?? ''} onChange={(e) => updateElement(el.id, { feedRelayId: e.target.value || undefined, feedOutput: undefined })}>
                   <option value="">nitko (samo daljinski)</option>
-                  {relays.filter((r) => RELAY_MODELS[relayModelOf(r)].dry).map((r) => <option key={r.id} value={r.id}>{r.label} {RELAY_MODELS[relayModelOf(r)].label} · u {hostLabel(r.host)}</option>)}
+                  {relayGroups(relays.filter((r) => RELAY_MODELS[relayModelOf(r)].dry), (r) => <option key={r.id} value={r.id}>{r.label} {RELAY_MODELS[relayModelOf(r)].label} · u {hostLabel(r.host)}{r.roomId !== room.id ? ` (${roomName(r.roomId)})` : ''}</option>)}
                 </select>
               </label>
               <p className="muted">Jedinica vrata dobiva L N PE i dvije žile "impuls" s I i O releja (suhi kontakt, bez napona). Kabel 5×1,5. Shelly: Auto OFF 0,5 s. Tipkalo veži na taj relej ("Na relej"). Sonoff nema suhi kontakt, zato za vrata nije u izboru.</p>
