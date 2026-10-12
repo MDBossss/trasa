@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Stage, Layer, Image as KImage, Line, Circle, Rect, Shape, Label, Tag, Text, Group } from 'react-konva'
 import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
@@ -7,18 +7,20 @@ import { conduitVisible, gridStepPx, planDims, useStore } from '../store'
 import { centroid, dist, fmtMeters, midpointOfPolyline, polylineLength, snapPoint, snapToGrid } from '../geometry'
 import type { Pt } from '../types'
 import { CanvasHud } from './CanvasHud'
+import { pinch, useMobile } from '../mobile'
 import { Icon } from './Icons'
 
 export function PlanCanvas() {
   const wrap = useRef<HTMLDivElement>(null)
   const stageRef = useRef<Konva.Stage>(null)
-  const [size, setSize] = useState({ w: 800, h: 600 })
+  const [size, setSize] = useState({ w: 0, h: 0 }) // measured by the ResizeObserver before the first fit
   const [draft, setDraft] = useState<Pt[]>([])
   const [cursor, setCursor] = useState<Pt | null>(null)
   const [space, setSpace] = useState(false)
   const [alt, setAlt] = useState(false)
   const [live, setLive] = useState<{ id: string; points: Pt[]; whole?: boolean } | null>(null)
   const fitted = useRef<string | null>(null)
+  const mobile = useMobile()
 
   const project = useStore((s) => s.project)
   const view = useStore((s) => s.camera)
@@ -39,9 +41,12 @@ export function PlanCanvas() {
   const step = gridStepPx(project)
   const snapStep = snapGrid ? step : null
 
-  useEffect(() => {
+  // measured before the first paint so the first fit already uses the real size
+  useLayoutEffect(() => {
     const el = wrap.current!
-    const ro = new ResizeObserver(() => setSize({ w: el.clientWidth, h: el.clientHeight }))
+    const measure = () => setSize({ w: el.clientWidth, h: el.clientHeight })
+    measure()
+    const ro = new ResizeObserver(measure)
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
@@ -50,7 +55,7 @@ export function PlanCanvas() {
   const rot = project.planRotation
   useEffect(() => {
     const key = `${project.planImage?.length}:${rot}:${fitNonce}`
-    if (!img || !dims || fitted.current === key) return
+    if (!img || !dims || !size.w || fitted.current === key) return
     fitted.current = key
     const scale = Math.min(size.w / dims.w, size.h / dims.h) * 0.95
     setView({ scale, x: (size.w - dims.w * scale) / 2, y: (size.h - dims.h * scale) / 2 })
@@ -117,10 +122,12 @@ export function PlanCanvas() {
     useStore.getState().zoomBy(e.evt.deltaY > 0 ? 1 / factor : factor, p)
   }
 
-  const panning = tool === 'pan' || space
+  // a phone pans with one finger and zooms with two; shapes are not draggable there
+  const panning = tool === 'pan' || space || mobile
+  const touch = useRef(pinch(() => stageRef.current, () => useStore.getState().camera, (c) => useStore.getState().setCamera(c), [0.05, 20])).current
 
-  const onClick = (e: KonvaEventObject<MouseEvent>) => {
-    if (panning) return
+  const onClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
+    if (panning && !(mobile && tool === 'select')) return
     const raw = toImg()
     if (!raw) return
     if (tool === 'select') {
@@ -190,7 +197,7 @@ export function PlanCanvas() {
       return pts.map((q, j) => (j === i ? p : q))
     }
     return {
-      draggable: true,
+      draggable: !mobile,
       onDragMove: (e: KonvaEventObject<DragEvent>) => setLive({ id, points: moved(e) }),
       onDragEnd: (e: KonvaEventObject<DragEvent>) => { setLive(null); commit(moved(e)) },
     }
@@ -238,8 +245,12 @@ export function PlanCanvas() {
         onDragEnd={(e) => { if (e.target === stageRef.current) setView({ ...view, x: e.target.x(), y: e.target.y() }) }}
         onWheel={onWheel}
         onClick={onClick}
+        onTap={onClick}
         onDblClick={onDblClick}
+        onDblTap={onDblClick}
         onMouseMove={onMove}
+        onTouchMove={touch.onTouchMove}
+        onTouchEnd={touch.onTouchEnd}
       >
         <Layer listening={false}>
           {img && dims && (

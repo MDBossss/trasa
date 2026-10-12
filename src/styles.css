@@ -287,3 +287,69 @@ code { font: 11px ui-monospace, Menlo, monospace; background: var(--panel2); pad
   .print-box-mode .page-landscape { width: auto; padding: 0; }
   .print-box-mode { --page-size: A4 landscape; }
 }
+
+/* phone = "terenski način": viewer + a few field actions; drawing stays on desktop */
+.canvas-wrap { touch-action: none; }
+.tabbar { display: none; }
+.sheet { display: none; }
+@media (max-width: 760px) {
+  .app { height: 100dvh; }
+  .app.mobile .main { position: relative; }
+  .header { padding: 6px 8px; gap: 6px; }
+  .header .view-nav, .header .save-state, .header .lbl, .header .spacer { display: none; }
+  .project-name { flex: 1; min-width: 0; width: auto; font-size: 16px; }
+  .header .menu-wrap { flex: none; }
+  .tool-rail { display: none; }
+  button { min-height: 40px; }
+  button.mini { min-height: 32px; }
+  .icon-btn { min-width: 40px; justify-content: center; }
+  input[type=number], input[type=text], input:not([type]), select, textarea { font-size: 16px; }
+  .hud-br, .hud-hint, .hud-coords { display: none; }
+  /* the canvas stops above the sheet's peek bar instead of being covered by it */
+  .app.mobile .canvas-wrap { margin-bottom: 48px; }
+  .tabbar { display: flex; flex: none; background: var(--panel); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
+  .tabbar button { flex: 1; flex-direction: column; gap: 2px; border: none; border-radius: 0; background: transparent; color: var(--muted); font-size: 11px; padding: 8px 0 6px; min-height: 56px; }
+  .tabbar button svg { width: 22px; height: 22px; }
+  .tabbar button.on { color: var(--accent); }
+  .sheet { display: flex; flex-direction: column; position: absolute; left: 0; right: 0; bottom: 0; z-index: 8; height: 48px; background: var(--panel); border-top: 1px solid var(--line); border-radius: 14px 14px 0 0; box-shadow: 0 -4px 16px rgba(16,24,40,0.12); transition: height 0.2s ease; }
+  .sheet.open { height: 62%; }
+  .sheet-handle { flex: none; display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 14px; cursor: pointer; position: relative; font-weight: 600; }
+  .sheet-grip { position: absolute; top: 6px; left: 50%; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: var(--line); }
+  .sheet-title { flex: 1; padding-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sheet-handle .chev { width: 18px; height: 18px; color: var(--muted); margin-top: 6px; transform: rotate(-90deg); }
+  .sheet-handle .chev.down { transform: rotate(90deg); }
+  .sheet-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .sheet .sidebar { width: auto; border: none; }
+  .sheet .sidebar > section.props { order: -1; }
+  .sheet .sidebar label > input, .sheet .sidebar label > select, .sheet .sidebar label > textarea { width: 55%; }
+  .room-head { padding: 6px 8px; gap: 8px; }
+  .room-head h2 { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+  .room-head .segmented { overflow-x: auto; max-width: 100%; flex: none; }
+  .room-head .segmented button { white-space: nowrap; }
+  .wall-nav { gap: 4px; }
+  .wall-nav span { white-space: nowrap; }
+  .room-view .empty { position: absolute; }
+  /* junctions */
+  .junctions.mobile { flex-direction: column; }
+  .junctions.mobile .room-head { gap: 8px; }
+  .jpick { flex: 1; min-width: 0; }
+  .junctions.mobile .junction-main { position: relative; }
+  .junctions.mobile .junction-main { padding-bottom: 48px; min-height: 0; }
+  .zoom-wrap { flex: 1; min-height: 0; position: relative; display: flex; }
+  .zoom-pane { flex: 1; min-height: 0; overflow: auto; background: var(--canvas); touch-action: pan-x pan-y; }
+  .zoom-inner { min-width: 100%; }
+  .zoom-inner .junction-svg { width: 100%; height: auto; max-height: none; display: block; }
+  .zoom-ctl { position: absolute; left: 8px; bottom: 8px; z-index: 2; }
+  .junctions.mobile .stepbar { flex: none; margin: 8px; max-width: none; width: auto; padding: 8px 10px; gap: 8px; }
+  .junctions.mobile .stepbar p { font-size: 14px; }
+  .junctions.mobile .sheet { z-index: 9; }
+  .junctions.mobile .sheet .field-row { gap: 8px; }
+  .junctions.mobile .sheet .field-row button { flex: 1; justify-content: center; }
+  /* material + print */
+  .material-body { padding: 10px; max-width: none; padding-bottom: 20px; }
+  .print-bar { flex-wrap: wrap; gap: 8px; }
+  .print-pages { padding: 8px; }
+  .page { padding: 8mm; }
+  .pb-grid { grid-template-columns: 1fr; }
+  .page-landscape { width: 100%; }
+}

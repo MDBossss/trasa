@@ -4,6 +4,9 @@ import { allJunctions, wirePlan, type Junction, type Level, type PlanWire } from
 import { ELEMENT_META, WIRE_LABEL } from '../types'
 import { Icon } from './Icons'
 import { JunctionCanvas, wireSwatch } from './JunctionCanvas'
+import { Sheet } from './Sheet'
+import { ZoomPane } from './ZoomPane'
+import { useMobile } from '../mobile'
 
 const LEVEL_ICON: Record<Level, string> = { ok: '✓', warn: '⚠', err: '✕' }
 
@@ -14,6 +17,8 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
   const [mode, setMode] = useState<'all' | 'steps'>('all')
   const [step, setStep] = useState(0)
   const [hover, setHover] = useState<string | null>(null)
+  const mobile = useMobile()
+  const [sheet, setSheet] = useState(false)
   const j: Junction | undefined = junctions.find((x) => x.box.id === elementId) ?? junctions[0]
   const plan = useMemo(() => (j ? wirePlan(j) : []), [j])
 
@@ -33,6 +38,91 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
   const openWall = (jx: Junction) => { setView({ kind: 'room', roomId: jx.room.id, wall: jx.box.wall }); select(jx.box.id) }
   const houseChecks = junctions.flatMap((x) => x.checks.filter((c) => c.level !== 'ok').map((c) => ({ ...c, j: x })))
   const cur = plan[step]
+  const details = j && (
+    <>
+          <section>
+            <h3>Spojevi po stezaljci <span className="count">{plan.length} žila</span></h3>
+            <ul className="jsteps">
+              {j.terminals.map((t) => (
+                <li key={t.id} className="hdr">
+                  <span>{t.label} · {t.wago ? `221-${t.wago}${t.chained > 1 ? ` ×${t.chained}` : ''}` : 'izravno'} · {t.desc}</span>
+                  <ul>
+                    {t.wires.map((w, i) => {
+                      const key = `${t.id}#${i}`
+                      const n = plan.findIndex((p) => p.key === key)
+                      const cls = mode === 'steps' ? (n === step ? 'cur' : n < step ? 'done' : '') : hover === key ? 'cur' : ''
+                      return (
+                        <li key={key} className={cls} onMouseEnter={() => setHover(key)} onMouseLeave={() => setHover(null)} onClick={() => { setMode('steps'); setStep(n) }}>
+                          <span className="n">{n + 1}</span>
+                          <span className="w" style={{ background: wireSwatch(w.color) }} />
+                          <span>{w.kind === 'core' ? w.cableLabel : `${w.deviceLabel} · ${w.port}`}<small>{w.kind === 'core' ? `${WIRE_LABEL[w.color]} žila` : 'kratka žila'} → {t.wago ? `port ${i + 1}` : 'izravno'}{w.note ? ` · ${w.note}` : ''}</small></span>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </li>
+              ))}
+              {j.cables.filter((c) => c.wires.every((w) => !w.terminal)).map((c) => (
+                <li key={c.cable.id} className="hdr"><span>{c.label} · {c.wires[0]?.note ?? 'bez spoja u kutiji'}</span></li>
+              ))}
+            </ul>
+          </section>
+          <section>
+            <h3>Materijal za kutiju</h3>
+            <div className="bom">
+              {j.bom.map((b) => <div key={b.item}><span>{b.item}</span><b>{b.qty} kom</b></div>)}
+              <div><span>{j.box.type === 'modbox' ? `Doza modularna ${j.box.modules ?? 3}M` : 'Razvodna kutija 100 × 100 mm'}{j.box.depth === 'duboka' ? ', duboka' : j.box.depth === 'plitka' ? ', plitka' : ''}</span><b>1 kom</b></div>
+              {[1, 2].map((m) => { const n = j.devices.filter((d) => d.kind === 'button' && (d.el.modules ?? 1) === m).length; return n ? <div key={m}><span>Tipkalo / prekidač {m}M</span><b>{n} kom</b></div> : null })}
+              {j.devices.filter((d) => d.kind === 'socket' && (d.el.socketKind ?? 'schuko') === 'schuko').length > 0 && <div><span>Utičnica šuko 2M</span><b>{j.devices.filter((d) => d.kind === 'socket' && (d.el.socketKind ?? 'schuko') === 'schuko').length} kom</b></div>}
+              {j.devices.filter((d) => d.kind === 'socket' && d.el.socketKind === 'euro').length > 0 && <div><span>Utičnica euro 1M</span><b>{j.devices.filter((d) => d.kind === 'socket' && d.el.socketKind === 'euro').length} kom</b></div>}
+            </div>
+          </section>
+          <section>
+            <h3>Provjere</h3>
+            <div className="checks">
+              {j.checks.map((c, i) => <div key={i} className={`check ${c.level}`}><span>{LEVEL_ICON[c.level]}</span><span>{c.text}</span></div>)}
+            </div>
+          </section>
+    </>
+  )
+
+  if (mobile) return (
+    <div className="junctions mobile">
+      <div className="room-head">
+        <select className="jpick" value={j?.box.id ?? ''} onChange={(e) => pick(e.target.value)} aria-label="Kutija">
+          {!junctions.length && <option value="">Nema kutija</option>}
+          {project.rooms.map((r) => { const list = junctions.filter((x) => x.room.id === r.id); return list.length ? <optgroup key={r.id} label={r.name}>{list.map((x) => <option key={x.box.id} value={x.box.id}>{x.box.label} · {x.box.type === 'modbox' ? `${x.box.modules ?? 3}M` : 'kutija'} · zid {x.box.wall + 1}{x.level !== 'ok' ? ' ⚠' : ''}</option>)}</optgroup> : null })}
+        </select>
+        {j && (
+          <div className="segmented" role="tablist">
+            <button role="tab" aria-selected={mode === 'all'} className={mode === 'all' ? 'on' : ''} onClick={() => { setMode('all'); setStep(0) }}>Sve</button>
+            <button role="tab" aria-selected={mode === 'steps'} className={mode === 'steps' ? 'on' : ''} onClick={() => { setMode('steps'); setStep(0) }}>Koraci</button>
+          </div>
+        )}
+      </div>
+      {j ? (
+        <div className="junction-main">
+          <ZoomPane><JunctionCanvas j={j} plan={plan} mode={mode} step={step} hover={hover} onHover={setHover} onPick={(i) => { setMode('steps'); setStep(i) }} /></ZoomPane>
+          {mode === 'steps' && cur && (
+            <div className="stepbar">
+              <button onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0} aria-label="Natrag"><Icon.prev /></button>
+              <span className="muted">{step + 1} / {plan.length}</span>
+              <button className="primary" onClick={() => setStep((s) => Math.min(plan.length - 1, s + 1))} disabled={step === plan.length - 1}>Sljedeća <Icon.next /></button>
+              <p>{stepText(cur)}</p>
+            </div>
+          )}
+          <Sheet title={`Stezaljke · materijal · provjere${j.level !== 'ok' ? ' ⚠' : ''}`} open={sheet} onOpenChange={setSheet}>
+            <div className="sidebar">
+              <section><div className="field-row"><button onClick={() => openWall(j)}>Otvori na zidu</button><button onClick={() => setView({ kind: 'printbox', elementId: j.box.id })}><Icon.print /> Ispiši kutiju</button></div></section>
+              {details}
+            </div>
+          </Sheet>
+        </div>
+      ) : (
+        <div className="empty"><Icon.box width={40} height={40} /><div>Nacrtaj razvodnu kutiju na zidu neke sobe (na računalu)</div></div>
+      )}
+    </div>
+  )
 
   return (
     <div className="junctions">
@@ -114,53 +204,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
         )}
       </div>
 
-      {j && (
-        <aside className="sidebar">
-          <section>
-            <h3>Spojevi po stezaljci <span className="count">{plan.length} žila</span></h3>
-            <ul className="jsteps">
-              {j.terminals.map((t) => (
-                <li key={t.id} className="hdr">
-                  <span>{t.label} · {t.wago ? `221-${t.wago}${t.chained > 1 ? ` ×${t.chained}` : ''}` : 'izravno'} · {t.desc}</span>
-                  <ul>
-                    {t.wires.map((w, i) => {
-                      const key = `${t.id}#${i}`
-                      const n = plan.findIndex((p) => p.key === key)
-                      const cls = mode === 'steps' ? (n === step ? 'cur' : n < step ? 'done' : '') : hover === key ? 'cur' : ''
-                      return (
-                        <li key={key} className={cls} onMouseEnter={() => setHover(key)} onMouseLeave={() => setHover(null)} onClick={() => { setMode('steps'); setStep(n) }}>
-                          <span className="n">{n + 1}</span>
-                          <span className="w" style={{ background: wireSwatch(w.color) }} />
-                          <span>{w.kind === 'core' ? w.cableLabel : `${w.deviceLabel} · ${w.port}`}<small>{w.kind === 'core' ? `${WIRE_LABEL[w.color]} žila` : 'kratka žila'} → {t.wago ? `port ${i + 1}` : 'izravno'}{w.note ? ` · ${w.note}` : ''}</small></span>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </li>
-              ))}
-              {j.cables.filter((c) => c.wires.every((w) => !w.terminal)).map((c) => (
-                <li key={c.cable.id} className="hdr"><span>{c.label} · {c.wires[0]?.note ?? 'bez spoja u kutiji'}</span></li>
-              ))}
-            </ul>
-          </section>
-          <section>
-            <h3>Materijal za kutiju</h3>
-            <div className="bom">
-              {j.bom.map((b) => <div key={b.item}><span>{b.item}</span><b>{b.qty} kom</b></div>)}
-              <div><span>{j.box.type === 'modbox' ? `Doza modularna ${j.box.modules ?? 3}M` : 'Razvodna kutija 100 × 100 mm'}{j.box.depth === 'duboka' ? ', duboka' : j.box.depth === 'plitka' ? ', plitka' : ''}</span><b>1 kom</b></div>
-              {[1, 2].map((m) => { const n = j.devices.filter((d) => d.kind === 'button' && (d.el.modules ?? 1) === m).length; return n ? <div key={m}><span>Tipkalo / prekidač {m}M</span><b>{n} kom</b></div> : null })}
-              {j.devices.filter((d) => d.kind === 'socket' && (d.el.socketKind ?? 'schuko') === 'schuko').length > 0 && <div><span>Utičnica šuko 2M</span><b>{j.devices.filter((d) => d.kind === 'socket' && (d.el.socketKind ?? 'schuko') === 'schuko').length} kom</b></div>}
-              {j.devices.filter((d) => d.kind === 'socket' && d.el.socketKind === 'euro').length > 0 && <div><span>Utičnica euro 1M</span><b>{j.devices.filter((d) => d.kind === 'socket' && d.el.socketKind === 'euro').length} kom</b></div>}
-            </div>
-          </section>
-          <section>
-            <h3>Provjere</h3>
-            <div className="checks">
-              {j.checks.map((c, i) => <div key={i} className={`check ${c.level}`}><span>{LEVEL_ICON[c.level]}</span><span>{c.text}</span></div>)}
-            </div>
-          </section>
-        </aside>
-      )}
+      {j && !mobile && <aside className="sidebar">{details}</aside>}
     </div>
   )
 }

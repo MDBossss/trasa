@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Stage, Layer, Image as KImage, Line, Circle, Rect, Shape, Text, Group, Arc } from 'react-konva'
 import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
@@ -8,6 +8,7 @@ import { CABLE_COLOR, cableColor, cablePath, cornerAt, endPos, neighbourWall, ty
 import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement } from '../types'
 import { Hud } from './Hud'
 import { activeWallTool } from './WallToolRail'
+import { pinch, useMobile } from '../mobile'
 
 type P = { xM: number; zM: number }
 
@@ -15,7 +16,7 @@ type P = { xM: number; zM: number }
 export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string; wall: WallInfo; photo?: string; onMoveExit: (e: Exit, posM: number, zM: number) => void }) {
   const wrap = useRef<HTMLDivElement>(null)
   const stageRef = useRef<Konva.Stage>(null)
-  const [size, setSize] = useState({ w: 800, h: 600 })
+  const [size, setSize] = useState({ w: 0, h: 0 }) // measured by the ResizeObserver before the first fit
   const [cursor, setCursor] = useState<P | null>(null)
   const [draft, setDraft] = useState<{ from: CableEnd; via: P[] } | null>(null)
   const [space, setSpace] = useState(false)
@@ -23,6 +24,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
   const [live, setLive] = useState<{ id: string; xM: number; zM: number } | null>(null)
   const [guide, setGuide] = useState<{ x?: number; z?: number } | null>(null)
   const fitted = useRef<string | null>(null)
+  const mobile = useMobile()
 
   const project = useStore((s) => s.project)
   const tool = useStore((s) => s.wallTool)
@@ -48,13 +50,17 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
   const ctx: WallCtx = { wall, elements, ceilingM: project.ceilingM }
   const s = camera.scale
   const px = (n: number) => n / s
-  const panning = tool === 'pan' || space
+  const panning = tool === 'pan' || space || mobile
+  const touch = useRef(pinch(() => stageRef.current, () => useStore.getState().wallCamera, (c) => useStore.getState().setWallCamera(c), [0.1, 30])).current
   const toX = (p: P) => p.xM * 100
   const toY = (p: P) => H - p.zM * 100
 
-  useEffect(() => {
+  // measured before the first paint so the first fit already uses the real size
+  useLayoutEffect(() => {
     const el = wrap.current!
-    const ro = new ResizeObserver(() => setSize({ w: el.clientWidth, h: el.clientHeight }))
+    const measure = () => setSize({ w: el.clientWidth, h: el.clientHeight })
+    measure()
+    const ro = new ResizeObserver(measure)
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
@@ -162,8 +168,9 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
     return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onUp); window.removeEventListener('blur', onBlur) }
   }, [draft, tool, selectedId, finishCable, select, setWallTool, removeSelected, toggle, wallZoomBy, wallFitView, size])
 
-  const onClick = (e: KonvaEventObject<MouseEvent>) => {
-    if (panning) return
+  const onClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
+    // on a phone a tap still selects, it just never draws
+    if (panning && !(mobile && tool === 'select')) return
     const raw = toWall()
     if (!raw) return
     if (tool === 'select') {
@@ -297,8 +304,12 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
         onDragEnd={(e) => { if (e.target === stageRef.current) setWallCamera({ ...camera, x: e.target.x(), y: e.target.y() }) }}
         onWheel={onWheel}
         onClick={onClick}
+        onTap={onClick}
         onDblClick={onDblClick}
+        onDblTap={onDblClick}
         onMouseMove={onMove}
+        onTouchMove={touch.onTouchMove}
+        onTouchEnd={touch.onTouchEnd}
       >
         <Layer listening={false}>
           {img ? (

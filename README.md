@@ -60,7 +60,11 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
     WAGO, doze, oprema, releji, LED). **PDF za majstora**: pregled za ispis po sobi (tlocrt sobe s bužirima, svaki zid s
     elementima i kotama, svaka kutija i doza sa slikom i tablicom stezaljki, releji, materijal, otvorene provjere);
     u dijalogu ispisa odaberi "Spremi kao PDF". U Spojevima gumb **Ispiši kutiju** daje jedan A4 vodoravni list za tu kutiju: gdje je u sobi,
-    legenda, kabeli, velika slika spoja i tablica stezaljki.
+    legenda, kabeli i velika slika spoja.
+13. **Mobitel = terenski način** (ekran ≤ 760 px): donja traka Tlocrt / Sobe / Spojevi / Materijal, paneli su
+    "sheet" koji se povlači odozdo, kanvas se pomiče jednim prstom i zumira s dva, dodir odabire. Nema alata za
+    crtanje (to ostaje na računalu). U Sobama gumb s kamerom slika zid direktno s mobitela; u Spojevima je slika
+    spoja preko cijelog ekrana, koraci su ispod nje, stezaljke i materijal u sheetu.
 12. **Lista bužira**: Svi / Po kategoriji / Po sobama. Bužir pripada sobi ako mu početak ili kraj leži u sobi ili
    najviše 10 cm izvan njezina zida. **Fokus** na sobu sakrije ostale bužire, kamera ostaje gdje je.
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '../store'
 import { wallExits, type Exit } from '../walls'
 import { signedArea } from '../geometry'
@@ -7,10 +7,21 @@ import { Icon } from './Icons'
 import { WallCanvas } from './WallCanvas'
 import { WallSidebar } from './WallSidebar'
 import { WallToolRail } from './WallToolRail'
+import { Sheet } from './Sheet'
+import { useMobile } from '../mobile'
+import { fileToDataUrl } from '../images'
 
 export function RoomView({ roomId, wall }: { roomId: string; wall: number | null }) {
   const project = useStore((s) => s.project)
-  const { setView, updateConduit } = useStore.getState()
+  const { setView, updateConduit, setWallPhoto } = useStore.getState()
+  const mobile = useMobile()
+  const selectedId = useStore((s) => s.selectedId)
+  const [sheet, setSheet] = useState(false)
+  const camRef = useRef<HTMLInputElement>(null)
+  // tapping an element or cable of this wall on the phone opens its details in the sheet
+  const selOnWall = !!selectedId && wall !== null && (project.elements.some((e) => e.id === selectedId && e.roomId === roomId && e.wall === wall) || project.cables.some((c) => c.id === selectedId && c.roomId === roomId && c.wall === wall))
+  useEffect(() => { if (mobile && selOnWall) setSheet(true) }, [mobile, selOnWall, selectedId])
+  useEffect(() => { setSheet(false) }, [roomId, wall])
   const room = project.rooms.find((r) => r.id === roomId)
   const ppm = project.pxPerMeter ?? 100
   const walls = useMemo(() => (room ? wallExits(room, project.conduits, ppm) : []), [room, project.conduits, ppm])
@@ -32,6 +43,11 @@ export function RoomView({ roomId, wall }: { roomId: string; wall: number | null
     updateConduit(e.conduit.id, { points: pts, exitZ: { ...e.conduit.exitZ, [e.end]: atCeiling ? undefined : zM } })
   }
   const go = (d: number) => setView({ kind: 'room', roomId, wall: ((wall ?? 0) + d + walls.length) % walls.length })
+  const onPhoto = async (f: File | undefined) => {
+    if (!f || wall === null) return
+    const { url } = await fileToDataUrl(f, 2000)
+    setWallPhoto(room.id, wall, url)
+  }
 
   // ← / → switch walls
   useEffect(() => {
@@ -45,29 +61,37 @@ export function RoomView({ roomId, wall }: { roomId: string; wall: number | null
     return () => window.removeEventListener('keydown', onKey)
   })
 
+  const sidebar = <WallSidebar room={room} walls={walls} wall={wall} />
   return (
     <>
-      {current && <WallToolRail />}
+      {current && !mobile && <WallToolRail />}
       <div className="room-view">
         <div className="room-head">
-          <button onClick={() => setView({ kind: 'plan' })}><Icon.back /> Tlocrt</button>
+          {!mobile && <button onClick={() => setView({ kind: 'plan' })}><Icon.back /> Tlocrt</button>}
           <h2>{room.name}</h2>
           {current && (
             <div className="wall-nav">
               <button className="icon-btn" onClick={() => go(-1)} title="Prethodni zid" aria-label="Prethodni zid"><Icon.prev /></button>
-              <span><b>Zid {current.i + 1}</b> / {walls.length} · {current.lengthM.toFixed(2)} × {project.ceilingM} m</span>
+              <span><b>Zid {current.i + 1}</b> / {walls.length}{!mobile && <> · {current.lengthM.toFixed(2)} × {project.ceilingM} m</>}</span>
               <button className="icon-btn" onClick={() => go(1)} title="Sljedeći zid" aria-label="Sljedeći zid"><Icon.next /></button>
             </div>
           )}
-          {!project.pxPerMeter && <span className="warn">Mjerilo nije postavljeno, duljine su procjena.</span>}
+          {mobile && current && (
+            <>
+              <button className="icon-btn primary" onClick={() => camRef.current?.click()} title="Slikaj zid" aria-label="Slikaj zid"><Icon.camera /></button>
+              <input ref={camRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => void onPhoto(e.target.files?.[0])} />
+            </>
+          )}
+          {!project.pxPerMeter && !mobile && <span className="warn">Mjerilo nije postavljeno, duljine su procjena.</span>}
         </div>
         {current ? (
           <WallCanvas key={`${roomId}:${current.i}`} roomId={roomId} wall={current} photo={room.walls[current.i]?.photo} onMoveExit={moveExit} />
         ) : (
           <div className="empty"><Icon.room width={40} height={40} /><div>Odaberi zid u desnom panelu</div></div>
         )}
+        {mobile && <Sheet title={selOnWall ? 'Detalji' : `${room.name} · zidovi`} open={sheet} onOpenChange={setSheet}>{sidebar}</Sheet>}
       </div>
-      <WallSidebar room={room} walls={walls} wall={wall} />
+      {!mobile && sidebar}
     </>
   )
 }

@@ -498,6 +498,64 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   await page.locator('.jsteps', { hasText: 'kut 2 → K1' }).waitFor()
   await page.evaluate((d2) => { const s = window.__trasa.getState(); s.select(d2); s.removeSelected(); s.patchProject({ cables: s.project.cables.slice(0, 2) }); s.setView({ kind: 'room', roomId: s.project.rooms[0].id, wall: 0 }) }, d2)
   assert.equal((await state()).cables.length, 2)
+// phone = field mode: tab bar + sheets, tap selects, pinch zooms, no drawing tools
+{
+  const { devices } = await import('playwright')
+  const snapshot = await page.evaluate(() => window.__trasa.getState().project)
+  const mctx = await browser.newContext({ ...devices['iPhone 14'] })
+  const m = await mctx.newPage()
+  const merrors = []
+  m.on('pageerror', (e) => merrors.push(String(e)))
+  await m.goto(APP_URL)
+  await m.waitForFunction(() => window.__trasa)
+  await m.evaluate((pr) => window.__trasa.getState().replaceProject(pr), snapshot)
+  await m.locator('.tabbar button', { hasText: 'Tlocrt' }).waitFor()
+  assert.equal(await m.locator('.tool-rail').isVisible(), false)
+  assert.equal(await m.locator('.header .view-nav').isVisible(), false)
+  const mst = () => m.evaluate(() => { const s = window.__trasa.getState(); return { tool: s.tool, sel: s.selectedId, cam: s.camera, wcam: s.wallCamera } })
+  // tap on a conduit selects it
+  const c0 = snapshot.conduits[0]
+  const pt = await m.evaluate((id) => { const st = window.Konva.stages[0]; const n = st.findOne((x) => x.name?.() === id); const p = n.points(); const t = n.getAbsoluteTransform(); const a = t.point({ x: p[0], y: p[1] }), b = t.point({ x: p[2], y: p[3] }); const r = st.container().getBoundingClientRect(); return { x: r.x + (a.x + b.x) / 2, y: r.y + (a.y + b.y) / 2 } }, c0.id)
+  await m.touchscreen.tap(pt.x, pt.y)
+  await m.waitForFunction((id) => window.__trasa.getState().selectedId === id, c0.id)
+  await m.locator('.sheet-handle').tap()
+  await m.locator('.sheet.open .props', { hasText: 'Bužir' }).waitFor()
+  await m.locator('.sheet-handle').tap()
+  await m.waitForFunction(() => document.querySelector('.sheet').getBoundingClientRect().height < 60) // closed, animation done
+  // pinch zooms the plan
+  const cdp = await mctx.newCDPSession(m)
+  const two = (cx, cy, d) => [{ x: cx - d / 2, y: cy }, { x: cx + d / 2, y: cy }]
+  const before = (await mst()).cam.scale
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: two(200, 350, 80) })
+  for (let i = 1; i <= 6; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: two(200, 350, 80 + i * 20) })
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  await m.waitForFunction((b) => window.__trasa.getState().camera.scale > b * 1.5, before)
+  // rooms: tap the box on the wall → details sheet opens
+  await m.locator('.tabbar button', { hasText: 'Sobe' }).tap()
+  await m.locator('.room-head', { hasText: 'Zid 1' }).waitFor()
+  await m.locator('.room-head button[aria-label="Slikaj zid"]').waitFor()
+  const k1 = snapshot.elements.find((e) => e.type === 'box')
+  const kp = await m.evaluate((id) => { const st = window.Konva.stages[window.Konva.stages.length - 1]; const n = st.findOne((x) => x.name?.() === id); const r = n.getClientRect(); const b = st.container().getBoundingClientRect(); return { x: b.x + r.x + r.width / 2, y: b.y + r.y + r.height / 2 } }, k1.id)
+  await m.touchscreen.tap(kp.x, kp.y)
+  await m.locator('.sheet.open .props').waitFor()
+  // the tap lands on the box or on one of the cables drawn into it; either opens its details
+  const tapped = await m.evaluate(() => window.__trasa.getState().selectedId)
+  assert.ok(tapped === k1.id || snapshot.cables.some((c) => c.id === tapped && [c.from, c.to].some((e) => e.kind === 'element' && e.id === k1.id)), `tapped ${tapped}`)
+  // junctions: picker + steps + sheet; material
+  await m.locator('.tabbar button', { hasText: 'Spojevi' }).tap()
+  await m.locator('.jpick option', { hasText: 'K1' }).waitFor({ state: 'attached' })
+  await m.locator('.junctions.mobile .segmented button', { hasText: 'Koraci' }).tap()
+  await m.locator('.stepbar', { hasText: '1 /' }).waitFor()
+  await m.locator('.sheet-handle').tap()
+  await m.locator('.sheet.open', { hasText: 'Spojevi po stezaljci' }).waitFor()
+  await m.locator('.tabbar button', { hasText: 'Materijal' }).tap()
+  await m.locator('.material .panel-card', { hasText: 'Kabeli' }).waitFor()
+  assert.deepEqual(merrors, [], 'mobile console/page errors')
+  assert.deepEqual(await m.evaluate(() => [document.documentElement.scrollWidth, innerWidth]).then(([a, b]) => a <= b), true, 'no horizontal page scroll')
+  await m.screenshot({ path: `${SHOTS}/trasa-mobile.png` })
+  await mctx.close()
+}
+
   // cleanup so the rest of the test sees the same elements as before
   await page.evaluate(({ s1 }) => { const s = window.__trasa.getState(); s.select(s1); s.removeSelected(); const p = s.project; s.patchProject({ cables: p.cables.slice(0, 2) }); s.select(null) }, ids)
   assert.equal((await state()).elements.length, 2)

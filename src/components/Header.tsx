@@ -82,8 +82,8 @@ export function Header() {
         <button className={view.kind === 'bom' || view.kind === 'print' ? 'on' : ''} aria-pressed={view.kind === 'bom' || view.kind === 'print'} onClick={() => setView({ kind: 'bom' })}>Materijal</button>
       </nav>
       <div className="spacer" />
-      <button className="primary" onClick={() => void save()} title="Spremi (⌘S)"><Icon.save /> Spremi</button>
-      <button onClick={() => setGh(true)} title="Projekti u GitHub repou"><Icon.cloud /> GitHub</button>
+      <button className="primary" onClick={() => void save()} title="Spremi (⌘S)" aria-label="Spremi"><Icon.save /><span className="lbl">Spremi</span></button>
+      <button onClick={() => setGh(true)} title="Projekti u GitHub repou" aria-label="GitHub"><Icon.cloud /><span className="lbl">GitHub</span></button>
       <button className="icon-btn" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} title="Svijetla / tamna tema" aria-label="Tema">
         {theme === 'dark' ? <Icon.sun /> : <Icon.moon />}
       </button>

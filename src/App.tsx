@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { loadPersisted, redo, undo, useStore } from './store'
 import { Header } from './components/Header'
 import { ToolRail } from './components/ToolRail'
@@ -12,10 +12,22 @@ import { PrintBoxView } from './components/PrintBoxView'
 import { fileToDataUrl } from './images'
 import { open, save } from './persistence'
 import { consumeLoginHash } from './github'
+import { useMobile } from './mobile'
+import { Sheet } from './components/Sheet'
+import { TabBar } from './components/TabBar'
 
 export default function App() {
   const view = useStore((s) => s.view)
   const loaded = useStore((s) => s.loaded)
+  const mobile = useMobile()
+  const [sheet, setSheet] = useState(false)
+
+  // field mode: no drawing tools on a phone, only select + pan
+  useEffect(() => {
+    if (!mobile) return
+    useStore.getState().setTool('select')
+    useStore.getState().setWallTool('select')
+  }, [mobile])
 
   useEffect(() => {
     if (consumeLoginHash()) useStore.setState({ openGitHub: true })
@@ -43,15 +55,22 @@ export default function App() {
 
   if (!loaded) return null
   return (
-    <div className="app" onDragOver={(e) => e.preventDefault()} onDrop={(e) => void onDrop(e)}>
+    <div className={`app ${mobile ? 'mobile' : ''}`} onDragOver={(e) => e.preventDefault()} onDrop={(e) => void onDrop(e)}>
       <Header />
       <div className="main">
         {view.kind === 'plan' ? (
-          <>
-            <ToolRail />
-            <PlanCanvas />
-            <Sidebar />
-          </>
+          mobile ? (
+            <>
+              <PlanCanvas />
+              <Sheet title="Bužiri i sobe" open={sheet} onOpenChange={setSheet}><Sidebar /></Sheet>
+            </>
+          ) : (
+            <>
+              <ToolRail />
+              <PlanCanvas />
+              <Sidebar />
+            </>
+          )
         ) : view.kind === 'room' ? (
           <RoomView roomId={view.roomId} wall={view.wall} />
         ) : view.kind === 'junctions' ? (
@@ -64,6 +83,7 @@ export default function App() {
           <PrintBoxView elementId={view.elementId} />
         )}
       </div>
+      {mobile && <TabBar />}
     </div>
   )
 }
