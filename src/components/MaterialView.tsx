@@ -144,16 +144,7 @@ function WagoLegend() {
     <div className="wago-legend">
       {WAGOS.map((w) => (
         <div key={w.code} className="wago-card">
-          <svg viewBox={`0 0 ${w.n * 14 + 8} 30`} width={w.n * 14 + 8} height={30} aria-hidden>
-            <rect x={1} y={6} width={w.n * 14 + 6} height={22} rx={3} fill="rgba(255,255,255,.7)" stroke="#4a4a4a" strokeWidth={1.2} />
-            {Array.from({ length: w.n }, (_, i) => (
-              <g key={i}>
-                <rect x={4 + i * 14} y={1} width={11} height={11} rx={2} fill="#f28c28" stroke="#b35a0c" strokeWidth={0.8} />
-                <rect x={7 + i * 14} y={24} width={5} height={4} fill="#2b2b2b" />
-              </g>
-            ))}
-          </svg>
-          <div><b>{w.code}</b><small>{w.use}</small></div>
+          <b>{w.code}</b><small>{w.n} žile · {w.use.split(': ')[1]}</small>
         </div>
       ))}
       <p className="muted">Serija 221: polugica gore → ogoljena žila (11 mm) unutra → polugica dolje. Za 1,5 i 2,5 mm², krute i fine žile. Zadnja znamenka = broj žila.</p>
