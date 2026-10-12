@@ -1,4 +1,4 @@
-import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isPlace, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, relayModelOf } from './types'
+import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isPlace, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, relayModelOf, hostedFront } from './types'
 
 // Everything a box needs: which cables enter it, what each core goes to, which devices sit inside
 // and which WAGO 221 connectors (or direct jumpers) that takes. Derived from the drawing, nothing is stored.
@@ -218,8 +218,8 @@ function sideOf(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallElement
 
 // Devices sitting inside a place: relays and buttons with host = place.
 export function devicesIn(place: WallElement, p: Project): Device[] {
-  return p.elements
-    .filter((e) => e.host === place.id && (e.type === 'relay' || e.type === 'switch' || e.type === 'socket'))
+  // front elements in their frame order (left → right), relays after them
+  return [...hostedFront(p.elements, place.id).filter((e) => e.type === 'switch' || e.type === 'socket'), ...p.elements.filter((e) => e.host === place.id && e.type === 'relay')]
     .map((e) => {
       if (e.type === 'relay') {
         const m = RELAY_MODELS[relayModelOf(e)]
@@ -263,7 +263,7 @@ function devicePorts(d: Device, p: Project, checks: Check[]): PortMember[] {
   }
   if (d.kind === 'socket') {
     // sockets have double terminals per pole: the first one hangs on L/N/PE, the next ones loop from the previous socket
-    const chain = p.elements.filter((e) => e.host === d.el.host && e.type === 'socket')
+    const chain = hostedFront(p.elements, d.el.host!).filter((e) => e.type === 'socket')
     const i = chain.findIndex((e) => e.id === d.el.id)
     const prev = i > 0 ? chain[i - 1] : null
     const inT = (pole: string) => (prev ? `CH:${pole}:${prev.id}` : pole)
@@ -412,7 +412,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
       add(pm.terminal, { kind: 'port', deviceId: d.el.id, deviceLabel: d.label, port: pm.port, color: pm.color, note: pm.note })
     }
   }
-  if (box.type === 'modbox') { const used = devices.reduce((n, d) => n + modulesOf(d.el), 0); if (used > (box.modules ?? 3)) checks.push({ level: 'err', text: `Doza je ${box.modules ?? 3}M, a unutra je ${used}M (šuko 2M, tipkalo i euro 1M). Uzmi veću dozu ili makni element.` }) }
+  if (box.type === 'modbox') { const used = devices.reduce((n, d) => n + modulesOf(d.el) + (d.el.gapBefore ?? 0), 0); if (used > (box.modules ?? 3)) checks.push({ level: 'err', text: `Doza je ${box.modules ?? 3}M, a unutra je ${used}M (šuko 2M, tipkalo i euro 1M). Uzmi veću dozu ili makni element.` }) }
   if (devices.filter((d) => d.kind === 'relay').length > 2) checks.push({ level: 'warn', text: `${devices.filter((d) => d.kind === 'relay').length} releja u jednoj dozi: provjeri stane li uz stezaljke.` })
 
   const terminals: Terminal[] = [...map.entries()]

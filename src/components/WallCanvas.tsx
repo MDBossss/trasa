@@ -5,7 +5,7 @@ import type { KonvaEventObject } from 'konva/lib/Node'
 import useImage from 'use-image'
 import { useStore } from '../store'
 import { CABLE_COLOR, cableColor, cablePath, cornerAt, endPos, neighbourWall, type Exit, type WallCtx, type WallInfo } from '../walls'
-import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement, RELAY_LOOK, relayBrand, relayModelOf } from '../types'
+import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement, RELAY_LOOK, relayBrand, relayModelOf, hostedFront } from '../types'
 import { Hud } from './Hud'
 import { activeWallTool } from './WallToolRail'
 import { pinch, useMobile } from '../mobile'
@@ -411,7 +411,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
                 <Symbol type={el.type} selected={isSel} px={px} modules={el.modules} tipkalo={el.switchKind === 'tipkalo'} />
                 {(() => {
                   const hosted = hostedOf(el.id)
-                  const mods = hosted.filter((h) => h.type !== 'relay')
+                  const mods = hostedFront(project.elements, el.id)
                   const relays = hosted.filter((h) => h.type === 'relay')
                   const w = el.type === 'modbox' ? (el.modules ?? 3) * MODW : 16
                   const top = el.type === 'modbox' ? -6 : el.type === 'ledpsu' ? -3 : -7
@@ -422,7 +422,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
                         // frame slots: each front element takes its modules (šuko 2, tipkalo/euro 1)
                         const hs = h.id === selectedId
                         const m = Math.max(1, modulesOf(h))
-                        const before = mods.slice(0, i).reduce((n, x) => n + Math.max(1, modulesOf(x)), 0)
+                        const before = mods.slice(0, i).reduce((n, x) => n + (x.gapBefore ?? 0) + Math.max(1, modulesOf(x)), 0) + (h.gapBefore ?? 0)
                         const cx = -w / 2 + (before + m / 2) * MODW
                         return (
                           <Group key={h.id} name={h.id} x={cx} y={0} onClick={sel(h)} onTap={sel(h)}>

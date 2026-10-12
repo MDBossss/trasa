@@ -67,6 +67,9 @@ export type SwitchKind = 'obicni' | 'serijski' | 'izmjenicni' | 'krizni' | 'tipk
 export type BoxDepth = 'plitka' | 'duboka'
 export type SocketKind = 'schuko' | 'euro'
 export const SOCKET_KINDS: Record<SocketKind, { label: string; modules: number }> = { schuko: { label: 'Šuko', modules: 2 }, euro: { label: 'Euro', modules: 1 } }
+// position inside a modular frame: explicit order (left → right) and empty modules kept free on the left
+export const hostedFront = (elements: WallElement[], hostId: string) =>
+  elements.map((e, i) => ({ e, i })).filter(({ e }) => e.host === hostId && e.type !== 'relay').sort((a, b) => (a.e.slotOrder ?? 1e9) - (b.e.slotOrder ?? 1e9) || a.i - b.i).map(({ e }) => e)
 // modules an element takes inside a modular frame
 export const modulesOf = (e: WallElement) => (e.type === 'socket' ? SOCKET_KINDS[e.socketKind ?? 'schuko'].modules : e.type === 'switch' ? (e.modules ?? 1) : 0)
 
@@ -91,6 +94,8 @@ export interface WallElement {
   modules?: number
   // relay
   relayModel?: RelayModel | string
+  slotOrder?: number // place in the frame, left to right
+  gapBefore?: number // empty modules kept free on the left of it
   // switch wired to a relay input (1-based) instead of straight to the light
   relayId?: string
   relayInput?: number

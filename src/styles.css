@@ -383,3 +383,7 @@ h3 .mini-note { margin-left: auto; text-transform: none; letter-spacing: 0; font
 .tip.above { transform: translate(-50%, -100%); }
 :root[data-theme="dark"] .tip { background: #e7e9ee; color: #1b1d21; }
 @keyframes tip-in { from { opacity: 0; } to { opacity: 1; } }
+
+.slot-row .btns { display: inline-flex; align-items: center; gap: 6px; }
+.slot-row .btns b { min-width: 34px; text-align: center; font-variant-numeric: tabular-nums; }
+.slot-row label > input { width: 56px; }

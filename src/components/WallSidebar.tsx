@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
-import { CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, type BoxDepth, type CableRole, type RelayModel, type Room, type SocketKind, type SwitchKind, relayModelOf } from '../types'
+import { CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, type BoxDepth, type CableRole, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
 import { cableNeeds, resolveCable, roleLabel, terminalMeta } from '../junction'
 import { Icon } from './Icons'
 
@@ -132,6 +132,7 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
                   </select>
                 </label>
               )}
+              {el.host && <SlotRow el={el} />}
               <div className="controls" hidden={!!el.relayId}>
                 <span className="muted">Pali svjetla</span>
                 {!roomLights.length && <span className="muted">(nema svjetala u sobi, postavi Svjetlo (L) na zid)</span>}
@@ -190,7 +191,8 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
               </select>
             </label>
           )}
-          {el.type === 'modbox' && (() => { const used = project.elements.filter((h) => h.host === el.id).reduce((n, h) => n + modulesOf(h), 0); return <div className={`stat ${used > (el.modules ?? 3) ? 'warn' : ''}`}><span>Zauzeto</span><b>{used} / {el.modules ?? 3} M</b><span className="muted">{project.elements.filter((h) => h.host === el.id).map((h) => h.label).join(', ') || 'prazno'}</span></div> })()}
+          {el.type === 'socket' && el.host && <SlotRow el={el} />}
+          {el.type === 'modbox' && (() => { const front = hostedFront(project.elements, el.id); const used = front.reduce((n, h) => n + modulesOf(h) + (h.gapBefore ?? 0), 0); return <div className={`stat ${used > (el.modules ?? 3) ? 'warn' : ''}`}><span>Zauzeto</span><b>{used} / {el.modules ?? 3} M</b><span className="muted">{front.map((h) => `${h.gapBefore ? '· '.repeat(h.gapBefore) : ''}${h.label}`).join(' → ') || 'prazno'}</span></div> })()}
           {el.type === 'modbox' && (
             <label>
               Moduli
@@ -302,5 +304,26 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
         </section>
       )}
     </aside>
+  )
+}
+
+// Where a front element sits in its frame: move left/right among the others, keep empty modules on its left.
+function SlotRow({ el }: { el: WallElement }) {
+  const project = useStore((s) => s.project)
+  const { updateElement } = useStore.getState()
+  const front = hostedFront(project.elements, el.host!)
+  const i = front.findIndex((x) => x.id === el.id)
+  const move = (d: -1 | 1) => {
+    const order = [...front]
+    const j = i + d
+    if (j < 0 || j >= order.length) return
+    ;[order[i], order[j]] = [order[j], order[i]]
+    order.forEach((x, k) => updateElement(x.id, { slotOrder: k }))
+  }
+  return (
+    <div className="field-row slot-row">
+      <label>Mjesto u okviru <span className="btns"><button className="mini" onClick={() => move(-1)} disabled={i <= 0} title="Pomakni ulijevo">◀</button><b>{i + 1} / {front.length}</b><button className="mini" onClick={() => move(1)} disabled={i >= front.length - 1} title="Pomakni udesno">▶</button></span></label>
+      <label>Praznih lijevo <input type="number" min={0} max={6} value={el.gapBefore ?? 0} onChange={(e) => updateElement(el.id, { gapBefore: Math.max(0, +e.target.value || 0) || undefined })} /></label>
+    </div>
   )
 }
