@@ -5,7 +5,7 @@ import { conduitTouchesRoom, wallExits } from '../walls'
 import { bounds } from '../geometry'
 import { ELEMENT_META } from '../types'
 import { Icon } from './Icons'
-import { JunctionCanvas, wireSwatch } from './JunctionCanvas'
+import { CAP_COLOR, JunctionCanvas, wireSwatch } from './JunctionCanvas'
 
 // One box on one A4 landscape sheet: where it is in the room, a legend, the drawing and the terminal table.
 
@@ -73,6 +73,7 @@ export function PrintBoxView({ elementId }: { elementId: string }) {
                   <span><i style={{ background: '#f28c28' }} />WAGO 221: 412 = 2 žile, 413 = 3, 415 = 5</span>
                   <span><i style={{ background: '#c8803c' }} />ogoliti 11 mm, polugica gore → utakni → dolje</span>
                   <span><i style={{ background: '#2563eb' }} />relej (Shelly): L N SW O</span>
+                  {j.terminals.some((t) => t.cap) && <span><i style={{ background: CAP_COLOR }} />rezervna žila: presavij, izoliraj (kapica / traka)</span>}
                 </div>
               </div>
               <div className="pb-card">

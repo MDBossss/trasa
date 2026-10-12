@@ -3,7 +3,7 @@ import { useStore } from '../store'
 import { allJunctions, wirePlan, type Junction, type Level, type PlanWire } from '../junction'
 import { ELEMENT_META, WIRE_LABEL } from '../types'
 import { Icon } from './Icons'
-import { JunctionCanvas, wireSwatch } from './JunctionCanvas'
+import { CAP_COLOR, JunctionCanvas, wireSwatch } from './JunctionCanvas'
 import { Sheet } from './Sheet'
 import { ZoomPane } from './ZoomPane'
 import { useMobile } from '../mobile'
@@ -197,6 +197,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
               <span><i style={{ background: wireSwatch('black') }} />povratna / putna</span>
               <span><i style={{ background: '#f28c28' }} />WAGO 221 polugica</span>
               <span><i style={{ background: '#c8803c' }} />ogoljeno 11 mm</span>
+              {j.terminals.some((t) => t.cap) && <span><i style={{ background: CAP_COLOR }} />izolirana rezerva (kapica / traka)</span>}
             </div>
           </div>
         ) : (

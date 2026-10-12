@@ -11,7 +11,8 @@ const DEPTH = 18.6
 const S = 4 // px per mm
 
 type Item = { kind: 'wago'; t: Terminal; w: number; h: number } | { kind: 'cap'; t: Terminal; w: number; h: number } | { kind: 'device'; d: Device; w: number; h: number }
-const CAP_W = 7, CAP_H = 14 // insulating end cap on a folded-back spare core
+const CAP_W = 4, CAP_H = 12 // tape / small cap on a folded-back spare core: ~1 mm thicker than the core
+export const CAP_COLOR = '#7c3aed'
 type Placed = Item & { x: number; y: number; flip: boolean }
 
 function wagoWidth(t: Terminal) { return WAGO[t.wago as 412 | 413 | 415].w * t.chained + (t.chained - 1) * 2 }
@@ -186,9 +187,8 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
           const [cw, ch] = [mm(CAP_W), mm(CAP_H)]
           return (
             <g key={pl.t.id}>
-              <rect x={x + 1.5} y={y + 2} width={cw} height={ch} rx={cw / 2} fill="rgba(0,0,0,.18)" />
-              <rect x={x} y={y} width={cw} height={ch} rx={cw / 2} fill="#8d8d8d" stroke="#4a4a4a" strokeWidth={1.2} />
-              <rect x={x + cw * 0.2} y={pl.flip ? y + ch * 0.55 : y + ch * 0.1} width={cw * 0.6} height={ch * 0.35} rx={cw * 0.3} fill="#b5b5b5" />
+              <rect x={x} y={y} width={cw} height={ch} rx={cw / 2} fill={CAP_COLOR} stroke="#4c1d95" strokeWidth={0.8} />
+              {[0.3, 0.55, 0.8].map((f) => <line key={f} x1={x + 1} y1={y + ch * f} x2={x + cw - 1} y2={y + ch * f} stroke="rgba(255,255,255,.35)" strokeWidth={0.8} />)}
               <text x={x + cw / 2} y={pl.flip ? y + ch + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">{pl.t.desc}</text>
             </g>
           )
