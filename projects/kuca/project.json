@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-12T09:48:13.904Z",
+ "savedAt": "2026-10-12T18:29:13.415Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2022,7 +2022,7 @@
     "zM": 1.39,
     "note": "",
     "host": "9vncvf4h",
-    "relayModel": "plus1",
+    "relayModel": "zbminir2",
     "id": "g49do0fh",
     "label": "R1"
    }
@@ -2365,7 +2365,9 @@
  },
  "ui": {
   "view": {
-   "kind": "plan"
+   "kind": "room",
+   "roomId": "hznuei6t",
+   "wall": 1
   }
  }
 }
