@@ -86,7 +86,7 @@ export function MaterialView() {
           if (!shown.length) return null
           return (
             <section key={g} className="panel-card">
-              <h3>{g} <span className="count">{gl.filter((l) => done.has(key(l))).length} / {gl.length}</span></h3>
+              <h3>{g} <span className="count">{gl.filter((l) => done.has(key(l))).length} / {gl.length}</span>{g === 'Kabeli' && <span className="mini-note">okvirno, uzmi rezervu</span>}</h3>
               <table className="bom-table">
                 <tbody>
                   {shown.map((l) => {
@@ -125,7 +125,7 @@ export function MaterialView() {
             </div>
           </section>
         )}
-        <p className="muted">Kabeli: duljina po zidu + bužir + 30 cm rezerve po kraju u kutiji, zaokruženo na 0,5 m. Bužiri se ne popisuju. Kvačice "nabavljeno" ostaju samo na ovom uređaju.</p>
+        <p className="muted"><b>Duljine kabela su okvirne</b>: mjere s tlocrta i fotki nisu točne, pa uzmi rezervu. Računa se duljina po zidu + bužir + 30 cm po kraju u kutiji, zaokruženo na 0,5 m. Bužiri se ne popisuju. Kvačice "nabavljeno" ostaju samo na ovom uređaju.</p>
       </div>
     </div>
   )

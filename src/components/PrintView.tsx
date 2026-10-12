@@ -176,7 +176,7 @@ function Bom({ project, roomId }: { project: Project; roomId: string | null }) {
       <tbody>
         {groups.map((g) => (
           <Fragment key={g}>
-            <tr className="grp"><td colSpan={2}>{g}</td></tr>
+            <tr className="grp"><td colSpan={2}>{g}{g === 'Kabeli' && <span className="muted"> · duljine su okvirne (mjere s tlocrta i fotki), uzmi rezervu</span>}</td></tr>
             {lines.filter((l) => l.group === g).map((l) => <tr key={l.item}><td>{l.item}</td><td className="num">{l.unit === 'm' ? `${l.qty.toFixed(1).replace('.', ',')} m` : `${l.qty} kom`}</td></tr>)}
           </Fragment>
         ))}

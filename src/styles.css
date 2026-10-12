@@ -376,3 +376,4 @@ h3 .link { margin-left: auto; text-transform: none; letter-spacing: 0; font-weig
 .bom-table tr.done td.num { color: var(--muted); }
 .mat-sub { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 .mat-pack { color: var(--accent); }
+h3 .mini-note { margin-left: auto; text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--warn); font-size: 11px; }
