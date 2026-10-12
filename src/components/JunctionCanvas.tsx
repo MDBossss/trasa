@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { WIRE_HEX, type WireColor, RELAY_LOOK, relayBrand, relayModelOf } from '../types'
+import { WIRE_HEX, WIRE_LABEL, type WireColor, RELAY_LOOK, relayBrand, relayModelOf } from '../types'
 import type { BoxCable, Device, Junction, PlanWire, Side, Terminal } from '../junction'
 
 // Top-down view into the open box, drawn to scale in millimetres: cables enter from the rim,
@@ -142,7 +142,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
           const [ex, ey] = px(b.x - b.n[0] * 11, b.y - b.n[1] * 11)
           const [sx, sy] = px(a.x - a.n[0] * 7, a.y - a.n[1] * 7)
           return (
-            <g key={w.key} className={`jc-wire ${wireState(w.key)}`} onMouseEnter={() => onHover(w.key)} onMouseLeave={() => onHover(null)} onClick={() => onPick(idx(w.key))}>
+            <g key={w.key} className={`jc-wire ${wireState(w.key)}`} data-tip={`${w.cable ? w.cable.label : w.device?.label}: ${WIRE_LABEL[w.color]} → ${w.terminal.label}${w.note ? ` (${w.note})` : ''}`} onMouseEnter={() => onHover(w.key)} onMouseLeave={() => onHover(null)} onClick={() => onPick(idx(w.key))}>
               <path d={d} fill="none" stroke="rgba(0,0,0,.25)" strokeWidth={sw + 2} strokeLinecap="round" />
               <path d={d} fill="none" stroke={WIRE_HEX[w.color]} strokeWidth={sw} strokeLinecap="round" />
               {w.color === 'gnye' && <path d={d} fill="none" stroke="#f2d31b" strokeWidth={sw} strokeDasharray="7 9" />}
@@ -150,7 +150,6 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
                 <line x1={x2} y1={y2} x2={ex} y2={ey} stroke="#c8803c" strokeWidth={sw * 0.55} strokeLinecap="round" />
               )}
               {a.copper && <line x1={x1} y1={y1} x2={sx} y2={sy} stroke="#c8803c" strokeWidth={sw * 0.55} strokeLinecap="round" />}
-              <title>{w.cable ? w.cable.label : w.device?.label}: {w.color} → {w.terminal.label}{w.note ? ` (${w.note})` : ''}</title>
             </g>
           )
         })}

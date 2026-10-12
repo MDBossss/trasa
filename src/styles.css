@@ -377,3 +377,9 @@ h3 .link { margin-left: auto; text-transform: none; letter-spacing: 0; font-weig
 .bom-table tr.done td.num { color: var(--muted); }
 .mat-sub { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 h3 .mini-note { margin-left: auto; text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--warn); font-size: 11px; }
+
+/* app tooltip (replaces the browser's) */
+.tip { position: fixed; z-index: 100; transform: translate(-50%, 0); max-width: 320px; padding: 6px 9px; border-radius: 7px; background: #1f2430; color: #fff; font-size: 12px; line-height: 1.35; box-shadow: 0 4px 14px rgba(0,0,0,.25); pointer-events: none; white-space: pre-line; animation: tip-in .08s ease-out; }
+.tip.above { transform: translate(-50%, -100%); }
+:root[data-theme="dark"] .tip { background: #e7e9ee; color: #1b1d21; }
+@keyframes tip-in { from { opacity: 0; } to { opacity: 1; } }

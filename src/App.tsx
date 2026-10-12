@@ -15,6 +15,7 @@ import { consumeLoginHash } from './github'
 import { useMobile } from './mobile'
 import { Sheet } from './components/Sheet'
 import { TabBar } from './components/TabBar'
+import { Tooltip } from './components/Tooltip'
 
 export default function App() {
   const view = useStore((s) => s.view)
@@ -84,6 +85,7 @@ export default function App() {
         )}
       </div>
       {mobile && <TabBar />}
+      <Tooltip />
     </div>
   )
 }
