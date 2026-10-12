@@ -68,7 +68,8 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
 14. **Postavke projekta** (☰ → Postavke projekta…, ili "postavke" uz materijal kutije): spremaju se u save.
     *Rezervne žile u kutiji*: "Presavij i izoliraj" (kapica/traka, broji se u materijalu) ili "Svaka u svoj WAGO"
     (dosadašnje ponašanje; stariji projekti bez postavke ostaju na njemu). PE iz kabela za prekidač uvijek ide na
-    zajednički PE u kutiji, u dozi prekidača se presavije.
+    zajednički PE u kutiji, u dozi prekidača se presavije. Žila koja u kutiji nema s čime (npr. jedini PE u dozi s
+    tipkalom i relejem) u načinu "kapica" dobiva kapicu, ne vlastiti WAGO; kapice se slažu u red uz WAGO-e.
 12. **Lista bužira**: Svi / Po kategoriji / Po sobama. Bužir pripada sobi ako mu početak ili kraj leži u sobi ili
    najviše 10 cm izvan njezina zida. **Fokus** na sobu sakrije ostale bužire, kamera ostaje gdje je.
 

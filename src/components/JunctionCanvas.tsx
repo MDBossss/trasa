@@ -10,7 +10,8 @@ const WAGO = { 412: { w: 13.0, n: 2 }, 413: { w: 18.7, n: 3 }, 415: { w: 30.0, n
 const DEPTH = 18.6
 const S = 4 // px per mm
 
-type Item = { kind: 'wago'; t: Terminal; w: number; h: number } | { kind: 'device'; d: Device; w: number; h: number }
+type Item = { kind: 'wago'; t: Terminal; w: number; h: number } | { kind: 'cap'; t: Terminal; w: number; h: number } | { kind: 'device'; d: Device; w: number; h: number }
+const CAP_W = 7, CAP_H = 14 // insulating end cap on a folded-back spare core
 type Placed = Item & { x: number; y: number; flip: boolean }
 
 function wagoWidth(t: Terminal) { return WAGO[t.wago as 412 | 413 | 415].w * t.chained + (t.chained - 1) * 2 }
@@ -19,6 +20,7 @@ function wagoWidth(t: Terminal) { return WAGO[t.wago as 412 | 413 | 415].w * t.c
 function layout(j: Junction): { W: number; H: number; placed: Placed[]; overflow: boolean } {
   const items: Item[] = [
     ...j.terminals.filter((t) => t.wago).map((t): Item => ({ kind: 'wago', t, w: wagoWidth(t), h: DEPTH })),
+    ...j.terminals.filter((t) => t.cap).map((t): Item => ({ kind: 'cap', t, w: CAP_W, h: CAP_H })),
     ...j.devices.map((d): Item => ({ kind: 'device', d, w: d.wMm, h: d.hMm })),
   ]
   const base = j.box.type === 'modbox' ? [(j.box.modules ?? 3) <= 3 ? [100, 70] : (j.box.modules ?? 3) <= 4 ? [120, 70] : [160, 70], [160, 100], [200, 120]] : [[100, 100], [150, 150], [200, 200]]
@@ -92,12 +94,9 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
   }
   const endOf = (w: PlanWire) => {
     if (w.terminal.wago) { const pw = placedWago(w.terminal); return pw ? wagoPort(pw, w.port) : null }
-    if (w.terminal.cap && w.cable) {
-      // folded back: ends 28 mm inside the box, offset sideways so several caps on one cable do not overlap
-      const e = entry(w.cable)
-      const k = j.terminals.filter((t) => t.cap && t.wires[0]?.kind === 'core' && t.wires[0].cableId === w.cable!.cable.id).findIndex((t) => t.id === w.terminal.id)
-      const side = (k - 0.5) * 7
-      return { x: e.p[0] + e.n[0] * 28 + e.n[1] * side, y: e.p[1] + e.n[1] * 28 - e.n[0] * side, n: [-e.n[0], -e.n[1]], cap: true }
+    if (w.terminal.cap) {
+      const pc = lay.placed.find((q): q is Placed & { kind: 'cap' } => q.kind === 'cap' && q.t.id === w.terminal.id)
+      return pc ? { x: pc.x + CAP_W / 2, y: pc.flip ? pc.y : pc.y + CAP_H, n: pc.flip ? [0, -1] : [0, 1], cap: true } : null
     }
     // direct connection: the wire goes from member 0 to member 1 (a device port); member 1 draws nothing
     const other = w.terminal.wires[1 - w.port]
@@ -146,9 +145,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
               <path d={d} fill="none" stroke="rgba(0,0,0,.25)" strokeWidth={sw + 2} strokeLinecap="round" />
               <path d={d} fill="none" stroke={WIRE_HEX[w.color]} strokeWidth={sw} strokeLinecap="round" />
               {w.color === 'gnye' && <path d={d} fill="none" stroke="#f2d31b" strokeWidth={sw} strokeDasharray="7 9" />}
-              {'cap' in b && b.cap ? (
-                <line x1={x2} y1={y2} x2={ex} y2={ey} stroke="#6b6b6b" strokeWidth={sw * 1.5} strokeLinecap="round" />
-              ) : (
+              {'cap' in b && b.cap ? null : (
                 <line x1={x2} y1={y2} x2={ex} y2={ey} stroke="#c8803c" strokeWidth={sw * 0.55} strokeLinecap="round" />
               )}
               {a.copper && <line x1={x1} y1={y1} x2={sx} y2={sy} stroke="#c8803c" strokeWidth={sw * 0.55} strokeLinecap="round" />}
@@ -182,6 +179,17 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
               })}
               <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(5.5) : y + mm(DEPTH - 3.5)} textAnchor="middle" fontSize={10} fontWeight={600} fill="#222">{pl.t.label}</text>
               <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(DEPTH) + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">{cap}</text>
+            </g>
+          )
+        }
+        if (pl.kind === 'cap') {
+          const [cw, ch] = [mm(CAP_W), mm(CAP_H)]
+          return (
+            <g key={pl.t.id}>
+              <rect x={x + 1.5} y={y + 2} width={cw} height={ch} rx={cw / 2} fill="rgba(0,0,0,.18)" />
+              <rect x={x} y={y} width={cw} height={ch} rx={cw / 2} fill="#8d8d8d" stroke="#4a4a4a" strokeWidth={1.2} />
+              <rect x={x + cw * 0.2} y={pl.flip ? y + ch * 0.55 : y + ch * 0.1} width={cw * 0.6} height={ch * 0.35} rx={cw * 0.3} fill="#b5b5b5" />
+              <text x={x + cw / 2} y={pl.flip ? y + ch + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">{pl.t.desc}</text>
             </g>
           )
         }

@@ -368,10 +368,13 @@ export function junctionFor(box: WallElement, p: Project): Junction {
     .map(([id, wires]) => {
       const n = wires.length
       const direct = n === 2 && wires.some((w) => w.kind === 'port') && !id.startsWith('PARK')
-      const cap = id.startsWith('PARK') && spareCoresOf(p) === 'cap'
+      // a core with nothing to join (spare, or e.g. the only PE in a switch frame) is a spare too
+      const lone = n === 1 && wires[0].kind === 'core' && LNPE.includes(id)
+      const cap = (id.startsWith('PARK') || lone) && spareCoresOf(p) === 'cap'
       const wago: Terminal['wago'] = direct || cap ? 0 : n <= 2 ? 412 : n <= 3 ? 413 : 415
       const chained = n <= 5 ? 1 : 1 + Math.ceil((n - 5) / 4)
       const meta = terminalMeta(id, p)
+      if (cap && lone) meta.desc = `${meta.desc}, sam: presavij i izoliraj`
       if (id.startsWith('SW:?')) checks.push({ level: 'warn', text: `${meta.desc}: povratna nema para.` })
       else if (!LNPE.includes(id) && !id.startsWith('PARK') && !id.startsWith('CH:') && n === 1) {
         const w = wires[0]
