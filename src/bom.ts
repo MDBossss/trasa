@@ -44,7 +44,7 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
   // junction connectors
   for (const j of allJunctions(p)) {
     if (!inScope(j.room.id)) continue
-    for (const b of j.bom) if (b.item.startsWith('WAGO')) add(out, 'Stezaljke', b.item, 'kom', b.qty)
+    for (const b of j.bom) if (b.item.startsWith('WAGO') || b.item.startsWith('Kapica')) add(out, 'Stezaljke', b.item, 'kom', b.qty)
   }
   // elements
   for (const e of p.elements) {

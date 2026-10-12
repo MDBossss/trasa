@@ -4,6 +4,7 @@ import { fileToDataUrl } from '../images'
 import { emptyProject } from '../types'
 import { open, save } from '../persistence'
 import { GitHubPanel } from './GitHubPanel'
+import { SettingsPanel } from './SettingsPanel'
 import { Icon } from './Icons'
 
 export function Header() {
@@ -14,6 +15,7 @@ export function Header() {
   const view = useStore((s) => s.view)
   const [menu, setMenu] = useState(false)
   const openGitHub = useStore((s) => s.openGitHub)
+  const openSettings = useStore((s) => s.openSettings)
   const [gh, setGhState] = useState(false)
   const setGh = (v: boolean) => { setGhState(v); if (!v) useStore.setState({ openGitHub: false }) }
   const ghOpen = gh || openGitHub
@@ -65,6 +67,8 @@ export function Header() {
             <div className="menu-sep" />
             {item('GitHub projekti…', 'cloud', () => setGh(true))}
             <div className="menu-sep" />
+            {item('Postavke projekta…', 'settings', () => useStore.setState({ openSettings: true }))}
+            <div className="menu-sep" />
             {item(project.planImage ? 'Zamijeni tlocrt…' : 'Učitaj tlocrt…', 'image', () => planInput.current?.click())}
           </div>
         )}
@@ -90,6 +94,7 @@ export function Header() {
       <input ref={planInput} type="file" accept="image/*" hidden onChange={(e) => void onPlan(e.target.files?.[0])} />
       <input ref={jsonInput} type="file" accept=".json,application/json" hidden onChange={(e) => void open(e.target.files?.[0])} />
       {ghOpen && <GitHubPanel onClose={() => setGh(false)} />}
+      {openSettings && <SettingsPanel onClose={() => useStore.setState({ openSettings: false })} />}
     </header>
   )
 }

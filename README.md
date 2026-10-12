@@ -65,6 +65,10 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
     "sheet" koji se povlači odozdo, kanvas se pomiče jednim prstom i zumira s dva, dodir odabire. Nema alata za
     crtanje (to ostaje na računalu). U Sobama gumb s kamerom slika zid direktno s mobitela; u Spojevima je slika
     spoja preko cijelog ekrana, koraci su ispod nje, stezaljke i materijal u sheetu.
+14. **Postavke projekta** (☰ → Postavke projekta…, ili "postavke" uz materijal kutije): spremaju se u save.
+    *Rezervne žile u kutiji*: "Presavij i izoliraj" (kapica/traka, broji se u materijalu) ili "Svaka u svoj WAGO"
+    (dosadašnje ponašanje; stariji projekti bez postavke ostaju na njemu). PE iz kabela za prekidač uvijek ide na
+    zajednički PE u kutiji, u dozi prekidača se presavije.
 12. **Lista bužira**: Svi / Po kategoriji / Po sobama. Bužir pripada sobi ako mu početak ili kraj leži u sobi ili
    najviše 10 cm izvan njezina zida. **Fokus** na sobu sakrije ostale bužire, kamera ostaje gdje je.
 

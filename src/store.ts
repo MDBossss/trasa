@@ -30,6 +30,7 @@ interface State {
   snapAngle: boolean
   loaded: boolean
   openGitHub: boolean
+  openSettings: boolean
   camera: { x: number; y: number; scale: number }
   fitNonce: number
   dirty: boolean
@@ -88,6 +89,7 @@ export const useStore = create<State>()(
       snapAngle: true,
       loaded: false,
       openGitHub: false,
+      openSettings: false,
       camera: { x: 0, y: 0, scale: 1 },
       fitNonce: 0,
       dirty: false,

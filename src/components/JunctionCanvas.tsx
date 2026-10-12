@@ -92,6 +92,13 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
   }
   const endOf = (w: PlanWire) => {
     if (w.terminal.wago) { const pw = placedWago(w.terminal); return pw ? wagoPort(pw, w.port) : null }
+    if (w.terminal.cap && w.cable) {
+      // folded back: ends 28 mm inside the box, offset sideways so several caps on one cable do not overlap
+      const e = entry(w.cable)
+      const k = j.terminals.filter((t) => t.cap && t.wires[0]?.kind === 'core' && t.wires[0].cableId === w.cable!.cable.id).findIndex((t) => t.id === w.terminal.id)
+      const side = (k - 0.5) * 7
+      return { x: e.p[0] + e.n[0] * 28 + e.n[1] * side, y: e.p[1] + e.n[1] * 28 - e.n[0] * side, n: [-e.n[0], -e.n[1]], cap: true }
+    }
     // direct connection: the wire goes from member 0 to member 1 (a device port); member 1 draws nothing
     const other = w.terminal.wires[1 - w.port]
     if (!other || w.port === 1) return null
@@ -139,7 +146,11 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
               <path d={d} fill="none" stroke="rgba(0,0,0,.25)" strokeWidth={sw + 2} strokeLinecap="round" />
               <path d={d} fill="none" stroke={WIRE_HEX[w.color]} strokeWidth={sw} strokeLinecap="round" />
               {w.color === 'gnye' && <path d={d} fill="none" stroke="#f2d31b" strokeWidth={sw} strokeDasharray="7 9" />}
-              <line x1={x2} y1={y2} x2={ex} y2={ey} stroke="#c8803c" strokeWidth={sw * 0.55} strokeLinecap="round" />
+              {'cap' in b && b.cap ? (
+                <line x1={x2} y1={y2} x2={ex} y2={ey} stroke="#6b6b6b" strokeWidth={sw * 1.5} strokeLinecap="round" />
+              ) : (
+                <line x1={x2} y1={y2} x2={ex} y2={ey} stroke="#c8803c" strokeWidth={sw * 0.55} strokeLinecap="round" />
+              )}
               {a.copper && <line x1={x1} y1={y1} x2={sx} y2={sy} stroke="#c8803c" strokeWidth={sw * 0.55} strokeLinecap="round" />}
               <title>{w.cable ? w.cable.label : w.device?.label}: {w.color} → {w.terminal.label}{w.note ? ` (${w.note})` : ''}</title>
             </g>

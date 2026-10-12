@@ -1,4 +1,4 @@
-import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isPlace, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor } from './types'
+import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isPlace, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf } from './types'
 
 // Everything a box needs: which cables enter it, what each core goes to, which devices sit inside
 // and which WAGO 221 connectors (or direct jumpers) that takes. Derived from the drawing, nothing is stored.
@@ -26,7 +26,7 @@ export interface Device { el: WallElement; label: string; ports: string[]; wMm: 
 export type TerminalWire =
   | { kind: 'core'; cableId: string; cableLabel: string; color: WireColor; note?: string }
   | { kind: 'port'; deviceId: string; deviceLabel: string; port: string; color: WireColor; note?: string }
-export interface Terminal { id: string; label: string; desc: string; wago: 0 | 412 | 413 | 415; chained: number; wires: TerminalWire[] }
+export interface Terminal { id: string; label: string; desc: string; wago: 0 | 412 | 413 | 415; chained: number; wires: TerminalWire[]; cap?: boolean }
 export interface Check { level: Level; text: string }
 export interface Junction { box: WallElement; room: Room; cables: BoxCable[]; devices: Device[]; terminals: Terminal[]; checks: Check[]; bom: { item: string; qty: number }[]; level: Level }
 
@@ -179,7 +179,7 @@ function leafWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, p: Project, c
   const sig = switchSignals(sw, p, checks, usable.length)
   if (!sig.length) return cores.map((c) => ({ color: c, terminal: null, note: 'prolazi do drugog prekidača' }))
   return cores.map((c) => {
-    if (c === 'gnye') return park(c, 'prekidač nema PE')
+    if (c === 'gnye') return { color: c, terminal: 'PE', note: 'prekidač nema PE: u dozi presavij i izoliraj' }
     const s = sig[usable.indexOf(c)]
     if (!s) return park(c)
     return { color: c, terminal: s.terminal, note: [s.note, c === 'blue' && s.terminal !== 'L' ? 'plava označena kao povratna' : ''].filter(Boolean).join(', ') }
@@ -293,7 +293,7 @@ export function terminalMeta(id: string, p: Project): { label: string; desc: str
   if (id === 'L') return { label: 'L', desc: 'faza' }
   if (id === 'N') return { label: 'N', desc: 'nula' }
   if (id === 'PE') return { label: 'PE', desc: 'zaštitni' }
-  if (id.startsWith('PARK')) return { label: '·', desc: 'parkirano' }
+  if (id.startsWith('PARK')) return spareCoresOf(p) === 'cap' ? { label: '·', desc: 'rezerva, izolirana' } : { label: '·', desc: 'parkirano' }
   const [kind, a, b] = id.split(':')
   if (kind === 'CH') return { label: a, desc: `provlačenje ${el(p, b)?.label ?? ''} → sljedeća utičnica` }
   if (kind === 'PUT1' || kind === 'PUT2') return { label: kind === 'PUT1' ? 'p1' : 'p2', desc: `putna ${kind.slice(-1)} · ${el(p, a)?.label ?? '?'}` }
@@ -368,7 +368,8 @@ export function junctionFor(box: WallElement, p: Project): Junction {
     .map(([id, wires]) => {
       const n = wires.length
       const direct = n === 2 && wires.some((w) => w.kind === 'port') && !id.startsWith('PARK')
-      const wago: Terminal['wago'] = direct ? 0 : n <= 2 ? 412 : n <= 3 ? 413 : 415
+      const cap = id.startsWith('PARK') && spareCoresOf(p) === 'cap'
+      const wago: Terminal['wago'] = direct || cap ? 0 : n <= 2 ? 412 : n <= 3 ? 413 : 415
       const chained = n <= 5 ? 1 : 1 + Math.ceil((n - 5) / 4)
       const meta = terminalMeta(id, p)
       if (id.startsWith('SW:?')) checks.push({ level: 'warn', text: `${meta.desc}: povratna nema para.` })
@@ -376,10 +377,12 @@ export function junctionFor(box: WallElement, p: Project): Junction {
         const w = wires[0]
         checks.push({ level: 'warn', text: `Stezaljka ${meta.label} (${meta.desc}): samo ${w.kind === 'core' ? w.cableLabel : `${w.deviceLabel} ${w.port}`}, nedostaje druga strana.` })
       }
-      return { id, ...meta, wago, chained, wires }
+      return { id, ...meta, wago, chained, wires, cap }
     })
   const bom = new Map<string, number>()
   for (const t of terminals) if (t.wago) bom.set(`WAGO 221-${t.wago}`, (bom.get(`WAGO 221-${t.wago}`) ?? 0) + t.chained)
+  const caps = terminals.filter((t) => t.cap).length
+  if (caps) bom.set('Kapica za rezervnu žilu', caps)
   for (const d of devices) if (d.kind === 'relay') { const k = RELAY_MODELS[d.el.relayModel ?? 'plus1'].label; bom.set(k, (bom.get(k) ?? 0) + 1) }
   const level: Level = checks.some((c) => c.level === 'err') ? 'err' : checks.some((c) => c.level === 'warn') ? 'warn' : 'ok'
   if (level === 'ok' && cables.length) checks.push({ level: 'ok', text: `Sve žile uparene: ${terminals.length} stezaljki, ${cables.length} kabela${devices.length ? `, ${devices.length} uređaja` : ''}.` })

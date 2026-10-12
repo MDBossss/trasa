@@ -45,7 +45,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
             <ul className="jsteps">
               {j.terminals.map((t) => (
                 <li key={t.id} className="hdr">
-                  <span>{t.label} · {t.wago ? `221-${t.wago}${t.chained > 1 ? ` ×${t.chained}` : ''}` : 'izravno'} · {t.desc}</span>
+                  <span>{t.label} · {t.wago ? `221-${t.wago}${t.chained > 1 ? ` ×${t.chained}` : ''}` : t.cap ? 'kapica' : 'izravno'} · {t.desc}</span>
                   <ul>
                     {t.wires.map((w, i) => {
                       const key = `${t.id}#${i}`
@@ -55,7 +55,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
                         <li key={key} className={cls} onMouseEnter={() => setHover(key)} onMouseLeave={() => setHover(null)} onClick={() => { setMode('steps'); setStep(n) }}>
                           <span className="n">{n + 1}</span>
                           <span className="w" style={{ background: wireSwatch(w.color) }} />
-                          <span>{w.kind === 'core' ? w.cableLabel : `${w.deviceLabel} · ${w.port}`}<small>{w.kind === 'core' ? `${WIRE_LABEL[w.color]} žila` : 'kratka žila'} → {t.wago ? `port ${i + 1}` : 'izravno'}{w.note ? ` · ${w.note}` : ''}</small></span>
+                          <span>{w.kind === 'core' ? w.cableLabel : `${w.deviceLabel} · ${w.port}`}<small>{w.kind === 'core' ? `${WIRE_LABEL[w.color]} žila` : 'kratka žila'} → {t.wago ? `port ${i + 1}` : t.cap ? 'kapica' : 'izravno'}{w.note ? ` · ${w.note}` : ''}</small></span>
                         </li>
                       )
                     })}
@@ -68,7 +68,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
             </ul>
           </section>
           <section>
-            <h3>Materijal za kutiju</h3>
+            <h3>Materijal za kutiju <button className="mini link" onClick={() => useStore.setState({ openSettings: true })} title="Rezervne žile: WAGO ili kapica">postavke</button></h3>
             <div className="bom">
               {j.bom.map((b) => <div key={b.item}><span>{b.item}</span><b>{b.qty} kom</b></div>)}
               <div><span>{j.box.type === 'modbox' ? `Doza modularna ${j.box.modules ?? 3}M` : 'Razvodna kutija 100 × 100 mm'}{j.box.depth === 'duboka' ? ', duboka' : j.box.depth === 'plitka' ? ', plitka' : ''}</span><b>1 kom</b></div>
@@ -213,6 +213,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
 const acc = (s: string) => (s[0].toUpperCase() + s.slice(1)).replace(/a( \d)?$/, 'u$1')
 function stepText(w: PlanWire) {
   const t = w.terminal
+  if (t.cap && w.member.kind === 'core') return `${acc(WIRE_LABEL[w.color])} žilu kabela ${w.member.cableLabel} ne spajaš: presavij je i izoliraj (kapica ili izolir traka).${w.note ? ` ${w.note[0].toUpperCase()}${w.note.slice(1)}.` : ''}`
   if (!t.wago) {
     const other = t.wires[1 - w.port] as PlanWire['member'] | undefined
     const o = !other ? '?' : other.kind === 'port' ? `${other.deviceLabel} ${other.port}` : other.cableLabel

@@ -353,3 +353,15 @@ code { font: 11px ui-monospace, Menlo, monospace; background: var(--panel2); pad
   .pb-grid { grid-template-columns: 1fr; }
   .page-landscape { width: 100%; }
 }
+
+/* project settings */
+.modal.settings h4 { margin: 4px 0 0; }
+.choice { display: flex; flex-direction: column; gap: 6px; }
+.choice-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+.choice-item.on { border-color: var(--accent); background: var(--accent-soft); }
+.choice-item input { margin: 3px 0 0; }
+.choice-item span { display: flex; flex-direction: column; gap: 3px; }
+.choice-item b { display: flex; align-items: center; gap: 8px; }
+.choice-item small { color: var(--muted); }
+.choice-item em { font-style: normal; }
+h3 .link { margin-left: auto; text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--accent); border-color: transparent; background: transparent; padding: 0 4px; }

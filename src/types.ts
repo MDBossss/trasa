@@ -165,6 +165,9 @@ export interface Room {
   walls: Record<number, Wall>
 }
 
+export type SpareCores = 'wago' | 'cap'
+export const spareCoresOf = (p: { spareCores?: SpareCores }): SpareCores => p.spareCores ?? 'wago'
+
 export interface Project {
   version: 1
   name: string
@@ -177,6 +180,8 @@ export interface Project {
   gridCm: number
   gridOrigin: Pt
   ceilingM: number
+  // unused cores in a box: each in its own WAGO (the old default) or folded back and insulated with a cap / tape
+  spareCores?: SpareCores
   conduits: Conduit[]
   rooms: Room[]
   elements: WallElement[]
