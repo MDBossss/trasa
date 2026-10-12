@@ -56,7 +56,7 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
     i crta dozu s relejima, tipkalima i kratkim žilama (tipkalo → SW izravno, bez stezaljke). **LED niša (N)**: traka
     (m, W/m, 12/24 V) i napajanje × 1,2; napaja se kao svjetlo. Provjere: relej bez nule, relej u plitkoj dozi, kabel s
     premalo žila, izlaz releja bez kabela do svjetla, klasični prekidač na releju.
-11. **Materijal** (header): popis po sobi ili za kuću (kabeli u metrima: zid + bužir + 30 cm rezerve po kraju, bužiri,
+11. **Materijal** (header): popis po sobi ili za kuću (kabeli u metrima: zid + bužir + 30 cm rezerve po kraju, bez bužira,
     WAGO, doze, oprema, releji, LED). **PDF za majstora**: pregled za ispis po sobi (tlocrt sobe s bužirima, svaki zid s
     elementima i kotama, svaka kutija i doza sa slikom i tablicom stezaljki, releji, materijal, otvorene provjere);
     u dijalogu ispisa odaberi "Spremi kao PDF". U Spojevima gumb **Ispiši kutiju** daje jedan A4 vodoravni list za tu kutiju: gdje je u sobi,
@@ -71,7 +71,7 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
     zajednički PE u kutiji, u dozi prekidača se presavije. Žila koja u kutiji nema s čime (npr. jedini PE u dozi s
     tipkalom i relejem) u načinu "kapica" dobiva kapicu, ne vlastiti WAGO; kapice se slažu u red uz WAGO-e.
     Materijal je i popis za kupnju: kvačica "nabavljeno" (ostaje na uređaju), podjela po sobama uz stavku, napomena o
-    pakiranju (WAGO 50/100, koluti kabela i bužira), "Kopiraj popis" kao tekst i "Preuzmi CSV" za Excel.
+    pakiranju (WAGO 50/100, koluti kabela), "Kopiraj popis" kao tekst i "Preuzmi CSV" za Excel.
 12. **Lista bužira**: Svi / Po kategoriji / Po sobama. Bužir pripada sobi ako mu početak ili kraj leži u sobi ili
    najviše 10 cm izvan njezina zida. **Fokus** na sobu sakrije ostale bužire, kamera ostaje gdje je.
 

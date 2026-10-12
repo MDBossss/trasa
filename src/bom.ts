@@ -4,14 +4,13 @@ import { ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, type Project } from './types'
 import { cableLengthM, wallExits } from './walls'
 
 // Bill of materials summed from the drawing: cable metres (wall runs + conduit runs + reserve),
-// conduit metres, WAGO connectors from the junctions, boxes, devices, LED strips and supplies.
+// WAGO connectors from the junctions, boxes, devices, LED strips and supplies. Conduits are not listed (user's call).
 
 export interface BomLine { group: string; item: string; unit: 'm' | 'kom'; qty: number }
 const RESERVE_M = 0.3 // per cable end in a box
 
 export function bomFor(p: Project, roomId: string | null): BomLine[] {
   const ppm = p.pxPerMeter ?? 100
-  const rooms = p.rooms.filter((r) => !roomId || r.id === roomId)
   const inScope = (rid: string) => !roomId || rid === roomId
   const add = (map: Map<string, BomLine>, group: string, item: string, unit: 'm' | 'kom', qty: number) => {
     const k = `${group}|${item}`
@@ -38,8 +37,6 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
     const c = bound('start') ?? bound('end')
     const lenM = polylineLength(cd.points) / ppm
     if (c && inScope(c.roomId)) add(out, 'Kabeli', c.type, 'm', lenM + 2 * RESERVE_M)
-    const touches = rooms.some((r) => p.cables.some((x) => x.roomId === r.id && [x.from, x.to].some((e) => e.kind === 'exit' && e.conduitId === cd.id)))
-    if (cd.diameter && (!roomId || touches)) add(out, 'Bužiri', `Bužir ø${cd.diameter}`, 'm', lenM)
   }
   // junction connectors
   for (const j of allJunctions(p)) {
@@ -71,7 +68,7 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
       }
     }
   }
-  const order = ['Kabeli', 'Bužiri', 'Stezaljke', 'Doze i kutije', 'Oprema', 'Releji', 'LED']
+  const order = ['Kabeli', 'Stezaljke', 'Doze i kutije', 'Oprema', 'Releji', 'LED']
   return [...out.values()]
     .map((l) => ({ ...l, qty: l.unit === 'm' ? Math.ceil(l.qty * 2) / 2 : l.qty }))
     .sort((a, b) => order.indexOf(a.group) - order.indexOf(b.group) || a.item.localeCompare(b.item))

@@ -11,7 +11,6 @@ const fmt = (l: { unit: 'm' | 'kom'; qty: number }) => (l.unit === 'm' ? `${l.qt
 function packHint(l: BomLine): string | null {
   if (l.group === 'Stezaljke' && l.item.startsWith('WAGO')) return 'pakiranje 50 / 100 kom'
   if (l.group === 'Kabeli') return l.qty >= 40 ? 'kolut 50 / 100 m' : 'metraža'
-  if (l.group === 'Bužiri') return /ø(16|20)/.test(l.item) ? 'kolut 100 m' : 'kolut 50 m'
   if (l.group === 'LED' && l.item.startsWith('LED traka')) return 'rola 5 m'
   return null
 }
@@ -126,7 +125,7 @@ export function MaterialView() {
             </div>
           </section>
         )}
-        <p className="muted">Kabeli: duljina po zidu + bužir + 30 cm rezerve po kraju u kutiji, zaokruženo na 0,5 m. Bužir se broji jednom, uz kabel na njegovom početku. Kvačice "nabavljeno" ostaju samo na ovom uređaju.</p>
+        <p className="muted">Kabeli: duljina po zidu + bužir + 30 cm rezerve po kraju u kutiji, zaokruženo na 0,5 m. Bužiri se ne popisuju. Kvačice "nabavljeno" ostaju samo na ovom uređaju.</p>
       </div>
     </div>
   )
