@@ -52,6 +52,9 @@ export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'mod
 export type RelayModel = 'plus1' | 'gen4' | 'plus2pm' | 'dimmer' | 'i4' | 'rgbw' | 'zbminir2' | 'zbminil2'
 // dry: relay contact is potential-free (I/O), usable as an impulse for a door unit
 // swLow: the button input is a low-voltage pair (S1/S2) instead of L-referenced SW
+export type RelayBrand = 'shelly' | 'sonoff'
+export const RELAY_LOOK: Record<RelayBrand, { fill: string; stroke: string; text: string }> = { shelly: { fill: '#2563eb', stroke: '#1e40af', text: '#fff' }, sonoff: { fill: '#f6f6f2', stroke: '#8a8a85', text: '#222' } }
+export const relayBrand = (m: RelayModel): RelayBrand => (m.startsWith('zb') ? 'sonoff' : 'shelly')
 export const RELAY_MODELS: Record<RelayModel, { label: string; inputs: number; outputs: number; needsN: boolean; dim: boolean; dc: boolean; dry: boolean; swLow: boolean; ports: string[]; wMm: number; hMm: number }> = {
   plus1: { label: 'Shelly Plus 1 (Wi‑Fi)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: true, swLow: false, ports: ['L', 'N', 'SW1', 'I', 'O'], wMm: 37, hMm: 42 },
   gen4: { label: 'Shelly 1 Gen4 (Zigbee / Wi‑Fi)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: true, swLow: false, ports: ['L', 'N', 'SW1', 'I', 'O'], wMm: 37, hMm: 42 },

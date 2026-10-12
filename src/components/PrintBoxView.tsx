@@ -72,7 +72,8 @@ export function PrintBoxView({ elementId }: { elementId: string }) {
                   <span><i style={{ background: wireSwatch('black') }} />povratna / putna / izlaz releja, crna ili siva</span>
                   <span><i style={{ background: '#f28c28' }} />WAGO 221: 412 = 2 žile, 413 = 3, 415 = 5</span>
                   <span><i style={{ background: '#c8803c' }} />ogoliti 11 mm, polugica gore → utakni → dolje</span>
-                  <span><i style={{ background: '#2563eb' }} />relej (Shelly): L N SW O</span>
+                  <span><i style={{ background: '#2563eb' }} />Shelly (plavi): L N SW I O</span>
+                  <span><i style={{ background: '#f6f6f2', border: '1px solid #8a8a85' }} />Sonoff (bijeli): L N Lout S1 S2</span>
                   {j.terminals.some((t) => t.cap) && <span><i style={{ background: CAP_COLOR }} />rezervna žila: presavij, izoliraj (kapica / traka)</span>}
                 </div>
               </div>

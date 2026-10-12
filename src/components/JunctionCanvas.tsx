@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { WIRE_HEX, type WireColor } from '../types'
+import { WIRE_HEX, type WireColor, RELAY_LOOK, relayBrand } from '../types'
 import type { BoxCable, Device, Junction, PlanWire, Side, Terminal } from '../junction'
 
 // Top-down view into the open box, drawn to scale in millimetres: cables enter from the rim,
@@ -195,22 +195,23 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
         }
         const d = pl.d
         const isBtn = d.kind !== 'relay'
+        const look = isBtn ? { fill: '#fafaf7', stroke: '#555', text: '#333' } : RELAY_LOOK[relayBrand(d.el.relayModel ?? 'plus1')]
         const pitch = pl.w / d.ports.length
         return (
           <g key={d.el.id}>
             <rect x={x + 2} y={y + 3} width={mm(pl.w)} height={mm(pl.h)} rx={4} fill="rgba(0,0,0,.18)" />
-            <rect x={x} y={y} width={mm(pl.w)} height={mm(pl.h)} rx={4} fill={isBtn ? '#fafaf7' : '#2563eb'} stroke={isBtn ? '#555' : '#1e40af'} strokeWidth={1.2} />
+            <rect x={x} y={y} width={mm(pl.w)} height={mm(pl.h)} rx={4} fill={look.fill} stroke={look.stroke} strokeWidth={1.2} />
             {d.ports.map((p, i) => {
               const cx = x + mm(pitch * (i + 0.5))
               const py = pl.flip ? y : y + mm(pl.h) - mm(3)
               return (
                 <g key={p}>
                   <rect x={cx - mm(1.6)} y={py} width={mm(3.2)} height={mm(3)} fill="#111" />
-                  <text x={cx} y={pl.flip ? y + mm(6.5) : y + mm(pl.h) - mm(4)} textAnchor="middle" fontSize={7.5} fill={isBtn ? '#333' : '#fff'}>{p}</text>
+                  <text x={cx} y={pl.flip ? y + mm(6.5) : y + mm(pl.h) - mm(4)} textAnchor="middle" fontSize={7.5} fill={look.text}>{p}</text>
                 </g>
               )
             })}
-            <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(pl.h) - mm(2.5) : y + mm(5.5)} textAnchor="middle" fontSize={9} fontWeight={600} fill={isBtn ? '#333' : '#fff'}>{d.el.label}</text>
+            <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(pl.h) - mm(2.5) : y + mm(5.5)} textAnchor="middle" fontSize={9} fontWeight={600} fill={look.text}>{d.el.label}</text>
             <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(pl.h) + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">{d.label}</text>
           </g>
         )

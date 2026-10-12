@@ -5,7 +5,7 @@ import type { KonvaEventObject } from 'konva/lib/Node'
 import useImage from 'use-image'
 import { useStore } from '../store'
 import { CABLE_COLOR, cableColor, cablePath, cornerAt, endPos, neighbourWall, type Exit, type WallCtx, type WallInfo } from '../walls'
-import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement } from '../types'
+import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement, RELAY_LOOK, relayBrand } from '../types'
 import { Hud } from './Hud'
 import { activeWallTool } from './WallToolRail'
 import { pinch, useMobile } from '../mobile'
@@ -416,7 +416,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
                   const cx = el.type === 'modbox' ? -w / 2 + (before + mods / 2) * 11 : -w / 2 + 6 + i * 12
                   return (
                     <Group key={h.id} name={h.id} x={cx} y={el.type === 'modbox' ? 0 : -3} onClick={(ev) => { if (tool === 'select') { ev.cancelBubble = true; select(h.id) } }}>
-                      {h.type === 'relay' ? <Rect x={-5} y={-4} width={10} height={8} cornerRadius={1.5} fill={hs ? '#1e88e5' : '#2563eb'} stroke={hs ? '#fff' : '#1e40af'} strokeWidth={px(1.5)} /> : h.type === 'socket' ? <Rect x={-mods * 5.5 + 1} y={-5} width={mods * 11 - 2} height={10} cornerRadius={2} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} /> : <Circle radius={4} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} />}
+                      {h.type === 'relay' ? <Rect x={-5} y={-4} width={10} height={8} cornerRadius={1.5} fill={RELAY_LOOK[relayBrand(h.relayModel ?? 'plus1')].fill} stroke={hs ? '#1e88e5' : RELAY_LOOK[relayBrand(h.relayModel ?? 'plus1')].stroke} strokeWidth={px(1.5)} /> : h.type === 'socket' ? <Rect x={-mods * 5.5 + 1} y={-5} width={mods * 11 - 2} height={10} cornerRadius={2} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} /> : <Circle radius={4} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} />}
                       {h.type === 'switch' && <Circle radius={1.5} fill={hs ? '#1e88e5' : '#1f2430'} />}
                       <Text text={h.label} y={6} offsetX={30} width={60} align="center" fontSize={px(8)} fill={hs ? '#1e88e5' : '#1f2430'} />
                     </Group>
