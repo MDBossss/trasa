@@ -11,6 +11,8 @@ import { activeWallTool } from './WallToolRail'
 import { pinch, useMobile } from '../mobile'
 
 type P = { xM: number; zM: number }
+// one TEM module on the wall symbol: half as wide as tall, like the real 22.5 × 45 mm (2M is a square)
+const MODW = 6
 
 // Canvas units are centimetres: x from the left end of the wall, y from the ceiling down.
 export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string; wall: WallInfo; photo?: string; onMoveExit: (e: Exit, posM: number, zM: number) => void }) {
@@ -409,15 +411,16 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
                 <Symbol type={el.type} selected={isSel} px={px} modules={el.modules} tipkalo={el.switchKind === 'tipkalo'} />
                 {hostedOf(el.id).map((h, i, arr) => {
                   const hs = h.id === selectedId
-                  const w = el.type === 'modbox' ? (el.modules ?? 3) * 11 : 16
+                  const w = el.type === 'modbox' ? (el.modules ?? 3) * MODW : 16
                   // frame slots: each hosted element takes its modules (šuko 2, tipkalo/euro 1); relays sit behind
                   const mods = Math.max(1, modulesOf(h))
                   const before = arr.slice(0, i).reduce((n, x) => n + Math.max(1, modulesOf(x)), 0)
-                  const cx = el.type === 'modbox' ? -w / 2 + (before + mods / 2) * 11 : -w / 2 + 6 + i * 12
+                  const cx = el.type === 'modbox' ? -w / 2 + (before + mods / 2) * MODW : -w / 2 + 6 + i * 12
                   return (
                     <Group key={h.id} name={h.id} x={cx} y={el.type === 'modbox' ? 0 : -3} onClick={(ev) => { if (tool === 'select') { ev.cancelBubble = true; select(h.id) } }}>
-                      {h.type === 'relay' ? <Rect x={-5} y={-4} width={10} height={8} cornerRadius={1.5} fill={RELAY_LOOK[relayBrand(relayModelOf(h))].fill} stroke={hs ? '#1e88e5' : RELAY_LOOK[relayBrand(relayModelOf(h))].stroke} strokeWidth={px(1.5)} /> : h.type === 'socket' ? <Rect x={-mods * 5.5 + 1} y={-5} width={mods * 11 - 2} height={10} cornerRadius={2} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} /> : <Circle radius={4} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} />}
-                      {h.type === 'switch' && <Circle radius={1.5} fill={hs ? '#1e88e5' : '#1f2430'} />}
+                      {h.type === 'relay' ? <Rect x={-2.5} y={-4} width={5} height={8} cornerRadius={1} fill={RELAY_LOOK[relayBrand(relayModelOf(h))].fill} stroke={hs ? '#1e88e5' : RELAY_LOOK[relayBrand(relayModelOf(h))].stroke} strokeWidth={px(1.5)} /> : h.type === 'socket' ? <Rect x={-mods * MODW / 2 + 0.8} y={-5} width={mods * MODW - 1.6} height={10} cornerRadius={1.5} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} /> : <Rect x={-mods * MODW / 2 + 0.8} y={-5} width={mods * MODW - 1.6} height={10} cornerRadius={1} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} />}
+                      {h.type === 'switch' && <Circle radius={1.2} fill={hs ? '#1e88e5' : '#1f2430'} />}
+                      {h.type === 'socket' && <Circle radius={2.2} fill="none" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1)} />}
                       <Text text={h.label} y={6} offsetX={30} width={60} align="center" fontSize={px(8)} fill={hs ? '#1e88e5' : '#1f2430'} />
                     </Group>
                   )
@@ -470,8 +473,8 @@ function Symbol({ type, selected, px, modules, tipkalo }: { type: ElementType; s
   const halo = selected ? <Circle radius={13} fill="rgba(30,136,229,0.18)" /> : null
   switch (type) {
     case 'modbox': { // frame as wide as its modules (≈22 mm each at the wall scale)
-      const w = (modules ?? 3) * 11
-      return <>{halo}<Rect x={-w / 2} y={-6} width={w} height={12} cornerRadius={1.5} fill="#fff" stroke={stroke} strokeWidth={sw} />{Array.from({ length: (modules ?? 3) - 1 }, (_, i) => <Line key={i} points={[-w / 2 + (i + 1) * 11, -6, -w / 2 + (i + 1) * 11, 6]} stroke={stroke} strokeWidth={px(1)} />)}</>
+      const w = (modules ?? 3) * MODW
+      return <>{halo}<Rect x={-w / 2} y={-6} width={w} height={12} cornerRadius={1.5} fill="#fff" stroke={stroke} strokeWidth={sw} />{Array.from({ length: (modules ?? 3) - 1 }, (_, i) => <Line key={i} points={[-w / 2 + (i + 1) * MODW, -6, -w / 2 + (i + 1) * MODW, 6]} stroke={stroke} strokeWidth={px(1)} />)}</>
     }
     case 'relay':
       return <>{halo}<Rect x={-7} y={-5} width={14} height={10} cornerRadius={2} fill="#2563eb" stroke={stroke} strokeWidth={sw} /></>
