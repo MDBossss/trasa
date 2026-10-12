@@ -293,7 +293,7 @@ export function terminalMeta(id: string, p: Project): { label: string; desc: str
   if (id === 'L') return { label: 'L', desc: 'faza' }
   if (id === 'N') return { label: 'N', desc: 'nula' }
   if (id === 'PE') return { label: 'PE', desc: 'zaštitni' }
-  if (id.startsWith('PARK')) return spareCoresOf(p) === 'cap' ? { label: '·', desc: 'rezerva, izolirana' } : { label: '·', desc: 'parkirano' }
+  if (id.startsWith('PARK')) return spareCoresOf(p) === 'cap' ? { label: '·', desc: 'rezerva' } : { label: '·', desc: 'parkirano' }
   const [kind, a, b] = id.split(':')
   if (kind === 'CH') return { label: a, desc: `provlačenje ${el(p, b)?.label ?? ''} → sljedeća utičnica` }
   if (kind === 'PUT1' || kind === 'PUT2') return { label: kind === 'PUT1' ? 'p1' : 'p2', desc: `putna ${kind.slice(-1)} · ${el(p, a)?.label ?? '?'}` }
@@ -374,7 +374,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
       const wago: Terminal['wago'] = direct || cap ? 0 : n <= 2 ? 412 : n <= 3 ? 413 : 415
       const chained = n <= 5 ? 1 : 1 + Math.ceil((n - 5) / 4)
       const meta = terminalMeta(id, p)
-      if (cap && lone) meta.desc = `${meta.desc}, sam: presavij i izoliraj`
+      if (cap && lone) meta.desc = `${meta.desc}, sam`
       if (id.startsWith('SW:?')) checks.push({ level: 'warn', text: `${meta.desc}: povratna nema para.` })
       else if (!LNPE.includes(id) && !id.startsWith('PARK') && !id.startsWith('CH:') && n === 1) {
         const w = wires[0]

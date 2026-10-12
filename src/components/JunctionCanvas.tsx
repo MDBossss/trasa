@@ -189,7 +189,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
             <g key={pl.t.id}>
               <rect x={x} y={y} width={cw} height={ch} rx={cw / 2} fill={CAP_COLOR} stroke="#4c1d95" strokeWidth={0.8} />
               {[0.3, 0.55, 0.8].map((f) => <line key={f} x1={x + 1} y1={y + ch * f} x2={x + cw - 1} y2={y + ch * f} stroke="rgba(255,255,255,.35)" strokeWidth={0.8} />)}
-              <text x={x + cw / 2} y={pl.flip ? y + ch + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">{pl.t.desc}</text>
+              <text x={x + cw / 2} y={pl.flip ? y + ch + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">{pl.t.id.startsWith('PARK') ? 'izoliraj' : `${pl.t.label} · izoliraj`}</text>
             </g>
           )
         }
