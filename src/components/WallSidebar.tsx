@@ -307,22 +307,40 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
   )
 }
 
-// Where a front element sits in its frame: move left/right among the others, keep empty modules on its left.
+// Where a front element sits in its frame. ◀ ▶ move it one module: into a free module when there is one,
+// otherwise it swaps with the neighbour. Positions are rebuilt from absolute module starts.
 function SlotRow({ el }: { el: WallElement }) {
   const project = useStore((s) => s.project)
   const { updateElement } = useStore.getState()
+  const host = project.elements.find((e) => e.id === el.host)
+  const total = host?.modules ?? 3
   const front = hostedFront(project.elements, el.host!)
+  const size = (e: WallElement) => Math.max(1, modulesOf(e))
+  let pos = 0
+  const starts = front.map((e) => { pos += e.gapBefore ?? 0; const st = pos; pos += size(e); return st })
   const i = front.findIndex((x) => x.id === el.id)
-  const move = (d: -1 | 1) => {
-    const order = [...front]
-    const j = i + d
-    if (j < 0 || j >= order.length) return
-    ;[order[i], order[j]] = [order[j], order[i]]
-    order.forEach((x, k) => updateElement(x.id, { slotOrder: k }))
+  const apply = (st: number[]) => {
+    const order = front.map((e, k) => ({ e, st: st[k] })).sort((a, b) => a.st - b.st)
+    let end = 0
+    order.forEach(({ e, st }, k) => { updateElement(e.id, { slotOrder: k, gapBefore: st - end || undefined }); end = st + size(e) })
   }
+  const move = (d: -1 | 1) => {
+    const st = [...starts]
+    if (d === 1) {
+      const nx = i + 1 < front.length ? i + 1 : -1
+      if (nx < 0 || st[i] + size(el) < st[nx]) { if (st[i] + size(el) >= total) return; st[i] += 1 }
+      else { st[nx] = st[i]; st[i] = st[i] + size(front[nx]) }
+    } else {
+      const pv = i > 0 ? i - 1 : -1
+      if (pv < 0 || st[pv] + size(front[pv]) < st[i]) { if (st[i] <= 0) return; st[i] -= 1 }
+      else { const ps = st[pv]; st[pv] = ps + size(el); st[i] = ps }
+    }
+    apply(st)
+  }
+  const canRight = starts[i] + size(el) < total
   return (
     <div className="field-row slot-row">
-      <label>Mjesto u okviru <span className="btns"><button className="mini" onClick={() => move(-1)} disabled={i <= 0} title="Pomakni ulijevo">◀</button><b>{i + 1} / {front.length}</b><button className="mini" onClick={() => move(1)} disabled={i >= front.length - 1} title="Pomakni udesno">▶</button></span></label>
+      <label>Mjesto u okviru <span className="btns"><button className="mini" onClick={() => move(-1)} disabled={starts[i] <= 0} title="Modul ulijevo" aria-label="Modul ulijevo">◀</button><b>{starts[i] + 1}{size(el) > 1 ? `–${starts[i] + size(el)}` : ''} / {total}</b><button className="mini" onClick={() => move(1)} disabled={!canRight} title="Modul udesno" aria-label="Modul udesno">▶</button></span></label>
       <label>Praznih lijevo <input type="number" min={0} max={6} value={el.gapBefore ?? 0} onChange={(e) => updateElement(el.id, { gapBefore: Math.max(0, +e.target.value || 0) || undefined })} /></label>
     </div>
   )

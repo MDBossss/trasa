@@ -19,7 +19,8 @@ export function Tooltip() {
     if (matchMedia('(hover: none)').matches) return
     const textOf = (el: Element) => {
       const t = el.getAttribute('title')
-      if (t) { el.setAttribute('data-tip', t); el.removeAttribute('title') }
+      // the title moves to data-tip so the native bubble never shows; an element with no other name keeps it as aria-label
+      if (t) { el.setAttribute('data-tip', t); el.removeAttribute('title'); if (!el.getAttribute('aria-label') && !(el.textContent ?? '').trim()) el.setAttribute('aria-label', t) }
       return el.getAttribute('data-tip')
     }
     const place = (el: Element, text: string) => {
