@@ -409,22 +409,44 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
             return (
               <Group key={el.id} name={el.id} x={toX(p)} y={toY(p)} {...elementDrag(el)}>
                 <Symbol type={el.type} selected={isSel} px={px} modules={el.modules} tipkalo={el.switchKind === 'tipkalo'} />
-                {hostedOf(el.id).map((h, i, arr) => {
-                  const hs = h.id === selectedId
+                {(() => {
+                  const hosted = hostedOf(el.id)
+                  const mods = hosted.filter((h) => h.type !== 'relay')
+                  const relays = hosted.filter((h) => h.type === 'relay')
                   const w = el.type === 'modbox' ? (el.modules ?? 3) * MODW : 16
-                  // frame slots: each hosted element takes its modules (šuko 2, tipkalo/euro 1); relays sit behind
-                  const mods = Math.max(1, modulesOf(h))
-                  const before = arr.slice(0, i).reduce((n, x) => n + Math.max(1, modulesOf(x)), 0)
-                  const cx = el.type === 'modbox' ? -w / 2 + (before + mods / 2) * MODW : -w / 2 + 6 + i * 12
+                  const top = el.type === 'modbox' ? -6 : el.type === 'ledpsu' ? -3 : -7
+                  const sel = (h: WallElement) => (ev: KonvaEventObject<MouseEvent | TouchEvent>) => { if (tool === 'select') { ev.cancelBubble = true; select(h.id) } }
                   return (
-                    <Group key={h.id} name={h.id} x={cx} y={el.type === 'modbox' ? 0 : -3} onClick={(ev) => { if (tool === 'select') { ev.cancelBubble = true; select(h.id) } }}>
-                      {h.type === 'relay' ? <Rect x={-2.5} y={-4} width={5} height={8} cornerRadius={1} fill={RELAY_LOOK[relayBrand(relayModelOf(h))].fill} stroke={hs ? '#1e88e5' : RELAY_LOOK[relayBrand(relayModelOf(h))].stroke} strokeWidth={px(1.5)} /> : h.type === 'socket' ? <Rect x={-mods * MODW / 2 + 0.8} y={-5} width={mods * MODW - 1.6} height={10} cornerRadius={1.5} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} /> : <Rect x={-mods * MODW / 2 + 0.8} y={-5} width={mods * MODW - 1.6} height={10} cornerRadius={1} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} />}
-                      {h.type === 'switch' && <Circle radius={1.2} fill={hs ? '#1e88e5' : '#1f2430'} />}
-                      {h.type === 'socket' && <Circle radius={2.2} fill="none" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1)} />}
-                      <Text text={h.label} y={6} offsetX={30} width={60} align="center" fontSize={px(8)} fill={hs ? '#1e88e5' : '#1f2430'} />
-                    </Group>
+                    <>
+                      {mods.map((h, i) => {
+                        // frame slots: each front element takes its modules (šuko 2, tipkalo/euro 1)
+                        const hs = h.id === selectedId
+                        const m = Math.max(1, modulesOf(h))
+                        const before = mods.slice(0, i).reduce((n, x) => n + Math.max(1, modulesOf(x)), 0)
+                        const cx = -w / 2 + (before + m / 2) * MODW
+                        return (
+                          <Group key={h.id} name={h.id} x={cx} y={0} onClick={sel(h)} onTap={sel(h)}>
+                            <Rect x={-m * MODW / 2 + 0.8} y={-5} width={m * MODW - 1.6} height={10} cornerRadius={h.type === 'socket' ? 1.5 : 1} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} />
+                            {h.type === 'switch' && <Circle radius={1.2} fill={hs ? '#1e88e5' : '#1f2430'} />}
+                            {h.type === 'socket' && <Circle radius={2.2} fill="none" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1)} />}
+                            <Text text={h.label} y={6} offsetX={30} width={60} align="center" fontSize={px(8)} fill={hs ? '#1e88e5' : '#1f2430'} />
+                          </Group>
+                        )
+                      })}
+                      {/* relays live behind the front: a small brand-coloured dot per relay on the symbol's corner, names under the label */}
+                      {relays.map((h, k) => {
+                        const hs = h.id === selectedId
+                        const look = RELAY_LOOK[relayBrand(relayModelOf(h))]
+                        return (
+                          <Group key={h.id} name={h.id} x={w / 2 + 1 - k * 5.5} y={top - 1} onClick={sel(h)} onTap={sel(h)}>
+                            <Circle radius={2.4} fill={look.fill} stroke={hs ? '#1e88e5' : '#fff'} strokeWidth={px(hs ? 2 : 1.2)} />
+                          </Group>
+                        )
+                      })}
+                      {relays.length > 0 && <Text text={relays.map((h) => h.label).join(' · ')} x={0} y={(el.type === 'modbox' ? 14 : el.type === 'ledpsu' ? 10 : 16) + px(13)} offsetX={60} width={120} align="center" fontSize={px(9)} fill="#5b6472" />}
+                    </>
                   )
-                })}
+                })()}
                 <Text text={el.label} x={0} y={el.type === 'modbox' ? 14 : el.type === 'ledpsu' ? 10 : 16} offsetX={60} width={120} align="center" fontSize={px(11)} fontStyle="bold" fill="#1f2430" />
               </Group>
             )
