@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 // One tooltip layer for the whole app. Any element with a `title` keeps writing it as before;
 // on hover the text moves to `data-tip` (so the browser's slow native bubble never shows) and
@@ -10,6 +10,10 @@ export function Tooltip() {
   const timer = useRef<number | null>(null)
   const lastHide = useRef(0)
   const target = useRef<Element | null>(null)
+  const box = useRef<HTMLDivElement>(null)
+  const [left, setLeft] = useState(0)
+  // keep the whole bubble on screen once its width is known
+  useLayoutEffect(() => { if (tip && box.current) { const w = box.current.offsetWidth; setLeft(Math.min(Math.max(tip.x, w / 2 + 8), innerWidth - w / 2 - 8)) } }, [tip])
 
   useEffect(() => {
     if (matchMedia('(hover: none)').matches) return
@@ -21,7 +25,7 @@ export function Tooltip() {
     const place = (el: Element, text: string) => {
       const r = el.getBoundingClientRect()
       const above = r.bottom + 44 > innerHeight
-      setTip({ text, x: Math.min(Math.max(r.left + r.width / 2, 12), innerWidth - 12), y: above ? r.top - 8 : r.bottom + 8, above })
+      setTip({ text, x: r.left + r.width / 2, y: above ? r.top - 8 : r.bottom + 8, above })
     }
     const hide = () => { if (timer.current) clearTimeout(timer.current); timer.current = null; target.current = null; setTip((t) => { if (t) lastHide.current = performance.now(); return null }) }
     const over = (e: Event) => {
@@ -55,6 +59,6 @@ export function Tooltip() {
 
   if (!tip) return null
   return (
-    <div className={`tip ${tip.above ? 'above' : ''}`} role="tooltip" style={{ left: tip.x, top: tip.y }}>{tip.text}</div>
+    <div ref={box} className={`tip ${tip.above ? 'above' : ''}`} role="tooltip" style={{ left, top: tip.y }}>{tip.text}</div>
   )
 }
