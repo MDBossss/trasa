@@ -353,6 +353,18 @@ const SIDE_ORDER: Side[] = ['top', 'right', 'bottom', 'left']
 const chainPos = (id: string, p: Project) => (id.startsWith('CH:') ? p.elements.findIndex((e) => e.id === id.split(':')[2]) * 3 + ['L', 'N', 'PE'].indexOf(id.split(':')[1]) : 0)
 const ORDER = (id: string) => (id === 'L' ? 0 : id === 'N' ? 1 : id === 'PE' ? 2 : id.startsWith('O:') ? 3 : id.startsWith('SW') ? 4 : id.startsWith('I:') ? 5 : id.startsWith('PUT') ? 6 : id.startsWith('CH:') ? 7 : 8)
 
+// Fed directly, or through a place-to-place cable from a place that is fed (boxes may be daisy-chained).
+function isFed(place: WallElement, p: Project, seen = new Set<string>()): boolean {
+  if (seen.has(place.id)) return false
+  seen.add(place.id)
+  for (const c of p.cables.filter((x) => isAtBox(x, place))) {
+    const r = resolveCable(c, place, p)
+    if (r.role === 'feed') return true
+    if (r.far.place && r.far.place.id !== place.id && isFed(r.far.place, p, seen)) return true
+  }
+  return false
+}
+
 export function junctionFor(box: WallElement, p: Project): Junction {
   const room = p.rooms.find((r) => r.id === box.roomId)!
   const checks: Check[] = []
@@ -370,7 +382,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   const hasL = cables.some((c) => c.wires.some((w) => w.terminal === 'L'))
   const hasN = cables.some((c) => c.wires.some((w) => w.terminal === 'N'))
   if (!cables.length) checks.push({ level: 'warn', text: 'U kutiju ne ulazi nijedan kabel.' })
-  else if (box.type === 'box' && feeds === 0) checks.push({ level: 'err', text: 'Kutija nema dolaza: nijedan kabel nije napajanje (bužir kategorije Dolaz, ormar, ili uloga "Dolaz").' })
+  else if (box.type === 'box' && feeds === 0 && !isFed(box, p)) checks.push({ level: 'err', text: 'Kutija nema dolaza: ni izravno (bužir kategorije Dolaz, ormar, uloga "Dolaz") ni preko druge kutije koja ga ima.' })
   else if (box.type === 'modbox' && !hasL) checks.push({ level: 'err', text: 'Doza nema faze: treba kabel iz razvodne kutije.' })
   else if (feeds > 1) checks.push({ level: 'warn', text: `${feeds} dolaza u istu kutiju; obično je jedan.` })
 

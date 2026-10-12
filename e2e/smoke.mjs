@@ -493,6 +493,13 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   await page.evaluate(({ v1 }) => { const s = window.__trasa.getState(); s.setView({ kind: 'room', roomId: s.project.rooms[0].id, wall: 0 }); s.select(v1) }, gar)
   await page.locator('.props h3', { hasText: 'Vrata / motor' }).waitFor()
   await page.locator('.props label', { hasText: 'Pali ga relej' }).locator('option', { hasText: 'R2 Shelly 1 Gen4' }).waitFor({ state: 'attached' })
+  // a second box fed from K1 through a 5×1,5 is fed too (daisy chain), not "bez dolaza"
+  const k3 = await page.evaluate(({ box }) => { const s = window.__trasa.getState(); const room = s.project.rooms[0].id; const k3 = s.addElement({ roomId: room, wall: 0, type: 'box', xM: 4.6, zM: 2.3, note: '', label: 'K3' }); const c = s.addCable({ roomId: room, wall: 0, type: 'NYM-J 5x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: k3 }, via: [], note: '' }); return { k3, c } }, ids)
+  await page.getByRole('button', { name: 'Spojevi' }).click()
+  await page.locator('.junctions-list .list li', { hasText: 'K3' }).click()
+  assert.equal(await page.locator('.junction-main .room-head h2', { hasText: 'K3' }).count(), 1)
+  assert.equal(await page.locator('.checks').getByText(/nema dolaza/).count(), 0)
+  await page.evaluate(({ k3, c }) => { const s = window.__trasa.getState(); s.patchProject({ cables: s.project.cables.filter((x) => x.id !== c), elements: s.project.elements.filter((e) => e.id !== k3) }) }, k3)
   await page.evaluate(({ v1, r2, c }) => { const s = window.__trasa.getState(); s.patchProject({ cables: s.project.cables.filter((x) => x.id !== c), elements: s.project.elements.filter((e) => e.id !== v1 && e.id !== r2) }) }, gar)
   await page.getByRole('button', { name: 'Spojevi' }).click()
   // K1 now has an O terminal pairing the cable's black core with the light's brown
