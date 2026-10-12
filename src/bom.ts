@@ -41,7 +41,7 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
   // junction connectors
   for (const j of allJunctions(p)) {
     if (!inScope(j.room.id)) continue
-    for (const b of j.bom) if (b.item.startsWith('WAGO') || b.item.startsWith('Kapica')) add(out, 'Stezaljke', b.item, 'kom', b.qty)
+    for (const b of j.bom) if (b.item.startsWith('WAGO')) add(out, 'Stezaljke', b.item, 'kom', b.qty)
   }
   // elements
   for (const e of p.elements) {
@@ -49,15 +49,15 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
     const depth = e.depth ? `, ${e.depth}` : ''
     switch (e.type) {
       case 'box': add(out, 'Doze i kutije', `Razvodna kutija 100 × 100 mm${depth}`, 'kom', 1); break
-      case 'modbox': { const m = e.modules ?? 3; add(out, 'Doze i kutije', `Doza modularna ${m}M${m === 3 ? ' (TEM PM3)' : m === 4 ? ' (TEM PM4)' : m === 7 ? (e.depth === 'duboka' ? ' (TEM PM7-65)' : ' (TEM PM7)') : ''}${depth}`, 'kom', 1); add(out, 'Oprema', `Nosivi okvir + ukrasni okvir ${m}M`, 'kom', 1); break }
+      case 'modbox': { const m = e.modules ?? 3; add(out, 'Doze i kutije', `Doza modularna ${m}M${m === 3 ? ' (TEM PM3)' : m === 4 ? ' (TEM PM4)' : m === 7 ? (e.depth === 'duboka' ? ' (TEM PM7-65)' : ' (TEM PM7)') : ''}${depth}`, 'kom', 1); add(out, 'Dekorativno', `Nosivi okvir + ukrasni okvir ${m}M`, 'kom', 1); break }
       case 'socket':
         if (!e.host) add(out, 'Doze i kutije', `Doza Ø60${depth}`, 'kom', 1)
-        add(out, 'Oprema', `Utičnica ${SOCKET_KINDS[e.socketKind ?? 'schuko'].label.toLowerCase()} ${SOCKET_KINDS[e.socketKind ?? 'schuko'].modules}M${e.host ? ' (u modularnoj)' : ''}`, 'kom', 1); break
+        add(out, 'Utičnice', `Utičnica ${SOCKET_KINDS[e.socketKind ?? 'schuko'].label.toLowerCase()} ${SOCKET_KINDS[e.socketKind ?? 'schuko'].modules}M${e.host ? ' (u modularnoj)' : ''}`, 'kom', 1); break
       case 'switch':
         if (!e.host) add(out, 'Doze i kutije', `Doza Ø60${depth}`, 'kom', 1)
-        add(out, 'Oprema', `${e.switchKind === 'tipkalo' ? 'Tipkalo' : `Prekidač ${e.switchKind ?? 'obični'}`}${e.host ? ` ${e.modules ?? 1}M` : ''}`, 'kom', 1); break
-      case 'light': add(out, 'Oprema', 'Svjetlo (rasvjetno mjesto)', 'kom', 1); break
-      case 'panel': add(out, 'Oprema', ELEMENT_META.panel.label, 'kom', 1); break
+        add(out, 'Prekidači', `${e.switchKind === 'tipkalo' ? 'Tipkalo' : `Prekidač ${e.switchKind ?? 'obični'}`}${e.host ? ` ${e.modules ?? 1}M` : ''}`, 'kom', 1); break
+      case 'light': add(out, 'Svjetla', 'Svjetlo (rasvjetno mjesto)', 'kom', 1); break
+      case 'panel': add(out, 'Ostalo', ELEMENT_META.panel.label, 'kom', 1); break
       case 'relay': add(out, 'Releji', RELAY_MODELS[e.relayModel ?? 'plus1'].label, 'kom', 1); break
       case 'ledpsu': {
         const m = e.ledM ?? 5, w = e.ledWpm ?? 10
@@ -68,7 +68,7 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
       }
     }
   }
-  const order = ['Kabeli', 'Stezaljke', 'Doze i kutije', 'Oprema', 'Releji', 'LED']
+  const order = ['Kabeli', 'Stezaljke', 'Doze i kutije', 'Utičnice', 'Prekidači', 'Dekorativno', 'Svjetla', 'Releji', 'LED', 'Ostalo']
   return [...out.values()]
     .map((l) => ({ ...l, qty: l.unit === 'm' ? Math.ceil(l.qty * 2) / 2 : l.qty }))
     .sort((a, b) => order.indexOf(a.group) - order.indexOf(b.group) || a.item.localeCompare(b.item))

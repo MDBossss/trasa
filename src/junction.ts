@@ -384,8 +384,6 @@ export function junctionFor(box: WallElement, p: Project): Junction {
     })
   const bom = new Map<string, number>()
   for (const t of terminals) if (t.wago) bom.set(`WAGO 221-${t.wago}`, (bom.get(`WAGO 221-${t.wago}`) ?? 0) + t.chained)
-  const caps = terminals.filter((t) => t.cap).length
-  if (caps) bom.set('Kapica za rezervnu žilu', caps)
   for (const d of devices) if (d.kind === 'relay') { const k = RELAY_MODELS[d.el.relayModel ?? 'plus1'].label; bom.set(k, (bom.get(k) ?? 0) + 1) }
   const level: Level = checks.some((c) => c.level === 'err') ? 'err' : checks.some((c) => c.level === 'warn') ? 'warn' : 'ok'
   if (level === 'ok' && cables.length) checks.push({ level: 'ok', text: `Sve žile uparene: ${terminals.length} stezaljki, ${cables.length} kabela${devices.length ? `, ${devices.length} uređaja` : ''}.` })

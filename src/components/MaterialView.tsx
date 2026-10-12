@@ -68,7 +68,7 @@ export function MaterialView() {
         <div className="spacer" />
         <button className="primary" onClick={() => setView({ kind: 'print', roomId })}><Icon.print /> PDF za majstora</button>
       </div>
-      <div className="material-body">
+      <div className="material-body"><div className="material-inner">
         {!lines.length && <p className="muted">Nema materijala: nacrtaj bužire, kutije, elemente i kabele.</p>}
         {lines.length > 0 && (
           <div className="mat-bar">
@@ -114,6 +114,7 @@ export function MaterialView() {
                   })}
                 </tbody>
               </table>
+              {g === 'Stezaljke' && <WagoLegend />}
             </section>
           )
         })}
@@ -127,6 +128,35 @@ export function MaterialView() {
         )}
         <p className="muted"><b>Duljine kabela su okvirne</b>: mjere s tlocrta i fotki nisu točne, pa uzmi rezervu. Računa se duljina po zidu + bužir + 30 cm po kraju u kutiji, zaokruženo na 0,5 m. Bužiri se ne popisuju. Kvačice "nabavljeno" ostaju samo na ovom uređaju.</p>
       </div>
+      </div>
+    </div>
+  )
+}
+
+// What the codes mean: WAGO 221 lever connectors, the last digit is the number of wires (0,14–4 mm², 32 A)
+const WAGOS = [
+  { code: '221-412', n: 2, use: 'dvije žile: produžetak, spoj dvaju kabela' },
+  { code: '221-413', n: 3, use: 'tri žile: npr. dolaz + 2 odvoda' },
+  { code: '221-415', n: 5, use: 'pet žila: glavne L / N / PE stezaljke u kutiji' },
+]
+function WagoLegend() {
+  return (
+    <div className="wago-legend">
+      {WAGOS.map((w) => (
+        <div key={w.code} className="wago-card">
+          <svg viewBox={`0 0 ${w.n * 14 + 8} 30`} width={w.n * 14 + 8} height={30} aria-hidden>
+            <rect x={1} y={6} width={w.n * 14 + 6} height={22} rx={3} fill="rgba(255,255,255,.7)" stroke="#4a4a4a" strokeWidth={1.2} />
+            {Array.from({ length: w.n }, (_, i) => (
+              <g key={i}>
+                <rect x={4 + i * 14} y={1} width={11} height={11} rx={2} fill="#f28c28" stroke="#b35a0c" strokeWidth={0.8} />
+                <rect x={7 + i * 14} y={24} width={5} height={4} fill="#2b2b2b" />
+              </g>
+            ))}
+          </svg>
+          <div><b>{w.code}</b><small>{w.use}</small></div>
+        </div>
+      ))}
+      <p className="muted">Serija 221: polugica gore → ogoljena žila (11 mm) unutra → polugica dolje. Za 1,5 i 2,5 mm², krute i fine žile. Zadnja znamenka = broj žila.</p>
     </div>
   )
 }
