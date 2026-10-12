@@ -400,6 +400,13 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   await page.evaluate(({ p1, s1 }) => window.__trasa.getState().updateElement(p1, { controls: [s1] }), ids)
   await page.locator('.junctions-list .list li', { hasText: 'K1' }).locator('.dot.ok').waitFor()
   await page.screenshot({ path: `${SHOTS}/trasa-junction.png` })
+  // one box on an A4 sheet
+  await page.getByRole('button', { name: 'Ispiši kutiju' }).click()
+  await page.locator('.page-landscape h1', { hasText: 'K1' }).waitFor()
+  await page.locator('.pb-card', { hasText: 'Gdje je' }).waitFor()
+  assert.equal(await page.locator('.pb-junction').count(), 1)
+  await page.getByRole('button', { name: 'Natrag na spojeve' }).click()
+  await page.locator('.junctions-list .list li', { hasText: 'K1' }).waitFor()
   // back to the wall with the box selected; the wall props show the derived role and the switch's lights
   await page.getByRole('button', { name: 'Otvori na zidu' }).click()
   await page.locator('.props h3', { hasText: 'Razvodna kutija' }).waitFor()

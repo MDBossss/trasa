@@ -262,5 +262,31 @@ code { font: 11px ui-monospace, Menlo, monospace; background: var(--panel2); pad
   .page { width: auto; max-width: none; box-shadow: none; border: none; padding: 0; page-break-after: always; break-after: page; }
   .page:last-child { page-break-after: auto; }
   .print-junction, .print-wall, .print-plan { page-break-inside: avoid; break-inside: avoid; }
-  @page { size: A4; margin: 14mm; }
+  @page { size: A4; margin: 12mm; }
+}
+@page landscape { size: A4 landscape; }
+@media print { .print-box-mode .page-landscape { page: landscape; } }
+
+/* one box per A4 landscape sheet */
+.page-landscape { width: 297mm; padding: 10mm 12mm; display: flex; flex-direction: column; gap: 6px; }
+.pb-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; border-bottom: 1px solid #999; padding-bottom: 4px; }
+.pb-head h1 { font-size: 18px; margin: 0; }
+.pb-bom { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: #333; justify-content: flex-end; max-width: 45%; }
+.pb-grid { display: grid; grid-template-columns: 62mm minmax(0, 1fr); gap: 8px; align-items: start; }
+.pb-side { display: flex; flex-direction: column; gap: 6px; }
+.pb-card { border: 1px solid #ddd; border-radius: 4px; padding: 6px 8px; font-size: 10.5px; }
+.pb-card h3 { margin: 0 0 4px; font-size: 10px; color: #555; }
+.pb-plan { width: 100%; max-height: 50mm; background: #fafaf7; }
+.pb-legend { display: flex; flex-direction: column; gap: 3px; }
+.pb-legend span, .pb-wire { display: inline-flex; align-items: center; gap: 5px; }
+.pb-legend i, .pb-wire i { width: 14px; height: 5px; border-radius: 2px; display: inline-block; flex: none; }
+.pb-wire { margin-right: 10px; }
+.pb-main { min-width: 0; }
+.pb-junction { width: 100%; max-height: 118mm; display: block; }
+.pb-terminals { font-size: 10px; }
+.pb-terminals td { padding: 2px 4px; }
+.print-box-mode .page .print-table th { font-size: 10px; }
+@media print {
+  .print-box-mode .page-landscape { width: auto; padding: 0; }
+  .print-box-mode { --page-size: A4 landscape; }
 }

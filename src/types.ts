@@ -187,7 +187,7 @@ export interface Project {
 export type Tool = 'select' | 'pan' | 'calibrate' | 'room' | 'conduit' | 'align' | 'origin'
 export type WallTool = 'select' | 'pan' | 'element' | 'cable'
 
-export type View = { kind: 'plan' } | { kind: 'room'; roomId: string; wall: number | null } | { kind: 'junctions'; elementId: string | null } | { kind: 'bom' } | { kind: 'print'; roomId: string | null }
+export type View = { kind: 'plan' } | { kind: 'room'; roomId: string; wall: number | null } | { kind: 'junctions'; elementId: string | null } | { kind: 'bom' } | { kind: 'print'; roomId: string | null } | { kind: 'printbox'; elementId: string }
 
 export const PALETTE = [
   '#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#42d4f4',

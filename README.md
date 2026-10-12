@@ -59,7 +59,8 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
 11. **Materijal** (header): popis po sobi ili za kuću (kabeli u metrima: zid + bužir + 30 cm rezerve po kraju, bužiri,
     WAGO, doze, oprema, releji, LED). **PDF za majstora**: pregled za ispis po sobi (tlocrt sobe s bužirima, svaki zid s
     elementima i kotama, svaka kutija i doza sa slikom i tablicom stezaljki, releji, materijal, otvorene provjere);
-    u dijalogu ispisa odaberi "Spremi kao PDF".
+    u dijalogu ispisa odaberi "Spremi kao PDF". U Spojevima gumb **Ispiši kutiju** daje jedan A4 vodoravni list za tu kutiju: gdje je u sobi,
+    legenda, kabeli, velika slika spoja i tablica stezaljki.
 12. **Lista bužira**: Svi / Po kategoriji / Po sobama. Bužir pripada sobi ako mu početak ili kraj leži u sobi ili
    najviše 10 cm izvan njezina zida. **Fokus** na sobu sakrije ostale bužire, kamera ostaje gdje je.
 

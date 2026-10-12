@@ -78,7 +78,7 @@ export function Header() {
       <nav className="segmented view-nav" aria-label="Pogled">
         <button className={view.kind === 'plan' ? 'on' : ''} aria-pressed={view.kind === 'plan'} onClick={() => setView({ kind: 'plan' })}>Tlocrt</button>
         <button className={view.kind === 'room' ? 'on' : ''} aria-pressed={view.kind === 'room'} disabled={!project.rooms.length} title={project.rooms.length ? 'Zidovi sobe' : 'Nacrtaj sobu na tlocrtu'} onClick={() => { if (view.kind !== 'room') setView({ kind: 'room', roomId: project.rooms[0].id, wall: 0 }) }}>Sobe</button>
-        <button className={view.kind === 'junctions' ? 'on' : ''} aria-pressed={view.kind === 'junctions'} onClick={() => setView({ kind: 'junctions', elementId: null })}>Spojevi</button>
+        <button className={view.kind === 'junctions' || view.kind === 'printbox' ? 'on' : ''} aria-pressed={view.kind === 'junctions' || view.kind === 'printbox'} onClick={() => setView({ kind: 'junctions', elementId: null })}>Spojevi</button>
         <button className={view.kind === 'bom' || view.kind === 'print' ? 'on' : ''} aria-pressed={view.kind === 'bom' || view.kind === 'print'} onClick={() => setView({ kind: 'bom' })}>Materijal</button>
       </nav>
       <div className="spacer" />

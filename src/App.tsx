@@ -8,6 +8,7 @@ import { RoomView } from './components/RoomView'
 import { JunctionsView } from './components/JunctionsView'
 import { MaterialView } from './components/MaterialView'
 import { PrintView } from './components/PrintView'
+import { PrintBoxView } from './components/PrintBoxView'
 import { fileToDataUrl } from './images'
 import { open, save } from './persistence'
 import { consumeLoginHash } from './github'
@@ -57,8 +58,10 @@ export default function App() {
           <JunctionsView elementId={view.elementId} />
         ) : view.kind === 'bom' ? (
           <MaterialView />
-        ) : (
+        ) : view.kind === 'print' ? (
           <PrintView roomId={view.roomId} />
+        ) : (
+          <PrintBoxView elementId={view.elementId} />
         )}
       </div>
     </div>
