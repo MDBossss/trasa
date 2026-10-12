@@ -28,7 +28,7 @@ export type TerminalWire =
   | { kind: 'port'; deviceId: string; deviceLabel: string; port: string; color: WireColor; note?: string }
 export interface Terminal { id: string; label: string; desc: string; wago: 0 | 412 | 413 | 415; chained: number; wires: TerminalWire[]; cap?: boolean }
 export interface Check { level: Level; text: string }
-export interface Junction { box: WallElement; room: Room; cables: BoxCable[]; devices: Device[]; terminals: Terminal[]; checks: Check[]; bom: { item: string; qty: number }[]; level: Level }
+export interface Junction { box: WallElement; room: Room; cables: BoxCable[]; devices: Device[]; terminals: Terminal[]; checks: Check[]; bom: { item: string; qty: number }[]; level: Level; size: { W: number; H: number; overflow: boolean } }
 
 const LNPE = ['L', 'N', 'PE']
 const otherEnd = (c: Cable, box: WallElement): CableEnd => (c.from.kind === 'element' && c.from.id === box.id ? c.to : c.from)
@@ -390,6 +390,45 @@ const SIDE_ORDER: Side[] = ['top', 'right', 'bottom', 'left']
 const chainPos = (id: string, p: Project) => (id.startsWith('CH:') ? p.elements.findIndex((e) => e.id === id.split(':')[2]) * 3 + ['L', 'N', 'PE'].indexOf(id.split(':')[1]) : 0)
 const ORDER = (id: string) => (id === 'L' ? 0 : id === 'N' ? 1 : id === 'PE' ? 2 : id.startsWith('O:') ? 3 : id.startsWith('SW') ? 4 : id.startsWith('I:') ? 5 : id.startsWith('PUT') ? 6 : id.startsWith('CH:') ? 7 : 8)
 
+export const WAGO = { 412: { w: 13.0, n: 2 }, 413: { w: 18.7, n: 3 }, 415: { w: 30.0, n: 5 } } as const
+export const DEPTH = 18.6
+
+export type Item = { kind: 'wago'; t: Terminal; w: number; h: number } | { kind: 'cap'; t: Terminal; w: number; h: number } | { kind: 'device'; d: Device; w: number; h: number }
+export const CAP_W = 4, CAP_H = 12 // tape / small cap on a folded-back spare core: ~1 mm thicker than the core
+export type Placed = Item & { x: number; y: number; flip: boolean }
+
+export const GAP = 4 // mm between bridged WAGO units
+function wagoWidth(t: Terminal) { return WAGO[t.wago as 412 | 413 | 415].w * t.chained + (t.chained - 1) * GAP }
+
+// Greedy packing of WAGOs, caps and devices into rows (top, bottom, middle); the box grows when they overflow.
+// Lives here so the size check and the material list see the same box as the drawing.
+export function boxLayout(j: Pick<Junction, 'box' | 'terminals' | 'devices'>): { W: number; H: number; placed: Placed[]; overflow: boolean } {
+  const items: Item[] = [
+    ...j.terminals.filter((t) => t.wago).map((t): Item => ({ kind: 'wago', t, w: wagoWidth(t), h: DEPTH })),
+    ...j.terminals.filter((t) => t.cap).map((t): Item => ({ kind: 'cap', t, w: CAP_W, h: CAP_H })),
+    ...j.devices.map((d): Item => ({ kind: 'device', d, w: d.wMm, h: d.hMm })),
+  ]
+  const base = j.box.type === 'modbox' ? [(j.box.modules ?? 3) <= 3 ? [100, 70] : (j.box.modules ?? 3) <= 4 ? [120, 70] : [160, 70], [160, 100], [200, 120]] : [[100, 100], [150, 150], [200, 200]]
+  for (const [W, H] of base) {
+    const rows: { y: number; flip: boolean; x: number; items: Placed[]; h: number }[] = [
+      { y: 5, flip: false, x: 5, items: [], h: DEPTH },
+      { y: H - 5 - DEPTH, flip: true, x: 5, items: [], h: DEPTH },
+    ]
+    if (H >= 100) rows.push({ y: H / 2 - DEPTH / 2, flip: false, x: 5, items: [], h: DEPTH })
+    let ok = true
+    for (const it of items) {
+      const pref = it.kind === 'device' && it.d.kind !== 'relay' ? [...rows].reverse() : rows
+      const row = pref.find((r) => r.x + it.w <= W - 5)
+      if (!row) { ok = false; break }
+      row.items.push({ ...it, x: row.x, y: row.flip ? row.y + DEPTH - it.h : row.y, flip: row.flip })
+      row.x += it.w + 4
+    }
+    if (ok) return { W, H, placed: rows.flatMap((r) => r.items), overflow: W > base[0][0] }
+  }
+  return { W: 200, H: 200, placed: [], overflow: true }
+}
+
+
 // Fed directly, or through a place-to-place cable from a place that is fed (boxes may be daisy-chained).
 function isFed(place: WallElement, p: Project, seen = new Set<string>()): boolean {
   if (seen.has(place.id)) return false
@@ -474,9 +513,20 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   const bom = new Map<string, number>()
   for (const t of terminals) if (t.wago) bom.set(`WAGO 221-${t.wago}`, (bom.get(`WAGO 221-${t.wago}`) ?? 0) + t.chained)
   for (const d of devices) if (d.kind === 'relay') { const k = RELAY_MODELS[relayModelOf(d.el)].label; bom.set(k, (bom.get(k) ?? 0) + 1) }
+  // how big the box has to be, and when to split instead of growing
+  const lay = boxLayout({ box, terminals, devices })
+  const size = { W: lay.W, H: lay.H, overflow: lay.overflow }
+  if (box.type === 'box') {
+    if (cables.length > 8) checks.push({ level: 'err', text: `${cables.length} kabela u jednoj kutiji: podžbukna kutija ima 8 uvodnica. Podijeli na dvije kutije (npr. svjetla / utičnice / vrata).` })
+    const relays = devices.filter((d) => d.kind === 'relay').length
+    const triple = terminals.find((t) => t.chained >= 3)
+    if (triple) checks.push({ level: 'warn', text: `Stezaljka ${triple.label} treba ${triple.chained} WAGO-a s premosnicama: razmisli o podjeli, druga kutija napajana iz ove jednim 5×1,5 je preglednija.` })
+    else if (lay.overflow) checks.push({ level: 'warn', text: `Standardna 100 × 100 je premala: uzmi ${lay.W} × ${lay.H} mm${relays ? ', duboku (relej)' : ''}, ili podijeli po namjeni (svjetla / utičnice / vrata).` })
+    else if (relays && box.depth !== 'duboka') { /* depth check already exists */ }
+  }
   const level: Level = checks.some((c) => c.level === 'err') ? 'err' : checks.some((c) => c.level === 'warn') ? 'warn' : 'ok'
   if (level === 'ok' && cables.length) checks.push({ level: 'ok', text: `Sve žile uparene: ${terminals.length} stezaljki, ${cables.length} kabela${devices.length ? `, ${devices.length} uređaja` : ''}.` })
-  return { box, room, cables, devices, terminals, checks, bom: [...bom.entries()].sort().map(([item, qty]) => ({ item, qty })), level }
+  return { box, room, cables, devices, terminals, checks, bom: [...bom.entries()].sort().map(([item, qty]) => ({ item, qty })), level, size }
 }
 
 export function allJunctions(p: Project): Junction[] {

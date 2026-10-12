@@ -38,8 +38,10 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
     const lenM = polylineLength(cd.points) / ppm
     if (c && inScope(c.roomId)) add(out, 'Kabeli', c.type, 'm', lenM + 2 * RESERVE_M)
   }
-  // junction connectors
+  // junction connectors, and the box size each junction needs
+  const sizes = new Map<string, string>()
   for (const j of allJunctions(p)) {
+    sizes.set(j.box.id, `${j.size.W} × ${j.size.H}`)
     if (!inScope(j.room.id)) continue
     for (const b of j.bom) if (b.item.startsWith('WAGO')) add(out, 'Stezaljke', b.item, 'kom', b.qty)
   }
@@ -48,7 +50,7 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
     if (!inScope(e.roomId)) continue
     const depth = e.depth ? `, ${e.depth}` : ''
     switch (e.type) {
-      case 'box': add(out, 'Doze i kutije', `Razvodna kutija 100 × 100 mm${depth}`, 'kom', 1); break
+      case 'box': add(out, 'Doze i kutije', `Razvodna kutija ${sizes.get(e.id) ?? '100 × 100'} mm${depth}`, 'kom', 1); break
       case 'modbox': { const m = e.modules ?? 3; add(out, 'Doze i kutije', `Doza modularna ${m}M${m === 3 ? ' (TEM PM3)' : m === 4 ? ' (TEM PM4)' : m === 7 ? (e.depth === 'duboka' ? ' (TEM PM7-65)' : ' (TEM PM7)') : ''}${depth}`, 'kom', 1); add(out, 'Dekorativno', `Nosivi okvir + ukrasni okvir ${m}M`, 'kom', 1); break }
       case 'socket':
         if (!e.host) add(out, 'Doze i kutije', `Doza Ø60${depth}`, 'kom', 1)

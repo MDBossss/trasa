@@ -1,49 +1,13 @@
 import { useMemo } from 'react'
 import { WIRE_HEX, WIRE_LABEL, type WireColor, RELAY_LOOK, relayBrand, relayModelOf } from '../types'
-import { wagoSlot, type BoxCable, type Device, type Junction, type PlanWire, type Side, type Terminal } from '../junction'
+import { CAP_H, CAP_W, DEPTH, GAP, WAGO, boxLayout, wagoSlot, type BoxCable, type Junction, type Placed, type PlanWire, type Side, type Terminal } from '../junction'
 
 // Top-down view into the open box, drawn to scale in millimetres: cables enter from the rim,
 // each core bends to its WAGO 221 port; relays and buttons sit inside with short jumpers.
 // Layout is automatic from the junction data.
 
-const WAGO = { 412: { w: 13.0, n: 2 }, 413: { w: 18.7, n: 3 }, 415: { w: 30.0, n: 5 } } as const
-const DEPTH = 18.6
 const S = 4 // px per mm
-
-type Item = { kind: 'wago'; t: Terminal; w: number; h: number } | { kind: 'cap'; t: Terminal; w: number; h: number } | { kind: 'device'; d: Device; w: number; h: number }
-const CAP_W = 4, CAP_H = 12 // tape / small cap on a folded-back spare core: ~1 mm thicker than the core
 export const CAP_COLOR = '#7c3aed'
-type Placed = Item & { x: number; y: number; flip: boolean }
-
-const GAP = 4 // mm between bridged WAGO units
-function wagoWidth(t: Terminal) { return WAGO[t.wago as 412 | 413 | 415].w * t.chained + (t.chained - 1) * GAP }
-
-// Greedy packing into rows (top, bottom, middle); the box grows when they overflow.
-function layout(j: Junction): { W: number; H: number; placed: Placed[]; overflow: boolean } {
-  const items: Item[] = [
-    ...j.terminals.filter((t) => t.wago).map((t): Item => ({ kind: 'wago', t, w: wagoWidth(t), h: DEPTH })),
-    ...j.terminals.filter((t) => t.cap).map((t): Item => ({ kind: 'cap', t, w: CAP_W, h: CAP_H })),
-    ...j.devices.map((d): Item => ({ kind: 'device', d, w: d.wMm, h: d.hMm })),
-  ]
-  const base = j.box.type === 'modbox' ? [(j.box.modules ?? 3) <= 3 ? [100, 70] : (j.box.modules ?? 3) <= 4 ? [120, 70] : [160, 70], [160, 100], [200, 120]] : [[100, 100], [150, 150], [200, 200]]
-  for (const [W, H] of base) {
-    const rows: { y: number; flip: boolean; x: number; items: Placed[]; h: number }[] = [
-      { y: 5, flip: false, x: 5, items: [], h: DEPTH },
-      { y: H - 5 - DEPTH, flip: true, x: 5, items: [], h: DEPTH },
-    ]
-    if (H >= 100) rows.push({ y: H / 2 - DEPTH / 2, flip: false, x: 5, items: [], h: DEPTH })
-    let ok = true
-    for (const it of items) {
-      const pref = it.kind === 'device' && it.d.kind !== 'relay' ? [...rows].reverse() : rows
-      const row = pref.find((r) => r.x + it.w <= W - 5)
-      if (!row) { ok = false; break }
-      row.items.push({ ...it, x: row.x, y: row.flip ? row.y + DEPTH - it.h : row.y, flip: row.flip })
-      row.x += it.w + 4
-    }
-    if (ok) return { W, H, placed: rows.flatMap((r) => r.items), overflow: W > base[0][0] }
-  }
-  return { W: 200, H: 200, placed: [], overflow: true }
-}
 
 const entryOf = (side: Side, i: number, n: number, W: number, H: number) => {
   const t = (i + 1) / (n + 1)
@@ -57,7 +21,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
   j: Junction; plan: PlanWire[]; mode: 'all' | 'steps'; step: number; hover: string | null
   onHover: (k: string | null) => void; onPick: (i: number) => void; className?: string
 }) {
-  const lay = useMemo(() => layout(j), [j])
+  const lay = useMemo(() => boxLayout(j), [j])
   const { W, H } = lay
   const OX = 110, OY = 150
   const mm = (v: number) => v * S

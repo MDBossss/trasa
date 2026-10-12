@@ -56,7 +56,9 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
     žila kabel između kutije i doze mora nositi (L, N, PE + izlazi), piše to na kabelu ("4 potrebno · 3 ima → uzmi 5×1,5")
     i crta dozu s relejima, tipkalima i kratkim žilama (tipkalo → SW izravno, bez stezaljke). Signal tipkala putuje
     kroz lanac kutija (doza → K1 → K2) najkraćim putem: svaki kabel na putu ga nosi, usputna kutija ga samo prolazi
-    kroz WAGO 412; prsten kutija ne udvostručuje signale. Više od 5 žila na stezaljci = dva (ili tri) WAGO 221-415
+    kroz WAGO 412; prsten kutija ne udvostručuje signale. Veličina kutije se računa iz sadržaja (100 / 150 / 200 mm) i
+    ide u materijal; provjere kažu kad je standardna premala, kad je više od 8 kabela (8 uvodnica) i kad bi stezaljka
+    trebala 3 WAGO-a, s preporukom da se podijeli po namjeni. Više od 5 žila na stezaljci = dva (ili tri) WAGO 221-415
     spojena kratkom premosnicom, nacrtano i numerirano "WAGO 2, port 3". Mjesto u okviru: na tipkalu/utičnici ◀ ▶ mijenja redoslijed, "Praznih lijevo" ostavlja prazne module;
     slika spoja i provlačenje utičnica slijede isti redoslijed. **LED niša (N)**: traka
     (m, W/m, 12/24 V) i napajanje × 1,2; napaja se kao svjetlo. Provjere: relej bez nule, relej u plitkoj dozi, kabel s

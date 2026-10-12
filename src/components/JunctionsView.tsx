@@ -71,7 +71,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
             <h3>Materijal za kutiju <button className="mini link" onClick={() => useStore.setState({ openSettings: true })} title="Rezervne žile: WAGO ili kapica">postavke</button></h3>
             <div className="bom">
               {j.bom.map((b) => <div key={b.item}><span>{b.item}</span><b>{b.qty} kom</b></div>)}
-              <div><span>{j.box.type === 'modbox' ? `Doza modularna ${j.box.modules ?? 3}M` : 'Razvodna kutija 100 × 100 mm'}{j.box.depth === 'duboka' ? ', duboka' : j.box.depth === 'plitka' ? ', plitka' : ''}</span><b>1 kom</b></div>
+              <div><span>{j.box.type === 'modbox' ? `Doza modularna ${j.box.modules ?? 3}M` : `Razvodna kutija ${j.size.W} × ${j.size.H} mm`}{j.box.depth === 'duboka' ? ', duboka' : j.box.depth === 'plitka' ? ', plitka' : ''}</span><b>1 kom</b></div>
               {[1, 2].map((m) => { const n = j.devices.filter((d) => d.kind === 'button' && (d.el.modules ?? 1) === m).length; return n ? <div key={m}><span>Tipkalo / prekidač {m}M</span><b>{n} kom</b></div> : null })}
               {j.devices.filter((d) => d.kind === 'socket' && (d.el.socketKind ?? 'schuko') === 'schuko').length > 0 && <div><span>Utičnica šuko 2M</span><b>{j.devices.filter((d) => d.kind === 'socket' && (d.el.socketKind ?? 'schuko') === 'schuko').length} kom</b></div>}
               {j.devices.filter((d) => d.kind === 'socket' && d.el.socketKind === 'euro').length > 0 && <div><span>Utičnica euro 1M</span><b>{j.devices.filter((d) => d.kind === 'socket' && d.el.socketKind === 'euro').length} kom</b></div>}
