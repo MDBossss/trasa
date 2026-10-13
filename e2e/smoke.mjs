@@ -525,11 +525,12 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   // an overfull box splits with one click: sockets move to a new box fed from the old one
   const extra = await page.evaluate(({ box }) => { const s = window.__trasa.getState(); const room = s.project.rooms[0].id; const ids = []; for (let i = 0; i < 6; i++) { const u = s.addElement({ roomId: room, wall: 0, type: 'socket', xM: 0.3 + i * 0.4, zM: 0.3, note: '' }); ids.push(u, s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: u }, via: [], note: '' })) } return ids }, ids)
   await page.locator('.junctions-list .list li', { hasText: 'K1' }).click()
-  await page.getByRole('button', { name: 'Podijeli na dvije' }).click()
+  await page.getByRole('button', { name: 'Podijeli na dvije', exact: true }).click()
   const split = await page.evaluate(() => { const s = window.__trasa.getState(); const nb = s.project.elements.filter((e) => e.type === 'box').at(-1); return { id: nb.id, label: nb.label, link: s.project.cables.at(-1) } })
   assert.equal(split.link.to.id, split.id)
   await page.locator('.junction-main .room-head h2', { hasText: split.label }).waitFor()
-  await page.evaluate(({ extra, split }) => { const s = window.__trasa.getState(); const drop = new Set([...extra, split.id, split.link.id]); s.patchProject({ cables: s.project.cables.filter((x) => !drop.has(x.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) }) }, { extra, split })
+  // undo the split by hand: U1's cable moved to the new box too, so point it back at K1
+  await page.evaluate(({ extra, split, box }) => { const s = window.__trasa.getState(); const drop = new Set([...extra, split.id, split.link.id]); const back = (e) => (e.kind === 'element' && e.id === split.id ? { ...e, id: box } : e); s.patchProject({ cables: s.project.cables.filter((x) => !drop.has(x.id)).map((c) => ({ ...c, from: back(c.from), to: back(c.to) })), elements: s.project.elements.filter((e) => !drop.has(e.id)) }) }, { extra, split, box: ids.box })
   await page.evaluate(({ v1, r2, c }) => { const s = window.__trasa.getState(); s.patchProject({ cables: s.project.cables.filter((x) => x.id !== c), elements: s.project.elements.filter((e) => e.id !== v1 && e.id !== r2) }) }, gar)
   await page.getByRole('button', { name: 'Spojevi' }).click()
   // K1 now has an O terminal pairing the cable's black core with the light's brown
@@ -635,7 +636,7 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   const k1 = snapshot.elements.find((e) => e.type === 'box')
   const kp = await m.evaluate((id) => { const st = window.Konva.stages[window.Konva.stages.length - 1]; const n = st.findOne((x) => x.name?.() === id); const r = n.getClientRect(); const b = st.container().getBoundingClientRect(); return { x: b.x + r.x + r.width / 2, y: b.y + r.y + r.height / 2 } }, k1.id)
   await m.touchscreen.tap(kp.x, kp.y)
-  await m.locator('.sheet.open .props').waitFor()
+  try { await m.locator('.sheet.open .props').waitFor() } catch (e) { await m.screenshot({ path: `${SHOTS}/trasa-mobile-fail.png` }); console.error('mobile tap state', await m.evaluate(() => { const s = window.__trasa.getState(); return { view: s.view, sel: s.selectedId, tool: s.wallTool } })); throw e }
   // the tap lands on the box or on one of the cables drawn into it; either opens its details
   const tapped = await m.evaluate(() => window.__trasa.getState().selectedId)
   assert.ok(tapped === k1.id || snapshot.cables.some((c) => c.id === tapped && [c.from, c.to].some((e) => e.kind === 'element' && e.id === k1.id)), `tapped ${tapped}`)

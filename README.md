@@ -64,7 +64,8 @@ pregledniku i vraćaju nakon osvježavanja.
     kroz lanac kutija (doza → K1 → K2) najkraćim putem: svaki kabel na putu ga nosi, usputna kutija ga samo prolazi
     kroz WAGO 412; prsten kutija ne udvostručuje signale. Veličina kutije se računa iz sadržaja (10 × 10, pa 10 × 12, unutra 9 × 9 i 9 × 11, kakve
     korisnik ima) i ide u materijal; provjere kažu kad 10 × 10 ne stane, kad ne stane ni 10 × 12 (podijeli), kad je kabela
-    više od uvodnica (8 odnosno 10) i kad bi stezaljka trebala 3 WAGO-a. Više od 5 žila na stezaljci = dva (ili tri) WAGO 221-415
+    više od uvodnica (8 odnosno 10) i kad bi stezaljka trebala 3 WAGO-a. Više od 5 žila na stezaljci = dva (ili tri) WAGO 221-415 Gumb **Podijeli na dvije** to napravi sam: utičnice i vrata (ili pola svjetala) odu u novu kutiju
+    35 cm pored, napajanu iz stare, vezom 3×1,5 ili 5×1,5 prema potrebi.
     spojena kratkom premosnicom, nacrtano i numerirano "WAGO 2, port 3". Mjesto u okviru: na tipkalu/utičnici ◀ ▶ mijenja redoslijed, "Praznih lijevo" ostavlja prazne module;
     slika spoja i provlačenje utičnica slijede isti redoslijed. **LED niša (N)**: traka
     (m, W/m, 12/24 V) i napajanje × 1,2; napaja se kao svjetlo. Provjere: relej bez nule, relej u plitkoj dozi, kabel s
