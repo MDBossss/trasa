@@ -487,7 +487,7 @@ export function boxLayout(j: Pick<Junction, 'box' | 'terminals' | 'devices'>): {
     if (H >= 110) {
       // the taller box takes four rows: WAGOs in two layers at the top and bottom, as they do in practice; that counts as full
       rows.push({ y: 5 + DEPTH + 4, flip: false, x: 5, items: [], h: DEPTH, inner: true }, { y: H - 5 - 2 * DEPTH - 4, flip: true, x: 5, items: [], h: DEPTH, inner: true })
-    } else if (W >= 110) rows.push({ y: H / 2 - DEPTH / 2, flip: false, x: 5, items: [], h: DEPTH })
+    } else if (W >= 110 && H >= 90) rows.push({ y: H / 2 - DEPTH / 2, flip: false, x: 5, items: [], h: DEPTH })
     let ok = true
     for (const it of items) {
       const pref = it.kind === 'device' && it.d.kind !== 'relay' ? [...rows].reverse() : rows
