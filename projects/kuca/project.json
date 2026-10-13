@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-13T18:11:32.960Z",
+ "savedAt": "2026-10-13T18:20:15.083Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2975,6 +2975,140 @@
     "id": "u8uvv3w4",
     "label": "U43",
     "slotOrder": 1
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 1,
+    "type": "modbox",
+    "xM": 0.82,
+    "zM": 1.25,
+    "note": "",
+    "id": "t4b7ftfl",
+    "label": "D20",
+    "modules": 7
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 1,
+    "type": "modbox",
+    "xM": 2.09,
+    "zM": 1.28,
+    "note": "",
+    "id": "any2qxx5",
+    "label": "D21",
+    "modules": 7,
+    "depth": "duboka"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 1,
+    "type": "modbox",
+    "xM": 2,
+    "zM": 0.69,
+    "note": "",
+    "id": "g3k766kd",
+    "label": "D22",
+    "modules": 4
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 1,
+    "type": "modbox",
+    "xM": 2.52,
+    "zM": 0.69,
+    "note": "",
+    "id": "1evtib3a",
+    "label": "D23",
+    "modules": 4
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 2,
+    "type": "modbox",
+    "xM": 0.64,
+    "zM": 1.37,
+    "note": "",
+    "id": "1zcchwss",
+    "label": "D24",
+    "depth": "plitka",
+    "modules": 4
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "modbox",
+    "xM": 1.66,
+    "zM": 0.77,
+    "note": "",
+    "id": "h27ye5zs",
+    "label": "D25",
+    "depth": "duboka"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "modbox",
+    "xM": 3.1,
+    "zM": 0.77,
+    "note": "",
+    "id": "v5x462mf",
+    "label": "D26",
+    "depth": "duboka"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "modbox",
+    "xM": 1.63,
+    "zM": 0.51,
+    "note": "",
+    "id": "zt3wq4pu",
+    "label": "D27",
+    "modules": 4
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "modbox",
+    "xM": 3.14,
+    "zM": 0.51,
+    "note": "",
+    "id": "2qnvq51i",
+    "label": "D28",
+    "modules": 4
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "modbox",
+    "xM": 0.53,
+    "zM": 0.51,
+    "note": "",
+    "id": "hhtldqug",
+    "label": "D29",
+    "modules": 4
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 0,
+    "type": "modbox",
+    "xM": 2.1,
+    "zM": 0.48,
+    "note": "",
+    "id": "iq9etxt1",
+    "label": "D30",
+    "modules": 4
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 0,
+    "type": "modbox",
+    "xM": 0.58,
+    "zM": 0.48,
+    "note": "",
+    "id": "bkt0k4u9",
+    "label": "D31",
+    "modules": 4
    }
   ],
   "cables": [
@@ -4095,8 +4229,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "fqmzanpn",
-   "wall": 2
+   "roomId": "j5g1ml5l",
+   "wall": 1
   }
  }
 }
