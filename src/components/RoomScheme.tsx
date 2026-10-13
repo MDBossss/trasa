@@ -46,6 +46,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
   const links = useMemo(() => {
     const seen = new Set<string>()
     let lanes = 0, lanesBelow = 0
+    const sideCount = new Map<string, number>()
     const bottom = Math.max(...boxes.map((b) => b.ty + b.vb.h * BOX_SCALE), 0) + 20
     const out: { id: string; d: string; od: number; label: string; tip: string; mid: { x: number; y: number }; tail: boolean; boxes: string[]; cableIds: string[] }[] = []
     for (const c of project.cables) {
@@ -64,8 +65,13 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
       if (pair && seen.has(pair)) continue
       if (pair) seen.add(pair)
       if (a && b && sa && sb) {
-        // orthogonal route: out of the sheath, then either straight across the gap (neighbours) or up to a lane above the row
-        const p1 = { x: sa.x + sa.n[0] * 40, y: sa.y + sa.n[1] * 40 }, p2 = { x: sb.x + sb.n[0] * 40, y: sb.y + sb.n[1] * 40 }
+        // orthogonal route: out of the sheath, then either straight across the gap (neighbours) or up to a lane above the row.
+        // Every further cable leaving the same side of a box runs one step further out, so parallel runs never overlap.
+        const sideKey = (bx: typeof a, st: typeof sa) => `${bx.j.box.id}:${st.n[0]},${st.n[1]}`
+        const ka = (sideCount.get(sideKey(a, sa)) ?? 0), kb = (sideCount.get(sideKey(b, sb)) ?? 0)
+        sideCount.set(sideKey(a, sa), ka + 1); sideCount.set(sideKey(b, sb), kb + 1)
+        const step = od + 10
+        const p1 = { x: sa.x + sa.n[0] * (40 + ka * step), y: sa.y + sa.n[1] * (40 + ka * step) }, p2 = { x: sb.x + sb.n[0] * (40 + kb * step), y: sb.y + sb.n[1] * (40 + kb * step) }
         // neighbours whose sheaths face each other get a direct route across the gap; everything else goes
         // round the row on a lane: above, or below when a sheath leaves the bottom of its box
         const adjacent = Math.abs(a.order - b.order) === 1
@@ -73,8 +79,8 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
         const facingV = sa.n[0] === 0 && sb.n[0] === 0 && sa.n[1] * (p2.y - p1.y) > 0 && sb.n[1] * (p1.y - p2.y) > 0
         const facing = facingH || facingV
         let via: { x: number; y: number }[]
-        if (adjacent && facingH) { const mx = (p1.x + p2.x) / 2; via = [{ x: mx, y: p1.y }, { x: mx, y: p2.y }] }
-        else if (facingV) { const my = (p1.y + p2.y) / 2; via = [{ x: p1.x, y: my }, { x: p2.x, y: my }] }
+        if (adjacent && facingH) { const mx = (p1.x + p2.x) / 2 + (ka - kb) * step * 0.5; via = [{ x: mx, y: p1.y }, { x: mx, y: p2.y }] }
+        else if (facingV) { const my = (p1.y + p2.y) / 2 + (ka - kb) * step * 0.5; via = [{ x: p1.x, y: my }, { x: p2.x, y: my }] }
         else {
           const below = sa.n[1] > 0 || sb.n[1] > 0
           const laneY = below ? bottom + LANE * (lanesBelow++ + 1) : PAD + 110 - LANE * (lanes++ + 1)
@@ -93,7 +99,9 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
         if (!here || !st) continue
         const far = a ? pl[1] : pl[0]
         const room = project.rooms.find((r) => r.id === far.roomId)?.name ?? ''
-        const p1 = { x: st.x + st.n[0] * 90, y: st.y + st.n[1] * 90 }
+        const k = sideCount.get(`${here.j.box.id}:${st.n[0]},${st.n[1]}`) ?? 0
+        sideCount.set(`${here.j.box.id}:${st.n[0]},${st.n[1]}`, k + 1)
+        const p1 = { x: st.x + st.n[0] * (90 + k * (od + 10)), y: st.y + st.n[1] * (90 + k * (od + 10)) }
         out.push({ id: c.id, d: `M${st.x},${st.y} L${p1.x},${p1.y}`, od, label: `→ ${far.label} (${room})`, tip: `${here.j.box.label} → ${far.label} u sobi ${room} · ${c.type} · ${cores.length} žile${carries ? `: ${carries}` : ''}`, mid: { x: p1.x + st.n[0] * 10, y: p1.y + st.n[1] * 10 }, tail: true, boxes: [here.j.box.id], cableIds: [st.cableId] })
       }
     }
