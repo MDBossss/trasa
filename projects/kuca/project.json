@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-13T18:20:15.083Z",
+ "savedAt": "2026-10-13T18:25:31.632Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -1418,6 +1418,25 @@
     "to": "",
     "note": "",
     "categoryId": "rasvjeta"
+   },
+   {
+    "id": "vx1mkoex",
+    "name": "B64",
+    "color": "#000075",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 881.3013083165794,
+      "y": 825.3298538437429
+     },
+     {
+      "x": 881.3013083165794,
+      "y": 946.3941699079035
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": ""
    }
   ],
   "rooms": [
@@ -4228,9 +4247,7 @@
  },
  "ui": {
   "view": {
-   "kind": "room",
-   "roomId": "j5g1ml5l",
-   "wall": 1
+   "kind": "plan"
   }
  }
 }
