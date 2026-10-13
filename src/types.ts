@@ -69,11 +69,20 @@ export const relayBrand = (m: RelayModel): RelayBrand => (m.startsWith('zb') ? '
 export const relayModelOf = (e: { relayModel?: string }): RelayModel => (e.relayModel && e.relayModel in RELAY_MODELS ? (e.relayModel as RelayModel) : LEGACY_RELAY[e.relayModel ?? ''] ?? 'zbminir2')
 export type SwitchKind = 'obicni' | 'serijski' | 'izmjenicni' | 'krizni' | 'tipkalo'
 export type BoxDepth = 'plitka' | 'duboka'
-export type SocketKind = 'schuko' | 'euro' | 'rj45'
-export const SOCKET_KINDS: Record<SocketKind, { label: string; modules: number }> = { schuko: { label: 'Šuko', modules: 2 }, euro: { label: 'Euro', modules: 1 }, rj45: { label: 'RJ45 internet', modules: 1 } }
+export type SocketKind = 'schuko' | 'euro' | 'rj45' | 'tv'
+export const SOCKET_KINDS: Record<SocketKind, { label: string; modules: number }> = { schuko: { label: 'Šuko', modules: 2 }, euro: { label: 'Euro', modules: 1 }, rj45: { label: 'RJ45 internet', modules: 1 }, tv: { label: 'TV antena (koaks)', modules: 1 } }
 // a data outlet: a keystone module in a frame, fed by a UTP cable and nothing else
-export const isData = (e: { type: ElementType; socketKind?: SocketKind } | undefined) => !!e && e.type === 'socket' && e.socketKind === 'rj45'
+export const DATA_KINDS: SocketKind[] = ['rj45', 'tv']
+export const isData = (e: { type: ElementType; socketKind?: SocketKind } | undefined) => !!e && e.type === 'socket' && DATA_KINDS.includes(e.socketKind ?? 'schuko')
 export const isUtp = (type: string) => /utp|ftp|cat\s?[5-8]/i.test(type)
+export const isCoax = (type: string) => /koaks|coax|rg-?6|rg-?59/i.test(type)
+// which data outlet a signal cable lands on
+export const dataKindOf = (type: string): SocketKind | null => (isUtp(type) ? 'rj45' : isCoax(type) ? 'tv' : null)
+// how the cable is drawn in the frame: one wire with the termination note
+export const DATA_META: Record<'rj45' | 'tv', { port: string; wire: string; name: string; item: string; conduitCat: string }> = {
+  rj45: { port: 'UTP', wire: '8 žila → keystone, T568B', name: 'RJ45 keystone', item: 'RJ45 keystone modul 1M (cat.6)', conduitCat: 'internet' },
+  tv: { port: 'ANT', wire: 'koaks → F-konektor', name: 'TV antenska utičnica', item: 'TV/SAT antenska utičnica 1M (F-konektor)', conduitCat: 'tv' },
+}
 // position inside a modular frame: explicit order (left → right) and empty modules kept free on the left
 export const hostedFront = (elements: WallElement[], hostId: string) =>
   elements.map((e, i) => ({ e, i })).filter(({ e }) => e.host === hostId && e.type !== 'relay').sort((a, b) => (a.e.slotOrder ?? 1e9) - (b.e.slotOrder ?? 1e9) || a.i - b.i).map(({ e }) => e)

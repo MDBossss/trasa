@@ -62,8 +62,9 @@ pregledniku i vraćaju nakon osvježavanja.
     žila kabel između kutije i doze mora nositi (L, N, PE + izlazi), piše to na kabelu ("4 potrebno · 3 ima → uzmi 5×1,5")
     i crta dozu s relejima, tipkalima i kratkim žilama (tipkalo → SW izravno, bez stezaljke). Signal tipkala putuje
     kroz lanac kutija (doza → K1 → K2) najkraćim putem: svaki kabel na putu ga nosi, usputna kutija ga samo prolazi
-    kroz WAGO 412; prsten kutija ne udvostručuje signale. Internet: utičnica vrste RJ45 (1M keystone) u modularnoj; UTP kabel iz bužira kategorije Internet
-    ide na nju izravno (8 žila, T568B), bez WAGO-a, i tako se i broji u materijalu. Veličina kutije se računa iz sadržaja po ljestvici kutija koje se prodaju u HR (10 × 10, 10 × 12 položena
+    kroz WAGO 412; prsten kutija ne udvostručuje signale. Internet i TV: utičnice vrste RJ45 (1M keystone) i TV antena (1M, F-konektor) u modularnoj; UTP
+    odnosno koaks iz bužira ide na njih izravno, bez WAGO-a, i tako se broje u materijalu. Dva signalna
+    kabela smiju dijeliti bužir. Veličina kutije se računa iz sadržaja po ljestvici kutija koje se prodaju u HR (10 × 10, 10 × 12 položena
     vodoravno, 15 × 13 Vimar V70005, 17 × 17 Legrand 089374, 23 × 18 Legrand 089275) i ide u materijal; kabel ulazi u kutiju sa strane na kojoj mu je drugi kraj na zidu (bužir lijevo → ulaz
     lijevo, doza ispod → odozdo; kad je razlika po visini veća, gore/dolje); provjere kažu koju kutiju uzeti, a podjelu predlažu tek kad ni najveća ne stane ili ponestane uvodnica, kad je kabela
     više od uvodnica (8 odnosno 10) i kad bi stezaljka trebala 3 WAGO-a. Više od 5 žila na stezaljci = dva (ili tri) WAGO 221-415 Gumb **Podijeli na dvije** to napravi sam: utičnice i vrata (ili pola svjetala) odu u novu kutiju

@@ -1,6 +1,6 @@
 import { polylineLength } from './geometry'
 import { allJunctions, boxSizeLabel } from './junction'
-import { ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, type Project, relayModelOf } from './types'
+import { ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, type Project, relayModelOf , DATA_META } from './types'
 import { cableLengthM, wallExits } from './walls'
 
 // Bill of materials summed from the drawing: cable metres (wall runs + conduit runs + reserve),
@@ -54,7 +54,7 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
       case 'modbox': { const m = e.modules ?? 3; add(out, 'Doze i kutije', `Doza modularna ${m}M${m === 3 ? ' (TEM PM3)' : m === 4 ? ' (TEM PM4)' : m === 7 ? (e.depth === 'duboka' ? ' (TEM PM7-65)' : ' (TEM PM7)') : ''}${depth}`, 'kom', 1); add(out, 'Dekorativno', `Nosivi okvir + ukrasni okvir ${m}M`, 'kom', 1); break }
       case 'socket':
         if (!e.host) add(out, 'Doze i kutije', `Doza Ø60${depth}`, 'kom', 1)
-        if (e.socketKind === 'rj45') { add(out, 'Utičnice', `RJ45 keystone modul 1M (cat.6)${e.host ? ' (u modularnoj)' : ''}`, 'kom', 1); break }
+        if (e.socketKind === 'rj45' || e.socketKind === 'tv') { add(out, 'Utičnice', `${DATA_META[e.socketKind].item}${e.host ? ' (u modularnoj)' : ''}`, 'kom', 1); break }
         add(out, 'Utičnice', `Utičnica ${SOCKET_KINDS[e.socketKind ?? 'schuko'].label.toLowerCase()} ${SOCKET_KINDS[e.socketKind ?? 'schuko'].modules}M${e.host ? ' (u modularnoj)' : ''}`, 'kom', 1); break
       case 'switch':
         if (!e.host) add(out, 'Doze i kutije', `Doza Ø60${depth}`, 'kom', 1)
