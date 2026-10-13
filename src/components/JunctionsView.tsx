@@ -14,6 +14,7 @@ const LEVEL_ICON: Record<Level, string> = { ok: '✓', warn: '⚠', err: '✕' }
 export function JunctionsView({ elementId }: { elementId: string | null }) {
   const project = useStore((s) => s.project)
   const { setView, select } = useStore.getState()
+  const roomCtx = useStore((s) => s.roomId)
   const places = useMemo(() => allJunctions(project), [project])
   const leaves = useMemo(() => allLeafJunctions(project), [project])
   const junctions = useMemo(() => [...places, ...leaves], [places, leaves])
@@ -134,7 +135,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
         <section>
           <h3>Kutije i doze <span className="count">{junctions.length}</span></h3>
           {!junctions.length && <p className="muted">Nema razvodnih kutija. Otvori sobu, na fotki zida klikni gdje je kutija alatom Kutija (K), pa kabele (C) do nje.</p>}
-          {project.rooms.map((r) => {
+          {[...project.rooms].sort((a, b) => (a.id === roomCtx ? -1 : b.id === roomCtx ? 1 : 0)).map((r) => {
             const list = places.filter((x) => x.room.id === r.id)
             const devs = leaves.filter((x) => x.room.id === r.id)
             if (!list.length && !devs.length) return null
@@ -147,7 +148,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
             )
             return (
               <div key={r.id} className="jgroup">
-                <div className="jgroup-head">{r.name}</div>
+                <div className={`jgroup-head ${r.id === roomCtx ? 'cur' : ''}`}>{r.name}</div>
                 <ul className="list">
                   {list.map((x) => row(x, `${x.box.type === 'modbox' ? `${x.box.modules ?? 3}M` : 'kutija'} · zid ${x.box.wall + 1} · ${x.cables.length} kab.${x.devices.length ? ` · ${x.devices.length} ur.` : ''}`))}
                   {devs.map((x) => row(x, `${ELEMENT_META[x.box.type].label.toLowerCase()} · zid ${x.box.wall + 1} · ${x.cables.length} kab.`))}
@@ -172,7 +173,6 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
 
       <div className="junction-main">
         <div className="room-head">
-          <button onClick={() => setView({ kind: 'plan' })}><Icon.back /> Tlocrt</button>
           {j ? (
             <>
               <h2>{j.box.label} <span className="muted">· {ELEMENT_META[j.box.type].label.toLowerCase()}{j.box.type === 'modbox' ? ` ${j.box.modules ?? 3}M` : ''} · {j.room.name}, zid {j.box.wall + 1}{isPlace(j.box) && j.box.depth ? ` · ${j.box.depth}` : ''}</span></h2>
@@ -188,7 +188,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
           ) : <h2>Spojevi</h2>}
         </div>
         {j && scheme ? (
-          <RoomScheme junctions={junctions} roomId={j.room.id} onOpen={(id) => { setScheme(false); setMode('all'); setStep(0); pick(id) }} />
+          <RoomScheme junctions={junctions} roomId={roomCtx && project.rooms.some((r) => r.id === roomCtx) ? roomCtx : j.room.id} onOpen={(id) => { setScheme(false); setMode('all'); setStep(0); pick(id) }} />
         ) : j ? (
           <div className="junction-stage">
             <JunctionCanvas j={j} plan={plan} mode={mode} step={step} hover={hover} onHover={setHover} onPick={(i) => { setMode('steps'); setStep(i) }} />

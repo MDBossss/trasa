@@ -281,10 +281,15 @@ await page.locator('.wall-nav', { hasText: 'Zid 1' }).waitFor() // first wall op
 await page.locator('.sidebar .list li', { hasText: 'B1-ormar' }).getByText('0.50 m · strop').waitFor()
 
 // wall canvas helpers: units are cm, y from the ceiling
+// screen point of a wall position; snapped to the whole pixel that maps back closest to the target
 const wallToScreen = async (xM, zM) => page.evaluate(([xM, zM, H]) => {
   const st = window.Konva.stages[0]
   const r = st.container().getBoundingClientRect()
-  return { x: r.left + st.x() + xM * 100 * st.scaleX(), y: r.top + st.y() + (H - zM * 100) * st.scaleY() }
+  const fx = r.left + st.x() + xM * 100 * st.scaleX(), fy = r.top + st.y() + (H - zM * 100) * st.scaleY()
+  const back = (px, py) => ({ xM: (px - r.left - st.x()) / st.scaleX() / 100, zM: (H - (py - r.top - st.y()) / st.scaleY()) / 100 })
+  const x = [Math.floor(fx), Math.ceil(fx)].sort((a, b) => Math.abs(back(a, fy).xM - xM) - Math.abs(back(b, fy).xM - xM))[0]
+  const y = [Math.floor(fy), Math.ceil(fy)].sort((a, b) => Math.abs(back(fx, a).zM - zM) - Math.abs(back(fx, b).zM - zM))[0]
+  return { x, y }
 }, [xM, zM, (await state()).ceilingM * 100])
 const clickWall = async (xM, zM) => { const p = await wallToScreen(xM, zM); await page.mouse.move(p.x, p.y); await page.mouse.click(p.x, p.y) }
 const dragWall = async (from, to) => {

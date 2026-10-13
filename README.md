@@ -28,6 +28,12 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
 
 ## Rad
 
+Raspored ekrana (računalo): gore glavna navigacija Tlocrt / Sobe / Spojevi / Materijal i **izbor sobe** koji vrijedi za
+Sobe, Spojeve i Materijal ("Cijela kuća" samo u Materijalu); lijevo uska traka alata (gdje se crta) i **navigator**
+(što postoji: bužiri i sobe, zidovi i elementi zida, kutije i uređaji); sredina platno; desno **inspektor** (svojstva
+odabranog, kod kutije stezaljke + materijal + provjere). Drugi red pogleda drži samo način prikaza (lijevo) i akcije
+(desno). Na mobitelu je donja traka i sheet.
+
 1. **Učitaj tlocrt** (gumb ili drag & drop slike). Gumbi ↺/↻ rotiraju tlocrt po 90°, nacrtano se rotira s njim. Grid pokriva cijelo platno pa se može crtati i izvan slike. Nakrivljen sken: **Nagib slike** u sidebaru (±1°, ±0.1°, upis), **Auto poravnaj** (traži kut pod kojim su zidovi najoštrije poravnati s gridom) ili **Poravnaj (A)**: dva klika duž zida koji treba biti ravan. Nagib pomiče samo sliku, pa poravnaj prije crtanja.
 2. **Mjerilo (C)**: dva klika na poznatu udaljenost, upiši metre. Nakon toga grid je u cm, a duljine u metrima.
 5. **Soba (R)**: klikaj kutove, zatvori klikom na prvi kut ili Enterom.

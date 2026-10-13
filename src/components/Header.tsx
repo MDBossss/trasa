@@ -13,6 +13,8 @@ export function Header() {
   const fileName = useStore((s) => s.fileName)
   const { patchProject, replaceProject, setView } = useStore.getState()
   const view = useStore((s) => s.view)
+  const roomId = useStore((s) => s.roomId)
+  const { setRoom } = useStore.getState()
   const [menu, setMenu] = useState(false)
   const openGitHub = useStore((s) => s.openGitHub)
   const openSettings = useStore((s) => s.openSettings)
@@ -85,6 +87,17 @@ export function Header() {
         <button className={view.kind === 'junctions' || view.kind === 'printbox' ? 'on' : ''} aria-pressed={view.kind === 'junctions' || view.kind === 'printbox'} onClick={() => setView({ kind: 'junctions', elementId: null })}>Spojevi</button>
         <button className={view.kind === 'bom' || view.kind === 'print' ? 'on' : ''} aria-pressed={view.kind === 'bom' || view.kind === 'print'} onClick={() => setView({ kind: 'bom' })}>Materijal</button>
       </nav>
+      {view.kind !== 'plan' && project.rooms.length > 0 && (
+        <select className="room-pick" aria-label="Soba" value={roomId ?? ''} onChange={(e) => {
+          const id = e.target.value || null
+          setRoom(id)
+          if (view.kind === 'room' && id) setView({ kind: 'room', roomId: id, wall: 0 })
+          if ((view.kind === 'junctions' || view.kind === 'printbox') && id) setView({ kind: 'junctions', elementId: null })
+        }}>
+          {(view.kind === 'bom' || view.kind === 'print') && <option value="">Cijela kuća</option>}
+          {project.rooms.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+        </select>
+      )}
       <div className="spacer" />
       <button className="primary" onClick={() => void save()} title="Spremi (⌘S)" aria-label="Spremi"><Icon.save /><span className="lbl">Spremi</span></button>
       <button onClick={() => setGh(true)} title="Projekti u GitHub repou" aria-label="GitHub"><Icon.cloud /><span className="lbl">GitHub</span></button>

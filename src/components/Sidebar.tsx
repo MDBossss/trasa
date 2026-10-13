@@ -7,7 +7,8 @@ import { uid } from '../store'
 import { detectSkew } from '../images'
 import { Icon } from './Icons'
 
-export function Sidebar() {
+export function Sidebar({ part }: { part?: 'nav' | 'props' } = {}) {
+  const nav = !part || part === 'nav', props = !part || part === 'props'
   const project = useStore((s) => s.project)
   const selectedId = useStore((s) => s.selectedId)
   const focusRoomId = useStore((s) => s.focusRoomId)
@@ -43,8 +44,8 @@ export function Sidebar() {
         : [{ id: 'all', name: 'Svi', kind: 'all' as const, items: project.conduits }]
 
   return (
-    <aside className="sidebar">
-      {conduit && (
+    <aside className={`sidebar ${part === 'nav' ? 'navigator' : ''}`}>
+      {props && conduit && (
         <section className="props">
           <div className="props-head">
             <span className="swatch lg" style={{ background: conduit.color }} />
@@ -75,7 +76,7 @@ export function Sidebar() {
         </section>
       )}
 
-      {room && (
+      {props && room && (
         <section className="props">
           <div className="props-head">
             <h3>Soba</h3>
@@ -87,7 +88,7 @@ export function Sidebar() {
         </section>
       )}
 
-      <section>
+      {nav && <section>
         <h3>Bužiri <span className="count">{project.conduits.length - hiddenByFocus}{hiddenByFocus ? ` / ${project.conduits.length}` : ''}</span>
           {(focusRoomId || soloCategory !== null || hiddenCategories.length > 0 || hiddenConduits.length > 0) && (
             <button className="mini" onClick={() => { setFocusRoom(null); setSoloCategory(null); hiddenCategories.forEach(toggleHiddenCategory); hiddenConduits.forEach(toggleHiddenConduit) }}>Prikaži sve</button>
@@ -150,9 +151,9 @@ export function Sidebar() {
             </div>
           )
         })}
-      </section>
+      </section>}
 
-      <section>
+      {nav && <section>
         <h3>Sobe <span className="count">{project.rooms.length}</span></h3>
         {project.rooms.length === 0 && <p className="muted">Alat Soba (R), pa klikaj kutove.</p>}
         <ul className="list">
@@ -165,9 +166,9 @@ export function Sidebar() {
             </li>
           ))}
         </ul>
-      </section>
+      </section>}
 
-      <details className="setup">
+      {props && !conduit && !room && <details className="setup">
         <summary>
           <Icon.chevron className="chev" />
           <h3>Kategorije bužira</h3>
@@ -180,9 +181,9 @@ export function Sidebar() {
           ))}
         </ul>
         <div className="cat-actions"><button className="mini" onClick={() => setCategories([...project.categories, { id: uid(), name: 'Nova', color: '#808080', keywords: [] }])}>+ Kategorija</button></div>
-      </details>
+      </details>}
 
-      <details className="setup" open={!setupDone}>
+      {props && !conduit && !room && <details className="setup" open={!setupDone}>
         <summary>
           <Icon.chevron className="chev" />
           <h3>Tlocrt</h3>
@@ -246,7 +247,7 @@ export function Sidebar() {
           <label>Grid (cm) <input type="number" min={1} value={project.gridCm} onChange={(e) => patchProject({ gridCm: Math.max(1, +e.target.value || 10) })} /></label>
           <label>Strop (m) <input type="number" step={0.05} value={project.ceilingM} onChange={(e) => patchProject({ ceilingM: +e.target.value || 2.6 })} /></label>
         </div>
-      </details>
+      </details>}
     </aside>
   )
 }

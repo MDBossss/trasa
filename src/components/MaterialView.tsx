@@ -12,7 +12,7 @@ const fmt = (l: { unit: 'm' | 'kom'; qty: number }) => (l.unit === 'm' ? `${l.qt
 export function MaterialView() {
   const project = useStore((s) => s.project)
   const { setView } = useStore.getState()
-  const [roomId, setRoomId] = useState<string | null>(null)
+  const roomId = useStore((s) => s.roomId)
   const [hideDone, setHideDone] = useState(false)
   const [copied, setCopied] = useState(false)
   const lines = useMemo(() => bomFor(project, roomId), [project, roomId])
@@ -29,7 +29,7 @@ export function MaterialView() {
   }, [project, roomId])
   const checks = useMemo(() => [...allJunctions(project), ...allLeafJunctions(project)].flatMap((j) => j.checks.filter((c) => c.level !== 'ok').map((c) => ({ ...c, j }))).filter((c) => !roomId || c.j.room.id === roomId), [project, roomId])
   const groups = [...new Set(lines.map((l) => l.group))]
-  const scope = roomId ? project.rooms.find((r) => r.id === roomId)?.name ?? '' : 'cijela kuća'
+  const scope = roomId && project.rooms.some((r) => r.id === roomId) ? project.rooms.find((r) => r.id === roomId)!.name : 'cijela kuća'
 
   // bought items live in this browser only: a shopping aid, not project data
   const doneKey = `trasa-bought:${project.name}`
@@ -53,12 +53,7 @@ export function MaterialView() {
   return (
     <div className="material">
       <div className="room-head">
-        <button onClick={() => setView({ kind: 'plan' })}><Icon.back /> Tlocrt</button>
-        <h2>Materijal</h2>
-        <div className="segmented">
-          <button className={roomId === null ? 'on' : ''} onClick={() => setRoomId(null)}>Cijela kuća</button>
-          {project.rooms.map((r) => <button key={r.id} className={roomId === r.id ? 'on' : ''} onClick={() => setRoomId(r.id)}>{r.name}</button>)}
-        </div>
+        <h2>Materijal <span className="muted">· {scope}</span></h2>
         <div className="spacer" />
         <button className="primary" onClick={() => setView({ kind: 'print', roomId })}><Icon.print /> PDF za majstora</button>
       </div>

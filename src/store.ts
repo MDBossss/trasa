@@ -31,6 +31,8 @@ interface State {
   loaded: boolean
   openGitHub: boolean
   openSettings: boolean
+  roomId: string | null // room context shared by Sobe / Spojevi / Materijal (null = whole house in Materijal)
+  setRoom: (id: string | null) => void
   camera: { x: number; y: number; scale: number }
   fitNonce: number
   dirty: boolean
@@ -90,6 +92,8 @@ export const useStore = create<State>()(
       loaded: false,
       openGitHub: false,
       openSettings: false,
+      roomId: null,
+      setRoom: (roomId) => set({ roomId }),
       camera: { x: 0, y: 0, scale: 1 },
       fitNonce: 0,
       dirty: false,
@@ -134,7 +138,7 @@ export const useStore = create<State>()(
       updateCable: (id, p) =>
         set((s) => ({ project: { ...s.project, cables: s.project.cables.map((c) => (c.id === id ? { ...c, ...p } : c)) } })),
       select: (selectedId) => set({ selectedId }),
-      setView: (view) => set({ view }),
+      setView: (view) => set((s) => ({ view, roomId: view.kind === 'room' ? view.roomId : s.roomId })),
       toggle: (k) => set((s) => ({ [k]: !s[k] })),
       setFocusRoom: (focusRoomId) => set({ focusRoomId }),
       toggleHiddenCategory: (id) => set((s) => ({ hiddenCategories: s.hiddenCategories.includes(id) ? s.hiddenCategories.filter((x) => x !== id) : [...s.hiddenCategories, id] })),

@@ -15,7 +15,8 @@ const SWITCH_KINDS: { id: SwitchKind; label: string; wires: string }[] = [
 ]
 const DEPTHS: { id: BoxDepth; label: string }[] = [{ id: 'plitka', label: 'Standardna (≈50 mm)' }, { id: 'duboka', label: 'Duboka (≥65 mm, za relej)' }]
 
-export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo[]; wall: number | null }) {
+export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: WallInfo[]; wall: number | null; part?: 'nav' | 'props' }) {
+  const nav = !part || part === 'nav', props = !part || part === 'props'
   const project = useStore((s) => s.project)
   const selectedId = useStore((s) => s.selectedId)
   const { select, setView, setWallPhoto, updateElement, updateCable, removeSelected, setWallTool } = useStore.getState()
@@ -55,8 +56,8 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
   }
 
   return (
-    <aside className="sidebar">
-      <section>
+    <aside className={`sidebar ${part === 'nav' ? 'navigator' : ''}`}>
+      {nav && <section>
         <h3>{room.name} <span className="count">{walls.length} zidova</span></h3>
         <svg className="room-mini-svg" viewBox={`${minX - pad} ${minY - pad} ${maxX - minX + 2 * pad} ${maxY - minY + 2 * pad}`}>
           <polygon points={room.points.map((p) => `${p.x},${p.y}`).join(' ')} fill="rgba(30,136,229,0.08)" stroke="#1e88e5" strokeWidth={2} />
@@ -85,9 +86,9 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
             </li>
           ))}
         </ul>
-      </section>
+      </section>}
 
-      {current && (
+      {props && current && (
         <section>
           <h3>Fotka zida {current.i + 1}</h3>
           <div className="field-row">
@@ -98,7 +99,7 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
         </section>
       )}
 
-      {el && (
+      {props && el && (
         <section className="props">
           <div className="props-head">
             <h3>{ELEMENT_META[el.type].label}</h3>
@@ -248,7 +249,7 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
         </section>
       )}
 
-      {cable && ctx && (
+      {props && cable && ctx && (
         <section className="props">
           <div className="props-head">
             <h3>Kabel</h3>
@@ -288,7 +289,7 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
         </section>
       )}
 
-      {current && (
+      {nav && current && (
         <section>
           <h3>Na zidu {current.i + 1}</h3>
           {current.exits.length + elements.length + cables.length === 0 && <p className="muted">Postavi kutiju (K), utičnicu (U) ili prekidač (P), pa kabel (C) od izlaza bužira do elementa.</p>}
@@ -315,6 +316,7 @@ export function WallSidebar({ room, walls, wall }: { room: Room; walls: WallInfo
           </ul>
         </section>
       )}
+      {props && !el && !cable && <p className="muted hint">Klikni element ili kabel na zidu za svojstva.</p>}
     </aside>
   )
 }

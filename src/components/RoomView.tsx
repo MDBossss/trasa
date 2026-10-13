@@ -65,9 +65,9 @@ export function RoomView({ roomId, wall }: { roomId: string; wall: number | null
   return (
     <>
       {current && !mobile && <WallToolRail />}
+      {!mobile && <WallSidebar room={room} walls={walls} wall={wall} part="nav" />}
       <div className="room-view">
         <div className="room-head">
-          {!mobile && <button onClick={() => setView({ kind: 'plan' })}><Icon.back /> Tlocrt</button>}
           <h2>{room.name}</h2>
           {current && (
             <div className="wall-nav">
@@ -91,7 +91,7 @@ export function RoomView({ roomId, wall }: { roomId: string; wall: number | null
         )}
         {mobile && <Sheet title={selOnWall ? 'Detalji' : `${room.name} · zidovi`} open={sheet} onOpenChange={setSheet}>{sidebar}</Sheet>}
       </div>
-      {!mobile && sidebar}
+      {!mobile && <WallSidebar room={room} walls={walls} wall={wall} part="props" />}
     </>
   )
 }
