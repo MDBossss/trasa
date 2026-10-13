@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-13T17:53:33.491Z",
+ "savedAt": "2026-10-13T18:02:13.237Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2650,6 +2650,118 @@
     "id": "rwjm0nrt",
     "label": "U22",
     "slotOrder": 1
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 1,
+    "type": "socket",
+    "xM": 0.65,
+    "zM": 0.61,
+    "note": "",
+    "host": "bcj1xh38",
+    "id": "xtyzpgt4",
+    "label": "U25",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 1,
+    "type": "socket",
+    "xM": 0.65,
+    "zM": 0.61,
+    "note": "",
+    "host": "bcj1xh38",
+    "id": "n6agwhkl",
+    "label": "U26",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 1,
+    "type": "socket",
+    "xM": 0.65,
+    "zM": 0.61,
+    "note": "",
+    "host": "bcj1xh38",
+    "id": "jm6r9l81",
+    "label": "U27",
+    "slotOrder": 2
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 1,
+    "type": "socket",
+    "xM": 0.65,
+    "zM": 0.61,
+    "note": "",
+    "host": "bcj1xh38",
+    "id": "6oxyamjo",
+    "label": "U28",
+    "slotOrder": 3,
+    "socketKind": "euro"
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 1,
+    "type": "socket",
+    "xM": 1.51,
+    "zM": 0.61,
+    "note": "",
+    "host": "bshjxclk",
+    "id": "rdukcqge",
+    "label": "U27",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 1,
+    "type": "socket",
+    "xM": 1.51,
+    "zM": 0.61,
+    "note": "",
+    "host": "bshjxclk",
+    "id": "fdvzp5ha",
+    "label": "U28",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 1,
+    "type": "socket",
+    "xM": 1.51,
+    "zM": 0.61,
+    "note": "",
+    "host": "bshjxclk",
+    "id": "f8ci9kwh",
+    "label": "U29",
+    "slotOrder": 2,
+    "socketKind": "euro"
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 1,
+    "type": "socket",
+    "xM": 1.51,
+    "zM": 0.61,
+    "note": "",
+    "host": "bshjxclk",
+    "id": "cogfxbc6",
+    "label": "U30",
+    "slotOrder": 3,
+    "socketKind": "euro"
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 1,
+    "type": "socket",
+    "xM": 1.51,
+    "zM": 0.61,
+    "note": "",
+    "host": "bshjxclk",
+    "id": "kai6nxa5",
+    "label": "U31",
+    "slotOrder": 4,
+    "socketKind": "rj45"
    }
   ],
   "cables": [
@@ -3487,6 +3599,46 @@
     ],
     "note": "",
     "id": "ensae7rc"
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 2,
+    "type": "UTP cat6",
+    "from": {
+     "kind": "exit",
+     "conduitId": "xk8z0yfs",
+     "end": "start"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 2,
+     "zM": 2.11
+    },
+    "via": [],
+    "note": "",
+    "id": "mvtcioy2"
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 1,
+    "type": "UTP cat6",
+    "from": {
+     "kind": "corner",
+     "corner": 2,
+     "zM": 2.11
+    },
+    "to": {
+     "kind": "element",
+     "id": "bshjxclk"
+    },
+    "via": [
+     {
+      "xM": 1.67,
+      "zM": 1.62
+     }
+    ],
+    "note": "",
+    "id": "jptrucdx"
    }
   ],
   "categories": [
@@ -3585,9 +3737,8 @@
  },
  "ui": {
   "view": {
-   "kind": "room",
-   "roomId": "24uhwdfi",
-   "wall": 2
+   "kind": "junctions",
+   "elementId": "bshjxclk"
   }
  }
 }
