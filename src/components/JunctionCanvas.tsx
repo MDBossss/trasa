@@ -7,6 +7,7 @@ import { CAP_H, CAP_W, DEPTH, GAP, WAGO, boxLayout, boxSizeLabel, wagoSlot, type
 // Layout is automatic from the junction data.
 
 const S = 4 // px per mm
+const OX = 150, OY = 150 // box origin inside the view box: room for a 30 mm tube and its caption on every side
 // a caption inside a WAGO body: the short form, and only the part before the arrow when the unit is narrow
 const innerCap = (cap: string, w: number) => { const t = cap.replace(' s premosnicom', ' most'); return t.length * 4.6 <= w ? t : t.split(/ [←→] /)[0] }
 export const CAP_COLOR = '#7c3aed'
@@ -22,7 +23,7 @@ const entryOf = (side: Side, i: number, n: number, W: number, H: number) => {
 // Size of the drawing's viewBox, for layouts that need the aspect ratio before rendering.
 export function junctionViewBox(j: Junction): { w: number; h: number } {
   const lay = boxLayout(j)
-  return { w: 110 + lay.W * S + 190, h: 150 + lay.H * S + (j.cables.some((c) => c.side === 'bottom') ? 200 : 60) }
+  return { w: OX + lay.W * S + 150, h: OY + lay.H * S + (j.cables.some((c) => c.side === 'bottom') ? 200 : 60) }
 }
 
 // Where each cable's sheath leaves the drawing (svg coordinates) and the box centre, for the room board.
@@ -35,12 +36,12 @@ export function junctionAnchors(j: Junction): { stubs: Map<string, { x: number; 
   for (const c of j.cables) {
     const arr = sides[c.side]
     const e = entryOf(c.side, arr.indexOf(c), arr.length, lay.W, lay.H)
-    const st = { x: 110 + (e.p[0] - e.n[0] * 30) * S, y: 150 + (e.p[1] - e.n[1] * 30) * S, n: [-e.n[0], -e.n[1]] as [number, number], cableId: c.cable.id }
+    const st = { x: OX + (e.p[0] - e.n[0] * 30) * S, y: OY + (e.p[1] - e.n[1] * 30) * S, n: [-e.n[0], -e.n[1]] as [number, number], cableId: c.cable.id }
     stubs.set(c.cable.id, st)
     const farId = c.far.place?.id ?? c.far.element?.id
     if (farId && !stubs.has(`to:${farId}`)) stubs.set(`to:${farId}`, st)
   }
-  return { stubs, cx: 110 + (lay.W / 2) * S, cy: 150 + (lay.H / 2) * S }
+  return { stubs, cx: OX + (lay.W / 2) * S, cy: OY + (lay.H / 2) * S }
 }
 
 export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, className, labels = true }: {
@@ -49,7 +50,6 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
 }) {
   const lay = useMemo(() => boxLayout(j), [j])
   const { W, H } = lay
-  const OX = 110, OY = 150
   const mm = (v: number) => v * S
   const px = (x: number, y: number): [number, number] => [OX + mm(x), OY + mm(y)]
   const sides: Record<Side, BoxCable[]> = { top: [], bottom: [], left: [], right: [] }
@@ -68,7 +68,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
   }
   const placedWago = (t: Terminal) => lay.placed.find((p): p is Placed & { kind: 'wago' } => p.kind === 'wago' && p.t.id === t.id)
   const placedDev = (id: string) => lay.placed.find((p): p is Placed & { kind: 'device' } => p.kind === 'device' && p.d.el.id === id)
-  const vbW = OX + mm(W) + 190
+  const vbW = OX + mm(W) + 150
   const vbH = OY + mm(H) + (sides.bottom.length ? 200 : 60)
   const [bx, by] = px(0, 0)
   const idx = (k: string) => plan.findIndex((w) => w.key === k)
@@ -114,10 +114,10 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
         const est = Math.max(c.label.length * 7, (c.sub.length + roleShort(c).length + 3) * 5.6)
         const levels = vertical ? Math.min(3, Math.ceil(est / (mm(W) / (arr.length + 1)))) : 1
         const level = arr.indexOf(c) % levels
-        const off = (c.side === 'top' ? 30 : 36) - level * 7
+        const off = vertical ? (c.side === 'top' ? 30 : 36) - level * 7 : 29
         const [lx, ly] = px(e.p[0] - e.n[0] * off, e.p[1] - e.n[1] * off)
-        const anchor = c.side === 'left' ? 'end' : c.side === 'right' ? 'start' : 'middle'
-        const dy = c.side === 'top' ? -6 : c.side === 'bottom' ? 14 : 4
+        const anchor = c.side === 'left' ? 'start' : c.side === 'right' ? 'end' : 'middle'
+        const dy = c.side === 'top' ? -6 : c.side === 'bottom' ? 14 : -(mm(od) / 2 + 18)
         const dim = mode === 'all' && hover && hover !== `cable:${c.cable.id}` && !plan.some((w) => w.key === hover && w.cable?.cable.id === c.cable.id)
         return (
           <g key={c.cable.id} className={`jc-cable ${dim ? 'dim' : ''}`} onMouseEnter={() => onHover(`cable:${c.cable.id}`)} onMouseLeave={() => onHover(null)}>
@@ -234,7 +234,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
             <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(pl.h) - mm(2.5) : y + mm(5.5)} textAnchor="middle" fontSize={9} fontWeight={600} fill={look.text}>{d.el.label}</text>
             {inner
               ? <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(pl.h) - mm(2.5) - 10 : y + mm(5.5) + 10} textAnchor="middle" fontSize={8} fill={look.text}>{d.label.length * 4.6 <= mm(pl.w) ? d.label : d.label.split(' (')[0]}</text>
-              : <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(pl.h) + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">{d.label}</text>}
+              : <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(pl.h) + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">{d.label.length * 5.4 <= mm(pl.w) + 24 ? d.label : d.label.split(' (')[0]}</text>}
           </g>
         )
       })}

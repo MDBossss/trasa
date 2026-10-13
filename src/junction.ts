@@ -426,7 +426,7 @@ const ORDER = (id: string) => (id === 'L' ? 0 : id === 'N' ? 1 : id === 'PE' ? 2
 // retail label (outer size) and number of cable entries. The box grows along this ladder before a split is suggested.
 export const BOX_CATALOG: { w: number; h: number; label: string; entries: number; note?: string }[] = [
   { w: 90, h: 90, label: '10 × 10', entries: 8 },
-  { w: 90, h: 110, label: '10 × 12', entries: 10 },
+  { w: 110, h: 90, label: '10 × 12', entries: 10 }, // mounted landscape: three rows of WAGOs instead of four short ones
   { w: 145, h: 120, label: '15 × 13', entries: 12, note: 'Vimar V70005 154 × 128 × 70' },
   { w: 160, h: 160, label: '17 × 17', entries: 14, note: 'Legrand 089374 170 × 170 × 48' },
   { w: 220, h: 170, label: '23 × 18', entries: 16, note: 'Legrand 089275 230 × 180 × 50' },
@@ -461,7 +461,7 @@ export function boxLayout(j: Pick<Junction, 'box' | 'terminals' | 'devices'>): {
     if (H >= 110) {
       // the taller box takes four rows: WAGOs in two layers at the top and bottom, as they do in practice; that counts as full
       rows.push({ y: 5 + DEPTH + 4, flip: false, x: 5, items: [], h: DEPTH, inner: true }, { y: H - 5 - 2 * DEPTH - 4, flip: true, x: 5, items: [], h: DEPTH, inner: true })
-    } else if (H >= 100) rows.push({ y: H / 2 - DEPTH / 2, flip: false, x: 5, items: [], h: DEPTH })
+    } else if (W >= 110) rows.push({ y: H / 2 - DEPTH / 2, flip: false, x: 5, items: [], h: DEPTH })
     let ok = true
     for (const it of items) {
       const pref = it.kind === 'device' && it.d.kind !== 'relay' ? [...rows].reverse() : rows
