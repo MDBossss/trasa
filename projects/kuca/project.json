@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-13T18:56:29.135Z",
+ "savedAt": "2026-10-13T19:33:58.534Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -3260,6 +3260,54 @@
     "note": "",
     "id": "4xh06zxz",
     "label": "K15"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 0,
+    "type": "socket",
+    "xM": 2.1,
+    "zM": 0.48,
+    "note": "",
+    "host": "iq9etxt1",
+    "id": "pk0priow",
+    "label": "U50",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 0,
+    "type": "socket",
+    "xM": 2.1,
+    "zM": 0.48,
+    "note": "",
+    "host": "iq9etxt1",
+    "id": "i8lw1o50",
+    "label": "U51",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 0,
+    "type": "socket",
+    "xM": 0.58,
+    "zM": 0.48,
+    "note": "",
+    "host": "bkt0k4u9",
+    "id": "ndquw13c",
+    "label": "U52",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 0,
+    "type": "socket",
+    "xM": 0.58,
+    "zM": 0.48,
+    "note": "",
+    "host": "bkt0k4u9",
+    "id": "fzqnq3is",
+    "label": "U53",
+    "slotOrder": 1
    }
   ],
   "cables": [
@@ -4479,50 +4527,6 @@
    {
     "roomId": "j5g1ml5l",
     "wall": 1,
-    "type": "UTP cat6",
-    "from": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 1.91
-    },
-    "to": {
-     "kind": "element",
-     "id": "t4b7ftfl"
-    },
-    "via": [
-     {
-      "xM": 0.86,
-      "zM": 1.75
-     }
-    ],
-    "note": "",
-    "id": "8ij6awgu"
-   },
-   {
-    "roomId": "j5g1ml5l",
-    "wall": 1,
-    "type": "koaks",
-    "from": {
-     "kind": "element",
-     "id": "t4b7ftfl"
-    },
-    "to": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 1.81
-    },
-    "via": [
-     {
-      "xM": 0.77,
-      "zM": 1.72
-     }
-    ],
-    "note": "",
-    "id": "sg0b5bvh"
-   },
-   {
-    "roomId": "j5g1ml5l",
-    "wall": 1,
     "type": "NYM-J 3x1.5",
     "from": {
      "kind": "element",
@@ -4747,20 +4751,109 @@
    },
    {
     "roomId": "j5g1ml5l",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 1.81
+    },
+    "to": {
+     "kind": "element",
+     "id": "iq9etxt1"
+    },
+    "via": [
+     {
+      "xM": 2.15,
+      "zM": 1.81
+     }
+    ],
+    "note": "",
+    "id": "uj1bgls0"
+   },
+   {
+    "roomId": "j5g1ml5l",
     "wall": 1,
     "type": "NYM-J 3x1.5",
     "from": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 1.81
+    },
+    "to": {
      "kind": "element",
-     "id": "so7y5w67"
+     "id": "t4b7ftfl"
+    },
+    "via": [
+     {
+      "xM": 0.65,
+      "zM": 1.62
+     }
+    ],
+    "note": "",
+    "id": "abyebnjz"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 1,
+    "type": "UTP cat6",
+    "from": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 1.91
+    },
+    "to": {
+     "kind": "element",
+     "id": "t4b7ftfl"
+    },
+    "via": [
+     {
+      "xM": 0.75,
+      "zM": 1.69
+     }
+    ],
+    "note": "",
+    "id": "xc3nbyfc"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 1,
+    "type": "koaks",
+    "from": {
+     "kind": "element",
+     "id": "t4b7ftfl"
     },
     "to": {
      "kind": "corner",
      "corner": 1,
-     "zM": 1.69
+     "zM": 2.07
+    },
+    "via": [
+     {
+      "xM": 0.82,
+      "zM": 1.84
+     }
+    ],
+    "note": "",
+    "id": "q5pzxiyj"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 0,
+    "type": "koaks",
+    "from": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 2.07
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "8xytnpbh",
+     "end": "start"
     },
     "via": [],
     "note": "",
-    "id": "3vk420qf"
+    "id": "5uq6eao5"
    }
   ],
   "categories": [
