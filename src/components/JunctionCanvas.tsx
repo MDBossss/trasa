@@ -24,15 +24,18 @@ export function junctionViewBox(j: Junction): { w: number; h: number } {
 }
 
 // Where each cable's sheath leaves the drawing (svg coordinates) and the box centre, for the room board.
-export function junctionAnchors(j: Junction): { stubs: Map<string, { x: number; y: number; n: [number, number] }>; cx: number; cy: number } {
+export function junctionAnchors(j: Junction): { stubs: Map<string, { x: number; y: number; n: [number, number]; cableId: string }>; cx: number; cy: number } {
   const lay = boxLayout(j)
   const sides: Record<Side, BoxCable[]> = { top: [], bottom: [], left: [], right: [] }
   for (const c of j.cables) sides[c.side].push(c)
-  const stubs = new Map<string, { x: number; y: number; n: [number, number] }>()
+  // keyed by the cable id and, for box-to-box cables, also by the far box's id (a cable round a corner is two segments)
+  const stubs = new Map<string, { x: number; y: number; n: [number, number]; cableId: string }>()
   for (const c of j.cables) {
     const arr = sides[c.side]
     const e = entryOf(c.side, arr.indexOf(c), arr.length, lay.W, lay.H)
-    stubs.set(c.cable.id, { x: 110 + (e.p[0] - e.n[0] * 30) * S, y: 150 + (e.p[1] - e.n[1] * 30) * S, n: [-e.n[0], -e.n[1]] })
+    const st = { x: 110 + (e.p[0] - e.n[0] * 30) * S, y: 150 + (e.p[1] - e.n[1] * 30) * S, n: [-e.n[0], -e.n[1]] as [number, number], cableId: c.cable.id }
+    stubs.set(c.cable.id, st)
+    if (c.far.place && !stubs.has(`to:${c.far.place.id}`)) stubs.set(`to:${c.far.place.id}`, st)
   }
   return { stubs, cx: 110 + (lay.W / 2) * S, cy: 150 + (lay.H / 2) * S }
 }
