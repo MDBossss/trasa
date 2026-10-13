@@ -291,6 +291,23 @@ function localSignals(place: WallElement, p: Project): Set<string> {
 
 // Signals a place-to-place cable must carry: L N PE plus whatever both sides want.
 // Both ends of a cable resolved to elements (through conduits / corners), hosted elements mapped to their host.
+// All segments of one physical cable (corner and conduit continuations), this one included.
+export function chainCables(c: Cable, p: Project): Cable[] {
+  const seen = new Map<string, Cable>([[c.id, c]])
+  const walk = (x: Cable, end: CableEnd, hops: number) => {
+    if (hops > 8) return
+    let t: { cable: Cable; end: CableEnd } | null = null
+    if (end.kind === 'corner') t = throughCorner(p, x, end)
+    else if (end.kind === 'exit') { const cd = p.conduits.find((k) => k.id === end.conduitId); if (cd && cd.categoryId !== 'dolaz') t = throughConduit(p, cd.id, end.end) }
+    if (!t || seen.has(t.cable.id)) return
+    seen.set(t.cable.id, t.cable); walk(t.cable, t.end, hops + 1)
+  }
+  walk(c, c.from, 0); walk(c, c.to, 0)
+  return [...seen.values()]
+}
+// The thinnest segment of the chain: the signals a chain can carry are limited by it.
+export const thinnest = (c: Cable, p: Project) => chainCables(c, p).sort((a, b) => coreColors(a.type).length - coreColors(b.type).length)[0]
+
 export function cableEnds(c: Cable, p: Project): (WallElement | undefined)[] {
   return [c.from, c.to].map((e) => { const f = follow(p, c, e).end; const el0 = f.kind === 'element' ? el(p, f.id) : undefined; return el0?.host ? el(p, el0.host) : el0 })
 }
@@ -308,9 +325,15 @@ function signalCarriers(p: Project): Map<string, Set<string>> {
   const hit = carriersCache.get(p)
   if (hit) return hit
   const places = p.elements.filter(isPlace)
-  const edges = p.cables.map((c) => ({ c, pl: cablePlaces(c, p) })).filter((e): e is { c: Cable; pl: [WallElement, WallElement] } => !!e.pl)
+  // one edge per physical cable: a chain of corner segments is one cable, and every segment carries the same signals
+  const chainOf = new Map<string, string[]>()
   const adj = new Map<string, { to: string; cable: string }[]>()
-  for (const { c, pl } of edges) {
+  for (const c of p.cables) {
+    if (chainOf.has(c.id)) continue
+    const ids = chainCables(c, p).map((x) => x.id)
+    for (const id of ids) chainOf.set(id, ids)
+    const pl = cablePlaces(c, p)
+    if (!pl) continue
     adj.set(pl[0].id, [...(adj.get(pl[0].id) ?? []), { to: pl[1].id, cable: c.id }])
     adj.set(pl[1].id, [...(adj.get(pl[1].id) ?? []), { to: pl[0].id, cable: c.id }])
   }
@@ -325,7 +348,7 @@ function signalCarriers(p: Project): Map<string, Set<string>> {
     while (queue.length) { const cur = queue.shift()!; for (const e of adj.get(cur) ?? []) if (!parent.has(e.to)) { parent.set(e.to, { from: cur, cable: e.cable }); queue.push(e.to) } }
     for (const id of ids.slice(1)) {
       let cur = id
-      while (parent.get(cur)) { const st = parent.get(cur)!; if (!out.has(st.cable)) out.set(st.cable, new Set()); out.get(st.cable)!.add(sgn); cur = st.from }
+      while (parent.get(cur)) { const st = parent.get(cur)!; for (const id of chainOf.get(st.cable) ?? [st.cable]) { if (!out.has(id)) out.set(id, new Set()); out.get(id)!.add(sgn) } cur = st.from }
     }
   }
   carriersCache.set(p, out)
@@ -343,7 +366,7 @@ export function cableNeeds(c: Cable, p: Project): CableNeeds | null {
   const places = cablePlaces(c, p)
   if (!places) return null
   const signals = crossSignals(places[0], places[1], p, c.id)
-  const has = coreColors(c.type).length
+  const has = coreColors(thinnest(c, p).type).length
   const needed = signals.length
   const suggest = needed <= 3 ? '3×1,5' : needed <= 5 ? '5×1,5' : needed <= 7 ? '7×1,5' : `${needed} žila (dva kabela)`
   return { signals, needed, has, suggest, places: [places[0], places[1]] }
@@ -356,6 +379,11 @@ function crossWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallEle
   const extras = signals.filter((s) => !LNPE.includes(s))
   const spare = cores.filter((c) => !['brown', 'blue', 'gnye'].includes(c))
   if (extras.length > spare.length) checks.push({ level: 'err', text: `Kabel ${bc.label} treba ${signals.length} žila (${signals.map((s) => terminalMeta(s, p).label).join(', ')}), ima ${cores.length}. Zamijeni s ${signals.length <= 5 ? '5×1,5' : '7×1,5'}.` })
+  else {
+    // the segment at this box may be fine while a continuation past a corner is thinner
+    const thin = thinnest(bc.cable, p)
+    if (thin.id !== bc.cable.id && coreColors(thin.type).length < signals.length) checks.push({ level: 'err', text: `Kabel ${bc.label} je ${bc.cable.type}, ali njegov nastavak na zidu ${thin.wall + 1} je ${thin.type}: tamo nema žile za ${extras.map((s) => terminalMeta(s, p).label).join(', ')}. Zamijeni nastavak s ${signals.length <= 5 ? '5×1,5' : '7×1,5'}.` })
+  }
   let k = 0
   return cores.map((c) => {
     if (c === 'brown') return { color: c, terminal: 'L' }

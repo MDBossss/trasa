@@ -7,6 +7,8 @@ import { CAP_H, CAP_W, DEPTH, GAP, WAGO, boxLayout, boxSizeLabel, wagoSlot, type
 // Layout is automatic from the junction data.
 
 const S = 4 // px per mm
+// a caption inside a WAGO body: the short form, and only the part before the arrow when the unit is narrow
+const innerCap = (cap: string, w: number) => { const t = cap.replace(' s premosnicom', ' most'); return t.length * 4.6 <= w ? t : t.split(/ [←→] /)[0] }
 export const CAP_COLOR = '#7c3aed'
 
 const entryOf = (side: Side, i: number, n: number, W: number, H: number) => {
@@ -107,7 +109,13 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
         const od = c.cores.length >= 5 ? 11 : /2[.,]5/.test(c.sub) ? 10 : 8.5
         const a = [e.p[0] - e.n[0] * 30, e.p[1] - e.n[1] * 30], b = [e.p[0] + e.n[0] * 9, e.p[1] + e.n[1] * 9]
         const [x1, y1] = px(a[0], a[1]), [x2, y2] = px(b[0], b[1])
-        const [lx, ly] = px(e.p[0] - e.n[0] * 36, e.p[1] - e.n[1] * 36)
+        // crowded top/bottom sides stagger their captions inward along the tube so neighbours never overlap
+        const arr = sides[c.side], vertical = c.side === 'top' || c.side === 'bottom'
+        const est = Math.max(c.label.length * 7, (c.sub.length + roleShort(c).length + 3) * 5.6)
+        const levels = vertical ? Math.min(3, Math.ceil(est / (mm(W) / (arr.length + 1)))) : 1
+        const level = arr.indexOf(c) % levels
+        const off = (c.side === 'top' ? 30 : 36) - level * 7
+        const [lx, ly] = px(e.p[0] - e.n[0] * off, e.p[1] - e.n[1] * off)
         const anchor = c.side === 'left' ? 'end' : c.side === 'right' ? 'start' : 'middle'
         const dy = c.side === 'top' ? -6 : c.side === 'bottom' ? 14 : 4
         const dim = mode === 'all' && hover && hover !== `cable:${c.cable.id}` && !plan.some((w) => w.key === hover && w.cable?.cable.id === c.cable.id)
@@ -149,6 +157,8 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
         const [x, y] = px(pl.x, pl.y)
         const rowIdx = lay.placed.filter((q, qi) => qi < pi && q.flip === pl.flip && Math.abs(q.y - pl.y) < 20).length
         const capDy = rowIdx % 2 ? 12 : 0
+        // an inner row has no free margin: its caption goes inside the body (or beside a cap) instead of over the wires
+        const inner = lay.placed.some((q) => q.flip === pl.flip && (pl.flip ? q.y > pl.y + 10 : q.y < pl.y - 10))
         if (pl.kind === 'wago') {
           const n = WAGO[pl.t.wago as 412 | 413 | 415].n, uw = unitW(pl.t), pitch = uw / n, k = pl.t.chained
           const cap = `${pl.w >= 25 ? `221-${pl.t.wago} · ` : ''}${k > 1 ? `×${k} s premosnicom · ` : ''}${pl.t.desc}`
@@ -185,7 +195,9 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
                 const dy = (pl.flip ? -1 : 1) * mm(9)
                 return <path key={u} d={`M${ax},${ay} C${ax},${ay + dy} ${bx2},${by2 + dy} ${bx2},${by2}`} fill="none" stroke={bridgeColor} strokeWidth={mm(2.8)} strokeLinecap="round" />
               })}
-              <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(DEPTH) + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">{cap}</text>
+              {inner
+                ? <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(9.2) : y + mm(10.8)} textAnchor="middle" fontSize={8} fill="#555">{innerCap(cap, mm(pl.w))}</text>
+                : <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(DEPTH) + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">{cap}</text>}
             </g>
           )
         }
@@ -195,7 +207,9 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
             <g key={pl.t.id}>
               <rect x={x} y={y} width={cw} height={ch} rx={cw / 2} fill={CAP_COLOR} stroke="#4c1d95" strokeWidth={0.8} />
               {[0.3, 0.55, 0.8].map((f) => <line key={f} x1={x + 1} y1={y + ch * f} x2={x + cw - 1} y2={y + ch * f} stroke="rgba(255,255,255,.35)" strokeWidth={0.8} />)}
-              <text x={x + cw / 2} y={pl.flip ? y + ch + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">{pl.t.id.startsWith('PARK') ? 'izoliraj' : `${pl.t.label} · izoliraj`}</text>
+              {inner
+                ? <text x={x + cw + 4} y={y + ch / 2 + 3} textAnchor="start" fontSize={8.5} fill="var(--muted)">izoliraj</text>
+                : <text x={x + cw / 2} y={pl.flip ? y + ch + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">{pl.t.id.startsWith('PARK') ? 'izoliraj' : `${pl.t.label} · izoliraj`}</text>}
             </g>
           )
         }
@@ -218,7 +232,9 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
               )
             })}
             <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(pl.h) - mm(2.5) : y + mm(5.5)} textAnchor="middle" fontSize={9} fontWeight={600} fill={look.text}>{d.el.label}</text>
-            <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(pl.h) + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">{d.label}</text>
+            {inner
+              ? <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(pl.h) - mm(2.5) - 10 : y + mm(5.5) + 10} textAnchor="middle" fontSize={8} fill={look.text}>{d.label.length * 4.6 <= mm(pl.w) ? d.label : d.label.split(' (')[0]}</text>
+              : <text x={x + mm(pl.w) / 2} y={pl.flip ? y + mm(pl.h) + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">{d.label}</text>}
           </g>
         )
       })}
