@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useStore } from '../store'
 import { bomFor, type BomLine } from '../bom'
-import { allJunctions } from '../junction'
+import { allJunctions, allLeafJunctions } from '../junction'
 import { Icon } from './Icons'
 
 // Shopping list, not just a table: tick off what is bought (kept per device), see which room needs what,
@@ -27,7 +27,7 @@ export function MaterialView() {
     }
     return m
   }, [project, roomId])
-  const checks = useMemo(() => allJunctions(project).flatMap((j) => j.checks.filter((c) => c.level !== 'ok').map((c) => ({ ...c, j }))).filter((c) => !roomId || c.j.room.id === roomId), [project, roomId])
+  const checks = useMemo(() => [...allJunctions(project), ...allLeafJunctions(project)].flatMap((j) => j.checks.filter((c) => c.level !== 'ok').map((c) => ({ ...c, j }))).filter((c) => !roomId || c.j.room.id === roomId), [project, roomId])
   const groups = [...new Set(lines.map((l) => l.group))]
   const scope = roomId ? project.rooms.find((r) => r.id === roomId)?.name ?? '' : 'cijela kuća'
 

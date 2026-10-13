@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '../store'
-import { cableNeeds, cablePlaces, terminalMeta, wirePlan, type Junction } from '../junction'
-import { WIRE_LABEL } from '../types'
+import { cableEnds, cableNeeds, terminalMeta, wirePlan, type Junction } from '../junction'
+import { ELEMENT_META, WIRE_LABEL, isPlace } from '../types'
 import { coreColors } from '../types'
 import { Hud } from './Hud'
 import { JunctionCanvas, junctionAnchors, junctionViewBox } from './JunctionCanvas'
@@ -50,8 +50,9 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
     const bottom = Math.max(...boxes.map((b) => b.ty + b.vb.h * BOX_SCALE), 0) + 20
     const out: { id: string; d: string; od: number; label: string; tip: string; mid: { x: number; y: number }; tail: boolean; boxes: string[]; cableIds: string[] }[] = []
     for (const c of project.cables) {
-      const pl = cablePlaces(c, project)
-      if (!pl || seen.has(c.id)) continue
+      const ends = cableEnds(c, project)
+      if (!ends[0] || !ends[1] || ends[0].id === ends[1].id || seen.has(c.id)) continue
+      const pl: [typeof ends[0] & object, typeof ends[0] & object] = [ends[0], ends[1]]
       const a = byBox.get(pl[0].id), b = byBox.get(pl[1].id)
       if (!a && !b) continue
       seen.add(c.id)
@@ -167,7 +168,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
     if (d && !d.moved && d.box) onOpen(d.box)
   }
 
-  const sizeLabel = (j: Junction) => j.box.type === 'modbox' ? `doza ${j.box.modules ?? 3}M` : `kutija ${j.size.W / 10 + 1} × ${j.size.H / 10 + 1}`
+  const sizeLabel = (j: Junction) => j.box.type === 'modbox' ? `doza ${j.box.modules ?? 3}M` : j.box.type === 'box' ? `kutija ${j.size.W / 10 + 1} × ${j.size.H / 10 + 1}` : ELEMENT_META[j.box.type].label.toLowerCase()
   const tubed = useMemo(() => new Set(links.flatMap((l) => l.cableIds)), [links])
   // each side of a corner cable is its own segment, so the box gets the id of its own segment
   const hoverFor = (boxId: string) => { const l = hover ? links.find((x) => x.id === hover) : null; const k = l ? l.boxes.indexOf(boxId) : -1; return l && k >= 0 ? `cable:${l.cableIds[k]}` : null }
@@ -188,7 +189,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
         </svg>
         {boxes.map(({ j, tx, ty, plan, vb }) => (
           <div key={j.box.id} className="sbox" data-box={j.box.id} style={{ left: tx, top: ty, width: vb.w, height: vb.h, transform: `scale(${BOX_SCALE})` }} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') onOpen(j.box.id) }}>
-            <div className="sbox-head"><span className={`dot ${j.level}`} /><b>{j.box.label}</b><span className="muted">{sizeLabel(j)}{j.box.depth ? `, ${j.box.depth}` : ''} · zid {j.box.wall + 1}</span></div>
+            <div className="sbox-head"><span className={`dot ${j.level}`} /><b>{j.box.label}</b><span className="muted">{sizeLabel(j)}{isPlace(j.box) && j.box.depth ? `, ${j.box.depth}` : ''} · zid {j.box.wall + 1}</span></div>
             <JunctionCanvas className="sbox-svg" j={j} plan={plan} mode="all" step={0} hover={hoverFor(j.box.id)} onHover={() => {}} onPick={() => onOpen(j.box.id)} labels={(c) => !tubed.has(c.cable.id)} />
           </div>
         ))}

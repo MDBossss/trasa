@@ -1,4 +1,4 @@
-import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isPlace, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, relayModelOf, hostedFront } from './types'
+import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isPlace, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, relayModelOf, hostedFront, type ElementType } from './types'
 
 // Everything a box needs: which cables enter it, what each core goes to, which devices sit inside
 // and which WAGO 221 connectors (or direct jumpers) that takes. Derived from the drawing, nothing is stored.
@@ -22,7 +22,7 @@ export interface BoxCable {
   wires: Wire[]
   far: { element?: WallElement; room?: Room; conduit?: Conduit; place?: WallElement }
 }
-export interface Device { el: WallElement; label: string; ports: string[]; wMm: number; hMm: number; kind: 'relay' | 'button' | 'socket' }
+export interface Device { el: WallElement; label: string; ports: string[]; wMm: number; hMm: number; kind: 'relay' | 'button' | 'socket' | 'terminal' }
 export type TerminalWire =
   | { kind: 'core'; cableId: string; cableLabel: string; color: WireColor; note?: string }
   | { kind: 'port'; deviceId: string; deviceLabel: string; port: string; color: WireColor; note?: string }
@@ -290,6 +290,10 @@ function localSignals(place: WallElement, p: Project): Set<string> {
 }
 
 // Signals a place-to-place cable must carry: L N PE plus whatever both sides want.
+// Both ends of a cable resolved to elements (through conduits / corners), hosted elements mapped to their host.
+export function cableEnds(c: Cable, p: Project): (WallElement | undefined)[] {
+  return [c.from, c.to].map((e) => { const f = follow(p, c, e).end; const el0 = f.kind === 'element' ? el(p, f.id) : undefined; return el0?.host ? el(p, el0.host) : el0 })
+}
 // Which places a cable joins (both ends resolved through conduits / corners / hosted elements).
 export function cablePlaces(c: Cable, p: Project): [WallElement, WallElement] | null {
   const ends = [c.from, c.to].map((e) => { const f = follow(p, c, e).end; return f.kind === 'element' ? el(p, f.id) : undefined })
@@ -412,7 +416,7 @@ export function boxLayout(j: Pick<Junction, 'box' | 'terminals' | 'devices'>): {
     ...j.terminals.filter((t) => t.cap).map((t): Item => ({ kind: 'cap', t, w: CAP_W, h: CAP_H })),
     ...j.devices.map((d): Item => ({ kind: 'device', d, w: d.wMm, h: d.hMm })),
   ]
-  const base = j.box.type === 'modbox' ? [(j.box.modules ?? 3) <= 3 ? [100, 70] : (j.box.modules ?? 3) <= 4 ? [120, 70] : [160, 70], [160, 100], [200, 120]] : BOX_SIZES
+  const base = j.box.type === 'modbox' ? [(j.box.modules ?? 3) <= 3 ? [100, 70] : (j.box.modules ?? 3) <= 4 ? [120, 70] : [160, 70], [160, 100], [200, 120]] : isPlace(j.box) ? BOX_SIZES : [[60, 46], [90, 60]]
   for (const [W, H] of base) {
     const rows: { y: number; flip: boolean; x: number; items: Placed[]; h: number }[] = [
       { y: 5, flip: false, x: 5, items: [], h: DEPTH },
@@ -538,6 +542,52 @@ export function junctionFor(box: WallElement, p: Project): Junction {
 
 export function allJunctions(p: Project): Junction[] {
   return p.elements.filter((e) => isPlace(e) && !e.host && p.rooms.some((r) => r.id === e.roomId)).map((b) => junctionFor(b, p))
+}
+
+// A light, a door unit or a stand-alone socket: one terminal block (klema) and the cable's cores going straight onto it.
+export const LEAF_TYPES: ElementType[] = ['light', 'motor', 'socket']
+export const isLeaf = (e: WallElement) => LEAF_TYPES.includes(e.type) && !e.host
+export function leafJunctionFor(el: WallElement, p: Project): Junction {
+  const room = p.rooms.find((r) => r.id === el.roomId)!
+  const checks: Check[] = []
+  const ports = el.type === 'motor' ? ['L', 'N', 'PE', 'IMP 1', 'IMP 2'] : ['L', 'N', 'PE']
+  const name = el.type === 'light' ? 'svjetiljka' : el.type === 'motor' ? 'upravljačka jedinica' : 'utičnica'
+  const device: Device = { el, label: `${el.label} ${name}`, ports, wMm: Math.max(24, ports.length * 8), hMm: 16, kind: 'terminal' }
+  const cables: BoxCable[] = p.cables
+    .filter((c) => isAtBox(c, el))
+    .map((c) => {
+      const r = resolveCable(c, el, p)
+      const spare = r.cores.filter((k) => k !== 'brown' && k !== 'blue' && k !== 'gnye')
+      const wires: Wire[] = r.cores.map((k) => {
+        if (k === 'brown') return { color: k, terminal: 'L', note: el.type === 'light' ? 'faza sa prekidača / releja' : 'faza' }
+        if (k === 'blue') return { color: k, terminal: 'N' }
+        if (k === 'gnye') return { color: k, terminal: 'PE' }
+        const i = spare.indexOf(k)
+        if (el.type === 'motor' && i < 2) return { color: k, terminal: `IMP${i + 1}`, note: 'impuls sa Shellyja (suhi kontakt)' }
+        return { color: k, terminal: 'PARK', note: 'rezerva' }
+      })
+      return { ...r, ...sideOf(r, el), wires }
+    })
+  if (!cables.length) checks.push({ level: 'warn', text: `${el.label}: do ${name === 'svjetiljka' ? 'svjetla' : name} ne dolazi nijedan kabel.` })
+  if (cables.length > 1) checks.push({ level: 'warn', text: `${el.label}: ${cables.length} kabela na jednom uređaju; obično je jedan (ili provlačenje kroz dozu).` })
+  const map = new Map<string, TerminalWire[]>()
+  const add = (id: string, w: TerminalWire) => { if (!map.has(id)) map.set(id, []); map.get(id)!.push(w) }
+  for (const bc of cables) for (const w of bc.wires) if (w.terminal) add(w.terminal === 'PARK' ? `PARK:${bc.cable.id}:${w.color}` : w.terminal, { kind: 'core', cableId: bc.cable.id, cableLabel: bc.label, color: w.color, note: w.note })
+  for (const port of ports) { const id = port.replace(' ', ''); if (map.has(id)) add(id, { kind: 'port', deviceId: el.id, deviceLabel: device.label, port, color: id === 'L' ? 'brown' : id === 'N' ? 'blue' : id === 'PE' ? 'gnye' : 'black' }) }
+  const terminals: Terminal[] = [...map.entries()].map(([id, wires]) => {
+    const meta = id.startsWith('IMP') ? { label: id, desc: 'impuls, suhi kontakt' } : id.startsWith('PARK') ? (spareCoresOf(p) === 'cap' ? { label: '·', desc: 'rezerva' } : { label: '·', desc: 'parkirano' }) : terminalMeta(id, p)
+    const cap = id.startsWith('PARK') && spareCoresOf(p) === 'cap'
+    const direct = wires.length === 2 && wires.some((w) => w.kind === 'port')
+    const wago: Terminal['wago'] = direct || cap ? 0 : wires.length <= 2 ? 412 : wires.length <= 3 ? 413 : 415
+    return { id, ...meta, wago, chained: 1, wires, cap }
+  })
+  const lay = boxLayout({ box: el, terminals, devices: [device] })
+  const level: Level = checks.some((c) => c.level === 'err') ? 'err' : checks.some((c) => c.level === 'warn') ? 'warn' : 'ok'
+  if (level === 'ok' && cables.length) checks.push({ level: 'ok', text: `Žile na stezaljke uređaja: ${terminals.filter((t) => !t.id.startsWith('PARK')).map((t) => t.label).join(', ')}.` })
+  return { box: el, room, cables, devices: [device], terminals, checks, bom: [], level, size: { W: lay.W, H: lay.H, overflow: false } }
+}
+export function allLeafJunctions(p: Project): Junction[] {
+  return p.elements.filter((e) => isLeaf(e) && p.rooms.some((r) => r.id === e.roomId)).map((e) => leafJunctionFor(e, p))
 }
 
 export const roleLabel = (r: Role) => (r === 'unknown' ? 'nepoznato' : CABLE_ROLES[r])

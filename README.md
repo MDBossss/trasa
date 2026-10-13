@@ -73,7 +73,9 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
     kako stoje po sobi (zid po zid) i u tri reda po visini (razvodne kutije gore, prekidači u sredini, utičnice dolje),
     svaka nacrtana kao na svom listu, a kabeli između kutija kao plaštevi prave
     debljine koji izlaze iz istih mjesta kao na slici kutije (susjedi ravno, ostali preko "traka" iznad ili ispod reda).
-    Prijelaz mišem preko kabela osvijetli njegove žile u obje kutije i kaže što nosi; vuci za pomicanje, kotačić
+    Svjetla, vrata i samostalne utičnice imaju svoj spoj (priključna stezaljka L N PE, kod vrata i IMP 1/2, i žile
+    kabela koje idu na nju): u listi Spojeva, na shemi sobe kao čvor s kabelom do kutije, u PDF-u i preko "Otvori spoj"
+    na zidu. Prijelaz mišem preko kabela osvijetli njegove žile u obje kutije i kaže što nosi; vuci za pomicanje, kotačić
     zumira prema pokazivaču, "Uklopi" vrati sve u ekran, klik na kutiju ide u njene korake. U Spojevima gumb **Ispiši kutiju** daje jedan A4 vodoravni list za tu kutiju: gdje je u sobi,
     legenda, kabeli i velika slika spoja.
 13. **Mobitel = terenski način** (ekran ≤ 760 px): donja traka Tlocrt / Sobe / Spojevi / Materijal, paneli su

@@ -2,7 +2,7 @@ import { Fragment, useMemo } from 'react'
 import useImage from 'use-image'
 import { useStore } from '../store'
 import { bomFor } from '../bom'
-import { allJunctions, wirePlan, type Junction } from '../junction'
+import { allJunctions, allLeafJunctions, wirePlan, type Junction } from '../junction'
 import { cableColor, cablePath, conduitTouchesRoom, cornerAt, wallExits, type WallInfo } from '../walls'
 import { bounds } from '../geometry'
 import { ELEMENT_META, RELAY_MODELS, WIRE_LABEL, type Project, type Room, type WallElement, relayModelOf } from '../types'
@@ -16,7 +16,7 @@ export function PrintView({ roomId }: { roomId: string | null }) {
   const project = useStore((s) => s.project)
   const { setView } = useStore.getState()
   const rooms = project.rooms.filter((r) => !roomId || r.id === roomId)
-  const junctions = useMemo(() => allJunctions(project), [project])
+  const junctions = useMemo(() => [...allJunctions(project), ...allLeafJunctions(project)], [project])
   const date = new Date().toLocaleDateString('hr-HR')
   return (
     <div className="print">

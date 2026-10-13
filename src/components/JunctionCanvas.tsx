@@ -35,7 +35,8 @@ export function junctionAnchors(j: Junction): { stubs: Map<string, { x: number; 
     const e = entryOf(c.side, arr.indexOf(c), arr.length, lay.W, lay.H)
     const st = { x: 110 + (e.p[0] - e.n[0] * 30) * S, y: 150 + (e.p[1] - e.n[1] * 30) * S, n: [-e.n[0], -e.n[1]] as [number, number], cableId: c.cable.id }
     stubs.set(c.cable.id, st)
-    if (c.far.place && !stubs.has(`to:${c.far.place.id}`)) stubs.set(`to:${c.far.place.id}`, st)
+    const farId = c.far.place?.id ?? c.far.element?.id
+    if (farId && !stubs.has(`to:${farId}`)) stubs.set(`to:${farId}`, st)
   }
   return { stubs, cx: 110 + (lay.W / 2) * S, cy: 150 + (lay.H / 2) * S }
 }

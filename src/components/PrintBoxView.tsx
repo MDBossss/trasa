@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useStore } from '../store'
-import { allJunctions, wirePlan } from '../junction'
+import { allJunctions, allLeafJunctions, wirePlan } from '../junction'
 import { conduitTouchesRoom, wallExits } from '../walls'
 import { bounds } from '../geometry'
 import { ELEMENT_META } from '../types'
@@ -12,7 +12,7 @@ import { CAP_COLOR, JunctionCanvas, wireSwatch } from './JunctionCanvas'
 export function PrintBoxView({ elementId }: { elementId: string }) {
   const project = useStore((s) => s.project)
   const { setView } = useStore.getState()
-  const j = useMemo(() => allJunctions(project).find((x) => x.box.id === elementId), [project, elementId])
+  const j = useMemo(() => [...allJunctions(project), ...allLeafJunctions(project)].find((x) => x.box.id === elementId), [project, elementId])
   const plan = useMemo(() => (j ? wirePlan(j) : []), [j])
   if (!j) return <div className="print"><div className="print-bar"><button onClick={() => setView({ kind: 'junctions', elementId: null })}><Icon.back /> Natrag</button><span className="muted">Kutija ne postoji.</span></div></div>
   const room = j.room
