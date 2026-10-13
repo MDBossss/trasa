@@ -215,7 +215,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
         </svg>
         {boxes.map(({ j, tx, ty, plan, vb }) => (
           <div key={j.box.id} className="sbox" data-box={j.box.id} style={{ left: tx, top: ty, width: vb.w, height: vb.h, transform: `scale(${BOX_SCALE})` }} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') onOpen(j.box.id) }}>
-            <div className="sbox-head"><span className={`dot ${j.level}`} /><b>{j.box.label}</b><span className="muted">{sizeLabel(j)}{isPlace(j.box) && j.box.depth ? `, ${j.box.depth}` : ''} · zid {j.box.wall + 1}</span></div>
+            <div className="sbox-head"><span className={`dot ${j.level}`} /><b>{j.box.label}</b><span className="muted">{sizeLabel(j)}{isPlace(j.box) && j.box.depth === 'duboka' ? ', duboka' : ''} · zid {j.box.wall + 1}</span></div>
             <JunctionCanvas className="sbox-svg" j={j} plan={plan} mode="all" step={0} hover={hoverFor(j.box.id)} onHover={() => {}} onPick={() => onOpen(j.box.id)} labels={(c) => !tubed.has(c.cable.id)} />
           </div>
         ))}

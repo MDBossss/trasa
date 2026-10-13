@@ -81,7 +81,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
             <h3>Materijal za kutiju <button className="mini link" onClick={() => useStore.setState({ openSettings: true })} title="Rezervne žile: WAGO ili kapica">postavke</button></h3>
             <div className="bom">
               {j.bom.map((b) => <div key={b.item}><span>{b.item}</span><b>{b.qty} kom</b></div>)}
-              {isPlace(j.box) && <div><span>{j.box.type === 'modbox' ? `Doza modularna ${j.box.modules ?? 3}M` : `Razvodna kutija ${boxSizeLabel(j.size.W, j.size.H)}`}{j.box.depth === 'duboka' ? ', duboka' : j.box.depth === 'plitka' ? ', plitka' : ''}</span><b>1 kom</b></div>}
+              {isPlace(j.box) && <div><span>{j.box.type === 'modbox' ? `Doza modularna ${j.box.modules ?? 3}M` : `Razvodna kutija ${boxSizeLabel(j.size.W, j.size.H)}`}{j.box.depth === 'duboka' ? ', duboka' : ''}</span><b>1 kom</b></div>}
               {[1, 2].map((m) => { const n = j.devices.filter((d) => d.kind === 'button' && (d.el.modules ?? 1) === m).length; return n ? <div key={m}><span>Tipkalo / prekidač {m}M</span><b>{n} kom</b></div> : null })}
               {j.devices.filter((d) => d.kind === 'socket' && (d.el.socketKind ?? 'schuko') === 'schuko').length > 0 && <div><span>Utičnica šuko 2M</span><b>{j.devices.filter((d) => d.kind === 'socket' && (d.el.socketKind ?? 'schuko') === 'schuko').length} kom</b></div>}
               {j.devices.filter((d) => d.kind === 'socket' && d.el.socketKind === 'euro').length > 0 && <div><span>Utičnica euro 1M</span><b>{j.devices.filter((d) => d.kind === 'socket' && d.el.socketKind === 'euro').length} kom</b></div>}
@@ -180,7 +180,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
         <div className="room-head">
           {j ? (
             <>
-              <h2>{j.box.label} <span className="muted">· {ELEMENT_META[j.box.type].label.toLowerCase()}{j.box.type === 'modbox' ? ` ${j.box.modules ?? 3}M` : ''} · {j.room.name}, zid {j.box.wall + 1}{isPlace(j.box) && j.box.depth ? ` · ${j.box.depth}` : ''}</span></h2>
+              <h2>{j.box.label} <span className="muted">· {ELEMENT_META[j.box.type].label.toLowerCase()}{j.box.type === 'modbox' ? ` ${j.box.modules ?? 3}M` : ''} · {j.room.name}, zid {j.box.wall + 1}{isPlace(j.box) && j.box.depth === 'duboka' ? ' · duboka' : ''}</span></h2>
               <button className="mini" onClick={() => openWall(j)}>Otvori na zidu</button>
               <button className="mini" onClick={() => setView({ kind: 'printbox', elementId: j.box.id })} title="A4 list s ovom kutijom"><Icon.print /> Ispiši kutiju</button>
               {j.box.type === 'box' && j.checks.some((c) => /podijel|podjel/i.test(c.text)) && (

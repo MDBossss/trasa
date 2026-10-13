@@ -118,7 +118,7 @@ export interface WallElement {
   zM: number
   note: string
   switchKind?: SwitchKind
-  // flush box depth as seen on the photo; a relay later needs 'duboka'
+  // flush box depth as seen on the photo; unset means the standard ('plitka'), a relay needs 'duboka'
   depth?: BoxDepth
   // for switches: ids of the lights this switch controls
   controls?: string[]

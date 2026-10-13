@@ -48,7 +48,7 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
   // elements
   for (const e of p.elements) {
     if (!inScope(e.roomId)) continue
-    const depth = e.depth ? `, ${e.depth}` : ''
+    const depth = e.depth === 'duboka' ? ', duboka' : ''
     switch (e.type) {
       case 'box': add(out, 'Doze i kutije', `Razvodna kutija ${sizes.get(e.id) ?? '10 × 10'}${depth}`, 'kom', 1); break
       case 'modbox': { const m = e.modules ?? 3; add(out, 'Doze i kutije', `Doza modularna ${m}M${m === 3 ? ' (TEM PM3)' : m === 4 ? ' (TEM PM4)' : m === 7 ? (e.depth === 'duboka' ? ' (TEM PM7-65)' : ' (TEM PM7)') : ''}${depth}`, 'kom', 1); add(out, 'Dekorativno', `Nosivi okvir + ukrasni okvir ${m}M`, 'kom', 1); break }

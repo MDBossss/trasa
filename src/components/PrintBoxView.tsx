@@ -42,7 +42,7 @@ export function PrintBoxView({ elementId }: { elementId: string }) {
         <section className="page page-landscape">
           <header className="pb-head">
             <div>
-              <h1>{j.box.label} <span className="muted">· {kind}{j.box.type === 'modbox' ? ` ${j.box.modules ?? 3}M` : ''}{j.box.depth ? `, ${j.box.depth}` : ''}</span></h1>
+              <h1>{j.box.label} <span className="muted">· {kind}{j.box.type === 'modbox' ? ` ${j.box.modules ?? 3}M` : ''}{j.box.depth === 'duboka' ? ', duboka' : ''}</span></h1>
               <div className="muted">{project.name} · {room.name}, zid {j.box.wall + 1} · Trasa · {date}</div>
             </div>
             <div className="pb-bom">{j.bom.map((x) => <span key={x.item}>{x.item} × {x.qty}</span>)}</div>

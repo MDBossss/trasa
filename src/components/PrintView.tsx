@@ -148,7 +148,7 @@ function JunctionPage({ j }: { j: Junction }) {
   const plan = wirePlan(j)
   return (
     <section className="page">
-      <h2>{j.room.name} · {j.box.label} <span className="muted">· {ELEMENT_META[j.box.type].label.toLowerCase()}{j.box.type === 'modbox' ? ` ${j.box.modules ?? 3}M` : ''}, zid {j.box.wall + 1}{j.box.depth ? `, ${j.box.depth}` : ''}</span></h2>
+      <h2>{j.room.name} · {j.box.label} <span className="muted">· {ELEMENT_META[j.box.type].label.toLowerCase()}{j.box.type === 'modbox' ? ` ${j.box.modules ?? 3}M` : ''}, zid {j.box.wall + 1}{j.box.depth === 'duboka' ? ', duboka' : ''}</span></h2>
       <JunctionCanvas className="print-junction" j={j} plan={plan} mode="all" step={0} hover={null} onHover={() => {}} onPick={() => {}} />
       <table className="print-table">
         <thead><tr><th>Stezaljka</th><th>WAGO</th><th>Žile</th></tr></thead>

@@ -232,8 +232,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
           {(isPlace(el) || el.type === 'socket' || (el.type === 'switch' && !el.host)) && (
             <label>
               Doza
-              <select value={el.depth ?? ''} onChange={(e) => updateElement(el.id, { depth: (e.target.value || undefined) as BoxDepth | undefined })}>
-                <option value="">nije označeno</option>
+              <select value={el.depth ?? 'plitka'} onChange={(e) => updateElement(el.id, { depth: e.target.value as BoxDepth })}>
                 {DEPTHS.map((d) => <option key={d.id} value={d.id}>{d.label}</option>)}
               </select>
             </label>
