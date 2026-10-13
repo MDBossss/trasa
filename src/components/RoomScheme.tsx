@@ -173,7 +173,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
   const hoverFor = (boxId: string) => { const l = hover ? links.find((x) => x.id === hover) : null; const k = l ? l.boxes.indexOf(boxId) : -1; return l && k >= 0 ? `cable:${l.cableIds[k]}` : null }
   return (
     <div ref={wrap} className="scheme" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
-      <Hud scale={cam.scale} onZoomIn={() => zoomAt(1.2, size.w / 2, size.h / 2)} onZoomOut={() => zoomAt(1 / 1.2, size.w / 2, size.h / 2)} onFit={fit} toggles={[]} hint={<><b>Cijela soba</b> · kutije redom kako stoje u sobi · pređi mišem preko kabela · klik na kutiju otvara korake</>} />
+      <Hud scale={cam.scale} onZoomIn={() => zoomAt(1.2, size.w / 2, size.h / 2)} onZoomOut={() => zoomAt(1 / 1.2, size.w / 2, size.h / 2)} onFit={fit} toggles={[]} hint={<><b>Cijela soba</b> · kutije redom kako stoje u sobi · pređi mišem preko kabela · klik na kutiju otvara njen spoj</>} />
       {!js.length && <div className="empty"><div>U ovoj sobi nema kutija ni doza</div></div>}
       <div className="scheme-layer" style={{ transform: `translate(${cam.x}px, ${cam.y}px) scale(${cam.scale})`, width: boardW, height: boardH }}>
         <svg className="scheme-links" width={boardW} height={boardH}>

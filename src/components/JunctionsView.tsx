@@ -20,7 +20,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
   const [hover, setHover] = useState<string | null>(null)
   const mobile = useMobile()
   const [sheet, setSheet] = useState(false)
-  const [scheme, setScheme] = useState(false) // whole room on one board instead of one box
+  const [scheme, setScheme] = useState(true) // whole room on one board instead of one box; the default
   const j: Junction | undefined = junctions.find((x) => x.box.id === elementId) ?? junctions[0]
   const plan = useMemo(() => (j ? wirePlan(j) : []), [j])
 
@@ -36,7 +36,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [mode, plan.length])
 
-  const pick = (id: string) => setView({ kind: 'junctions', elementId: id })
+  const pick = (id: string) => { setScheme(false); setView({ kind: 'junctions', elementId: id }) }
   const openWall = (jx: Junction) => { setView({ kind: 'room', roomId: jx.room.id, wall: jx.box.wall }); select(jx.box.id) }
   const houseChecks = junctions.flatMap((x) => x.checks.filter((c) => c.level !== 'ok').map((c) => ({ ...c, j: x })))
   const cur = plan[step]
@@ -183,7 +183,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
           ) : <h2>Spojevi</h2>}
         </div>
         {j && scheme ? (
-          <RoomScheme junctions={junctions} roomId={j.room.id} onOpen={(id) => { setScheme(false); setMode('steps'); setStep(0); pick(id) }} />
+          <RoomScheme junctions={junctions} roomId={j.room.id} onOpen={(id) => { setScheme(false); setMode('all'); setStep(0); pick(id) }} />
         ) : j ? (
           <div className="junction-stage">
             <JunctionCanvas j={j} plan={plan} mode={mode} step={step} hover={hover} onHover={setHover} onPick={(i) => { setMode('steps'); setStep(i) }} />
