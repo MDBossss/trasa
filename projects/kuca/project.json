@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-13T18:10:23.749Z",
+ "savedAt": "2026-10-13T18:11:32.960Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2771,7 +2771,8 @@
     "zM": 2.05,
     "note": "",
     "id": "jxseisrz",
-    "label": "K10"
+    "label": "K10",
+    "depth": "plitka"
    },
    {
     "roomId": "fqmzanpn",
