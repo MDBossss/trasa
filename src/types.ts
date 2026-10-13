@@ -65,8 +65,11 @@ export const relayBrand = (m: RelayModel): RelayBrand => (m.startsWith('zb') ? '
 export const relayModelOf = (e: { relayModel?: string }): RelayModel => (e.relayModel && e.relayModel in RELAY_MODELS ? (e.relayModel as RelayModel) : LEGACY_RELAY[e.relayModel ?? ''] ?? 'zbminir2')
 export type SwitchKind = 'obicni' | 'serijski' | 'izmjenicni' | 'krizni' | 'tipkalo'
 export type BoxDepth = 'plitka' | 'duboka'
-export type SocketKind = 'schuko' | 'euro'
-export const SOCKET_KINDS: Record<SocketKind, { label: string; modules: number }> = { schuko: { label: 'Šuko', modules: 2 }, euro: { label: 'Euro', modules: 1 } }
+export type SocketKind = 'schuko' | 'euro' | 'rj45'
+export const SOCKET_KINDS: Record<SocketKind, { label: string; modules: number }> = { schuko: { label: 'Šuko', modules: 2 }, euro: { label: 'Euro', modules: 1 }, rj45: { label: 'RJ45 internet', modules: 1 } }
+// a data outlet: a keystone module in a frame, fed by a UTP cable and nothing else
+export const isData = (e: { type: ElementType; socketKind?: SocketKind } | undefined) => !!e && e.type === 'socket' && e.socketKind === 'rj45'
+export const isUtp = (type: string) => /utp|ftp|cat\s?[5-8]/i.test(type)
 // position inside a modular frame: explicit order (left → right) and empty modules kept free on the left
 export const hostedFront = (elements: WallElement[], hostId: string) =>
   elements.map((e, i) => ({ e, i })).filter(({ e }) => e.host === hostId && e.type !== 'relay').sort((a, b) => (a.e.slotOrder ?? 1e9) - (b.e.slotOrder ?? 1e9) || a.i - b.i).map(({ e }) => e)
@@ -179,8 +182,8 @@ export function coreColors(type: string): WireColor[] {
   if (n === 5) return ['brown', 'black', 'grey', 'blue', 'gnye']
   return ['brown', 'black', 'grey', 'black2', 'grey2', 'blue', 'gnye']
 }
-export const WIRE_LABEL: Record<WireColor, string> = { brown: 'smeđa', blue: 'plava', gnye: 'žuto-zelena', black: 'crna', grey: 'siva', black2: 'crna 2', grey2: 'siva 2', other: 'žila' }
-export const WIRE_HEX: Record<WireColor, string> = { brown: '#6b3a1e', blue: '#1f4fb3', gnye: '#2e8b3a', black: '#222', grey: '#8c8c8c', black2: '#3a3a3a', grey2: '#a5a5a5', other: '#c9a' }
+export const WIRE_LABEL: Record<WireColor, string> = { brown: 'smeđa', blue: 'plava', gnye: 'žuto-zelena', black: 'crna', grey: 'siva', black2: 'crna 2', grey2: 'siva 2', other: 'UTP' }
+export const WIRE_HEX: Record<WireColor, string> = { brown: '#6b3a1e', blue: '#1f4fb3', gnye: '#2e8b3a', black: '#222', grey: '#8c8c8c', black2: '#3a3a3a', grey2: '#a5a5a5', other: '#4a90d9' }
 
 export const CABLE_TYPES = ['NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-O 3x1.5', 'NYM-J 5x1.5', 'NYM-J 5x2.5', 'NYM-J 7x1.5', 'NYM-J 4x1.5', 'UTP cat6', 'koaks', 'zvono 2x0.75', 'ostalo']
 

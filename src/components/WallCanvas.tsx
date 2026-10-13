@@ -5,7 +5,7 @@ import type { KonvaEventObject } from 'konva/lib/Node'
 import useImage from 'use-image'
 import { useStore } from '../store'
 import { CABLE_COLOR, cableColor, cablePath, cornerAt, endPos, neighbourWall, type Exit, type WallCtx, type WallInfo } from '../walls'
-import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement, RELAY_LOOK, relayBrand, relayModelOf, hostedFront } from '../types'
+import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement, RELAY_LOOK, relayBrand, relayModelOf, hostedFront , isData } from '../types'
 import { Hud } from './Hud'
 import { activeWallTool } from './WallToolRail'
 import { pinch, useMobile } from '../mobile'
@@ -138,7 +138,9 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
   const finishCable = useCallback(
     (to: CableEnd) => {
       if (!draft) return
-      addCable({ roomId, wall: wall.i, type: 'NYM-J 3x1.5', from: draft.from, to, via: draft.via, note: '' })
+      // a cable from an internet conduit or to an RJ45 outlet is UTP by default
+      const dataEnd = (e: CableEnd) => (e.kind === 'element' && isData(project.elements.find((x) => x.id === e.id))) || (e.kind === 'exit' && project.conduits.find((c) => c.id === e.conduitId)?.categoryId === 'internet')
+      addCable({ roomId, wall: wall.i, type: dataEnd(draft.from) || dataEnd(to) ? 'UTP cat6' : 'NYM-J 3x1.5', from: draft.from, to, via: draft.via, note: '' })
       setDraft(null)
     },
     [draft, addCable, roomId, wall.i],
@@ -408,7 +410,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
             const isSel = el.id === selectedId
             return (
               <Group key={el.id} name={el.id} x={toX(p)} y={toY(p)} {...elementDrag(el)}>
-                <Symbol type={el.type} selected={isSel} px={px} modules={el.modules} tipkalo={el.switchKind === 'tipkalo'} />
+                <Symbol type={el.type} selected={isSel} px={px} modules={el.modules} tipkalo={el.switchKind === 'tipkalo'} data={isData(el)} />
                 {(() => {
                   const hosted = hostedOf(el.id)
                   const mods = hostedFront(project.elements, el.id)
@@ -428,7 +430,8 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
                           <Group key={h.id} name={h.id} x={cx} y={0} onClick={sel(h)} onTap={sel(h)}>
                             <Rect x={-m * MODW / 2 + 0.8} y={-5} width={m * MODW - 1.6} height={10} cornerRadius={h.type === 'socket' ? 1.5 : 1} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} />
                             {h.type === 'switch' && <Circle radius={1.2} fill={hs ? '#1e88e5' : '#1f2430'} />}
-                            {h.type === 'socket' && <Circle radius={2.2} fill="none" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1)} />}
+                            {h.type === 'socket' && !isData(h) && <Circle radius={2.2} fill="none" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1)} />}
+                            {isData(h) && <Rect x={-2} y={-2.6} width={4} height={5.2} cornerRadius={0.6} fill="none" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1)} />}
                             <Text text={h.label} y={6} offsetX={30} width={60} align="center" fontSize={px(8)} fill={hs ? '#1e88e5' : '#1f2430'} />
                           </Group>
                         )
@@ -489,7 +492,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
 }
 
 // IEC 60617-style symbols drawn in centimetres so they keep real-world size.
-function Symbol({ type, selected, px, modules, tipkalo }: { type: ElementType; selected: boolean; px: (n: number) => number; modules?: number; tipkalo?: boolean }) {
+function Symbol({ type, selected, px, modules, tipkalo, data }: { type: ElementType; selected: boolean; px: (n: number) => number; modules?: number; tipkalo?: boolean; data?: boolean }) {
   const stroke = selected ? '#1e88e5' : '#1f2430'
   const sw = px(2)
   const halo = selected ? <Circle radius={13} fill="rgba(30,136,229,0.18)" /> : null
@@ -505,6 +508,8 @@ function Symbol({ type, selected, px, modules, tipkalo }: { type: ElementType; s
     case 'box': // square like the physical flush box (IEC uses a circle; this is a personal planner)
       return <>{halo}<Rect x={-7} y={-7} width={14} height={14} fill="#fff" stroke={stroke} strokeWidth={sw} /><Circle radius={2.2} fill={stroke} /></>
     case 'socket':
+      // data outlet: the socket half-circle with a small RJ45 plug inside instead of the pin
+      if (data) return <>{halo}<Arc innerRadius={0} outerRadius={7} angle={180} rotation={180} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-9, 0, 9, 0]} stroke={stroke} strokeWidth={sw} /><Rect x={-2.5} y={-6} width={5} height={4.5} cornerRadius={0.6} fill="#fff" stroke={stroke} strokeWidth={px(1)} /></>
       return <>{halo}<Arc innerRadius={0} outerRadius={7} angle={180} rotation={180} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-9, 0, 9, 0]} stroke={stroke} strokeWidth={sw} /><Line points={[0, 0, 0, 7]} stroke={stroke} strokeWidth={sw} /></>
     case 'switch':
       if (tipkalo) return <>{halo}<Circle radius={6} fill="#fff" stroke={stroke} strokeWidth={sw} /><Circle radius={2.2} fill={stroke} /></>

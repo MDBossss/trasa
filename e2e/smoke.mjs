@@ -522,6 +522,17 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   await page.locator('.jsteps li.hdr', { hasText: 'SW1 · izravno · R3 ulaz 1 ← tipkalo' }).waitFor()
   await page.evaluate(({ t1, r1 }) => window.__trasa.getState().updateElement(t1, { relayId: r1, relayInput: 1 }), ids2)
   await page.evaluate(({ k3, c, r3 }) => { const s = window.__trasa.getState(); s.patchProject({ cables: s.project.cables.filter((x) => x.id !== c), elements: s.project.elements.filter((e) => e.id !== k3 && e.id !== r3) }) }, { ...k3, r3 })
+  // an RJ45 keystone in a frame: the UTP cable lands on it directly, no WAGO, and the material lists the module
+  const rj = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const cd = s.addConduit([{ x: 300, y: 30 }, { x: 300, y: 98 }]); s = window.__trasa.getState(); s.updateConduit(cd, { name: 'DOLAZ INTERNET', categoryId: 'internet' }); s = window.__trasa.getState()
+    const d = s.addElement({ roomId: room, wall: 0, type: 'modbox', xM: 2.6, zM: 0.3, modules: 3, note: '' }); const r = s.addElement({ roomId: room, wall: 0, type: 'socket', socketKind: 'rj45', xM: 2.6, zM: 0.3, note: '', host: d })
+    const c1 = s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: d }, via: [], note: '' }); const c2 = s.addCable({ roomId: room, wall: 0, type: 'UTP cat6', from: { kind: 'exit', conduitId: cd, end: 'end' }, to: { kind: 'element', id: d }, via: [], note: '' })
+    const j = window.__trasaEngine.allJunctions(window.__trasa.getState().project).find((x) => x.box.id === d)
+    return { d, r, cd, c1, c2, utp: j.terminals.find((t) => t.label === 'UTP'), checks: j.checks.map((c) => c.level) } }, ids)
+  assert.equal(rj.utp?.wago, 0, 'UTP goes straight onto the keystone, no WAGO'); assert.equal(rj.utp?.wires.length, 2); assert.ok(!rj.checks.includes('err') && !rj.checks.includes('warn'), 'RJ45 frame has no complaints')
+  await page.evaluate(() => window.__trasa.getState().setView({ kind: 'bom' }))
+  await page.getByText('RJ45 keystone modul 1M', { exact: false }).first().waitFor()
+  await page.evaluate(({ rj }) => { const s = window.__trasa.getState(); s.patchProject({ cables: s.project.cables.filter((c) => c.id !== rj.c1 && c.id !== rj.c2), elements: s.project.elements.filter((e) => e.id !== rj.d && e.id !== rj.r), conduits: s.project.conduits.filter((c) => c.id !== rj.cd) }); s.setView({ kind: 'junctions', elementId: null }) }, { rj })
+
   // an overfull box first grows along the catalogue of real boxes; a split is offered only when the entries run out
   const extra = await page.evaluate(({ box }) => { const s = window.__trasa.getState(); const room = s.project.rooms[0].id; const ids = []; for (let i = 0; i < 3; i++) { const u = s.addElement({ roomId: room, wall: 0, type: 'socket', xM: 0.3 + i * 0.4, zM: 0.3, note: '' }); ids.push(u, s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: u }, via: [], note: '' })) } return ids }, ids)
   await page.locator('.junctions-list .list li', { hasText: 'K1' }).click()

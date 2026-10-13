@@ -246,6 +246,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
 }
 
 function roleShort(c: BoxCable) {
+  if (c.role === 'lowv' && /utp|ftp|cat\s?[5-8]/i.test(c.sub)) return 'internet'
   return ({ feed: 'dolaz', pass: 'prolaz', socket: 'utičnica', light: 'svjetlo', motor: 'vrata', switch: 'prekidač', lowv: 'slaba struja', unknown: '?' } as Record<string, string>)[c.role]
 }
 

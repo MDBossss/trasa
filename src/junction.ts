@@ -1,4 +1,4 @@
-import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isPlace, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, relayModelOf, hostedFront, type ElementType } from './types'
+import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isPlace, isData, isUtp, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, relayModelOf, hostedFront, type ElementType } from './types'
 import { wallExits } from './walls'
 
 // Everything a box needs: which cables enter it, what each core goes to, which devices sit inside
@@ -109,7 +109,7 @@ export function resolveCable(c: Cable, box: WallElement, p: Project): Omit<BoxCa
     if (e) {
       classify(e, cd0)
       if (!cd0 && f.via.length) label = `${f.via.join(' · ')} → ${e.label}`
-    } else if (f.via.length) label = `${f.via.join(' · ')} → ?`
+    } else if (f.via.length) label = cores.length === 0 ? f.via.join(' · ') : `${f.via.join(' · ')} → ?`
     else if (end.kind === 'corner') label = `kut ${end.corner + 1} → ?`
     far = { ...far, conduit: cd0 }
   }
@@ -166,11 +166,22 @@ function switchSignals(sw: WallElement, p: Project, checks: Check[], usable: num
   return []
 }
 
-function leafWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, p: Project, checks: Check[]): Wire[] {
+function leafWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallElement, p: Project, checks: Check[]): Wire[] {
   const { cores, role } = bc
   const park = (c: WireColor, note = 'rezerva'): Wire => ({ color: c, terminal: 'PARK', note })
   const lnpe = (c: WireColor): Wire => (c === 'brown' ? { color: c, terminal: 'L' } : c === 'blue' ? { color: c, terminal: 'N' } : c === 'gnye' ? { color: c, terminal: 'PE' } : park(c))
-  if (role === 'lowv') return cores.map((c) => ({ color: c, terminal: null, note: 'slaba struja, prolazi' }))
+  if (role === 'lowv') {
+    if (isUtp(bc.cable.type)) {
+      // the n-th UTP cable in a frame lands on its n-th RJ45 keystone; drawn as one wire (8 cores, T568B)
+      const keystones = hostedFront(p.elements, box.id).filter(isData)
+      const i = p.cables.filter((c) => isAtBox(c, box) && isUtp(c.type)).findIndex((c) => c.id === bc.cable.id)
+      const k = keystones[i]
+      if (k) return [{ color: 'other', terminal: `DATA:${k.id}`, note: '8 žila → keystone, T568B' }]
+      if (box.type === 'modbox') checks.push({ level: 'warn', text: `${bc.label}: UTP kabel u dozi bez slobodnog RJ45 modula; dodaj utičnicu vrste RJ45.` })
+      return [{ color: 'other', terminal: null, note: 'UTP, prolazi' }]
+    }
+    return cores.map((c) => ({ color: c, terminal: null, note: 'slaba struja, prolazi' }))
+  }
   if (role === 'unknown') { checks.push({ level: 'warn', text: `${bc.label}: ne znam što je na drugom kraju kabela ${bc.sub}, žile parkirane.` }); return cores.map((c) => park(c, 'nepoznato')) }
   if (role === 'feed' || role === 'socket' || role === 'pass') return cores.map(lnpe)
   if (role === 'motor') {
@@ -237,6 +248,7 @@ export function devicesIn(place: WallElement, p: Project): Device[] {
         const m = RELAY_MODELS[relayModelOf(e)]
         return { el: e, label: `${e.label} ${m.label}`, ports: m.ports, wMm: Math.max(37, m.ports.length * 7), hMm: 14, kind: 'relay' as const }
       }
+      if (isData(e)) return { el: e, label: `${e.label} RJ45 keystone`, ports: ['UTP'], wMm: 14, hMm: 18, kind: 'socket' as const }
       if (e.type === 'socket') { const k = SOCKET_KINDS[e.socketKind ?? 'schuko']; return { el: e, label: `${e.label} ${k.label.toLowerCase()} utičnica`, ports: ['L', 'N', 'PE', 'L′', 'N′', 'PE′'], wMm: Math.max(24, k.modules * 11), hMm: 18, kind: 'socket' as const } }
       return { el: e, label: `${e.label} ${(e.switchKind ?? 'obicni') === 'tipkalo' ? 'tipkalo' : 'prekidač'}${(e.modules ?? 1) > 1 ? ` ${e.modules}M` : ''}`, ports: ['1', '2', '3'].slice(0, (e.switchKind === 'serijski' || e.switchKind === 'izmjenicni') ? 3 : 2), wMm: Math.max(14, (e.modules ?? 1) * 11), hMm: 18, kind: 'button' as const }
     })
@@ -273,9 +285,10 @@ function devicePorts(d: Device, p: Project, checks: Check[]): PortMember[] {
     for (let n = 1; n <= m.outputs; n++) out.push({ port: m.outputs === 1 ? 'O' : `O${n}`, terminal: `O:${d.el.id}:${n}`, color: 'black', note: `izlaz ${n}` })
     return out
   }
+  if (isData(d.el)) return [{ port: 'UTP', terminal: `DATA:${d.el.id}`, color: 'other', note: 'keystone, T568B' }]
   if (d.kind === 'socket') {
     // sockets have double terminals per pole: the first one hangs on L/N/PE, the next ones loop from the previous socket
-    const chain = hostedFront(p.elements, d.el.host!).filter((e) => e.type === 'socket')
+    const chain = hostedFront(p.elements, d.el.host!).filter((e) => e.type === 'socket' && !isData(e))
     const i = chain.findIndex((e) => e.id === d.el.id)
     const prev = i > 0 ? chain[i - 1] : null
     const inT = (pole: string) => (prev ? `CH:${pole}:${prev.id}` : pole)
@@ -295,7 +308,7 @@ function localSignals(place: WallElement, p: Project): Set<string> {
   for (const c of p.cables.filter((x) => isAtBox(x, place))) {
     const r = resolveCable(c, place, p)
     if (r.far.place && r.role !== 'feed') continue
-    for (const w of leafWires(r, p, sink)) if (w.terminal && w.terminal !== 'PARK') out.add(w.terminal)
+    for (const w of leafWires(r, place, p, sink)) if (w.terminal && w.terminal !== 'PARK') out.add(w.terminal)
   }
   for (const d of devicesIn(place, p)) for (const m of devicePorts(d, p, sink)) out.add(m.terminal)
   return out
@@ -413,6 +426,7 @@ export function terminalMeta(id: string, p: Project): { label: string; desc: str
   if (id.startsWith('SI:')) { const [, rid, , k] = id.split(':'); return { label: `S${k}`, desc: `tipkalo → ${el(p, rid)?.label ?? ''} S${k}, niski napon` } }
   if (id.startsWith('JMP:')) return { label: 'L→I', desc: 'premosnica na Shellyju (pali fazom)' }
   if (id.startsWith('IMP:')) { const [, rid, n] = id.split(':'); return { label: `IMP${n}`, desc: `impuls ${el(p, rid)?.label ?? ''}: suhi kontakt, bez napona` } }
+  if (id.startsWith('DATA:') || id === 'UTP') return { label: 'UTP', desc: `internet → ${el(p, id.split(':')[1] ?? '')?.label ?? 'RJ45'} keystone` }
   if (id.startsWith('PARK')) return spareCoresOf(p) === 'cap' ? { label: '·', desc: 'rezerva' } : { label: '·', desc: 'parkirano' }
   const [kind, a, b] = id.split(':')
   if (kind === 'CH') return { label: a, desc: `provlačenje ${el(p, b)?.label ?? ''} → sljedeća utičnica` }
@@ -432,7 +446,7 @@ const ROLE_ORDER: Role[] = ['feed', 'pass', 'socket', 'light', 'motor', 'switch'
 const SIDE_ORDER: Side[] = ['top', 'right', 'bottom', 'left']
 // loop-through terminals follow the socket order in the frame, L N PE per socket
 const chainPos = (id: string, p: Project) => (id.startsWith('CH:') ? p.elements.findIndex((e) => e.id === id.split(':')[2]) * 3 + ['L', 'N', 'PE'].indexOf(id.split(':')[1]) : 0)
-const ORDER = (id: string) => (id === 'L' ? 0 : id === 'N' ? 1 : id === 'PE' ? 2 : id.startsWith('O:') ? 3 : id.startsWith('SW') ? 4 : id.startsWith('I:') ? 5 : id.startsWith('PUT') ? 6 : id.startsWith('CH:') ? 7 : 8)
+const ORDER = (id: string) => (id.startsWith('DATA:') ? 9 : id === 'L' ? 0 : id === 'N' ? 1 : id === 'PE' ? 2 : id.startsWith('O:') ? 3 : id.startsWith('SW') ? 4 : id.startsWith('I:') ? 5 : id.startsWith('PUT') ? 6 : id.startsWith('CH:') ? 7 : 8)
 
 // Flush junction boxes sold in Croatia (Knauf/Terma, Vimar at Ellabo, Legrand at Gromel), smallest first: inner size in mm,
 // retail label (outer size) and number of cable entries. The box grows along this ladder before a split is suggested.
@@ -509,7 +523,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
     .map((c) => {
       const r = resolveCable(c, box, p)
       const cross = r.far.place && r.far.place.id !== box.id && r.role !== 'feed' && r.role !== 'lowv'
-      return { ...r, ...sideOf(r, box, p), wires: cross ? crossWires(r, box, p, checks) : leafWires(r, p, checks) }
+      return { ...r, ...sideOf(r, box, p), wires: cross ? crossWires(r, box, p, checks) : leafWires(r, box, p, checks) }
     })
     .sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role) || SIDE_ORDER.indexOf(a.side) - SIDE_ORDER.indexOf(b.side) || a.order - b.order)
   const devices = devicesIn(box, p)
@@ -600,15 +614,16 @@ export const isLeaf = (e: WallElement) => LEAF_TYPES.includes(e.type) && !e.host
 export function leafJunctionFor(el: WallElement, p: Project): Junction {
   const room = p.rooms.find((r) => r.id === el.roomId)!
   const checks: Check[] = []
-  const ports = el.type === 'motor' ? ['L', 'N', 'PE', 'IMP 1', 'IMP 2'] : ['L', 'N', 'PE']
-  const name = el.type === 'light' ? 'svjetiljka' : el.type === 'motor' ? 'upravljačka jedinica' : 'utičnica'
+  const data = isData(el)
+  const ports = el.type === 'motor' ? ['L', 'N', 'PE', 'IMP 1', 'IMP 2'] : data ? ['UTP'] : ['L', 'N', 'PE']
+  const name = el.type === 'light' ? 'svjetiljka' : el.type === 'motor' ? 'upravljačka jedinica' : data ? 'RJ45 keystone' : 'utičnica'
   const device: Device = { el, label: `${el.label} ${name}`, ports, wMm: Math.max(24, ports.length * 8), hMm: 16, kind: 'terminal' }
   const cables: BoxCable[] = p.cables
     .filter((c) => isAtBox(c, el))
     .map((c) => {
       const r = resolveCable(c, el, p)
       const spare = r.cores.filter((k) => k !== 'brown' && k !== 'blue' && k !== 'gnye')
-      const wires: Wire[] = r.cores.map((k) => {
+      const wires: Wire[] = isUtp(c.type) ? [{ color: 'other', terminal: 'UTP', note: '8 žila → keystone, T568B' }] : r.cores.map((k) => {
         if (k === 'brown') return { color: k, terminal: 'L', note: el.type === 'light' ? 'faza sa prekidača / releja' : 'faza' }
         if (k === 'blue') return { color: k, terminal: 'N' }
         if (k === 'gnye') return { color: k, terminal: 'PE' }
@@ -623,7 +638,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   const map = new Map<string, TerminalWire[]>()
   const add = (id: string, w: TerminalWire) => { if (!map.has(id)) map.set(id, []); map.get(id)!.push(w) }
   for (const bc of cables) for (const w of bc.wires) if (w.terminal) add(w.terminal === 'PARK' ? `PARK:${bc.cable.id}:${w.color}` : w.terminal, { kind: 'core', cableId: bc.cable.id, cableLabel: bc.label, color: w.color, note: w.note })
-  for (const port of ports) { const id = port.replace(' ', ''); if (map.has(id)) add(id, { kind: 'port', deviceId: el.id, deviceLabel: device.label, port, color: id === 'L' ? 'brown' : id === 'N' ? 'blue' : id === 'PE' ? 'gnye' : 'black' }) }
+  for (const port of ports) { const id = port.replace(' ', ''); if (map.has(id)) add(id, { kind: 'port', deviceId: el.id, deviceLabel: device.label, port, color: id === 'L' ? 'brown' : id === 'N' ? 'blue' : id === 'PE' ? 'gnye' : id === 'UTP' ? 'other' : 'black' }) }
   const terminals: Terminal[] = [...map.entries()].map(([id, wires]) => {
     const meta = id.startsWith('IMP') ? { label: id, desc: 'impuls, suhi kontakt' } : id.startsWith('PARK') ? (spareCoresOf(p) === 'cap' ? { label: '·', desc: 'rezerva' } : { label: '·', desc: 'parkirano' }) : terminalMeta(id, p)
     const cap = id.startsWith('PARK') && spareCoresOf(p) === 'cap'
