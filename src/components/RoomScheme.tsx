@@ -175,7 +175,9 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
     }
     const dx = e.clientX - drag.current.x, dy = e.clientY - drag.current.y
     if (Math.abs(dx) + Math.abs(dy) > 3) drag.current.moved = true
-    setCam((c) => ({ ...c, x: drag.current!.cx + dx, y: drag.current!.cy + dy }))
+    // compute now: the updater may run after pointer-up has already cleared the drag
+    const nx = drag.current.cx + dx, ny = drag.current.cy + dy
+    setCam((c) => ({ ...c, x: nx, y: ny }))
   }
   const onPointerUp = (e: React.PointerEvent) => {
     ptrs.current.delete(e.pointerId)
