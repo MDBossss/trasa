@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { WIRE_HEX, WIRE_LABEL, type WireColor, RELAY_LOOK, relayBrand, relayModelOf } from '../types'
-import { CAP_H, CAP_W, DEPTH, GAP, WAGO, boxLayout, wagoSlot, type BoxCable, type Junction, type Placed, type PlanWire, type Side, type Terminal } from '../junction'
+import { CAP_H, CAP_W, DEPTH, GAP, WAGO, boxLayout, boxSizeLabel, wagoSlot, type BoxCable, type Junction, type Placed, type PlanWire, type Side, type Terminal } from '../junction'
 
 // Top-down view into the open box, drawn to scale in millimetres: cables enter from the rim,
 // each core bends to its WAGO 221 port; relays and buttons sit inside with short jumpers.
@@ -200,7 +200,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
       })}
 
       <line x1={bx} y1={by + mm(H + 8) + 6} x2={bx + mm(20)} y2={by + mm(H + 8) + 6} stroke="currentColor" strokeWidth={1.5} />
-      <text x={bx + mm(20) + 6} y={by + mm(H + 8) + 10} fontSize={10} fill="var(--muted)">20 mm · {W} × {H} mm{lay.overflow ? ' (standardna je premala)' : ''}</text>
+      <text x={bx + mm(20) + 6} y={by + mm(H + 8) + 10} fontSize={10} fill="var(--muted)">20 mm · {j.box.type === 'box' ? `kutija ${boxSizeLabel(W, H)} iznutra` : `${W} × ${H} mm`}{lay.overflow ? (j.box.type === 'box' ? ' (9 × 9 je premala)' : ' (standardna je premala)') : ''}</text>
     </svg>
   )
 }

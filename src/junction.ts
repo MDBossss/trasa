@@ -390,6 +390,9 @@ const SIDE_ORDER: Side[] = ['top', 'right', 'bottom', 'left']
 const chainPos = (id: string, p: Project) => (id.startsWith('CH:') ? p.elements.findIndex((e) => e.id === id.split(':')[2]) * 3 + ['L', 'N', 'PE'].indexOf(id.split(':')[1]) : 0)
 const ORDER = (id: string) => (id === 'L' ? 0 : id === 'N' ? 1 : id === 'PE' ? 2 : id.startsWith('O:') ? 3 : id.startsWith('SW') ? 4 : id.startsWith('I:') ? 5 : id.startsWith('PUT') ? 6 : id.startsWith('CH:') ? 7 : 8)
 
+// Inner sizes (mm) of the flush junction boxes the user stocks: 9 × 9 and 9 × 11 cm; the last one means "split".
+export const BOX_SIZES: [number, number][] = [[90, 90], [90, 110], [150, 150]]
+export const boxSizeLabel = (W: number, H: number) => `${W / 10} × ${H / 10} cm`
 export const WAGO = { 412: { w: 13.0, n: 2 }, 413: { w: 18.7, n: 3 }, 415: { w: 30.0, n: 5 } } as const
 export const DEPTH = 18.6
 
@@ -408,7 +411,7 @@ export function boxLayout(j: Pick<Junction, 'box' | 'terminals' | 'devices'>): {
     ...j.terminals.filter((t) => t.cap).map((t): Item => ({ kind: 'cap', t, w: CAP_W, h: CAP_H })),
     ...j.devices.map((d): Item => ({ kind: 'device', d, w: d.wMm, h: d.hMm })),
   ]
-  const base = j.box.type === 'modbox' ? [(j.box.modules ?? 3) <= 3 ? [100, 70] : (j.box.modules ?? 3) <= 4 ? [120, 70] : [160, 70], [160, 100], [200, 120]] : [[100, 100], [150, 150], [200, 200]]
+  const base = j.box.type === 'modbox' ? [(j.box.modules ?? 3) <= 3 ? [100, 70] : (j.box.modules ?? 3) <= 4 ? [120, 70] : [160, 70], [160, 100], [200, 120]] : BOX_SIZES
   for (const [W, H] of base) {
     const rows: { y: number; flip: boolean; x: number; items: Placed[]; h: number }[] = [
       { y: 5, flip: false, x: 5, items: [], h: DEPTH },
@@ -423,9 +426,10 @@ export function boxLayout(j: Pick<Junction, 'box' | 'terminals' | 'devices'>): {
       row.items.push({ ...it, x: row.x, y: row.flip ? row.y + DEPTH - it.h : row.y, flip: row.flip })
       row.x += it.w + 4
     }
-    if (ok) return { W, H, placed: rows.flatMap((r) => r.items), overflow: W > base[0][0] }
+    if (ok) return { W, H, placed: rows.flatMap((r) => r.items), overflow: W > base[0][0] || H > base[0][1] }
   }
-  return { W: 200, H: 200, placed: [], overflow: true }
+  const [W, H] = base[base.length - 1]
+  return { W, H, placed: [], overflow: true }
 }
 
 
@@ -517,12 +521,14 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   const lay = boxLayout({ box, terminals, devices })
   const size = { W: lay.W, H: lay.H, overflow: lay.overflow }
   if (box.type === 'box') {
-    if (cables.length > 8) checks.push({ level: 'err', text: `${cables.length} kabela u jednoj kutiji: podžbukna kutija ima 8 uvodnica. Podijeli na dvije kutije (npr. svjetla / utičnice / vrata).` })
+    const entries = lay.W * lay.H >= 90 * 110 ? 10 : 8
+    if (cables.length > entries) checks.push({ level: 'err', text: `${cables.length} kabela u jednoj kutiji: kutija ${boxSizeLabel(lay.W, lay.H)} ima ${entries} uvodnica. Podijeli na dvije kutije (npr. svjetla / utičnice / vrata).` })
     const relays = devices.filter((d) => d.kind === 'relay').length
     const triple = terminals.find((t) => t.chained >= 3)
+    const biggest = lay.W >= BOX_SIZES[BOX_SIZES.length - 1][0]
     if (triple) checks.push({ level: 'warn', text: `Stezaljka ${triple.label} treba ${triple.chained} WAGO-a s premosnicama: razmisli o podjeli, druga kutija napajana iz ove jednim 5×1,5 je preglednija.` })
-    else if (lay.overflow) checks.push({ level: 'warn', text: `Standardna 100 × 100 je premala: uzmi ${lay.W} × ${lay.H} mm${relays ? ', duboku (relej)' : ''}, ili podijeli po namjeni (svjetla / utičnice / vrata).` })
-    else if (relays && box.depth !== 'duboka') { /* depth check already exists */ }
+    else if (biggest) checks.push({ level: 'err', text: `Ne stane ni u 9 × 11: podijeli na dvije kutije po namjeni (svjetla / utičnice / vrata), ili nabavi veću (${boxSizeLabel(lay.W, lay.H)}).` })
+    else if (lay.overflow) checks.push({ level: 'warn', text: `U 9 × 9 ne stane: uzmi kutiju 9 × 11${relays ? ', duboku (relej)' : ''}.` })
   }
   const level: Level = checks.some((c) => c.level === 'err') ? 'err' : checks.some((c) => c.level === 'warn') ? 'warn' : 'ok'
   if (level === 'ok' && cables.length) checks.push({ level: 'ok', text: `Sve žile uparene: ${terminals.length} stezaljki, ${cables.length} kabela${devices.length ? `, ${devices.length} uređaja` : ''}.` })
