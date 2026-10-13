@@ -26,9 +26,9 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
   const boxes = useMemo(() => {
     const vbs = js.map((j) => junctionViewBox(j))
     const rowH = [0, 1, 2].map((r) => Math.max(0, ...js.map((j, i) => (rowOf(j) === r ? vbs[i].h * BOX_SCALE : 0))))
-    const rowY = [PAD + 140, 0, 0]
-    rowY[1] = rowY[0] + (rowH[0] ? rowH[0] + 150 : 0)
-    rowY[2] = rowY[1] + (rowH[1] ? rowH[1] + 150 : 0)
+    const rowY = [PAD + 330, 0, 0]
+    rowY[1] = rowY[0] + (rowH[0] ? rowH[0] + 300 : 0)
+    rowY[2] = rowY[1] + (rowH[1] ? rowH[1] + 300 : 0)
     let x = PAD
     return js.map((j, i) => {
       const vb = vbs[i], a = junctionAnchors(j)
@@ -48,7 +48,21 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
     let lanes = 0, lanesBelow = 0
     const sideCount = new Map<string, number>()
     const bottom = Math.max(...boxes.map((b) => b.ty + b.vb.h * BOX_SCALE), 0) + 20
-    const out: { id: string; d: string; od: number; label: string; tip: string; mid: { x: number; y: number }; tail: boolean; boxes: string[]; cableIds: string[] }[] = []
+    type Link = { id: string; d: string; od: number; label: string; tip: string; mid: { x: number; y: number }; tail: boolean; boxes: string[]; cableIds: string[]; feed?: { x: number; y: number } }
+    const out: Link[] = [], feeds: Link[] = []
+    for (const bx of boxes) for (const bc of bx.j.cables) {
+      if (bc.role !== 'feed') continue
+      const st = bx.stubs.get(bc.cable.id)
+      if (!st) continue
+      const k = sideCount.get(`${bx.j.box.id}:${st.n[0]},${st.n[1]}`) ?? 0
+      sideCount.set(`${bx.j.box.id}:${st.n[0]},${st.n[1]}`, k + 1)
+      const cores = coreColors(bc.cable.type)
+      const od = (cores.length >= 5 ? 11 : /2[.,]5/.test(bc.cable.type) ? 10 : 8.5) * 4 * BOX_SCALE
+      const len = 110 + k * (od + 10)
+      const end = { x: st.x + st.n[0] * len, y: st.y + st.n[1] * len }
+      seen.add(bc.cable.id)
+      feeds.push({ id: bc.cable.id, d: `M${st.x},${st.y} L${end.x},${end.y}`, od, label: bc.label, tip: `${bc.label} · ${bc.cable.type} · ${cores.length} žile: dolaz napajanja${bc.far.conduit ? ` (bužir ${bc.far.conduit.name})` : ''}`, mid: { x: (st.x + end.x) / 2, y: (st.y + end.y) / 2 }, tail: false, boxes: [bx.j.box.id], cableIds: [bc.cable.id], feed: { x: end.x + st.n[0] * 22, y: end.y + st.n[1] * 22 } })
+    }
     for (const c of project.cables) {
       const ends = cableEnds(c, project)
       if (!ends[0] || !ends[1] || ends[0].id === ends[1].id || seen.has(c.id)) continue
@@ -84,7 +98,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
         else if (facingV) { const my = (p1.y + p2.y) / 2 + (ka - kb) * step * 0.5; via = [{ x: p1.x, y: my }, { x: p2.x, y: my }] }
         else {
           const below = sa.n[1] > 0 || sb.n[1] > 0
-          const laneY = below ? bottom + LANE * (lanesBelow++ + 1) : PAD + 110 - LANE * (lanes++ + 1)
+          const laneY = below ? bottom + LANE * (lanesBelow++ + 1) : PAD + 120 - LANE * (lanes++ + 1)
           via = [{ x: p1.x, y: laneY }, { x: p2.x, y: laneY }]
         }
         const pts = [{ x: sa.x, y: sa.y }, p1, ...via, p2, { x: sb.x, y: sb.y }]
@@ -106,7 +120,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
         out.push({ id: c.id, d: `M${st.x},${st.y} L${p1.x},${p1.y}`, od, label: `→ ${far.label} (${room})`, tip: `${here.j.box.label} → ${far.label} u sobi ${room} · ${c.type} · ${cores.length} žile${carries ? `: ${carries}` : ''}`, mid: { x: p1.x + st.n[0] * 10, y: p1.y + st.n[1] * 10 }, tail: true, boxes: [here.j.box.id], cableIds: [st.cableId] })
       }
     }
-    return out
+    return [...out, ...feeds]
   }, [project, byBox])
 
   useLayoutEffect(() => {
@@ -184,6 +198,13 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
               <path d={l.d} fill="none" stroke="#9a978f" strokeWidth={l.od + 2} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={l.tail ? '14 8' : undefined} />
               <path d={l.d} fill="none" stroke="#d9d7cf" strokeWidth={l.od} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={l.tail ? '14 8' : undefined} />
               <text x={l.mid.x} y={l.mid.y - l.od / 2 - 6} textAnchor={l.tail ? 'start' : 'middle'} fontSize={12} fontWeight={600} className="scheme-link-text">{l.label}</text>
+              {l.feed && (
+                <g transform={`translate(${l.feed.x}, ${l.feed.y})`}>
+                  <rect x={-22} y={-22} width={44} height={44} rx={8} fill="var(--panel)" stroke="var(--text)" strokeWidth={2.5} />
+                  <path d="M3,-14 L-7,2 L1,2 L-3,14 L8,-3 L0,-3 Z" fill="#f28c28" stroke="#b35a0c" strokeWidth={1} />
+                  <text x={0} y={38} textAnchor="middle" fontSize={11} fontWeight={700} className="scheme-link-text">DOLAZ</text>
+                </g>
+              )}
             </g>
           ))}
         </svg>
