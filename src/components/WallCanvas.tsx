@@ -351,14 +351,17 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
         </Layer>
 
         <Layer listening={tool === 'select'}>
-          {cables.map((c) => {
+          {cables.map((c, ci) => {
             const path = cablePath(c, liveCtx)
             if (!path) return null
             const color = cableColor(c, project)
             const isSel = c.id === selectedId
             const flat = path.flatMap((p) => [toX(p), toY(p)])
+            // several cables on the same run (UTP + coax from one conduit) are drawn side by side so each can be picked
+            const key = (x: typeof c) => [x.from, x.to].map((e) => JSON.stringify(e)).sort().join('|')
+            const dup = cables.slice(0, ci).filter((x) => key(x) === key(c) && JSON.stringify(x.via) === JSON.stringify(c.via)).length
             return (
-              <Group key={c.id}>
+              <Group key={c.id} x={dup * px(7)} y={dup * px(7)}>
                 <Line points={flat} stroke="#fff" strokeWidth={px(isSel ? 9 : 6)} opacity={isSel ? 1 : 0.85} lineJoin="round" lineCap="round" />
                 <Line name={c.id} points={flat} stroke={color} strokeWidth={px(3.5)} hitStrokeWidth={px(14)} lineJoin="round" lineCap="round" dash={isSel ? [px(10), px(6)] : undefined} />
               </Group>
