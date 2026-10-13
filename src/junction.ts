@@ -394,10 +394,19 @@ const SIDE_ORDER: Side[] = ['top', 'right', 'bottom', 'left']
 const chainPos = (id: string, p: Project) => (id.startsWith('CH:') ? p.elements.findIndex((e) => e.id === id.split(':')[2]) * 3 + ['L', 'N', 'PE'].indexOf(id.split(':')[1]) : 0)
 const ORDER = (id: string) => (id === 'L' ? 0 : id === 'N' ? 1 : id === 'PE' ? 2 : id.startsWith('O:') ? 3 : id.startsWith('SW') ? 4 : id.startsWith('I:') ? 5 : id.startsWith('PUT') ? 6 : id.startsWith('CH:') ? 7 : 8)
 
-// Inner sizes (mm) of the flush junction boxes the user stocks (sold as 10 × 10 and 10 × 12); the last one means "split".
-export const BOX_SIZES: [number, number][] = [[90, 90], [90, 110], [150, 150]]
-// labelled by the retail (outer) size: inner + 1 cm
-export const boxSizeLabel = (W: number, H: number) => `${W / 10 + 1} × ${H / 10 + 1}`
+// Flush junction boxes sold in Croatia (Elektro-Kontakt, Legrand, Kaiser), smallest first: inner size in mm,
+// retail label (outer size) and number of cable entries. The box grows along this ladder before a split is suggested.
+export const BOX_CATALOG: { w: number; h: number; label: string; entries: number; note?: string }[] = [
+  { w: 90, h: 90, label: '10 × 10', entries: 8 },
+  { w: 90, h: 110, label: '10 × 12', entries: 10 },
+  { w: 115, h: 95, label: '13 × 11', entries: 10, note: 'Legrand 126 × 105 × 70' },
+  { w: 140, h: 140, label: '15 × 15', entries: 12 },
+  { w: 160, h: 135, label: '17 × 15', entries: 14, note: 'Legrand 170 × 145 × 70' },
+  { w: 190, h: 140, label: '20 × 15', entries: 14 },
+]
+export const BOX_SIZES: [number, number][] = BOX_CATALOG.map((b) => [b.w, b.h])
+export const boxSizeLabel = (W: number, H: number) => BOX_CATALOG.find((b) => b.w === W && b.h === H)?.label ?? `${Math.round(W / 10 + 1)} × ${Math.round(H / 10 + 1)}`
+export const boxEntries = (W: number, H: number) => BOX_CATALOG.find((b) => b.w === W && b.h === H)?.entries ?? 14
 export const WAGO = { 412: { w: 13.0, n: 2 }, 413: { w: 18.7, n: 3 }, 415: { w: 30.0, n: 5 } } as const
 export const DEPTH = 18.6
 
@@ -529,15 +538,13 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   const lay = boxLayout({ box, terminals, devices })
   const size = { W: lay.W, H: lay.H, overflow: lay.overflow, stacked: lay.stacked }
   if (box.type === 'box') {
-    const entries = lay.W * lay.H >= 90 * 110 ? 10 : 8
-    if (cables.length > entries) checks.push({ level: 'err', text: `${cables.length} kabela u jednoj kutiji: kutija ${boxSizeLabel(lay.W, lay.H)} ima ${entries} uvodnica. Podijeli na dvije kutije (npr. svjetla / utičnice / vrata).` })
+    const entries = boxEntries(lay.W, lay.H)
     const relays = devices.filter((d) => d.kind === 'relay').length
-    const triple = terminals.find((t) => t.chained >= 3)
-    const biggest = lay.W >= BOX_SIZES[BOX_SIZES.length - 1][0]
-    if (triple) checks.push({ level: 'warn', text: `Stezaljka ${triple.label} treba ${triple.chained} WAGO-a s premosnicama: razmisli o podjeli, druga kutija napajana iz ove jednim 5×1,5 je preglednija.` })
-    else if (biggest) checks.push({ level: 'err', text: `Ne stane ni u 10 × 12: podijeli na dvije kutije po namjeni (svjetla / utičnice / vrata), ili nabavi veću (${boxSizeLabel(lay.W, lay.H)}).` })
-    else if (lay.overflow && lay.stacked) checks.push({ level: 'warn', text: `Kutija 10 × 12 je puna (WAGO-i u dva sloja${relays ? ', uz relej' : ''}): bolje podijeli na dvije po namjeni (svjetla / utičnice / vrata).` })
-    else if (lay.overflow) checks.push({ level: 'warn', text: `U 10 × 10 ne stane: uzmi kutiju 10 × 12${relays ? ', duboku (relej)' : ''}.` })
+    const largest = BOX_SIZES[BOX_SIZES.length - 1]
+    const tooBig = lay.W >= largest[0] && lay.H >= largest[1] && lay.placed.length === 0
+    if (cables.length > entries) checks.push({ level: 'err', text: `${cables.length} kabela u jednoj kutiji: kutija ${boxSizeLabel(lay.W, lay.H)} ima ${entries} uvodnica. Podijeli na dvije kutije (npr. svjetla / utičnice / vrata).` })
+    else if (tooBig) checks.push({ level: 'err', text: `Ne stane ni u ${boxSizeLabel(largest[0], largest[1])}: podijeli na dvije kutije po namjeni (svjetla / utičnice / vrata).` })
+    else if (lay.overflow) { const cat = BOX_CATALOG.find((b) => b.w === lay.W && b.h === lay.H); checks.push({ level: 'warn', text: `U 10 × 10 ne stane: uzmi kutiju ${boxSizeLabel(lay.W, lay.H)}${cat?.note ? ` (${cat.note})` : ''}${relays ? ', duboku (relej)' : ''}.` }) }
   }
   const level: Level = checks.some((c) => c.level === 'err') ? 'err' : checks.some((c) => c.level === 'warn') ? 'warn' : 'ok'
   if (level === 'ok' && cables.length) checks.push({ level: 'ok', text: `Sve žile uparene: ${terminals.length} stezaljki, ${cables.length} kabela${devices.length ? `, ${devices.length} uređaja` : ''}.` })
@@ -636,7 +643,7 @@ export function splitBoxPlan(box: WallElement, p: Project, newId: string, label:
   const newBox: WallElement = { ...box, id: newId, label, xM, note: `odvojeno iz ${box.label}` }
   const feed: Omit<Cable, 'id'> = { roomId: box.roomId, wall: box.wall, type: 'NYM-J 5x1.5', from: { kind: 'element', id: box.id }, to: { kind: 'element', id: newId }, via: [], note: '' }
   // fits = one of the stocked boxes (10 × 10 or 10 × 12) with no entry / split error
-  const fits = (j: Junction) => j.size.W <= 90 && j.size.H <= 110 && !j.size.stacked && !j.checks.some((c) => c.level === 'err' && /podijeli|uvodnic/i.test(c.text))
+  const fits = (j: Junction) => !j.checks.some((c) => c.level === 'err' && /podijeli|uvodnic/i.test(c.text))
   const area = (j: Junction) => j.size.W * j.size.H
   let best: { ids: string[]; score: number; bothFit: boolean } | null = null
   for (let k = 1; k < movable.length; k++) {

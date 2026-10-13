@@ -522,15 +522,18 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   await page.locator('.jsteps li.hdr', { hasText: 'SW1 · izravno · R3 ulaz 1 ← tipkalo' }).waitFor()
   await page.evaluate(({ t1, r1 }) => window.__trasa.getState().updateElement(t1, { relayId: r1, relayInput: 1 }), ids2)
   await page.evaluate(({ k3, c, r3 }) => { const s = window.__trasa.getState(); s.patchProject({ cables: s.project.cables.filter((x) => x.id !== c), elements: s.project.elements.filter((e) => e.id !== k3 && e.id !== r3) }) }, { ...k3, r3 })
-  // an overfull box splits with one click: sockets move to a new box fed from the old one
+  // an overfull box first grows along the catalogue of real boxes; a split is offered only when the entries run out
   const extra = await page.evaluate(({ box }) => { const s = window.__trasa.getState(); const room = s.project.rooms[0].id; const ids = []; for (let i = 0; i < 3; i++) { const u = s.addElement({ roomId: room, wall: 0, type: 'socket', xM: 0.3 + i * 0.4, zM: 0.3, note: '' }); ids.push(u, s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: u }, via: [], note: '' })) } return ids }, ids)
   await page.locator('.junctions-list .list li', { hasText: 'K1' }).click()
+  await page.locator('.junction-svg text', { hasText: /kutija (10 × 12|13 × 11|15 × 15)/ }).waitFor()
+  assert.equal(await page.getByRole('button', { name: 'Podijeli na dvije', exact: true }).count(), 0, 'no split while a bigger real box still fits')
+  const more = await page.evaluate(({ box }) => { const s = window.__trasa.getState(); const room = s.project.rooms[0].id; const ids = []; for (let i = 0; i < 8; i++) { const u = s.addElement({ roomId: room, wall: 0, type: 'socket', xM: 2 + i * 0.3, zM: 0.3, note: '' }); ids.push(u, s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: u }, via: [], note: '' })) } return ids }, ids)
   await page.getByRole('button', { name: 'Podijeli na dvije', exact: true }).click()
   const split = await page.evaluate(() => { const s = window.__trasa.getState(); const nb = s.project.elements.filter((e) => e.type === 'box').at(-1); return { id: nb.id, label: nb.label, link: s.project.cables.at(-1) } })
   assert.equal(split.link.to.id, split.id)
   await page.locator('.junction-main .room-head h2', { hasText: split.label }).waitFor()
   // undo the split by hand: U1's cable moved to the new box too, so point it back at K1
-  await page.evaluate(({ extra, split, box }) => { const s = window.__trasa.getState(); const drop = new Set([...extra, split.id, split.link.id]); const back = (e) => (e.kind === 'element' && e.id === split.id ? { ...e, id: box } : e); s.patchProject({ cables: s.project.cables.filter((x) => !drop.has(x.id)).map((c) => ({ ...c, from: back(c.from), to: back(c.to) })), elements: s.project.elements.filter((e) => !drop.has(e.id)) }) }, { extra, split, box: ids.box })
+  await page.evaluate(({ extra, split, box }) => { const s = window.__trasa.getState(); const drop = new Set([...extra, split.id, split.link.id]); const back = (e) => (e.kind === 'element' && e.id === split.id ? { ...e, id: box } : e); s.patchProject({ cables: s.project.cables.filter((x) => !drop.has(x.id)).map((c) => ({ ...c, from: back(c.from), to: back(c.to) })), elements: s.project.elements.filter((e) => !drop.has(e.id)) }) }, { extra: [...extra, ...more], split, box: ids.box })
   await page.evaluate(({ v1, r2, c }) => { const s = window.__trasa.getState(); s.patchProject({ cables: s.project.cables.filter((x) => x.id !== c), elements: s.project.elements.filter((e) => e.id !== v1 && e.id !== r2) }) }, gar)
   await page.getByRole('button', { name: 'Spojevi' }).click()
   // K1 now has an O terminal pairing the cable's black core with the light's brown
