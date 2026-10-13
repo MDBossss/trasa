@@ -23,9 +23,23 @@ export function junctionViewBox(j: Junction): { w: number; h: number } {
   return { w: 110 + lay.W * S + 190, h: 150 + lay.H * S + (j.cables.some((c) => c.side === 'bottom') ? 200 : 60) }
 }
 
-export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, className }: {
+// Where each cable's sheath leaves the drawing (svg coordinates) and the box centre, for the room board.
+export function junctionAnchors(j: Junction): { stubs: Map<string, { x: number; y: number; n: [number, number] }>; cx: number; cy: number } {
+  const lay = boxLayout(j)
+  const sides: Record<Side, BoxCable[]> = { top: [], bottom: [], left: [], right: [] }
+  for (const c of j.cables) sides[c.side].push(c)
+  const stubs = new Map<string, { x: number; y: number; n: [number, number] }>()
+  for (const c of j.cables) {
+    const arr = sides[c.side]
+    const e = entryOf(c.side, arr.indexOf(c), arr.length, lay.W, lay.H)
+    stubs.set(c.cable.id, { x: 110 + (e.p[0] - e.n[0] * 30) * S, y: 150 + (e.p[1] - e.n[1] * 30) * S, n: [-e.n[0], -e.n[1]] })
+  }
+  return { stubs, cx: 110 + (lay.W / 2) * S, cy: 150 + (lay.H / 2) * S }
+}
+
+export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, className, labels = true }: {
   j: Junction; plan: PlanWire[]; mode: 'all' | 'steps'; step: number; hover: string | null
-  onHover: (k: string | null) => void; onPick: (i: number) => void; className?: string
+  onHover: (k: string | null) => void; onPick: (i: number) => void; className?: string; labels?: boolean
 }) {
   const lay = useMemo(() => boxLayout(j), [j])
   const { W, H } = lay
@@ -97,8 +111,8 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
           <g key={c.cable.id} className={`jc-cable ${dim ? 'dim' : ''}`} onMouseEnter={() => onHover(`cable:${c.cable.id}`)} onMouseLeave={() => onHover(null)}>
             <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#9a978f" strokeWidth={mm(od) + 2} strokeLinecap="round" />
             <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#d9d7cf" strokeWidth={mm(od)} strokeLinecap="round" />
-            <text x={lx} y={ly + dy} textAnchor={anchor} fontSize={11} fontWeight={600} fill="currentColor">{c.label}</text>
-            <text x={lx} y={ly + dy + 13} textAnchor={anchor} fontSize={10} fill="var(--muted)">{c.sub} · {roleShort(c)}</text>
+            {labels && <text x={lx} y={ly + dy} textAnchor={anchor} fontSize={11} fontWeight={600} fill="currentColor">{c.label}</text>}
+            {labels && <text x={lx} y={ly + dy + 13} textAnchor={anchor} fontSize={10} fill="var(--muted)">{c.sub} · {roleShort(c)}</text>}
           </g>
         )
       })}
