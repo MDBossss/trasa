@@ -42,7 +42,7 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
    ih pri pomicanju. Klik na **rub zida** završi kabel u kutu: na susjednom zidu se pojavi na istoj visini i tamo ga
    nastaviš drugim kabelom (spojevi i materijal ga prate kroz kut, visinu u kutu mijenjaš u svojstvima). Desno: fotka zida, svojstva
    odabira (tip, oznaka, pozicija, vrsta prekidača, tip kabela, duljina) i lista svega na zidu.
-9. **Spojevi** (gumb u headeru): za svaku razvodnu kutiju slika u mjerilu (kutija 9 × 9 ili 9 × 11 cm iznutra, WAGO 221-412/413/415 s pravim
+9. **Spojevi** (gumb u headeru): za svaku razvodnu kutiju slika u mjerilu (kutija 10 × 10 ili 10 × 12, WAGO 221-412/413/415 s pravim
    dimenzijama, žile u bojama po HD 308) izvedena iz nacrtanog: kabel vezan na kutiju dobije ulogu iz onoga što mu je na
    drugom kraju (utičnica, svjetlo, prekidač, bužir kategorije Dolaz = napajanje, bužir do kutije u drugoj sobi = prolaz),
    a žile se grupiraju na stezaljke L / N / PE / povratna / putne / parkirano. Na prekidaču označi **Pali svjetla** i vrstu
@@ -56,8 +56,8 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
     žila kabel između kutije i doze mora nositi (L, N, PE + izlazi), piše to na kabelu ("4 potrebno · 3 ima → uzmi 5×1,5")
     i crta dozu s relejima, tipkalima i kratkim žilama (tipkalo → SW izravno, bez stezaljke). Signal tipkala putuje
     kroz lanac kutija (doza → K1 → K2) najkraćim putem: svaki kabel na putu ga nosi, usputna kutija ga samo prolazi
-    kroz WAGO 412; prsten kutija ne udvostručuje signale. Veličina kutije se računa iz sadržaja (9 × 9, pa 9 × 11 cm iznutra, kakve
-    korisnik ima) i ide u materijal; provjere kažu kad 9 × 9 ne stane, kad ne stane ni 9 × 11 (podijeli), kad je kabela
+    kroz WAGO 412; prsten kutija ne udvostručuje signale. Veličina kutije se računa iz sadržaja (10 × 10, pa 10 × 12, unutra 9 × 9 i 9 × 11, kakve
+    korisnik ima) i ide u materijal; provjere kažu kad 10 × 10 ne stane, kad ne stane ni 10 × 12 (podijeli), kad je kabela
     više od uvodnica (8 odnosno 10) i kad bi stezaljka trebala 3 WAGO-a. Više od 5 žila na stezaljci = dva (ili tri) WAGO 221-415
     spojena kratkom premosnicom, nacrtano i numerirano "WAGO 2, port 3". Mjesto u okviru: na tipkalu/utičnici ◀ ▶ mijenja redoslijed, "Praznih lijevo" ostavlja prazne module;
     slika spoja i provlačenje utičnica slijede isti redoslijed. **LED niša (N)**: traka

@@ -200,7 +200,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
       })}
 
       <line x1={bx} y1={by + mm(H + 8) + 6} x2={bx + mm(20)} y2={by + mm(H + 8) + 6} stroke="currentColor" strokeWidth={1.5} />
-      <text x={bx + mm(20) + 6} y={by + mm(H + 8) + 10} fontSize={10} fill="var(--muted)">20 mm · {j.box.type === 'box' ? `kutija ${boxSizeLabel(W, H)} iznutra` : `${W} × ${H} mm`}{lay.overflow ? (j.box.type === 'box' ? ' (9 × 9 je premala)' : ' (standardna je premala)') : ''}</text>
+      <text x={bx + mm(20) + 6} y={by + mm(H + 8) + 10} fontSize={10} fill="var(--muted)">20 mm · {j.box.type === 'box' ? `kutija ${boxSizeLabel(W, H)}` : `${W} × ${H} mm`}{lay.overflow ? (j.box.type === 'box' ? ' (10 × 10 je premala)' : ' (standardna je premala)') : ''}</text>
     </svg>
   )
 }
