@@ -614,3 +614,21 @@ export function wagoSlot(t: Terminal, i: number): { unit: number; port: number }
   return { unit: t.chained - 1, port: rem + 1 }
 }
 export const wagoSlotLabel = (t: Terminal, i: number) => { const s = wagoSlot(t, i); return t.chained > 1 ? `WAGO ${s.unit + 1}, port ${s.port + 1}` : `port ${s.port + 1}` }
+
+// Split an overfull box: cables by purpose (sockets and doors first, else half of the lights) move to a new box
+// 35 cm to the side, fed from the old one. Returns the changes; the engine then recomputes both junctions.
+export function splitBoxPlan(box: WallElement, p: Project, newId: string, label: string): { newBox: WallElement; moveCableIds: string[]; feed: Omit<Cable, 'id'> } | null {
+  const at = p.cables.filter((c) => isAtBox(c, box))
+  const resolved = at.map((c) => ({ c, r: resolveCable(c, box, p) }))
+  const movable = resolved.filter(({ r }) => r.role !== 'feed' && r.role !== 'pass' && r.role !== 'lowv')
+  if (movable.length < 2) return null
+  // by purpose: sockets + doors go together; if that leaves nothing or everything, take half of what can move
+  let pick = movable.filter(({ r }) => r.role === 'socket' || r.role === 'motor')
+  if (pick.length === 0 || pick.length === movable.length) pick = movable.slice(Math.ceil(movable.length / 2))
+  const wall = p.rooms.find((r) => r.id === box.roomId)
+  const wallLen = wall ? Math.hypot(wall.points[(box.wall + 1) % wall.points.length].x - wall.points[box.wall].x, wall.points[(box.wall + 1) % wall.points.length].y - wall.points[box.wall].y) / (p.pxPerMeter ?? 100) : 99
+  const xM = box.xM + 0.35 <= wallLen - 0.1 ? box.xM + 0.35 : Math.max(0.1, box.xM - 0.35)
+  const newBox: WallElement = { ...box, id: newId, label, xM, note: `odvojeno iz ${box.label}` }
+  const feed: Omit<Cable, 'id'> = { roomId: box.roomId, wall: box.wall, type: 'NYM-J 5x1.5', from: { kind: 'element', id: box.id }, to: { kind: 'element', id: newId }, via: [], note: '' }
+  return { newBox, moveCableIds: pick.map(({ c }) => c.id), feed }
+}

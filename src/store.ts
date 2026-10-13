@@ -1,8 +1,9 @@
 import { create } from 'zustand'
 import { temporal } from 'zundo'
 import { get as idbGet, set as idbSet } from 'idb-keyval'
+import { cableNeeds, splitBoxPlan } from './junction'
 import { conduitTouchesRoom } from './walls'
-import { emptyProject, PALETTE, ELEMENT_META, DEFAULT_CATEGORIES, matchCategory, type Category, type Cable, type Conduit, type ElementType, type Project, type Pt, type Room, type Tool, type View, type WallElement, type WallTool, relayModelOf, placeInFrame, keepFramePositions } from './types'
+import { emptyProject, PALETTE, ELEMENT_META, DEFAULT_CATEGORIES, matchCategory, type Category, type Cable, type Conduit, type ElementType, type Project, type Pt, type Room, type Tool, type View, type WallElement, type WallTool, relayModelOf, placeInFrame, keepFramePositions, type CableEnd } from './types'
 
 const IDB_KEY = 'trasa-project'
 
@@ -63,6 +64,7 @@ interface State {
   updateRoom: (id: string, p: Partial<Room>) => void
   setWallPhoto: (roomId: string, wall: number, photo: string | undefined) => void
   removeSelected: () => void
+  splitBox: (id: string) => string | null
   rotatePlan: (dir: 1 | -1) => void
   setTilt: (deg: number) => void
   markSaved: (fileName?: string) => void
@@ -236,6 +238,26 @@ export const useStore = create<State>()(
         }),
       fitView: () => set((s) => ({ fitNonce: s.fitNonce + 1 })),
       markSaved: (fileName) => set((s) => ({ dirty: false, fileName: fileName ?? s.fileName })),
+      splitBox: (id) => {
+        const s = get()
+        const box = s.project.elements.find((e) => e.id === id)
+        if (!box) return null
+        const newId = uid()
+        const n = s.project.elements.filter((x) => x.type === 'box').length + 1
+        const plan = splitBoxPlan(box, s.project, newId, `${ELEMENT_META.box.prefix}${n}`)
+        if (!plan) return null
+        const moved = new Set(plan.moveCableIds)
+        const swap = (e: CableEnd) => (e.kind === 'element' && e.id === id ? { ...e, id: newId } : e)
+        let cables = s.project.cables.map((c) => (moved.has(c.id) ? { ...c, from: swap(c.from), to: swap(c.to) } : c))
+        const feedId = uid()
+        cables = [...cables, { ...plan.feed, id: feedId }]
+        const project = { ...s.project, elements: [...s.project.elements, plan.newBox], cables }
+        // the link between the two boxes only needs 3 cores when no signal has to cross
+        const need = cableNeeds(cables[cables.length - 1], project)
+        if (need && need.needed <= 3) project.cables = project.cables.map((c) => (c.id === feedId ? { ...c, type: 'NYM-J 3x1.5' } : c))
+        set({ project, selectedId: newId })
+        return newId
+      },
       removeSelected: () =>
         set((s) => {
           const id = s.selectedId

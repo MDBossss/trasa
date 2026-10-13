@@ -182,6 +182,9 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
               <h2>{j.box.label} <span className="muted">· {ELEMENT_META[j.box.type].label.toLowerCase()}{j.box.type === 'modbox' ? ` ${j.box.modules ?? 3}M` : ''} · {j.room.name}, zid {j.box.wall + 1}{isPlace(j.box) && j.box.depth ? ` · ${j.box.depth}` : ''}</span></h2>
               <button className="mini" onClick={() => openWall(j)}>Otvori na zidu</button>
               <button className="mini" onClick={() => setView({ kind: 'printbox', elementId: j.box.id })} title="A4 list s ovom kutijom"><Icon.print /> Ispiši kutiju</button>
+              {j.box.type === 'box' && j.checks.some((c) => /podijel|podjel/i.test(c.text)) && (
+                <button className="mini primary" onClick={() => { const id = useStore.getState().splitBox(j.box.id); if (id) pick(id) }} title="Utičnice i vrata (ili pola svjetala) odu u novu kutiju 35 cm pored, napajanu iz ove. Undo vraća.">Podijeli na dvije</button>
+              )}
               <div className="spacer" />
               <div className="segmented" role="tablist">
                 <button role="tab" aria-selected={!scheme && mode === 'all'} className={!scheme && mode === 'all' ? 'on' : ''} onClick={() => { setScheme(false); setMode('all'); setStep(0) }}>Sve žile</button>
