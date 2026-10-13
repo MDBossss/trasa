@@ -316,7 +316,6 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
           </ul>
         </section>
       )}
-      {props && !el && !cable && <p className="muted hint">Klikni element ili kabel na zidu za svojstva.</p>}
     </aside>
   )
 }

@@ -30,7 +30,7 @@ process.on('uncaughtException', async (e) => {
   process.exit(1)
 })
 await page.goto(APP_URL)
-await page.evaluate(() => new Promise((r) => { const q = indexedDB.deleteDatabase('keyval-store'); q.onsuccess = q.onerror = q.onblocked = () => r() }))
+await page.evaluate(() => new Promise((r) => { localStorage.clear(); const q = indexedDB.deleteDatabase('keyval-store'); q.onsuccess = q.onerror = q.onblocked = () => r() }))
 await page.reload()
 await page.getByText('Ispusti sliku tlocrta ovdje').waitFor()
 
@@ -674,9 +674,12 @@ assert.equal(saved.project.conduits.length, 3)
 assert.deepEqual(saved.ui.view, { kind: 'room', roomId: saved.project.rooms[0].id, wall: 2 })
 await page.locator('.save-state:not(.dirty)').waitFor()
 
-// persistence across reload
+// persistence across reload: project, and also where the user was (view, wall, selection)
 await page.waitForTimeout(600)
 await page.reload()
+// comes back to the wall it was on, then the plan lists are intact too
+await page.locator('.room-head', { hasText: 'Zid 3' }).waitFor()
+await page.getByRole('button', { name: 'Tlocrt' }).click()
 await page.locator('.list').getByText('B1-ormar').waitFor()
 await page.locator('.list').getByText('1/4 fotki').waitFor()
 
@@ -755,6 +758,7 @@ assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('trasa-gi
 await page.getByText('GitHub prijava').waitFor()
 // back to the room view so the saved file carries wall 3 again
 await page.locator('.modal-head button').click()
+await page.getByRole('button', { name: 'Tlocrt' }).click()
 await page.locator('.sidebar .list li', { hasText: 'Dnevna' }).getByText('Otvori').click()
 await page.locator('.sidebar .list li', { hasText: 'Zid 3' }).click()
 await page.locator('.wall-nav', { hasText: 'Zid 3' }).waitFor()

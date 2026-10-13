@@ -68,9 +68,8 @@ export default function App() {
           ) : (
             <>
               <ToolRail />
-              <Sidebar part="nav" />
               <PlanCanvas />
-              <Sidebar part="props" />
+              <Sidebar />
             </>
           )
         ) : view.kind === 'room' ? (

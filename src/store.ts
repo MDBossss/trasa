@@ -281,12 +281,46 @@ export const useStore = create<State>()(
 export const undo = () => useStore.temporal.getState().undo()
 export const redo = () => useStore.temporal.getState().redo()
 
+// Where the user was (view, room, selection, cameras) comes back after a reload or a closed tab.
+const UI_KEY = 'trasa-ui'
+type UiSnapshot = { view: View; roomId: string | null; selectedId: string | null; camera: State['camera']; wallCamera: State['wallCamera'] }
+function validView(v: View, p: Project): View {
+  const has = (id: string | null) => !!id && p.elements.some((e) => e.id === id)
+  const room = (id: string) => p.rooms.some((r) => r.id === id)
+  if (v.kind === 'room') return room(v.roomId) ? v : { kind: 'plan' }
+  if (v.kind === 'junctions') return { kind: 'junctions', elementId: has(v.elementId) ? v.elementId : null }
+  if (v.kind === 'printbox') return has(v.elementId) ? v : { kind: 'junctions', elementId: null }
+  if (v.kind === 'print') return { kind: 'print', roomId: v.roomId && room(v.roomId) ? v.roomId : null }
+  return v
+}
 export async function loadPersisted() {
   const p = (await idbGet(IDB_KEY)) as Project | undefined
   if (p && p.version === 1) useStore.setState({ project: normalize(p) })
+  try {
+    const ui = JSON.parse(localStorage.getItem(UI_KEY) ?? 'null') as UiSnapshot | null
+    const proj = useStore.getState().project
+    if (ui?.view) {
+      const view = validView(ui.view, proj)
+      useStore.setState({
+        view,
+        roomId: ui.roomId && proj.rooms.some((r) => r.id === ui.roomId) ? ui.roomId : view.kind === 'room' ? view.roomId : null,
+        selectedId: ui.selectedId && (proj.elements.some((e) => e.id === ui.selectedId) || proj.cables.some((c) => c.id === ui.selectedId) || proj.conduits.some((c) => c.id === ui.selectedId) || proj.rooms.some((r) => r.id === ui.selectedId)) ? ui.selectedId : null,
+        ...(ui.camera && Number.isFinite(ui.camera.scale) ? { camera: ui.camera } : {}),
+      })
+      // the wall camera is per wall; it is refitted on mount, so keeping it only helps on a true reload of the same wall
+      if (ui.wallCamera && Number.isFinite(ui.wallCamera.scale)) useStore.setState({ wallCamera: ui.wallCamera })
+    }
+  } catch { /* private mode or an old snapshot */ }
   useStore.setState({ loaded: true })
   useStore.temporal.getState().clear()
 }
+let uiTimer: number | undefined
+useStore.subscribe((s, prev) => {
+  if (!s.loaded) return
+  if (s.view === prev.view && s.roomId === prev.roomId && s.selectedId === prev.selectedId && s.camera === prev.camera && s.wallCamera === prev.wallCamera) return
+  window.clearTimeout(uiTimer)
+  uiTimer = window.setTimeout(() => { try { const snap: UiSnapshot = { view: s.view, roomId: s.roomId, selectedId: s.selectedId, camera: s.camera, wallCamera: s.wallCamera }; localStorage.setItem(UI_KEY, JSON.stringify(snap)) } catch { /* private mode */ } }, 300)
+})
 
 let timer: number | undefined
 useStore.subscribe((s, prev) => {

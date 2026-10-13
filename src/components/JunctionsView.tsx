@@ -18,12 +18,14 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
   const places = useMemo(() => allJunctions(project), [project])
   const leaves = useMemo(() => allLeafJunctions(project), [project])
   const junctions = useMemo(() => [...places, ...leaves], [places, leaves])
-  const [mode, setMode] = useState<'all' | 'steps'>('all')
+  const [mode, setModeState] = useState<'all' | 'steps'>(() => { try { return localStorage.getItem('trasa-jmode') === 'steps' ? 'steps' : 'all' } catch { return 'all' } })
+  const setMode = (m: 'all' | 'steps') => { setModeState(m); try { localStorage.setItem('trasa-jmode', m) } catch { /* private mode */ } }
   const [step, setStep] = useState(0)
   const [hover, setHover] = useState<string | null>(null)
   const mobile = useMobile()
   const [sheet, setSheet] = useState(false)
-  const [scheme, setScheme] = useState(true) // whole room on one board instead of one box; the default
+  const [scheme, setSchemeState] = useState(() => { try { return localStorage.getItem('trasa-jscheme') !== '0' } catch { return true } }) // whole room on one board instead of one box; the default
+  const setScheme = (v: boolean) => { setSchemeState(v); try { localStorage.setItem('trasa-jscheme', v ? '1' : '0') } catch { /* private mode */ } }
   const j: Junction | undefined = junctions.find((x) => x.box.id === elementId) ?? junctions[0]
   const plan = useMemo(() => (j ? wirePlan(j) : []), [j])
 
