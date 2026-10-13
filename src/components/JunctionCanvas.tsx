@@ -42,7 +42,7 @@ export function junctionAnchors(j: Junction): { stubs: Map<string, { x: number; 
 
 export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, className, labels = true }: {
   j: Junction; plan: PlanWire[]; mode: 'all' | 'steps'; step: number; hover: string | null
-  onHover: (k: string | null) => void; onPick: (i: number) => void; className?: string; labels?: boolean
+  onHover: (k: string | null) => void; onPick: (i: number) => void; className?: string; labels?: boolean | ((c: BoxCable) => boolean)
 }) {
   const lay = useMemo(() => boxLayout(j), [j])
   const { W, H } = lay
@@ -114,8 +114,8 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
           <g key={c.cable.id} className={`jc-cable ${dim ? 'dim' : ''}`} onMouseEnter={() => onHover(`cable:${c.cable.id}`)} onMouseLeave={() => onHover(null)}>
             <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#9a978f" strokeWidth={mm(od) + 2} strokeLinecap="round" />
             <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#d9d7cf" strokeWidth={mm(od)} strokeLinecap="round" />
-            {labels && <text x={lx} y={ly + dy} textAnchor={anchor} fontSize={11} fontWeight={600} fill="currentColor">{c.label}</text>}
-            {labels && <text x={lx} y={ly + dy + 13} textAnchor={anchor} fontSize={10} fill="var(--muted)">{c.sub} · {roleShort(c)}</text>}
+            {(typeof labels === 'function' ? labels(c) : labels) && <text x={lx} y={ly + dy} textAnchor={anchor} fontSize={11} fontWeight={600} fill="currentColor">{c.label}</text>}
+            {(typeof labels === 'function' ? labels(c) : labels) && <text x={lx} y={ly + dy + 13} textAnchor={anchor} fontSize={10} fill="var(--muted)">{c.sub} · {roleShort(c)}</text>}
           </g>
         )
       })}

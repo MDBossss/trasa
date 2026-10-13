@@ -21,16 +21,22 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
 
   // boxes in walking order around the room: wall by wall, left to right on each wall
   const js = useMemo(() => junctions.filter((j) => j.room.id === roomId).sort((a, b) => a.box.wall - b.box.wall || a.box.xM - b.box.xM), [junctions, roomId])
+  const rowOf = (j: Junction) => (j.box.zM >= 1.7 ? 0 : j.box.zM >= 0.7 ? 1 : 2)
   const boxes = useMemo(() => {
+    const vbs = js.map((j) => junctionViewBox(j))
+    const rowH = [0, 1, 2].map((r) => Math.max(0, ...js.map((j, i) => (rowOf(j) === r ? vbs[i].h * BOX_SCALE : 0))))
+    const rowY = [PAD + 140, 0, 0]
+    rowY[1] = rowY[0] + (rowH[0] ? rowH[0] + 150 : 0)
+    rowY[2] = rowY[1] + (rowH[1] ? rowH[1] + 150 : 0)
     let x = PAD
-    return js.map((j) => {
-      const vb = junctionViewBox(j), a = junctionAnchors(j)
-      const tx = x, ty = PAD + 140
+    return js.map((j, i) => {
+      const vb = vbs[i], a = junctionAnchors(j)
+      const tx = x, ty = rowY[rowOf(j)]
       x += vb.w * BOX_SCALE + GAP_X
       const stubs = new Map([...a.stubs].map(([id, s]) => [id, { x: tx + s.x * BOX_SCALE, y: ty + s.y * BOX_SCALE, n: s.n, cableId: s.cableId }]))
-      return { j, tx, ty, vb, stubs, plan: wirePlan(j), order: js.indexOf(j) }
+      return { j, tx, ty, vb, stubs, plan: wirePlan(j), order: i }
     })
-  }, [js])
+  }, [js]) // eslint-disable-line react-hooks/exhaustive-deps
   const boardW = (boxes.at(-1) ? boxes.at(-1)!.tx + boxes.at(-1)!.vb.w * BOX_SCALE : 0) + PAD
   const boardH = Math.max(...boxes.map((b) => b.ty + b.vb.h * BOX_SCALE), 0) + PAD + LANE * 3
   const byBox = useMemo(() => new Map(boxes.map((b) => [b.j.box.id, b])), [boxes])
@@ -40,7 +46,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
     const seen = new Set<string>()
     let lanes = 0, lanesBelow = 0
     const bottom = Math.max(...boxes.map((b) => b.ty + b.vb.h * BOX_SCALE), 0) + 20
-    const out: { id: string; d: string; od: number; label: string; tip: string; mid: { x: number; y: number }; tail: boolean; boxes: string[] }[] = []
+    const out: { id: string; d: string; od: number; label: string; tip: string; mid: { x: number; y: number }; tail: boolean; boxes: string[]; cableIds: string[] }[] = []
     for (const c of project.cables) {
       const pl = cablePlaces(c, project)
       if (!pl || seen.has(c.id)) continue
@@ -62,9 +68,12 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
         // neighbours whose sheaths face each other get a direct route across the gap; everything else goes
         // round the row on a lane: above, or below when a sheath leaves the bottom of its box
         const adjacent = Math.abs(a.order - b.order) === 1
-        const facing = sa.n[1] === 0 && sb.n[1] === 0 && sa.n[0] * (p2.x - p1.x) > 0 && sb.n[0] * (p1.x - p2.x) > 0
+        const facingH = sa.n[1] === 0 && sb.n[1] === 0 && sa.n[0] * (p2.x - p1.x) > 0 && sb.n[0] * (p1.x - p2.x) > 0
+        const facingV = sa.n[0] === 0 && sb.n[0] === 0 && sa.n[1] * (p2.y - p1.y) > 0 && sb.n[1] * (p1.y - p2.y) > 0
+        const facing = facingH || facingV
         let via: { x: number; y: number }[]
-        if (adjacent && facing) { const mx = (p1.x + p2.x) / 2; via = [{ x: mx, y: p1.y }, { x: mx, y: p2.y }] }
+        if (adjacent && facingH) { const mx = (p1.x + p2.x) / 2; via = [{ x: mx, y: p1.y }, { x: mx, y: p2.y }] }
+        else if (facingV) { const my = (p1.y + p2.y) / 2; via = [{ x: p1.x, y: my }, { x: p2.x, y: my }] }
         else {
           const below = sa.n[1] > 0 || sb.n[1] > 0
           const laneY = below ? bottom + LANE * (lanesBelow++ + 1) : PAD + 110 - LANE * (lanes++ + 1)
@@ -72,15 +81,15 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
         }
         const pts = [{ x: sa.x, y: sa.y }, p1, ...via, p2, { x: sb.x, y: sb.y }]
         const d = 'M' + pts.map((q) => `${q.x},${q.y}`).join(' L')
-        const mid = adjacent && facing ? { x: (p1.x + p2.x) / 2, y: Math.min(p1.y, p2.y) } : { x: (p1.x + p2.x) / 2, y: via[0].y }
-        out.push({ id: c.id, d, od, label: c.type, tip: `${pl[0].label} ↔ ${pl[1].label} · ${c.type} · ${cores.length} žile${carries ? `: ${carries}` : ''}`, mid, tail: false, boxes: [pl[0].id, pl[1].id] })
+        const mid = facing ? { x: (p1.x + p2.x) / 2, y: Math.min(p1.y, p2.y) } : { x: (p1.x + p2.x) / 2, y: via[0].y }
+        out.push({ id: c.id, d, od, label: c.type, tip: `${pl[0].label} ↔ ${pl[1].label} · ${c.type} · ${cores.length} žile${carries ? `: ${carries}` : ''}`, mid, tail: false, boxes: [pl[0].id, pl[1].id], cableIds: [sa.cableId, sb.cableId] })
       } else {
         const here = a ?? b, st = sa ?? sb
         if (!here || !st) continue
         const far = a ? pl[1] : pl[0]
         const room = project.rooms.find((r) => r.id === far.roomId)?.name ?? ''
         const p1 = { x: st.x + st.n[0] * 90, y: st.y + st.n[1] * 90 }
-        out.push({ id: c.id, d: `M${st.x},${st.y} L${p1.x},${p1.y}`, od, label: `→ ${far.label} (${room})`, tip: `${here.j.box.label} → ${far.label} u sobi ${room} · ${c.type} · ${cores.length} žile${carries ? `: ${carries}` : ''}`, mid: { x: p1.x + st.n[0] * 10, y: p1.y + st.n[1] * 10 }, tail: true, boxes: [here.j.box.id] })
+        out.push({ id: c.id, d: `M${st.x},${st.y} L${p1.x},${p1.y}`, od, label: `→ ${far.label} (${room})`, tip: `${here.j.box.label} → ${far.label} u sobi ${room} · ${c.type} · ${cores.length} žile${carries ? `: ${carries}` : ''}`, mid: { x: p1.x + st.n[0] * 10, y: p1.y + st.n[1] * 10 }, tail: true, boxes: [here.j.box.id], cableIds: [st.cableId] })
       }
     }
     return out
@@ -146,6 +155,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
   }
 
   const sizeLabel = (j: Junction) => j.box.type === 'modbox' ? `doza ${j.box.modules ?? 3}M` : `kutija ${j.size.W / 10 + 1} × ${j.size.H / 10 + 1}`
+  const tubed = useMemo(() => new Set(links.flatMap((l) => l.cableIds)), [links])
   const hoverFor = (boxId: string) => (hover && links.find((l) => l.id === hover)?.boxes.includes(boxId) ? `cable:${hover}` : null)
   return (
     <div ref={wrap} className="scheme" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
@@ -165,7 +175,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
         {boxes.map(({ j, tx, ty, plan, vb }) => (
           <div key={j.box.id} className="sbox" data-box={j.box.id} style={{ left: tx, top: ty, width: vb.w, height: vb.h, transform: `scale(${BOX_SCALE})` }} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') onOpen(j.box.id) }}>
             <div className="sbox-head"><span className={`dot ${j.level}`} /><b>{j.box.label}</b><span className="muted">{sizeLabel(j)}{j.box.depth ? `, ${j.box.depth}` : ''} · zid {j.box.wall + 1}</span></div>
-            <JunctionCanvas className="sbox-svg" j={j} plan={plan} mode="all" step={0} hover={hoverFor(j.box.id)} onHover={() => {}} onPick={() => onOpen(j.box.id)} />
+            <JunctionCanvas className="sbox-svg" j={j} plan={plan} mode="all" step={0} hover={hoverFor(j.box.id)} onHover={() => {}} onPick={() => onOpen(j.box.id)} labels={(c) => !tubed.has(c.cable.id)} />
           </div>
         ))}
       </div>

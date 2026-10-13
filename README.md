@@ -69,8 +69,9 @@ pnpm e2e        # Playwright smoke test protiv dev servera na :5177 (pnpm dev --
 11. **Materijal** (header): popis po sobi ili za kuću (kabeli u metrima: zid + bužir + 30 cm rezerve po kraju, bez bužira,
     WAGO, doze, oprema, releji, LED). **PDF za majstora**: pregled za ispis po sobi (tlocrt sobe s bužirima, svaki zid s
     elementima i kotama, svaka kutija i doza sa slikom i tablicom stezaljki, releji, materijal, otvorene provjere);
-    u dijalogu ispisa odaberi "Spremi kao PDF". U Spojevima kartica **Cijela soba** je shema sobe: kutije i doze u redu
-    kako stoje po sobi (zid po zid), svaka nacrtana kao na svom listu, a kabeli između kutija kao plaštevi prave
+    u dijalogu ispisa odaberi "Spremi kao PDF". U Spojevima kartica **Cijela soba** je shema sobe: kutije i doze slijeva nadesno
+    kako stoje po sobi (zid po zid) i u tri reda po visini (razvodne kutije gore, prekidači u sredini, utičnice dolje),
+    svaka nacrtana kao na svom listu, a kabeli između kutija kao plaštevi prave
     debljine koji izlaze iz istih mjesta kao na slici kutije (susjedi ravno, ostali preko "traka" iznad ili ispod reda).
     Prijelaz mišem preko kabela osvijetli njegove žile u obje kutije i kaže što nosi; vuci za pomicanje, kotačić
     zumira prema pokazivaču, "Uklopi" vrati sve u ekran, klik na kutiju ide u njene korake. U Spojevima gumb **Ispiši kutiju** daje jedan A4 vodoravni list za tu kutiju: gdje je u sobi,
