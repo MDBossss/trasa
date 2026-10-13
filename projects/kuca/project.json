@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-13T11:20:53.472Z",
+ "savedAt": "2026-10-13T12:26:46.652Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2069,8 +2069,8 @@
     "roomId": "c2b55x6m",
     "wall": 1,
     "type": "box",
-    "xM": 1.72,
-    "zM": 1.9,
+    "xM": 1.83,
+    "zM": 1.89,
     "note": "",
     "id": "91pjtv3y",
     "label": "K3"
@@ -2500,23 +2500,6 @@
    },
    {
     "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "NYM-J 5x1.5",
-    "from": {
-     "kind": "element",
-     "id": "91pjtv3y"
-    },
-    "to": {
-     "kind": "corner",
-     "corner": 2,
-     "zM": 1.91
-    },
-    "via": [],
-    "note": "",
-    "id": "70p9xgmm"
-   },
-   {
-    "roomId": "c2b55x6m",
     "wall": 2,
     "type": "NYM-J 5x1.5",
     "from": {
@@ -2548,23 +2531,6 @@
     "via": [],
     "note": "",
     "id": "1xz0a517"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "exit",
-     "conduitId": "g5az26vl",
-     "end": "start"
-    },
-    "to": {
-     "kind": "element",
-     "id": "91pjtv3y"
-    },
-    "via": [],
-    "note": "",
-    "id": "hek22t5m"
    },
    {
     "roomId": "c2b55x6m",
@@ -2654,6 +2620,40 @@
     "via": [],
     "note": "",
     "id": "7uph78yk"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "91pjtv3y"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 2,
+     "zM": 1.91
+    },
+    "via": [],
+    "note": "",
+    "id": "00hwg7hs"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "g5az26vl",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "91pjtv3y"
+    },
+    "via": [],
+    "note": "",
+    "id": "0u638lwx"
    }
   ],
   "categories": [
@@ -2752,9 +2752,8 @@
  },
  "ui": {
   "view": {
-   "kind": "room",
-   "roomId": "c2b55x6m",
-   "wall": 1
+   "kind": "junctions",
+   "elementId": "91pjtv3y"
   }
  }
 }
