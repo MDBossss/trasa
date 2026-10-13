@@ -64,7 +64,7 @@ interface State {
   updateRoom: (id: string, p: Partial<Room>) => void
   setWallPhoto: (roomId: string, wall: number, photo: string | undefined) => void
   removeSelected: () => void
-  splitBox: (id: string) => string | null
+  splitBox: (id: string) => { id: string; bothFit: boolean } | null
   rotatePlan: (dir: 1 | -1) => void
   setTilt: (deg: number) => void
   markSaved: (fileName?: string) => void
@@ -256,7 +256,7 @@ export const useStore = create<State>()(
         const need = cableNeeds(cables[cables.length - 1], project)
         if (need && need.needed <= 3) project.cables = project.cables.map((c) => (c.id === feedId ? { ...c, type: 'NYM-J 3x1.5' } : c))
         set({ project, selectedId: newId })
-        return newId
+        return { id: newId, bothFit: plan.bothFit }
       },
       removeSelected: () =>
         set((s) => {

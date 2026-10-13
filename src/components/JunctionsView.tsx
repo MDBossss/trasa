@@ -24,6 +24,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
   const [hover, setHover] = useState<string | null>(null)
   const mobile = useMobile()
   const [sheet, setSheet] = useState(false)
+  const [splitNote, setSplitNote] = useState<string | null>(null)
   const [scheme, setSchemeState] = useState(() => { try { return localStorage.getItem('trasa-jscheme') !== '0' } catch { return true } }) // whole room on one board instead of one box; the default
   const setScheme = (v: boolean) => { setSchemeState(v); try { localStorage.setItem('trasa-jscheme', v ? '1' : '0') } catch { /* private mode */ } }
   const j: Junction | undefined = junctions.find((x) => x.box.id === elementId) ?? junctions[0]
@@ -183,7 +184,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
               <button className="mini" onClick={() => openWall(j)}>Otvori na zidu</button>
               <button className="mini" onClick={() => setView({ kind: 'printbox', elementId: j.box.id })} title="A4 list s ovom kutijom"><Icon.print /> Ispiši kutiju</button>
               {j.box.type === 'box' && j.checks.some((c) => /podijel|podjel/i.test(c.text)) && (
-                <button className="mini primary" onClick={() => { const id = useStore.getState().splitBox(j.box.id); if (id) pick(id) }} title="Utičnice i vrata (ili pola svjetala) odu u novu kutiju 35 cm pored, napajanu iz ove. Undo vraća.">Podijeli na dvije</button>
+                <button className="mini primary" onClick={() => { const r = useStore.getState().splitBox(j.box.id); if (r) { pick(r.id); if (!r.bothFit) setSplitNote('Ni u dvije ne stane sve: podijeli još jednom (na staroj ili novoj kutiji).'); else setSplitNote(null) } }} title="Preseli kabele u novu kutiju 35 cm pored, napajanu iz ove; bira najmanju podjelu u kojoj obje stanu. Undo vraća.">Podijeli na dvije</button>
               )}
               <div className="spacer" />
               <div className="segmented" role="tablist">
@@ -194,6 +195,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
             </>
           ) : <h2>Spojevi</h2>}
         </div>
+        {splitNote && <div className="check warn split-note"><span>⚠</span><span>{splitNote}</span><button className="mini" onClick={() => setSplitNote(null)}>✕</button></div>}
         {j && scheme ? (
           <RoomScheme junctions={junctions} roomId={roomCtx && project.rooms.some((r) => r.id === roomCtx) ? roomCtx : j.room.id} onOpen={(id) => { setScheme(false); setMode('all'); setStep(0); pick(id) }} />
         ) : j ? (

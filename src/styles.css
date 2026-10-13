@@ -408,3 +408,5 @@ h3 .mini-note { margin-left: auto; text-transform: none; letter-spacing: 0; font
 .sbox-head .muted { font-size: 18px; }
 .sbox-svg { display: block; width: 100%; height: 100%; }
 .sbox:hover .sbox-head b { color: var(--accent); }
+.split-note { margin: 8px 12px 0; }
+.split-note button { margin-left: auto; }

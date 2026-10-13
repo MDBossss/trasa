@@ -422,7 +422,10 @@ export function boxLayout(j: Pick<Junction, 'box' | 'terminals' | 'devices'>): {
       { y: 5, flip: false, x: 5, items: [], h: DEPTH },
       { y: H - 5 - DEPTH, flip: true, x: 5, items: [], h: DEPTH },
     ]
-    if (H >= 100) rows.push({ y: H / 2 - DEPTH / 2, flip: false, x: 5, items: [], h: DEPTH })
+    if (H >= 110) {
+      // the taller box takes four rows: WAGOs sit in two layers at the top and bottom, as they do in practice
+      rows.push({ y: 5 + DEPTH + 4, flip: false, x: 5, items: [], h: DEPTH }, { y: H - 5 - 2 * DEPTH - 4, flip: true, x: 5, items: [], h: DEPTH })
+    } else if (H >= 100) rows.push({ y: H / 2 - DEPTH / 2, flip: false, x: 5, items: [], h: DEPTH })
     let ok = true
     for (const it of items) {
       const pref = it.kind === 'device' && it.d.kind !== 'relay' ? [...rows].reverse() : rows
@@ -615,20 +618,36 @@ export function wagoSlot(t: Terminal, i: number): { unit: number; port: number }
 }
 export const wagoSlotLabel = (t: Terminal, i: number) => { const s = wagoSlot(t, i); return t.chained > 1 ? `WAGO ${s.unit + 1}, port ${s.port + 1}` : `port ${s.port + 1}` }
 
-// Split an overfull box: cables by purpose (sockets and doors first, else half of the lights) move to a new box
-// 35 cm to the side, fed from the old one. Returns the changes; the engine then recomputes both junctions.
-export function splitBoxPlan(box: WallElement, p: Project, newId: string, label: string): { newBox: WallElement; moveCableIds: string[]; feed: Omit<Cable, 'id'> } | null {
+// Split an overfull box. Candidates move an increasing number of cables (grouped by purpose: sockets, doors,
+// passes to other boxes, lights, switches) into a new box 35 cm to the side fed from the old one; each candidate
+// is evaluated with the real engine on both boxes, and the first one where both fit wins. If none fits, the best
+// (smallest) result is returned and the caller can split again.
+export function splitBoxPlan(box: WallElement, p: Project, newId: string, label: string): { newBox: WallElement; moveCableIds: string[]; feed: Omit<Cable, 'id'>; bothFit: boolean } | null {
   const at = p.cables.filter((c) => isAtBox(c, box))
   const resolved = at.map((c) => ({ c, r: resolveCable(c, box, p) }))
-  const movable = resolved.filter(({ r }) => r.role !== 'feed' && r.role !== 'pass' && r.role !== 'lowv')
+  const feeds = resolved.filter(({ r }) => r.role === 'feed').map(({ c }) => c.id)
+  const order: Role[] = ['socket', 'motor', 'pass', 'light', 'switch', 'unknown', 'lowv']
+  const movable = resolved.filter(({ c }) => !feeds.includes(c.id)).sort((a, b) => order.indexOf(a.r.role) - order.indexOf(b.r.role) || a.c.id.localeCompare(b.c.id))
   if (movable.length < 2) return null
-  // by purpose: sockets + doors go together; if that leaves nothing or everything, take half of what can move
-  let pick = movable.filter(({ r }) => r.role === 'socket' || r.role === 'motor')
-  if (pick.length === 0 || pick.length === movable.length) pick = movable.slice(Math.ceil(movable.length / 2))
   const wall = p.rooms.find((r) => r.id === box.roomId)
   const wallLen = wall ? Math.hypot(wall.points[(box.wall + 1) % wall.points.length].x - wall.points[box.wall].x, wall.points[(box.wall + 1) % wall.points.length].y - wall.points[box.wall].y) / (p.pxPerMeter ?? 100) : 99
   const xM = box.xM + 0.35 <= wallLen - 0.1 ? box.xM + 0.35 : Math.max(0.1, box.xM - 0.35)
   const newBox: WallElement = { ...box, id: newId, label, xM, note: `odvojeno iz ${box.label}` }
   const feed: Omit<Cable, 'id'> = { roomId: box.roomId, wall: box.wall, type: 'NYM-J 5x1.5', from: { kind: 'element', id: box.id }, to: { kind: 'element', id: newId }, via: [], note: '' }
-  return { newBox, moveCableIds: pick.map(({ c }) => c.id), feed }
+  // fits = one of the stocked boxes (10 × 10 or 10 × 12) with no entry / split error
+  const fits = (j: Junction) => j.size.W <= 90 && j.size.H <= 110 && !j.checks.some((c) => c.level === 'err' && /podijeli|uvodnic/i.test(c.text))
+  const area = (j: Junction) => j.size.W * j.size.H
+  let best: { ids: string[]; score: number; bothFit: boolean } | null = null
+  for (let k = 1; k < movable.length; k++) {
+    const ids = movable.slice(0, k).map(({ c }) => c.id)
+    const moved = new Set(ids)
+    const swap = (e: CableEnd) => (e.kind === 'element' && e.id === box.id ? { ...e, id: newId } : e)
+    const trial: Project = { ...p, elements: [...p.elements, newBox], cables: [...p.cables.map((c) => (moved.has(c.id) ? { ...c, from: swap(c.from), to: swap(c.to) } : c)), { ...feed, id: `tmp-${newId}` }] }
+    const a = junctionFor(box, trial), b = junctionFor(newBox, trial)
+    const bothFit = fits(a) && fits(b)
+    const score = area(a) + area(b)
+    if (bothFit) return { newBox, moveCableIds: ids, feed, bothFit: true }
+    if (!best || score < best.score) best = { ids, score, bothFit }
+  }
+  return best ? { newBox, moveCableIds: best.ids, feed, bothFit: false } : null
 }

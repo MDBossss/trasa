@@ -12,4 +12,5 @@ createRoot(document.getElementById('root')!).render(
 if (import.meta.env.DEV) {
   import('./store').then((m) => ((window as unknown as { __trasa: unknown }).__trasa = m.useStore))
   import('./images').then((m) => ((window as unknown as { __trasaDetect: unknown }).__trasaDetect = m.detectSkew))
+  import('./junction').then((m) => ((window as unknown as { __trasaEngine: unknown }).__trasaEngine = m))
 }

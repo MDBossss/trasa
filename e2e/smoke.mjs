@@ -527,6 +527,7 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   await page.locator('.junctions-list .list li', { hasText: 'K1' }).click()
   await page.getByRole('button', { name: 'Podijeli na dvije', exact: true }).click()
   const split = await page.evaluate(() => { const s = window.__trasa.getState(); const nb = s.project.elements.filter((e) => e.type === 'box').at(-1); return { id: nb.id, label: nb.label, link: s.project.cables.at(-1) } })
+  assert.equal(await page.locator('.split-note').count(), 0, 'both boxes fit after the split')
   assert.equal(split.link.to.id, split.id)
   await page.locator('.junction-main .room-head h2', { hasText: split.label }).waitFor()
   // undo the split by hand: U1's cable moved to the new box too, so point it back at K1
