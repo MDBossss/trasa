@@ -3,12 +3,12 @@ import { temporal } from 'zundo'
 import { get as idbGet, set as idbSet } from 'idb-keyval'
 import { cableNeeds, splitBoxPlan } from './junction'
 import { conduitTouchesRoom } from './walls'
-import { emptyProject, PALETTE, ELEMENT_META, DEFAULT_CATEGORIES, matchCategory, type Category, type Cable, type Conduit, type ElementType, type Project, type Pt, type Room, type Tool, type View, type WallElement, type WallTool, relayModelOf, placeInFrame, keepFramePositions, type CableEnd } from './types'
+import { emptyProject, PALETTE, ELEMENT_META, withDefaultCategories, matchCategory, type Category, type Cable, type Conduit, type ElementType, type Project, type Pt, type Room, type Tool, type View, type WallElement, type WallTool, relayModelOf, placeInFrame, keepFramePositions, type CableEnd } from './types'
 
 const IDB_KEY = 'trasa-project'
 
 // Fills fields added after a project was saved.
-export const normalize = (p: Project): Project => ({ ...emptyProject(), ...p, planRotation: p.planRotation ?? 0, planTilt: p.planTilt ?? 0, gridOrigin: p.gridOrigin ?? { x: 0, y: 0 }, planOpacity: p.planOpacity ?? 1, elements: (p.elements ?? []).map((e) => (e.type === 'relay' ? { ...e, relayModel: relayModelOf(e) } : e)), cables: p.cables ?? [], categories: p.categories ?? DEFAULT_CATEGORIES.map((c) => ({ ...c, keywords: [...c.keywords] })) })
+export const normalize = (p: Project): Project => ({ ...emptyProject(), ...p, planRotation: p.planRotation ?? 0, planTilt: p.planTilt ?? 0, gridOrigin: p.gridOrigin ?? { x: 0, y: 0 }, planOpacity: p.planOpacity ?? 1, elements: (p.elements ?? []).map((e) => (e.type === 'relay' ? { ...e, relayModel: relayModelOf(e) } : e)), cables: p.cables ?? [], categories: withDefaultCategories(p.categories) })
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 

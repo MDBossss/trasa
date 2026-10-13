@@ -35,7 +35,11 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: 'zvono', name: 'Zvono / interfon', color: '#f58231', keywords: ['zvono', 'interfon', 'portafon'] },
   { id: 'alarm', name: 'Alarm / kamere', color: '#fabe00', keywords: ['alarm', 'kamer', 'senzor'] },
   { id: 'grijanje', name: 'Grijanje / termostat', color: '#9a6324', keywords: ['grijanje', 'termostat', 'bojler', 'klima'] },
+  // planned but not pulled yet: counted like any other conduit, drawn dashed in turquoise
+  { id: 'todo', name: 'TODO (još nije napravljen)', color: '#06b6b4', keywords: ['todo', 'planiran'] },
 ]
+// categories added to the defaults after a project was saved are appended to it on load
+export const withDefaultCategories = (cats: Category[] | undefined) => { const have = new Set((cats ?? []).map((c) => c.id)); return [...(cats ?? DEFAULT_CATEGORIES).map((c) => ({ ...c, keywords: [...c.keywords] })), ...DEFAULT_CATEGORIES.filter((c) => cats && !have.has(c.id)).map((c) => ({ ...c, keywords: [...c.keywords] }))] }
 
 export function matchCategory(name: string, categories: Category[]): Category | undefined {
   const n = name.toLowerCase()

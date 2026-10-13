@@ -57,7 +57,7 @@ export function PrintBoxView({ elementId }: { elementId: string }) {
                   {w && <line x1={w.a.x} y1={w.a.y} x2={w.b.x} y2={w.b.y} stroke="#1e88e5" strokeWidth={6} strokeLinecap="round" />}
                   {walls.map((x) => <text key={x.i} x={(x.a.x + x.b.x) / 2} y={(x.a.y + x.b.y) / 2 + 4} fontSize={13} textAnchor="middle" fill={x.i === j.box.wall ? '#fff' : '#1e88e5'} fontWeight={700}>{x.i + 1}</text>)}
                   <g clipPath="url(#pb-crop)">
-                    {conduits.map((c) => <polyline key={c.id} points={c.points.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={c.color} strokeWidth={3} strokeLinejoin="round" opacity={0.8} />)}
+                    {conduits.map((c) => <polyline key={c.id} points={c.points.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={c.color} strokeWidth={3} strokeLinejoin="round" strokeDasharray={c.categoryId === 'todo' ? '8 6' : undefined} opacity={0.8} />)}
                   </g>
                   {dot && <><circle cx={dot.x} cy={dot.y} r={9} fill="#ff6d00" stroke="#fff" strokeWidth={2} /><text x={dot.x} y={dot.y - 13} fontSize={12} textAnchor="middle" fontWeight={700} fill="#ff6d00">{j.box.label}</text></>}
                 </svg>

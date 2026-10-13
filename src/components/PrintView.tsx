@@ -58,7 +58,7 @@ function RoomPages({ room, project, junctions, date }: { room: Room; project: Pr
           {walls.map((w) => <text key={w.i} x={(w.a.x + w.b.x) / 2} y={(w.a.y + w.b.y) / 2} fontSize={14} textAnchor="middle" fill="#1e88e5" fontWeight={700}>{w.i + 1}</text>)}
           {conduits.map((c) => (
             <g key={c.id}>
-              <polyline points={c.points.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={c.color} strokeWidth={4} strokeLinejoin="round" strokeLinecap="round" />
+              <polyline points={c.points.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={c.color} strokeWidth={4} strokeLinejoin="round" strokeLinecap="round" strokeDasharray={c.categoryId === 'todo' ? '10 8' : undefined} />
               <text x={c.points[0].x} y={c.points[0].y - 6} fontSize={12} fill={c.color} fontWeight={600}>{c.name}</text>
             </g>
           ))}
