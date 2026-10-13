@@ -28,7 +28,7 @@ export type TerminalWire =
   | { kind: 'port'; deviceId: string; deviceLabel: string; port: string; color: WireColor; note?: string }
 export interface Terminal { id: string; label: string; desc: string; wago: 0 | 412 | 413 | 415; chained: number; wires: TerminalWire[]; cap?: boolean }
 export interface Check { level: Level; text: string }
-export interface Junction { box: WallElement; room: Room; cables: BoxCable[]; devices: Device[]; terminals: Terminal[]; checks: Check[]; bom: { item: string; qty: number }[]; level: Level; size: { W: number; H: number; overflow: boolean } }
+export interface Junction { box: WallElement; room: Room; cables: BoxCable[]; devices: Device[]; terminals: Terminal[]; checks: Check[]; bom: { item: string; qty: number }[]; level: Level; size: { W: number; H: number; overflow: boolean; stacked: boolean } }
 
 const LNPE = ['L', 'N', 'PE']
 const otherEnd = (c: Cable, box: WallElement): CableEnd => (c.from.kind === 'element' && c.from.id === box.id ? c.to : c.from)
@@ -410,7 +410,7 @@ function wagoWidth(t: Terminal) { return WAGO[t.wago as 412 | 413 | 415].w * t.c
 
 // Greedy packing of WAGOs, caps and devices into rows (top, bottom, middle); the box grows when they overflow.
 // Lives here so the size check and the material list see the same box as the drawing.
-export function boxLayout(j: Pick<Junction, 'box' | 'terminals' | 'devices'>): { W: number; H: number; placed: Placed[]; overflow: boolean } {
+export function boxLayout(j: Pick<Junction, 'box' | 'terminals' | 'devices'>): { W: number; H: number; placed: Placed[]; overflow: boolean; stacked: boolean } {
   const items: Item[] = [
     ...j.terminals.filter((t) => t.wago).map((t): Item => ({ kind: 'wago', t, w: wagoWidth(t), h: DEPTH })),
     ...j.terminals.filter((t) => t.cap).map((t): Item => ({ kind: 'cap', t, w: CAP_W, h: CAP_H })),
@@ -418,13 +418,13 @@ export function boxLayout(j: Pick<Junction, 'box' | 'terminals' | 'devices'>): {
   ]
   const base = j.box.type === 'modbox' ? [(j.box.modules ?? 3) <= 3 ? [100, 70] : (j.box.modules ?? 3) <= 4 ? [120, 70] : [160, 70], [160, 100], [200, 120]] : isPlace(j.box) ? BOX_SIZES : [[60, 46], [90, 60]]
   for (const [W, H] of base) {
-    const rows: { y: number; flip: boolean; x: number; items: Placed[]; h: number }[] = [
+    const rows: { y: number; flip: boolean; x: number; items: Placed[]; h: number; inner?: boolean }[] = [
       { y: 5, flip: false, x: 5, items: [], h: DEPTH },
       { y: H - 5 - DEPTH, flip: true, x: 5, items: [], h: DEPTH },
     ]
     if (H >= 110) {
-      // the taller box takes four rows: WAGOs sit in two layers at the top and bottom, as they do in practice
-      rows.push({ y: 5 + DEPTH + 4, flip: false, x: 5, items: [], h: DEPTH }, { y: H - 5 - 2 * DEPTH - 4, flip: true, x: 5, items: [], h: DEPTH })
+      // the taller box takes four rows: WAGOs in two layers at the top and bottom, as they do in practice; that counts as full
+      rows.push({ y: 5 + DEPTH + 4, flip: false, x: 5, items: [], h: DEPTH, inner: true }, { y: H - 5 - 2 * DEPTH - 4, flip: true, x: 5, items: [], h: DEPTH, inner: true })
     } else if (H >= 100) rows.push({ y: H / 2 - DEPTH / 2, flip: false, x: 5, items: [], h: DEPTH })
     let ok = true
     for (const it of items) {
@@ -434,10 +434,10 @@ export function boxLayout(j: Pick<Junction, 'box' | 'terminals' | 'devices'>): {
       row.items.push({ ...it, x: row.x, y: row.flip ? row.y + DEPTH - it.h : row.y, flip: row.flip })
       row.x += it.w + 4
     }
-    if (ok) return { W, H, placed: rows.flatMap((r) => r.items), overflow: W > base[0][0] || H > base[0][1] }
+    if (ok) return { W, H, placed: rows.flatMap((r) => r.items), overflow: W > base[0][0] || H > base[0][1], stacked: rows.some((r) => r.inner && r.items.length > 0) }
   }
   const [W, H] = base[base.length - 1]
-  return { W, H, placed: [], overflow: true }
+  return { W, H, placed: [], overflow: true, stacked: true }
 }
 
 
@@ -527,7 +527,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   for (const d of devices) if (d.kind === 'relay') { const k = RELAY_MODELS[relayModelOf(d.el)].label; bom.set(k, (bom.get(k) ?? 0) + 1) }
   // how big the box has to be, and when to split instead of growing
   const lay = boxLayout({ box, terminals, devices })
-  const size = { W: lay.W, H: lay.H, overflow: lay.overflow }
+  const size = { W: lay.W, H: lay.H, overflow: lay.overflow, stacked: lay.stacked }
   if (box.type === 'box') {
     const entries = lay.W * lay.H >= 90 * 110 ? 10 : 8
     if (cables.length > entries) checks.push({ level: 'err', text: `${cables.length} kabela u jednoj kutiji: kutija ${boxSizeLabel(lay.W, lay.H)} ima ${entries} uvodnica. Podijeli na dvije kutije (npr. svjetla / utičnice / vrata).` })
@@ -536,6 +536,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
     const biggest = lay.W >= BOX_SIZES[BOX_SIZES.length - 1][0]
     if (triple) checks.push({ level: 'warn', text: `Stezaljka ${triple.label} treba ${triple.chained} WAGO-a s premosnicama: razmisli o podjeli, druga kutija napajana iz ove jednim 5×1,5 je preglednija.` })
     else if (biggest) checks.push({ level: 'err', text: `Ne stane ni u 10 × 12: podijeli na dvije kutije po namjeni (svjetla / utičnice / vrata), ili nabavi veću (${boxSizeLabel(lay.W, lay.H)}).` })
+    else if (lay.overflow && lay.stacked) checks.push({ level: 'warn', text: `Kutija 10 × 12 je puna (WAGO-i u dva sloja${relays ? ', uz relej' : ''}): bolje podijeli na dvije po namjeni (svjetla / utičnice / vrata).` })
     else if (lay.overflow) checks.push({ level: 'warn', text: `U 10 × 10 ne stane: uzmi kutiju 10 × 12${relays ? ', duboku (relej)' : ''}.` })
   }
   const level: Level = checks.some((c) => c.level === 'err') ? 'err' : checks.some((c) => c.level === 'warn') ? 'warn' : 'ok'
@@ -587,7 +588,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   const lay = boxLayout({ box: el, terminals, devices: [device] })
   const level: Level = checks.some((c) => c.level === 'err') ? 'err' : checks.some((c) => c.level === 'warn') ? 'warn' : 'ok'
   if (level === 'ok' && cables.length) checks.push({ level: 'ok', text: `Žile na stezaljke uređaja: ${terminals.filter((t) => !t.id.startsWith('PARK')).map((t) => t.label).join(', ')}.` })
-  return { box: el, room, cables, devices: [device], terminals, checks, bom: [], level, size: { W: lay.W, H: lay.H, overflow: false } }
+  return { box: el, room, cables, devices: [device], terminals, checks, bom: [], level, size: { W: lay.W, H: lay.H, overflow: false, stacked: false } }
 }
 export function allLeafJunctions(p: Project): Junction[] {
   return p.elements.filter((e) => isLeaf(e) && p.rooms.some((r) => r.id === e.roomId)).map((e) => leafJunctionFor(e, p))
@@ -635,7 +636,7 @@ export function splitBoxPlan(box: WallElement, p: Project, newId: string, label:
   const newBox: WallElement = { ...box, id: newId, label, xM, note: `odvojeno iz ${box.label}` }
   const feed: Omit<Cable, 'id'> = { roomId: box.roomId, wall: box.wall, type: 'NYM-J 5x1.5', from: { kind: 'element', id: box.id }, to: { kind: 'element', id: newId }, via: [], note: '' }
   // fits = one of the stocked boxes (10 × 10 or 10 × 12) with no entry / split error
-  const fits = (j: Junction) => j.size.W <= 90 && j.size.H <= 110 && !j.checks.some((c) => c.level === 'err' && /podijeli|uvodnic/i.test(c.text))
+  const fits = (j: Junction) => j.size.W <= 90 && j.size.H <= 110 && !j.size.stacked && !j.checks.some((c) => c.level === 'err' && /podijeli|uvodnic/i.test(c.text))
   const area = (j: Junction) => j.size.W * j.size.H
   let best: { ids: string[]; score: number; bothFit: boolean } | null = null
   for (let k = 1; k < movable.length; k++) {
