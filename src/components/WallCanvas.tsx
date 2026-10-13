@@ -439,7 +439,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
                             {h.type === 'switch' && <Circle radius={1.2} fill={hs ? '#1e88e5' : '#1f2430'} />}
                             {h.type === 'socket' && !isData(h) && <Circle radius={2.2} fill="none" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1)} />}
                             {isData(h) && h.socketKind !== 'tv' && <Rect x={-2} y={-2.6} width={4} height={5.2} cornerRadius={0.6} fill="none" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1)} />}
-                            {h.socketKind === 'tv' && <Circle radius={2.2} fill={hs ? '#1e88e5' : '#1f2430'} />}
+                            {h.socketKind === 'tv' && <Line points={[-2.4, -3.2, 0, -0.6, 2.4, -3.2, 0, -0.6, 0, 3.2]} stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.1)} lineCap="round" lineJoin="round" />}
                             <Text text={h.label} y={6} offsetX={30} width={60} align="center" fontSize={px(8)} fill={hs ? '#1e88e5' : '#1f2430'} />
                           </Group>
                         )
@@ -517,9 +517,8 @@ function Symbol({ type, selected, px, modules, tipkalo, data, tv }: { type: Elem
       return <>{halo}<Rect x={-7} y={-7} width={14} height={14} fill="#fff" stroke={stroke} strokeWidth={sw} /><Circle radius={2.2} fill={stroke} /></>
     case 'socket':
       // data outlet: the socket half-circle with a small RJ45 plug inside instead of the pin
-      // antenna outlet (IEC): the socket half-circle with a filled dot
-      if (tv) return <>{halo}<Arc innerRadius={0} outerRadius={7} angle={180} rotation={180} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-9, 0, 9, 0]} stroke={stroke} strokeWidth={sw} /><Circle y={-3.5} radius={2} fill={stroke} /></>
-      if (data) return <>{halo}<Arc innerRadius={0} outerRadius={7} angle={180} rotation={180} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-9, 0, 9, 0]} stroke={stroke} strokeWidth={sw} /><Rect x={-2.5} y={-6} width={5} height={4.5} cornerRadius={0.6} fill="#fff" stroke={stroke} strokeWidth={px(1)} /></>
+      // telecommunications outlet (IEC 60617 11-13-09): the socket half-circle with an oblique stroke and a letter code
+      if (data || tv) return <>{halo}<Arc innerRadius={0} outerRadius={7} angle={180} rotation={180} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-9, 0, 9, 0]} stroke={stroke} strokeWidth={sw} /><Line points={[-3, 0, 4, -9]} stroke={stroke} strokeWidth={sw} /><Text text={tv ? 'TV' : 'LAN'} x={5} y={-16} fontSize={px(9)} fontStyle="bold" fill={stroke} /></>
       return <>{halo}<Arc innerRadius={0} outerRadius={7} angle={180} rotation={180} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-9, 0, 9, 0]} stroke={stroke} strokeWidth={sw} /><Line points={[0, 0, 0, 7]} stroke={stroke} strokeWidth={sw} /></>
     case 'switch':
       if (tipkalo) return <>{halo}<Circle radius={6} fill="#fff" stroke={stroke} strokeWidth={sw} /><Circle radius={2.2} fill={stroke} /></>
