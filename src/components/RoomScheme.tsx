@@ -11,7 +11,7 @@ import { JunctionCanvas, junctionAnchors, junctionViewBox } from './JunctionCanv
 // stubs. Hovering a cable lights its wires up in both boxes and says what it carries.
 
 const BOX_SCALE = 0.6
-const GAP_X = 190, PAD = 90, LANE = 34 // lanes above the row carry cables between non-adjacent boxes
+const GAP_X = 190, PAD = 90, LANE = 68 // lanes above / below the row carry cables between non-adjacent boxes
 
 export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[]; roomId: string; onOpen: (boxId: string) => void }) {
   const project = useStore((s) => s.project)
@@ -26,9 +26,9 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
   const boxes = useMemo(() => {
     const vbs = js.map((j) => junctionViewBox(j))
     const rowH = [0, 1, 2].map((r) => Math.max(0, ...js.map((j, i) => (rowOf(j) === r ? vbs[i].h * BOX_SCALE : 0))))
-    const rowY = [PAD + 330, 0, 0]
-    rowY[1] = rowY[0] + (rowH[0] ? rowH[0] + 300 : 0)
-    rowY[2] = rowY[1] + (rowH[1] ? rowH[1] + 300 : 0)
+    const rowY = [PAD + 200, 0, 0]
+    rowY[1] = rowY[0] + (rowH[0] ? rowH[0] + 150 : 0)
+    rowY[2] = rowY[1] + (rowH[1] ? rowH[1] + 150 : 0)
     let x = PAD
     return js.map((j, i) => {
       const vb = vbs[i], a = junctionAnchors(j)
@@ -39,7 +39,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
     })
   }, [js]) // eslint-disable-line react-hooks/exhaustive-deps
   const boardW = (boxes.at(-1) ? boxes.at(-1)!.tx + boxes.at(-1)!.vb.w * BOX_SCALE : 0) + PAD
-  const boardH = Math.max(...boxes.map((b) => b.ty + b.vb.h * BOX_SCALE), 0) + PAD + LANE * 3
+  const boardH0 = Math.max(...boxes.map((b) => b.ty + b.vb.h * BOX_SCALE), 0) + PAD
   const byBox = useMemo(() => new Map(boxes.map((b) => [b.j.box.id, b])), [boxes])
 
   // cables that join two boxes of this room, as tubes between their stubs; cables leaving the room end in a short tail
@@ -98,7 +98,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
         else if (facingV) { const my = (p1.y + p2.y) / 2 + (ka - kb) * step * 0.5; via = [{ x: p1.x, y: my }, { x: p2.x, y: my }] }
         else {
           const below = sa.n[1] > 0 || sb.n[1] > 0
-          const laneY = below ? bottom + LANE * (lanesBelow++ + 1) : PAD + 120 - LANE * (lanes++ + 1)
+          const laneY = below ? bottom + LANE * (lanesBelow++ + 1) : PAD + 60 - LANE * (lanes++ + 1)
           via = [{ x: p1.x, y: laneY }, { x: p2.x, y: laneY }]
         }
         const pts = [{ x: sa.x, y: sa.y }, p1, ...via, p2, { x: sb.x, y: sb.y }]
@@ -121,7 +121,9 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
       }
     }
     return [...out, ...feeds]
-  }, [project, byBox])
+  }, [project, byBox]) // eslint-disable-line react-hooks/exhaustive-deps
+  // lanes may run above y = 0 or below the rows: shift and grow the board to include them
+  const extent = useMemo(() => { let minY = 0, maxY = boardH0; for (const l of links) for (const m of l.d.matchAll(/[ML](-?[\d.]+),(-?[\d.]+)/g)) { const y = +m[2]; if (y < minY) minY = y; if (y > maxY) maxY = y } return { offY: PAD - minY, h: maxY - minY + PAD } }, [links, boardH0])
 
   useLayoutEffect(() => {
     const el = wrap.current!
@@ -131,6 +133,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
+  const boardH = extent.h
   const fit = () => {
     if (!size.w || !boardW) return
     const scale = Math.min(size.w / boardW, size.h / boardH, 1.5) * 0.96
@@ -190,7 +193,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
     <div ref={wrap} className="scheme" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
       <Hud scale={cam.scale} onZoomIn={() => zoomAt(1.2, size.w / 2, size.h / 2)} onZoomOut={() => zoomAt(1 / 1.2, size.w / 2, size.h / 2)} onFit={fit} toggles={[]} hint={<><b>Cijela soba</b> · kutije redom kako stoje u sobi · pređi mišem preko kabela · klik na kutiju otvara njen spoj</>} />
       {!js.length && <div className="empty"><div>U ovoj sobi nema kutija ni doza</div></div>}
-      <div className="scheme-layer" style={{ transform: `translate(${cam.x}px, ${cam.y}px) scale(${cam.scale})`, width: boardW, height: boardH }}>
+      <div className="scheme-layer" style={{ transform: `translate(${cam.x}px, ${cam.y + extent.offY * cam.scale}px) scale(${cam.scale})`, width: boardW, height: boardH }}>
         <svg className="scheme-links" width={boardW} height={boardH}>
           {links.map((l) => (
             <g key={l.id} className={`slink ${hover === l.id ? 'hl' : hover ? 'dim' : ''}`} data-tip={l.tip} onMouseEnter={() => setHover(l.id)} onMouseLeave={() => setHover(null)}>
