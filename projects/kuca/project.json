@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-13T17:50:14.091Z",
+ "savedAt": "2026-10-13T17:53:33.491Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2541,7 +2541,8 @@
     "zM": 1.66,
     "note": "",
     "id": "jo0op522",
-    "label": "K8"
+    "label": "K8",
+    "depth": "plitka"
    },
    {
     "roomId": "24uhwdfi",
@@ -2552,7 +2553,8 @@
     "note": "",
     "id": "su0iyk4c",
     "label": "D12",
-    "modules": 4
+    "modules": 4,
+    "depth": "plitka"
    },
    {
     "roomId": "24uhwdfi",
@@ -2562,7 +2564,8 @@
     "zM": 1.53,
     "note": "",
     "id": "f09kj0ph",
-    "label": "K9"
+    "label": "K9",
+    "depth": "plitka"
    },
    {
     "roomId": "24uhwdfi",
@@ -2573,7 +2576,8 @@
     "note": "",
     "id": "bshjxclk",
     "label": "D13",
-    "modules": 4
+    "modules": 7,
+    "depth": "plitka"
    },
    {
     "roomId": "24uhwdfi",
@@ -2584,7 +2588,8 @@
     "note": "",
     "id": "bcj1xh38",
     "label": "D14",
-    "modules": 4
+    "modules": 7,
+    "depth": "plitka"
    },
    {
     "roomId": "24uhwdfi",
@@ -2595,7 +2600,56 @@
     "note": "",
     "id": "9slu3ie8",
     "label": "D15",
-    "modules": 4
+    "modules": 4,
+    "depth": "plitka"
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 2,
+    "type": "socket",
+    "xM": 1.78,
+    "zM": 0.71,
+    "note": "",
+    "host": "su0iyk4c",
+    "id": "kfk2txh7",
+    "label": "U19",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 2,
+    "type": "socket",
+    "xM": 1.78,
+    "zM": 0.71,
+    "note": "",
+    "host": "su0iyk4c",
+    "id": "6qg9iava",
+    "label": "U20",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 0,
+    "type": "socket",
+    "xM": 1.48,
+    "zM": 0.66,
+    "note": "",
+    "host": "9slu3ie8",
+    "id": "jd0h0e8u",
+    "label": "U21",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 0,
+    "type": "socket",
+    "xM": 1.48,
+    "zM": 0.66,
+    "note": "",
+    "host": "9slu3ie8",
+    "id": "rwjm0nrt",
+    "label": "U22",
+    "slotOrder": 1
    }
   ],
   "cables": [
@@ -3273,6 +3327,166 @@
     "via": [],
     "note": "",
     "id": "7e2evzqk"
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "o80s9tb6"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 3,
+     "zM": 1.73
+    },
+    "via": [],
+    "note": "",
+    "id": "lk7a27n3"
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 2,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 3,
+     "zM": 1.73
+    },
+    "to": {
+     "kind": "element",
+     "id": "jo0op522"
+    },
+    "via": [],
+    "note": "",
+    "id": "d1j0eq7h"
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 2,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "jo0op522"
+    },
+    "to": {
+     "kind": "element",
+     "id": "su0iyk4c"
+    },
+    "via": [],
+    "note": "",
+    "id": "hh5dgeq7"
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 2,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "jo0op522"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 2,
+     "zM": 1.68
+    },
+    "via": [],
+    "note": "",
+    "id": "scuo239h"
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 2,
+     "zM": 1.68
+    },
+    "to": {
+     "kind": "element",
+     "id": "f09kj0ph"
+    },
+    "via": [],
+    "note": "",
+    "id": "pr2ol5ch"
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "f09kj0ph"
+    },
+    "to": {
+     "kind": "element",
+     "id": "bshjxclk"
+    },
+    "via": [],
+    "note": "",
+    "id": "aiype6rp"
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "f09kj0ph"
+    },
+    "to": {
+     "kind": "element",
+     "id": "bcj1xh38"
+    },
+    "via": [
+     {
+      "xM": 0.66,
+      "zM": 1.53
+     }
+    ],
+    "note": "",
+    "id": "ky62vd8o"
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "f09kj0ph"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 1.58
+    },
+    "via": [],
+    "note": "",
+    "id": "q1bm7wiu"
+   },
+   {
+    "roomId": "24uhwdfi",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 1.58
+    },
+    "to": {
+     "kind": "element",
+     "id": "9slu3ie8"
+    },
+    "via": [
+     {
+      "xM": 1.47,
+      "zM": 1.58
+     }
+    ],
+    "note": "",
+    "id": "ensae7rc"
    }
   ],
   "categories": [
@@ -3373,7 +3587,7 @@
   "view": {
    "kind": "room",
    "roomId": "24uhwdfi",
-   "wall": 1
+   "wall": 2
   }
  }
 }
