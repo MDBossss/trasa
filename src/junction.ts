@@ -394,15 +394,14 @@ const SIDE_ORDER: Side[] = ['top', 'right', 'bottom', 'left']
 const chainPos = (id: string, p: Project) => (id.startsWith('CH:') ? p.elements.findIndex((e) => e.id === id.split(':')[2]) * 3 + ['L', 'N', 'PE'].indexOf(id.split(':')[1]) : 0)
 const ORDER = (id: string) => (id === 'L' ? 0 : id === 'N' ? 1 : id === 'PE' ? 2 : id.startsWith('O:') ? 3 : id.startsWith('SW') ? 4 : id.startsWith('I:') ? 5 : id.startsWith('PUT') ? 6 : id.startsWith('CH:') ? 7 : 8)
 
-// Flush junction boxes sold in Croatia (Elektro-Kontakt, Legrand, Kaiser), smallest first: inner size in mm,
+// Flush junction boxes sold in Croatia (Knauf/Terma, Vimar at Ellabo, Legrand at Gromel), smallest first: inner size in mm,
 // retail label (outer size) and number of cable entries. The box grows along this ladder before a split is suggested.
 export const BOX_CATALOG: { w: number; h: number; label: string; entries: number; note?: string }[] = [
   { w: 90, h: 90, label: '10 × 10', entries: 8 },
   { w: 90, h: 110, label: '10 × 12', entries: 10 },
-  { w: 115, h: 95, label: '13 × 11', entries: 10, note: 'Legrand 126 × 105 × 70' },
-  { w: 140, h: 140, label: '15 × 15', entries: 12 },
-  { w: 160, h: 135, label: '17 × 15', entries: 14, note: 'Legrand 170 × 145 × 70' },
-  { w: 190, h: 140, label: '20 × 15', entries: 14 },
+  { w: 145, h: 120, label: '15 × 13', entries: 12, note: 'Vimar V70005 154 × 128 × 70' },
+  { w: 160, h: 160, label: '17 × 17', entries: 14, note: 'Legrand 089374 170 × 170 × 48' },
+  { w: 220, h: 170, label: '23 × 18', entries: 16, note: 'Legrand 089275 230 × 180 × 50' },
 ]
 export const BOX_SIZES: [number, number][] = BOX_CATALOG.map((b) => [b.w, b.h])
 export const boxSizeLabel = (W: number, H: number) => BOX_CATALOG.find((b) => b.w === W && b.h === H)?.label ?? `${Math.round(W / 10 + 1)} × ${Math.round(H / 10 + 1)}`

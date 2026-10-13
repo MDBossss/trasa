@@ -63,7 +63,7 @@ pregledniku i vraćaju nakon osvježavanja.
     i crta dozu s relejima, tipkalima i kratkim žilama (tipkalo → SW izravno, bez stezaljke). Signal tipkala putuje
     kroz lanac kutija (doza → K1 → K2) najkraćim putem: svaki kabel na putu ga nosi, usputna kutija ga samo prolazi
     kroz WAGO 412; prsten kutija ne udvostručuje signale. Veličina kutije se računa iz sadržaja po ljestvici kutija koje se prodaju u HR (10 × 10, 10 × 12,
-    13 × 11 Legrand, 15 × 15, 17 × 15 Legrand, 20 × 15) i ide u materijal; provjere kažu koju kutiju uzeti, a podjelu predlažu tek kad ni najveća ne stane ili ponestane uvodnica, kad je kabela
+    15 × 13 Vimar V70005, 17 × 17 Legrand 089374, 23 × 18 Legrand 089275) i ide u materijal; provjere kažu koju kutiju uzeti, a podjelu predlažu tek kad ni najveća ne stane ili ponestane uvodnica, kad je kabela
     više od uvodnica (8 odnosno 10) i kad bi stezaljka trebala 3 WAGO-a. Više od 5 žila na stezaljci = dva (ili tri) WAGO 221-415 Gumb **Podijeli na dvije** to napravi sam: utičnice i vrata (ili pola svjetala) odu u novu kutiju
     35 cm pored, napajanu iz stare, vezom 3×1,5 ili 5×1,5 prema potrebi.
     spojena kratkom premosnicom, nacrtano i numerirano "WAGO 2, port 3". Mjesto u okviru: na tipkalu/utičnici ◀ ▶ mijenja redoslijed, "Praznih lijevo" ostavlja prazne module;
