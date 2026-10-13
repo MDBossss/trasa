@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '../store'
 import { cableNeeds, cablePlaces, terminalMeta, wirePlan, type Junction } from '../junction'
+import { WIRE_LABEL } from '../types'
 import { coreColors } from '../types'
 import { Hud } from './Hud'
 import { JunctionCanvas, junctionAnchors, junctionViewBox } from './JunctionCanvas'
@@ -82,7 +83,11 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
         const pts = [{ x: sa.x, y: sa.y }, p1, ...via, p2, { x: sb.x, y: sb.y }]
         const d = 'M' + pts.map((q) => `${q.x},${q.y}`).join(' L')
         const mid = facing ? { x: (p1.x + p2.x) / 2, y: Math.min(p1.y, p2.y) } : { x: (p1.x + p2.x) / 2, y: via[0].y }
-        out.push({ id: c.id, d, od, label: c.type, tip: `${pl[0].label} ↔ ${pl[1].label} · ${c.type} · ${cores.length} žile${carries ? `: ${carries}` : ''}`, mid, tail: false, boxes: [pl[0].id, pl[1].id], cableIds: [sa.cableId, sb.cableId] })
+        // per core: where it lands on each side (terminal labels from both junctions)
+        const bcA = a.j.cables.find((x) => x.cable.id === sa.cableId), bcB = b.j.cables.find((x) => x.cable.id === sb.cableId)
+        const lands = (bc: typeof bcA, i: number) => { const w = bc?.wires[i]; return w?.terminal ? terminalMeta(w.terminal, project).label : w?.note ?? '–' }
+        const perCore = cores.map((col, i) => `${WIRE_LABEL[col]}: ${pl[0].label} ${lands(bcA, i)} ↔ ${pl[1].label} ${lands(bcB, i)}`).join('\n')
+        out.push({ id: c.id, d, od, label: c.type, tip: `${pl[0].label} ↔ ${pl[1].label} · ${c.type} · ${cores.length} žile${carries ? `: ${carries}` : ''}\n${perCore}`, mid, tail: false, boxes: [pl[0].id, pl[1].id], cableIds: [sa.cableId, sb.cableId] })
       } else {
         const here = a ?? b, st = sa ?? sb
         if (!here || !st) continue
@@ -156,7 +161,8 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
 
   const sizeLabel = (j: Junction) => j.box.type === 'modbox' ? `doza ${j.box.modules ?? 3}M` : `kutija ${j.size.W / 10 + 1} × ${j.size.H / 10 + 1}`
   const tubed = useMemo(() => new Set(links.flatMap((l) => l.cableIds)), [links])
-  const hoverFor = (boxId: string) => (hover && links.find((l) => l.id === hover)?.boxes.includes(boxId) ? `cable:${hover}` : null)
+  // each side of a corner cable is its own segment, so the box gets the id of its own segment
+  const hoverFor = (boxId: string) => { const l = hover ? links.find((x) => x.id === hover) : null; const k = l ? l.boxes.indexOf(boxId) : -1; return l && k >= 0 ? `cable:${l.cableIds[k]}` : null }
   return (
     <div ref={wrap} className="scheme" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
       <Hud scale={cam.scale} onZoomIn={() => zoomAt(1.2, size.w / 2, size.h / 2)} onZoomOut={() => zoomAt(1 / 1.2, size.w / 2, size.h / 2)} onFit={fit} toggles={[]} hint={<><b>Cijela soba</b> · kutije redom kako stoje u sobi · pređi mišem preko kabela · klik na kutiju otvara korake</>} />
