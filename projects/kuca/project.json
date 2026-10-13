@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-13T18:49:56.169Z",
+ "savedAt": "2026-10-13T18:53:59.279Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -457,8 +457,8 @@
       "y": 656.7453767347267
      },
      {
-      "x": 718.3510207933944,
-      "y": 599.4715973127336
+      "x": 614.2427201094835,
+      "y": 585.2242184898014
      }
     ],
     "from": "",
@@ -466,7 +466,8 @@
     "note": "",
     "categoryId": "rasvjeta",
     "exitZ": {
-     "start": 2.11
+     "start": 2.04,
+     "end": 2.45
     }
    },
    {
@@ -3229,6 +3230,26 @@
     "label": "U49",
     "slotOrder": 5,
     "socketKind": "euro"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "light",
+    "xM": 3.02,
+    "zM": 2.24,
+    "note": "",
+    "id": "cpk2m94g",
+    "label": "S5"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "box",
+    "xM": 3.1,
+    "zM": 1.66,
+    "note": "",
+    "id": "pvh3a7sm",
+    "label": "K14"
    }
   ],
   "cables": [
@@ -4488,6 +4509,152 @@
     ],
     "note": "",
     "id": "sg0b5bvh"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "so7y5w67"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "27xc6393",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "hx65zinc"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "3qupgdrk",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "so7y5w67"
+    },
+    "via": [],
+    "note": "",
+    "id": "sjidud4n"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "cpk2m94g"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "3qupgdrk",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "9lmpylus"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "27xc6393",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "pvh3a7sm"
+    },
+    "via": [
+     {
+      "xM": 2.57,
+      "zM": 1.83
+     },
+     {
+      "xM": 3.11,
+      "zM": 1.83
+     }
+    ],
+    "note": "",
+    "id": "ngtkw37a"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "pvh3a7sm"
+    },
+    "to": {
+     "kind": "element",
+     "id": "h27ye5zs"
+    },
+    "via": [
+     {
+      "xM": 1.67,
+      "zM": 1.66
+     }
+    ],
+    "note": "",
+    "id": "iqd6vnj8"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "h27ye5zs"
+    },
+    "to": {
+     "kind": "element",
+     "id": "zt3wq4pu"
+    },
+    "via": [],
+    "note": "",
+    "id": "4r6d5o57"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "pvh3a7sm"
+    },
+    "to": {
+     "kind": "element",
+     "id": "v5x462mf"
+    },
+    "via": [],
+    "note": "",
+    "id": "wrirqalh"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "v5x462mf"
+    },
+    "to": {
+     "kind": "element",
+     "id": "2qnvq51i"
+    },
+    "via": [],
+    "note": "",
+    "id": "hogxcm46"
    }
   ],
   "categories": [
@@ -4597,7 +4764,7 @@
   "view": {
    "kind": "room",
    "roomId": "j5g1ml5l",
-   "wall": 1
+   "wall": 3
   }
  }
 }
