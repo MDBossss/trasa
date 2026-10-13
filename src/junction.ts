@@ -291,7 +291,7 @@ function localSignals(place: WallElement, p: Project): Set<string> {
 
 // Signals a place-to-place cable must carry: L N PE plus whatever both sides want.
 // Which places a cable joins (both ends resolved through conduits / corners / hosted elements).
-function cablePlaces(c: Cable, p: Project): [WallElement, WallElement] | null {
+export function cablePlaces(c: Cable, p: Project): [WallElement, WallElement] | null {
   const ends = [c.from, c.to].map((e) => { const f = follow(p, c, e).end; return f.kind === 'element' ? el(p, f.id) : undefined })
   const places = ends.map((e) => (e?.host ? el(p, e.host) : e)).filter((e): e is WallElement => !!e && isPlace(e))
   return places.length === 2 && places[0].id !== places[1].id ? [places[0], places[1]] : null

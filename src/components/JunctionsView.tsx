@@ -6,6 +6,7 @@ import { Icon } from './Icons'
 import { CAP_COLOR, JunctionCanvas, wireSwatch } from './JunctionCanvas'
 import { Sheet } from './Sheet'
 import { ZoomPane } from './ZoomPane'
+import { RoomScheme } from './RoomScheme'
 import { useMobile } from '../mobile'
 
 const LEVEL_ICON: Record<Level, string> = { ok: '✓', warn: '⚠', err: '✕' }
@@ -19,6 +20,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
   const [hover, setHover] = useState<string | null>(null)
   const mobile = useMobile()
   const [sheet, setSheet] = useState(false)
+  const [scheme, setScheme] = useState(false) // whole room on one board instead of one box
   const j: Junction | undefined = junctions.find((x) => x.box.id === elementId) ?? junctions[0]
   const plan = useMemo(() => (j ? wirePlan(j) : []), [j])
 
@@ -173,13 +175,16 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
               <button className="mini" onClick={() => setView({ kind: 'printbox', elementId: j.box.id })} title="A4 list s ovom kutijom"><Icon.print /> Ispiši kutiju</button>
               <div className="spacer" />
               <div className="segmented" role="tablist">
-                <button role="tab" aria-selected={mode === 'all'} className={mode === 'all' ? 'on' : ''} onClick={() => { setMode('all'); setStep(0) }}>Sve žile</button>
-                <button role="tab" aria-selected={mode === 'steps'} className={mode === 'steps' ? 'on' : ''} onClick={() => { setMode('steps'); setStep(0) }}>Korak po korak</button>
+                <button role="tab" aria-selected={!scheme && mode === 'all'} className={!scheme && mode === 'all' ? 'on' : ''} onClick={() => { setScheme(false); setMode('all'); setStep(0) }}>Sve žile</button>
+                <button role="tab" aria-selected={!scheme && mode === 'steps'} className={!scheme && mode === 'steps' ? 'on' : ''} onClick={() => { setScheme(false); setMode('steps'); setStep(0) }}>Korak po korak</button>
+                <button role="tab" aria-selected={scheme} className={scheme ? 'on' : ''} onClick={() => setScheme(true)} title="Sve kutije i doze ove sobe na jednoj shemi">Cijela soba</button>
               </div>
             </>
           ) : <h2>Spojevi</h2>}
         </div>
-        {j ? (
+        {j && scheme ? (
+          <RoomScheme junctions={junctions} roomId={j.room.id} onOpen={(id) => { setScheme(false); setMode('steps'); setStep(0); pick(id) }} />
+        ) : j ? (
           <div className="junction-stage">
             <JunctionCanvas j={j} plan={plan} mode={mode} step={step} hover={hover} onHover={setHover} onPick={(i) => { setMode('steps'); setStep(i) }} />
             {mode === 'steps' && cur && (
@@ -205,7 +210,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
         )}
       </div>
 
-      {j && !mobile && <aside className="sidebar">{details}</aside>}
+      {j && !mobile && !scheme && <aside className="sidebar">{details}</aside>}
     </div>
   )
 }

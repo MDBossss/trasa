@@ -413,6 +413,13 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   await page.evaluate(({ p1, s1 }) => window.__trasa.getState().updateElement(p1, { controls: [s1] }), ids)
   await page.locator('.junctions-list .list li', { hasText: 'K1' }).locator('.dot.ok').waitFor()
   await page.screenshot({ path: `${SHOTS}/trasa-junction.png` })
+  // whole room on one board: a card per box, back to steps through "Otvori"
+  await page.getByRole('tab', { name: 'Cijela soba' }).click()
+  await page.locator('.scard', { hasText: 'K1' }).waitFor()
+  assert.equal(await page.locator('.sidebar .jsteps').count(), 0, 'per-box sidebar hidden on the board')
+  await page.locator('.scard', { hasText: 'K1' }).getByRole('button', { name: 'Otvori' }).click()
+  await page.locator('.stepbar').getByText('1 / 12').waitFor()
+  await page.getByRole('tab', { name: 'Sve žile' }).click()
   // one box on an A4 sheet
   await page.getByRole('button', { name: 'Ispiši kutiju' }).click()
   await page.locator('.page-landscape h1', { hasText: 'K1' }).waitFor()

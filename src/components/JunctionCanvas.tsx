@@ -17,6 +17,12 @@ const entryOf = (side: Side, i: number, n: number, W: number, H: number) => {
   return { p: [W, H * t], n: [-1, 0] }
 }
 
+// Size of the drawing's viewBox, for layouts that need the aspect ratio before rendering.
+export function junctionViewBox(j: Junction): { w: number; h: number } {
+  const lay = boxLayout(j)
+  return { w: 110 + lay.W * S + 190, h: 150 + lay.H * S + (j.cables.some((c) => c.side === 'bottom') ? 200 : 60) }
+}
+
 export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, className }: {
   j: Junction; plan: PlanWire[]; mode: 'all' | 'steps'; step: number; hover: string | null
   onHover: (k: string | null) => void; onPick: (i: number) => void; className?: string
