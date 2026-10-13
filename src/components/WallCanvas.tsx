@@ -4,6 +4,7 @@ import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import useImage from 'use-image'
 import { useStore } from '../store'
+import { cornerPartner } from '../junction'
 import { CABLE_COLOR, cableColor, cablePath, cornerAt, endPos, neighbourWall, type Exit, type WallCtx, type WallInfo } from '../walls'
 import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement, RELAY_LOOK, relayBrand, relayModelOf, hostedFront , isData } from '../types'
 import { Hud } from './Hud'
@@ -133,7 +134,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
   const incoming = project.cables
     .filter((c) => c.roomId === roomId && c.wall !== wall.i)
     .flatMap((c) => cornerEnds(c).filter((e) => e.corner === leftCorner || e.corner === rightCorner).map((e) => ({ cable: c, end: e })))
-    .filter(({ end }) => !cables.some((c) => cornerEnds(c).some((e) => e.corner === end.corner && Math.abs(e.zM - end.zM) < 0.3)))
+    .filter(({ cable, end }) => !cornerPartner(project, cable, end.corner))
 
   const finishCable = useCallback(
     (to: CableEnd) => {
@@ -378,7 +379,9 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
           ))}
           {incoming.map(({ cable: c, end: e }) => {
             const left = e.corner === leftCorner
-            const x = left ? 0 : W, y = toY({ xM: 0, zM: e.zM })
+            // markers at the same height step down so each can be clicked
+            const same = incoming.filter((o) => o.end.corner === e.corner && Math.abs(o.end.zM - e.zM) < 0.05).findIndex((o) => o.cable.id === c.id)
+            const x = left ? 0 : W, y = toY({ xM: 0, zM: e.zM }) + same * px(22)
             const name = `cornerin:${e.corner}:${e.zM}`
             return (
               <Group key={`in:${c.id}:${e.corner}`} name={name} x={x} y={y}>

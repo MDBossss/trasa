@@ -45,15 +45,37 @@ function throughConduit(p: Project, conduitId: string, end: 'start' | 'end') {
   return { cable: c, end: e }
 }
 
-// The other wall's cable that continues from the same corner at about the same height.
+// Cables meeting at a room corner are paired one-to-one across the two walls: closest heights first
+// (within 30 cm), ties by drawing order, so two cables round the same corner each keep their own continuation.
+const cornerPairCache = new WeakMap<Project, Map<string, Cable>>()
+function cornerPairs(p: Project): Map<string, Cable> {
+  const hit = cornerPairCache.get(p)
+  if (hit) return hit
+  const out = new Map<string, Cable>()
+  const key = (c: Cable, corner: number) => `${c.id}@${corner}`
+  const ends = p.cables.flatMap((c, i) => [c.from, c.to].filter((e): e is Extract<CableEnd, { kind: 'corner' }> => e.kind === 'corner').map((e) => ({ c, i, e })))
+  const pairs: { a: typeof ends[number]; b: typeof ends[number]; dz: number }[] = []
+  for (const a of ends) for (const b of ends) {
+    if (a.i >= b.i || a.c.roomId !== b.c.roomId || a.c.wall === b.c.wall || a.e.corner !== b.e.corner) continue
+    const dz = Math.abs(a.e.zM - b.e.zM)
+    if (dz < 0.3) pairs.push({ a, b, dz })
+  }
+  pairs.sort((x, y) => x.dz - y.dz || x.a.i - y.a.i || x.b.i - y.b.i)
+  for (const { a, b } of pairs) {
+    if (out.has(key(a.c, a.e.corner)) || out.has(key(b.c, b.e.corner))) continue
+    out.set(key(a.c, a.e.corner), b.c); out.set(key(b.c, b.e.corner), a.c)
+  }
+  cornerPairCache.set(p, out)
+  return out
+}
+// The other wall's cable that continues from this corner, if one is paired with it.
+export function cornerPartner(p: Project, c: Cable, corner: number): Cable | null { return cornerPairs(p).get(`${c.id}@${corner}`) ?? null }
 function throughCorner(p: Project, c: Cable, end: Extract<CableEnd, { kind: 'corner' }>) {
-  const cands = p.cables.filter((x) => x.id !== c.id && x.roomId === c.roomId && x.wall !== c.wall && [x.from, x.to].some((e) => e.kind === 'corner' && e.corner === end.corner && Math.abs(e.zM - end.zM) < 0.3))
-  const x = cands.sort((a, b) => cornerDz(a, end) - cornerDz(b, end))[0]
+  const x = cornerPartner(p, c, end.corner)
   if (!x) return null
   const mine = x.from.kind === 'corner' && x.from.corner === end.corner ? x.from : x.to
   return { cable: x, end: mine === x.from ? x.to : x.from }
 }
-const cornerDz = (x: Cable, end: { corner: number; zM: number }) => Math.min(...[x.from, x.to].filter((e): e is Extract<CableEnd, { kind: 'corner' }> => e.kind === 'corner' && e.corner === end.corner).map((e) => Math.abs(e.zM - end.zM)))
 
 // Follow a cable end through conduits and corners to what it finally lands on.
 function follow(p: Project, c: Cable, end: CableEnd, hops = 0): { end: CableEnd; via: string[]; cable: Cable } {
@@ -535,7 +557,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   const hasN = cables.some((c) => c.wires.some((w) => w.terminal === 'N'))
   if (!cables.length) checks.push({ level: 'warn', text: 'U kutiju ne ulazi nijedan kabel.' })
   else if (box.type === 'box' && feeds === 0 && !isFed(box, p)) checks.push({ level: 'err', text: 'Kutija nema dolaza: ni izravno (bužir kategorije Dolaz, ormar, uloga "Dolaz") ni preko druge kutije koja ga ima.' })
-  else if (box.type === 'modbox' && !hasL) checks.push({ level: 'err', text: 'Doza nema faze: treba kabel iz razvodne kutije.' })
+  else if (box.type === 'modbox' && !hasL && devices.some((d) => !isData(d.el))) checks.push({ level: 'err', text: 'Doza nema faze: treba kabel iz razvodne kutije.' })
   else if (feeds > 1) checks.push({ level: 'warn', text: `${feeds} dolaza u istu kutiju; obično je jedan.` })
 
   const map = new Map<string, TerminalWire[]>()
