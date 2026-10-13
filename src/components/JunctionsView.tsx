@@ -30,6 +30,8 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
   const plan = useMemo(() => (j ? wirePlan(j) : []), [j])
 
   useEffect(() => { setStep(0); setHover(null) }, [j?.box.id])
+  // arriving with a specific box (from the wall panel, a check, or a list pick) shows that box, not the room board
+  useEffect(() => { if (elementId) setScheme(false) }, [elementId]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement
