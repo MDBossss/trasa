@@ -1,4 +1,5 @@
 import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isPlace, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, relayModelOf, hostedFront, type ElementType } from './types'
+import { wallExits } from './walls'
 
 // Everything a box needs: which cables enter it, what each core goes to, which devices sit inside
 // and which WAGO 221 connectors (or direct jumpers) that takes. Derived from the drawing, nothing is stored.
@@ -204,16 +205,27 @@ function leafWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, p: Project, c
   })
 }
 
-function sideOf(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallElement): { side: Side; order: number } {
+// Which side of the box a cable enters: the side the far end lies on, seen from the box on the wall
+// (a conduit to the left enters left, a frame below enters from below); ties go to top/bottom.
+function sideOf(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallElement, p: Project): { side: Side; order: number } {
   const end = otherEnd(bc.cable, box)
-  if (end.kind === 'exit') return { side: 'top', order: bc.far.conduit ? bc.far.conduit.points[0].x : 0 }
-  if (end.kind === 'free') return { side: 'bottom', order: end.xM }
-  if (end.kind === 'corner') return { side: end.corner === box.wall ? 'left' : 'right', order: -end.zM }
-  const e = bc.far.element
-  if (!e || e.roomId !== box.roomId || e.wall !== box.wall) return { side: 'top', order: 0 }
-  const dx = e.xM - box.xM, dz = e.zM - box.zM
-  if (Math.abs(dz) >= Math.abs(dx)) return { side: dz > 0 ? 'top' : 'bottom', order: e.xM }
-  return { side: dx < 0 ? 'left' : 'right', order: -e.zM }
+  const room = p.rooms.find((r) => r.id === box.roomId)
+  const wall = room ? wallExits(room, p.conduits, p.pxPerMeter ?? 100)[box.wall] : undefined
+  let far: { xM: number; zM: number } | null = null
+  if (end.kind === 'exit') {
+    const ex = wall?.exits.find((x) => x.conduit.id === end.conduitId && x.end === end.end)
+    if (!ex) return { side: 'top', order: bc.far.conduit ? bc.far.conduit.points[0].x : 0 }
+    far = { xM: ex.posM, zM: ex.zM ?? p.ceilingM }
+  } else if (end.kind === 'free') far = { xM: end.xM, zM: end.zM }
+  else if (end.kind === 'corner') far = { xM: end.corner === box.wall ? 0 : (wall?.lengthM ?? box.xM + 1), zM: end.zM }
+  else {
+    const e = bc.far.element
+    if (!e || e.roomId !== box.roomId || e.wall !== box.wall) return { side: 'top', order: 0 }
+    far = { xM: e.xM, zM: e.zM }
+  }
+  const dx = far.xM - box.xM, dz = far.zM - box.zM
+  if (Math.abs(dz) >= Math.abs(dx)) return { side: dz > 0 ? 'top' : 'bottom', order: far.xM }
+  return { side: dx < 0 ? 'left' : 'right', order: -far.zM }
 }
 
 // Devices sitting inside a place: relays and buttons with host = place.
@@ -497,7 +509,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
     .map((c) => {
       const r = resolveCable(c, box, p)
       const cross = r.far.place && r.far.place.id !== box.id && r.role !== 'feed' && r.role !== 'lowv'
-      return { ...r, ...sideOf(r, box), wires: cross ? crossWires(r, box, p, checks) : leafWires(r, p, checks) }
+      return { ...r, ...sideOf(r, box, p), wires: cross ? crossWires(r, box, p, checks) : leafWires(r, p, checks) }
     })
     .sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role) || SIDE_ORDER.indexOf(a.side) - SIDE_ORDER.indexOf(b.side) || a.order - b.order)
   const devices = devicesIn(box, p)
@@ -604,7 +616,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
         if (el.type === 'motor' && i < 2) return { color: k, terminal: `IMP${i + 1}`, note: 'impuls sa Shellyja (suhi kontakt)' }
         return { color: k, terminal: 'PARK', note: 'rezerva' }
       })
-      return { ...r, ...sideOf(r, el), wires }
+      return { ...r, ...sideOf(r, el, p), wires }
     })
   if (!cables.length) checks.push({ level: 'warn', text: `${el.label}: do ${name === 'svjetiljka' ? 'svjetla' : name} ne dolazi nijedan kabel.` })
   if (cables.length > 1) checks.push({ level: 'warn', text: `${el.label}: ${cables.length} kabela na jednom uređaju; obično je jedan (ili provlačenje kroz dozu).` })
