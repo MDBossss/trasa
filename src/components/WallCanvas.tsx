@@ -420,7 +420,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
             const isSel = el.id === selectedId
             return (
               <Group key={el.id} name={el.id} x={toX(p)} y={toY(p)} {...elementDrag(el)}>
-                <Symbol type={el.type} selected={isSel} px={px} modules={el.modules} tipkalo={el.switchKind === 'tipkalo'} data={isData(el)} tv={el.socketKind === 'tv'} />
+                <Symbol type={el.type} selected={isSel} px={px} modules={el.modules} swKind={el.switchKind} data={isData(el)} tv={el.socketKind === 'tv'} />
                 {(() => {
                   const hosted = hostedOf(el.id)
                   const mods = hostedFront(project.elements, el.id)
@@ -439,7 +439,10 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
                         return (
                           <Group key={h.id} name={h.id} x={cx} y={0} onClick={sel(h)} onTap={sel(h)}>
                             <Rect x={-m * MODW / 2 + 0.8} y={-5} width={m * MODW - 1.6} height={10} cornerRadius={h.type === 'socket' ? 1.5 : 1} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} />
-                            {h.type === 'switch' && <Circle radius={1.2} fill={hs ? '#1e88e5' : '#1f2430'} />}
+                            {h.type === 'switch' && (h.switchKind === 'tipkalo' || !h.switchKind || h.switchKind === 'obicni') && <Circle radius={1.2} fill={hs ? '#1e88e5' : '#1f2430'} />}
+                            {h.type === 'switch' && h.switchKind === 'izmjenicni' && <Line points={[-2.2, 2.2, 2.2, -2.2]} stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.2)} lineCap="round" />}
+                            {h.type === 'switch' && h.switchKind === 'krizni' && <Line points={[-2.2, 2.2, 2.2, -2.2, 0, 0, -2.2, -2.2, 2.2, 2.2]} stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.2)} lineCap="round" />}
+                            {h.type === 'switch' && h.switchKind === 'serijski' && <Line points={[-2, 2, 0, -2, 2, 2]} stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.2)} lineCap="round" lineJoin="round" />}
                             {h.type === 'socket' && !isData(h) && <Circle radius={2.2} fill="none" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1)} />}
                             {isData(h) && h.socketKind !== 'tv' && <Rect x={-2} y={-2.6} width={4} height={5.2} cornerRadius={0.6} fill="none" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1)} />}
                             {h.socketKind === 'tv' && <Line points={[-2.4, -3.2, 0, -0.6, 2.4, -3.2, 0, -0.6, 0, 3.2]} stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.1)} lineCap="round" lineJoin="round" />}
@@ -494,7 +497,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
           )}
           {draftPath && draftPath.slice(0, -1).map((p, i) => <Circle key={i} x={toX(p)} y={toY(p)} radius={px(4)} fill={CABLE_COLOR} stroke="#fff" strokeWidth={px(1.5)} />)}
           {cursor && tool === 'element' && !panning && (
-            <Group x={toX(cursor)} y={toY(cursor)} opacity={0.5}><Symbol type={elementType} selected={false} px={px} tipkalo={placeKind === 'tipkalo'} /></Group>
+            <Group x={toX(cursor)} y={toY(cursor)} opacity={0.5}><Symbol type={elementType} selected={false} px={px} swKind={placeKind} /></Group>
           )}
         </Layer>
       </Stage>
@@ -503,7 +506,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
 }
 
 // IEC 60617-style symbols drawn in centimetres so they keep real-world size.
-function Symbol({ type, selected, px, modules, tipkalo, data, tv }: { type: ElementType; selected: boolean; px: (n: number) => number; modules?: number; tipkalo?: boolean; data?: boolean; tv?: boolean }) {
+function Symbol({ type, selected, px, modules, swKind, data, tv }: { type: ElementType; selected: boolean; px: (n: number) => number; modules?: number; swKind?: string; data?: boolean; tv?: boolean }) {
   const stroke = selected ? '#1e88e5' : '#1f2430'
   const sw = px(2)
   const halo = selected ? <Circle radius={13} fill="rgba(30,136,229,0.18)" /> : null
@@ -523,9 +526,14 @@ function Symbol({ type, selected, px, modules, tipkalo, data, tv }: { type: Elem
       // telecommunications outlet (IEC 60617 11-13-09): the socket half-circle with an oblique stroke and a letter code
       if (data || tv) return <>{halo}<Arc innerRadius={0} outerRadius={7} angle={180} rotation={180} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-9, 0, 9, 0]} stroke={stroke} strokeWidth={sw} /><Line points={[-3, 0, 4, -9]} stroke={stroke} strokeWidth={sw} /><Text text={tv ? 'TV' : 'LAN'} x={5} y={-16} fontSize={px(9)} fontStyle="bold" fill={stroke} /></>
       return <>{halo}<Arc innerRadius={0} outerRadius={7} angle={180} rotation={180} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-9, 0, 9, 0]} stroke={stroke} strokeWidth={sw} /><Line points={[0, 0, 0, 7]} stroke={stroke} strokeWidth={sw} /></>
-    case 'switch':
-      if (tipkalo) return <>{halo}<Circle radius={6} fill="#fff" stroke={stroke} strokeWidth={sw} /><Circle radius={2.2} fill={stroke} /></>
-      return <>{halo}<Circle radius={3.5} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[2.5, -2.5, 10, -10]} stroke={stroke} strokeWidth={sw} /><Line points={[10, -10, 13, -8]} stroke={stroke} strokeWidth={sw} /></>
+    case 'switch': {
+      if (swKind === 'tipkalo') return <>{halo}<Circle radius={6} fill="#fff" stroke={stroke} strokeWidth={sw} /><Circle radius={2.2} fill={stroke} /></>
+      // IEC 60617-11: one arm = on-off (11-14-01), two opposite arms = two-way (11-14-06),
+      // four arms = intermediate (11-14-07), two arms on one side = series (DIN 40900)
+      const arm = (deg: number) => { const a = (deg * Math.PI) / 180, c = Math.cos(a), si = Math.sin(a); const x1 = 3.5 * c, y1 = -3.5 * si, x2 = 11 * c, y2 = -11 * si; const hx = x2 + 3 * si, hy = y2 + 3 * c; return <Line key={deg} points={[x1, y1, x2, y2, hx, hy]} stroke={stroke} strokeWidth={sw} lineJoin="round" /> }
+      const arms = swKind === 'izmjenicni' ? [45, 225] : swKind === 'krizni' ? [45, 135, 225, 315] : swKind === 'serijski' ? [30, 70] : [45]
+      return <>{halo}<Circle radius={3.5} fill="#fff" stroke={stroke} strokeWidth={sw} />{arms.map(arm)}</>
+    }
     case 'light':
       return <>{halo}<Circle radius={7} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-5, -5, 5, 5]} stroke={stroke} strokeWidth={sw} /><Line points={[-5, 5, 5, -5]} stroke={stroke} strokeWidth={sw} /></>
     case 'motor': // control unit box with the motor circle: M in a box
