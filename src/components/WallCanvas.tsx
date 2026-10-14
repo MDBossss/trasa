@@ -420,7 +420,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
             const isSel = el.id === selectedId
             return (
               <Group key={el.id} name={el.id} x={toX(p)} y={toY(p)} {...elementDrag(el)}>
-                <Symbol type={el.type} selected={isSel} px={px} modules={el.modules} swKind={el.switchKind} data={isData(el)} tv={el.socketKind === 'tv'} />
+                <Symbol type={el.type} selected={isSel} px={px} modules={el.modules} swKind={el.switchKind} data={isData(el)} tv={el.socketKind === 'tv'} count={el.count} />
                 {(() => {
                   const hosted = hostedOf(el.id)
                   const mods = hostedFront(project.elements, el.id)
@@ -506,7 +506,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
 }
 
 // IEC 60617-style symbols drawn in centimetres so they keep real-world size.
-function Symbol({ type, selected, px, modules, swKind, data, tv }: { type: ElementType; selected: boolean; px: (n: number) => number; modules?: number; swKind?: string; data?: boolean; tv?: boolean }) {
+function Symbol({ type, selected, px, modules, swKind, data, tv, count }: { type: ElementType; selected: boolean; px: (n: number) => number; modules?: number; swKind?: string; data?: boolean; tv?: boolean; count?: number }) {
   const stroke = selected ? '#1e88e5' : '#1f2430'
   const sw = px(2)
   const halo = selected ? <Circle radius={13} fill="rgba(30,136,229,0.18)" /> : null
@@ -535,7 +535,7 @@ function Symbol({ type, selected, px, modules, swKind, data, tv }: { type: Eleme
       return <>{halo}<Circle radius={3.5} fill="#fff" stroke={stroke} strokeWidth={sw} />{arms.map(arm)}</>
     }
     case 'light':
-      return <>{halo}<Circle radius={7} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-5, -5, 5, 5]} stroke={stroke} strokeWidth={sw} /><Line points={[-5, 5, 5, -5]} stroke={stroke} strokeWidth={sw} /></>
+      return <>{halo}<Circle radius={7} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-5, -5, 5, 5]} stroke={stroke} strokeWidth={sw} /><Line points={[-5, 5, 5, -5]} stroke={stroke} strokeWidth={sw} />{(count ?? 1) > 1 && <Text text={`×${count}`} x={8} y={2} fontSize={px(9)} fontStyle="bold" fill={stroke} />}</>
     case 'motor': // control unit box with the motor circle: M in a box
       return <>{halo}<Rect x={-11} y={-7} width={22} height={14} cornerRadius={2} fill="#fff" stroke={stroke} strokeWidth={sw} /><Circle x={-4} radius={3.5} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-6, 1.5, -4, -1.5, -2, 1.5]} stroke={stroke} strokeWidth={px(1.2)} /><Line points={[2, -4, 8, -4, 2, 4, 8, 4]} stroke={stroke} strokeWidth={px(1.2)} /></>
     case 'panel':

@@ -59,7 +59,13 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
       case 'switch':
         if (!e.host) add(out, 'Doze i kutije', `Doza Ø60${depth}`, 'kom', 1)
         add(out, 'Prekidači', `${e.switchKind === 'tipkalo' ? 'Tipkalo' : `Prekidač ${e.switchKind ?? 'obični'}`}${e.host ? ` ${e.modules ?? 1}M` : ''}`, 'kom', 1); break
-      case 'light': add(out, 'Svjetla', 'Svjetlo (rasvjetno mjesto)', 'kom', 1); break
+      case 'light': {
+        const n = Math.max(1, e.count ?? 1)
+        add(out, 'Svjetla', n > 1 ? 'Svjetiljka (lančano iz jednog izlaza)' : 'Svjetlo (rasvjetno mjesto)', 'kom', n)
+        // lamp-to-lamp links in the ceiling use the same cable as the one feeding the outlet
+        if (n > 1) { const feed = p.cables.find((c) => [c.from, c.to].some((x) => x.kind === 'element' && x.id === e.id)); add(out, 'Kabeli', feed?.type ?? 'NYM-J 3x1.5', 'm', (n - 1) * ((e.spacingM ?? 1) + RESERVE_M)) }
+        break
+      }
       case 'panel': add(out, 'Ostalo', ELEMENT_META.panel.label, 'kom', 1); break
       case 'relay': add(out, 'Releji', RELAY_MODELS[relayModelOf(e)].label, 'kom', 1); break
       case 'ledpsu': {

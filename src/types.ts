@@ -149,6 +149,9 @@ export interface WallElement {
   // light / LED supply powered by a relay output (1-based) instead of a classic switch
   feedRelayId?: string
   feedOutput?: number
+  // a light outlet that feeds several luminaires chained lamp to lamp in the ceiling (count, spacing in m)
+  count?: number
+  spacingM?: number
   // socket: schuko takes 2 modules in a frame, euro 1
   socketKind?: SocketKind
   // LED supply + strip in a niche
