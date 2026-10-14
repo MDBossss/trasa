@@ -52,7 +52,8 @@ pregledniku i vraćaju nakon osvježavanja.
    dimenzijama, žile u bojama po HD 308) izvedena iz nacrtanog: kabel vezan na kutiju dobije ulogu iz onoga što mu je na
    drugom kraju (utičnica, svjetlo, prekidač, bužir kategorije Dolaz = napajanje, bužir do kutije u drugoj sobi = prolaz),
    a žile se grupiraju na stezaljke L / N / PE / povratna / putne / parkirano. Na prekidaču označi **Pali svjetla** i vrstu
-   (obični, tipkalo, serijski, izmjenični, križni); ulogu kabela možeš ručno prepisati. **Korak po korak** vodi žilu po
+   (obični, tipkalo, serijski, izmjenični, križni; križni je član lanca s dva para putnih, pa se vidi
+   i izravni kabel doza–doza); ulogu kabela možeš ručno prepisati. **Korak po korak** vodi žilu po
    žilu (strelice ← →), desno je materijal po kutiji i provjere (kutija bez dolaza, prekidač bez svjetla, premalo žila…).
    Na dozi možeš označiti dubinu (plitka / duboka) za kasnije releje.
 10. **Pametna rasvjeta**: **Modularna doza (M)** je okvir (2M–7M) s dubinom; **Tipkalo (T)** i **Relej (R)** se

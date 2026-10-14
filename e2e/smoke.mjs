@@ -533,6 +533,24 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   await page.getByText('RJ45 keystone modul 1M', { exact: false }).first().waitFor()
   await page.evaluate(({ rj }) => { const s = window.__trasa.getState(); s.patchProject({ cables: s.project.cables.filter((c) => c.id !== rj.c1 && c.id !== rj.c2), elements: s.project.elements.filter((e) => e.id !== rj.d && e.id !== rj.r), conduits: s.project.conduits.filter((c) => c.id !== rj.cd) }); s.setView({ kind: 'junctions', elementId: null }) }, { rj })
 
+  // classic three-way chain: two-way at the ends, a cross switch in the middle, travellers on a direct frame-to-frame cable
+  const cx = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
+    const light = s.addElement({ roomId: room, wall: 0, type: 'light', xM: 2, zM: 2.6, note: '' }); s = window.__trasa.getState()
+    const lc = s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: light }, via: [], note: '' }); s = window.__trasa.getState()
+    const fr = [0.6, 1.4, 2.2].map((x) => { const d = s.addElement({ roomId: room, wall: 0, type: 'modbox', xM: x, zM: 1.05, modules: 3, note: '' }); s = window.__trasa.getState(); return d })
+    const kinds = ['izmjenicni', 'krizni', 'izmjenicni']
+    const sws = fr.map((d, i) => { const t = s.addElement({ roomId: room, wall: 0, type: 'switch', switchKind: kinds[i], xM: 0, zM: 1.05, note: '', host: d, controls: [light] }); s = window.__trasa.getState(); return t })
+    const feed = fr.map((d) => { const c = s.addCable({ roomId: room, wall: 0, type: 'NYM-J 5x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: d }, via: [], note: '' }); s = window.__trasa.getState(); return c })
+    const direct = s.addCable({ roomId: room, wall: 0, type: 'NYM-J 5x1.5', from: { kind: 'element', id: fr[1] }, to: { kind: 'element', id: fr[2] }, via: [], note: '' }); s = window.__trasa.getState()
+    const P = s.project
+    const need = (id) => { const n = E.cableNeeds(P.cables.find((c) => c.id === id), P); return n.signals.map((t) => E.terminalMeta(t, P).label).join(',') }
+    const mid = E.allJunctions(P).find((j) => j.box.id === fr[1])
+    return { feeds: feed.map(need), direct: need(direct), midPorts: mid.devices[0].ports.length, bad: E.allJunctions(P).filter((j) => fr.includes(j.box.id) || j.box.id === box).flatMap((j) => j.checks.filter((c) => c.level === 'err').map((c) => c.text)), ids: [light, lc, ...fr, ...sws, ...feed, direct] } }, ids)
+  assert.deepEqual(cx.feeds, ['L,N,PE,p1,p2', 'L,N,PE,p1,p2', 'L,N,PE,S'.replace('S', cx.feeds[2].split(',')[3])], 'first two frames get the first traveller pair, the last one only the return')
+  assert.equal(cx.direct, 'L,N,PE,p1′,p2′', 'the direct cable carries the second traveller pair')
+  assert.equal(cx.midPorts, 4, 'a cross switch has four terminals'); assert.deepEqual(cx.bad, [], 'no errors in the chain')
+  await page.evaluate(({ cx }) => { const s = window.__trasa.getState(); const drop = new Set(cx.ids); s.patchProject({ cables: s.project.cables.filter((c) => !drop.has(c.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) }) }, { cx })
+
   // an overfull box first grows along the catalogue of real boxes; a split is offered only when the entries run out
   const extra = await page.evaluate(({ box }) => { const s = window.__trasa.getState(); const room = s.project.rooms[0].id; const ids = []; for (let i = 0; i < 3; i++) { const u = s.addElement({ roomId: room, wall: 0, type: 'socket', xM: 0.3 + i * 0.4, zM: 0.3, note: '' }); ids.push(u, s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: u }, via: [], note: '' })) } return ids }, ids)
   await page.locator('.junctions-list .list li', { hasText: 'K1' }).click()

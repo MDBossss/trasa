@@ -5,7 +5,7 @@ import { wallExits } from './walls'
 // and which WAGO 221 connectors (or direct jumpers) that takes. Derived from the drawing, nothing is stored.
 //
 // Terminal ids ("signals"): L, N, PE, PARK, SW:<switch> (classic return), SW:<switch>:<k> (serijski),
-// SW:L:<light> + PUT1/PUT2:<light> (izmjenični), O:<relay>:<n> (relay output), I:<relay>:<i> (relay input).
+// SW:L:<light> + PUT1/PUT2:<light>:<segment> (izmjenični / križni lanac), O:<relay>:<n> (relay output), I:<relay>:<i> (relay input).
 
 export type Side = 'top' | 'bottom' | 'left' | 'right'
 export type Level = 'ok' | 'warn' | 'err'
@@ -174,17 +174,29 @@ function switchSignals(sw: WallElement, p: Project, checks: Check[], usable: num
     if (lights.length < 2) checks.push({ level: 'warn', text: `Serijski prekidač ${sw.label} treba dva svjetla.` })
     return [{ terminal: 'L', note: 'dovod' }, { terminal: `SW:${sw.id}:0`, note: 'povratna 1' }, { terminal: `SW:${sw.id}:1`, note: 'povratna 2' }]
   }
-  if (kind === 'izmjenicni') {
+  if (kind === 'izmjenicni' || kind === 'krizni') {
+    // classic multi-way chain: a two-way switch at each end, intermediate (cross) switches between them;
+    // pair i of travellers runs between chain[i] and chain[i+1], the last two-way returns the phase to the light
     const light = lights[0]
-    const partners = light ? p.elements.filter((e) => e.type === 'switch' && e.id !== sw.id && e.switchKind === 'izmjenicni' && e.controls?.includes(light.id)) : []
-    if (!partners.length) checks.push({ level: 'warn', text: `Izmjenični ${sw.label} nema par (drugi izmjenični koji pali isto svjetlo).` })
-    if (usable < 3) checks.push({ level: 'err', text: `Izmjenični ${sw.label} treba 3 žile bez PE (NYM-O 3×1,5).` })
-    const all = [sw, ...partners].sort((a, b) => a.label.localeCompare(b.label))
-    const isLast = all.length > 1 && all[all.length - 1].id === sw.id
     const key = light?.id ?? sw.id
-    return [isLast ? { terminal: `SW:L:${key}`, note: 'povratna → svjetlo' } : { terminal: 'L', note: 'dovod' }, { terminal: `PUT1:${key}`, note: 'putna 1' }, { terminal: `PUT2:${key}`, note: 'putna 2' }]
+    const byLabel = (x: WallElement, y: WallElement) => x.label.localeCompare(y.label)
+    const members = light ? p.elements.filter((e) => e.type === 'switch' && !e.relayId && (e.switchKind === 'izmjenicni' || e.switchKind === 'krizni') && e.controls?.includes(light.id)) : [sw]
+    const ends = members.filter((e) => e.switchKind === 'izmjenicni').sort(byLabel)
+    const mids = members.filter((e) => e.switchKind === 'krizni').sort(byLabel)
+    const chain = [ends[0], ...mids, ...ends.slice(1)].filter((e): e is WallElement => !!e)
+    const idx = chain.findIndex((e) => e.id === sw.id)
+    const put = (n: 1 | 2, seg: number, note: string) => ({ terminal: `PUT${n}:${key}:${seg}`, note })
+    if (kind === 'izmjenicni') {
+      if (ends.length < 2) checks.push({ level: 'warn', text: `Izmjenični ${sw.label} nema par (drugi izmjenični koji pali isto svjetlo).` })
+      if (usable < 3) checks.push({ level: 'err', text: `Izmjenični ${sw.label} treba 3 žile bez PE (NYM-O 3×1,5 ili 5×1,5).` })
+      const isLast = ends.length > 1 && chain[chain.length - 1].id === sw.id
+      const seg = isLast ? idx - 1 : idx
+      return [isLast ? { terminal: `SW:L:${key}`, note: 'povratna → svjetlo' } : { terminal: 'L', note: 'dovod' }, put(1, seg, 'putna 1'), put(2, seg, 'putna 2')]
+    }
+    if (ends.length < 2) checks.push({ level: 'warn', text: `Križni ${sw.label} treba dva izmjenična na krajevima lanca (isto svjetlo).` })
+    if (usable < 4) checks.push({ level: 'err', text: `Križni ${sw.label} treba 4 žile bez PE (5×1,5).` })
+    return [put(1, idx - 1, 'putna 1 ulaz'), put(2, idx - 1, 'putna 2 ulaz'), put(1, idx, 'putna 1 izlaz'), put(2, idx, 'putna 2 izlaz')]
   }
-  checks.push({ level: 'warn', text: `Križni ${sw.label}: putne žile idu izravno između prekidača, u kutiji nema spoja.` })
   return []
 }
 
@@ -274,7 +286,7 @@ export function devicesIn(place: WallElement, p: Project): Device[] {
       }
       if (isData(e)) { const m = DATA_META[e.socketKind as 'rj45' | 'tv']; return { el: e, label: `${e.label} ${m.name}`, ports: [m.port], wMm: 14, hMm: 18, kind: 'socket' as const } }
       if (e.type === 'socket') { const k = SOCKET_KINDS[e.socketKind ?? 'schuko']; return { el: e, label: `${e.label} ${k.label.toLowerCase()} utičnica`, ports: ['L', 'N', 'PE', 'L′', 'N′', 'PE′'], wMm: Math.max(24, k.modules * 11), hMm: 18, kind: 'socket' as const } }
-      return { el: e, label: `${e.label} ${(e.switchKind ?? 'obicni') === 'tipkalo' ? 'tipkalo' : 'prekidač'}${(e.modules ?? 1) > 1 ? ` ${e.modules}M` : ''}`, ports: ['1', '2', '3'].slice(0, (e.switchKind === 'serijski' || e.switchKind === 'izmjenicni') ? 3 : 2), wMm: Math.max(14, (e.modules ?? 1) * 11), hMm: 18, kind: 'button' as const }
+      return { el: e, label: `${e.label} ${(e.switchKind ?? 'obicni') === 'tipkalo' ? 'tipkalo' : 'prekidač'}${(e.modules ?? 1) > 1 ? ` ${e.modules}M` : ''}`, ports: ['1', '2', '3', '4'].slice(0, e.switchKind === 'krizni' ? 4 : (e.switchKind === 'serijski' || e.switchKind === 'izmjenicni') ? 3 : 2), wMm: Math.max(14, (e.modules ?? 1) * 11), hMm: 18, kind: 'button' as const }
     })
 }
 
@@ -320,7 +332,8 @@ function devicePorts(d: Device, p: Project, checks: Check[]): PortMember[] {
     if (i < chain.length - 1) { const nx = chain[i + 1]; for (const pole of ['L', 'N', 'PE'] as const) out.push({ port: `${pole}′`, terminal: `CH:${pole}:${d.el.id}`, color: pole === 'L' ? 'brown' : pole === 'N' ? 'blue' : 'gnye', note: `dalje na ${nx.label}` }) }
     return out
   }
-  const sig = switchSignals(d.el, p, checks, 3)
+  // a hosted switch has no cable of its own: the frame's cables are checked by crossWires, so no core limit here
+  const sig = switchSignals(d.el, p, checks, Infinity)
   if (!sig.length) return out
   return sig.map((s, i) => ({ port: `${i + 1}`, terminal: s.terminal, color: i === 0 && s.terminal === 'L' ? 'brown' : 'black', note: s.note }))
 }
@@ -454,7 +467,7 @@ export function terminalMeta(id: string, p: Project): { label: string; desc: str
   if (id.startsWith('PARK')) return spareCoresOf(p) === 'cap' ? { label: '·', desc: 'rezerva' } : { label: '·', desc: 'parkirano' }
   const [kind, a, b] = id.split(':')
   if (kind === 'CH') return { label: a, desc: `provlačenje ${el(p, b)?.label ?? ''} → sljedeća utičnica` }
-  if (kind === 'PUT1' || kind === 'PUT2') return { label: kind === 'PUT1' ? 'p1' : 'p2', desc: `putna ${kind.slice(-1)} · ${el(p, a)?.label ?? '?'}` }
+  if (kind === 'PUT1' || kind === 'PUT2') { const seg = +(b ?? 0); return { label: `${kind === 'PUT1' ? 'p1' : 'p2'}${"′".repeat(seg)}`, desc: `putna ${kind.slice(-1)}${seg ? ` · dionica ${seg + 1}` : ''} · ${el(p, a)?.label ?? '?'}` } }
   if (kind === 'O') { const r = el(p, a); const lights = p.elements.filter((e) => e.feedRelayId === a && (e.feedOutput ?? 1) === +b); return { label: lights.map((l) => l.label).join('+') || `O${b}`, desc: `${r?.label ?? 'relej'} izlaz ${b} → svjetlo` } }
   if (kind === 'I') { const r = el(p, a); return { label: `SW${b}`, desc: `${r?.label ?? 'relej'} ulaz ${b} ← tipkalo` } }
   if (a === '?') return { label: '?', desc: `${el(p, b)?.label ?? 'svjetlo'} bez prekidača` }
