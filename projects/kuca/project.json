@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-14T21:46:03.951Z",
+ "savedAt": "2026-10-14T21:57:19.189Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -3505,6 +3505,105 @@
     "id": "p43gwmu4",
     "label": "U61",
     "slotOrder": 1
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 1,
+    "type": "switch",
+    "xM": 2.09,
+    "zM": 1.28,
+    "note": "",
+    "host": "any2qxx5",
+    "id": "3u4d7yj4",
+    "label": "P11",
+    "slotOrder": 1,
+    "modules": 2,
+    "controls": [
+     "c7bowyx1"
+    ]
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 2,
+    "type": "light",
+    "xM": 1.4300000000000002,
+    "zM": 2.24,
+    "note": "",
+    "id": "c7bowyx1",
+    "label": "S8",
+    "count": 1
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 1,
+    "type": "socket",
+    "xM": 2,
+    "zM": 0.69,
+    "note": "",
+    "host": "g3k766kd",
+    "id": "hemlfp2x",
+    "label": "U62",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 1,
+    "type": "socket",
+    "xM": 2,
+    "zM": 0.69,
+    "note": "",
+    "host": "g3k766kd",
+    "id": "guqks1vh",
+    "label": "U63",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 1,
+    "type": "socket",
+    "xM": 2.52,
+    "zM": 0.69,
+    "note": "",
+    "host": "1evtib3a",
+    "id": "slzyz7mp",
+    "label": "U64",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 1,
+    "type": "socket",
+    "xM": 2.52,
+    "zM": 0.69,
+    "note": "",
+    "host": "1evtib3a",
+    "id": "v58m1rlv",
+    "label": "U65",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 2,
+    "type": "socket",
+    "xM": 0.64,
+    "zM": 1.37,
+    "note": "",
+    "host": "1zcchwss",
+    "id": "4udhme7z",
+    "label": "U66",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 2,
+    "type": "socket",
+    "xM": 0.64,
+    "zM": 1.37,
+    "note": "",
+    "host": "1zcchwss",
+    "id": "w0lqnqr9",
+    "label": "U67",
+    "slotOrder": 1
    }
   ],
   "cables": [
@@ -5083,6 +5182,23 @@
     "via": [],
     "note": "",
     "id": "acw98fsd"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 2,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "c7bowyx1"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "ye0vjx37",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "ncwdtkp0"
    }
   ],
   "categories": [
@@ -5192,7 +5308,7 @@
   "view": {
    "kind": "room",
    "roomId": "j5g1ml5l",
-   "wall": 3
+   "wall": 2
   }
  }
 }
