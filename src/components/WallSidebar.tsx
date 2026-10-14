@@ -170,13 +170,6 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
                 </select>
               </label>
               {!el.feedRelayId && <div className="stat"><span>Pali ga</span><b>{controllers(el.id).map((s) => s.label).join(', ') || '—'}</b><span className="muted">označi na prekidaču</span></div>}
-              {el.type === 'light' && (
-                <div className="row2">
-                  <label>Svjetiljki<input type="number" min={1} max={30} value={el.count ?? 1} onChange={(e) => updateElement(el.id, { count: Math.max(1, +e.target.value || 1) })} /></label>
-                  <label>Razmak (m)<input type="number" min={0.2} max={5} step={0.1} value={el.spacingM ?? 1} disabled={(el.count ?? 1) < 2} onChange={(e) => updateElement(el.id, { spacingM: Math.max(0.2, +e.target.value || 1) })} /></label>
-                </div>
-              )}
-              {el.type === 'light' && (el.count ?? 1) > 1 && <p className="muted small">Iz ovog izlaza jedan kabel do prve svjetiljke, dalje lančano kroz stezaljku svake: još {((el.count ?? 1) - 1)} × {(el.spacingM ?? 1).toFixed(1)} m u stropu, ide u materijal.</p>}
             </>
           )}
           {el.type === 'motor' && (

@@ -654,7 +654,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   const data = isData(el)
   const dm = data ? DATA_META[el.socketKind as 'rj45' | 'tv'] : null
   const ports = el.type === 'motor' ? ['L', 'N', 'PE', 'IMP 1', 'IMP 2'] : dm ? [dm.port] : ['L', 'N', 'PE']
-  const name = el.type === 'light' ? ((el.count ?? 1) > 1 ? `prva od ${el.count} svjetiljki, dalje lančano` : 'svjetiljka') : el.type === 'motor' ? 'upravljačka jedinica' : dm ? dm.name : 'utičnica'
+  const name = el.type === 'light' ? 'svjetiljka' : el.type === 'motor' ? 'upravljačka jedinica' : dm ? dm.name : 'utičnica'
   const device: Device = { el, label: `${el.label} ${name}`, ports, wMm: Math.max(24, ports.length * 8), hMm: 16, kind: 'terminal' }
   const cables: BoxCable[] = p.cables
     .filter((c) => isAtBox(c, el))

@@ -410,7 +410,3 @@ h3 .mini-note { margin-left: auto; text-transform: none; letter-spacing: 0; font
 .sbox:hover .sbox-head b { color: var(--accent); }
 .split-note { margin: 8px 12px 0; }
 .split-note button { margin-left: auto; }
-
-.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.row2 label { display: flex; flex-direction: column; gap: 4px; }
-.row2 input { min-width: 0; width: 100%; }
