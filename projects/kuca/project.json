@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-13T19:33:58.534Z",
+ "savedAt": "2026-10-14T21:46:03.951Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -3308,6 +3308,203 @@
     "id": "fzqnq3is",
     "label": "U53",
     "slotOrder": 1
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 1,
+    "type": "switch",
+    "xM": 2.09,
+    "zM": 1.28,
+    "note": "",
+    "host": "any2qxx5",
+    "switchKind": "izmjenicni",
+    "id": "e4ocfio4",
+    "label": "P6",
+    "slotOrder": 0,
+    "modules": 2,
+    "controls": [
+     "cpk2m94g"
+    ]
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "switch",
+    "xM": 3.1,
+    "zM": 0.77,
+    "note": "",
+    "host": "v5x462mf",
+    "switchKind": "krizni",
+    "id": "f6gcg1h3",
+    "label": "P7",
+    "slotOrder": 0,
+    "controls": [
+     "cpk2m94g"
+    ]
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "switch",
+    "xM": 1.66,
+    "zM": 0.77,
+    "note": "",
+    "host": "h27ye5zs",
+    "switchKind": "izmjenicni",
+    "id": "9lzs6yhj",
+    "label": "P8",
+    "slotOrder": 2,
+    "controls": [
+     "cpk2m94g"
+    ]
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "light",
+    "xM": 1.5999999999999994,
+    "zM": 1.07,
+    "note": "",
+    "id": "qk27oay9",
+    "label": "S6"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "light",
+    "xM": 3.14,
+    "zM": 1.07,
+    "note": "",
+    "id": "96xkr415",
+    "label": "S7"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "switch",
+    "xM": 1.66,
+    "zM": 0.77,
+    "note": "",
+    "host": "h27ye5zs",
+    "id": "8bjxy71w",
+    "label": "P9",
+    "slotOrder": 1,
+    "controls": [
+     "qk27oay9"
+    ]
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "socket",
+    "xM": 1.66,
+    "zM": 0.77,
+    "note": "",
+    "host": "h27ye5zs",
+    "id": "bf6zukpi",
+    "label": "U54",
+    "slotOrder": 0,
+    "socketKind": "euro"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "switch",
+    "xM": 3.1,
+    "zM": 0.77,
+    "note": "",
+    "host": "v5x462mf",
+    "id": "7dgt7sr7",
+    "label": "P10",
+    "slotOrder": 1,
+    "controls": [
+     "96xkr415"
+    ]
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "socket",
+    "xM": 3.1,
+    "zM": 0.77,
+    "note": "",
+    "host": "v5x462mf",
+    "id": "qbfjswz4",
+    "label": "U55",
+    "slotOrder": 2,
+    "socketKind": "euro"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "socket",
+    "xM": 1.63,
+    "zM": 0.51,
+    "note": "",
+    "host": "zt3wq4pu",
+    "id": "tj4ypyz5",
+    "label": "U56",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "socket",
+    "xM": 1.63,
+    "zM": 0.51,
+    "note": "",
+    "host": "zt3wq4pu",
+    "id": "r6v2a0ol",
+    "label": "U57",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "socket",
+    "xM": 3.14,
+    "zM": 0.51,
+    "note": "",
+    "host": "2qnvq51i",
+    "id": "juxjokih",
+    "label": "U58",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "socket",
+    "xM": 3.14,
+    "zM": 0.51,
+    "note": "",
+    "host": "2qnvq51i",
+    "id": "b0l5zjvh",
+    "label": "U59",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "socket",
+    "xM": 0.53,
+    "zM": 0.51,
+    "note": "",
+    "host": "hhtldqug",
+    "id": "sou2app2",
+    "label": "U60",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "socket",
+    "xM": 0.53,
+    "zM": 0.51,
+    "note": "",
+    "host": "hhtldqug",
+    "id": "p43gwmu4",
+    "label": "U61",
+    "slotOrder": 1
    }
   ],
   "cables": [
@@ -4384,7 +4581,7 @@
    {
     "roomId": "j5g1ml5l",
     "wall": 1,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 5x1.5",
     "from": {
      "kind": "element",
      "id": "so7y5w67"
@@ -4417,7 +4614,7 @@
    {
     "roomId": "j5g1ml5l",
     "wall": 1,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 5x1.5",
     "from": {
      "kind": "element",
      "id": "mqzav1si"
@@ -4527,7 +4724,7 @@
    {
     "roomId": "j5g1ml5l",
     "wall": 1,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 7x1.5",
     "from": {
      "kind": "element",
      "id": "so7y5w67"
@@ -4578,7 +4775,7 @@
    {
     "roomId": "j5g1ml5l",
     "wall": 3,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 7x1.5",
     "from": {
      "kind": "exit",
      "conduitId": "27xc6393",
@@ -4604,7 +4801,7 @@
    {
     "roomId": "j5g1ml5l",
     "wall": 3,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 7x1.5",
     "from": {
      "kind": "element",
      "id": "pvh3a7sm"
@@ -4636,7 +4833,7 @@
    {
     "roomId": "j5g1ml5l",
     "wall": 3,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 7x1.5",
     "from": {
      "kind": "element",
      "id": "pvh3a7sm"
@@ -4652,7 +4849,7 @@
    {
     "roomId": "j5g1ml5l",
     "wall": 3,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 7x1.5",
     "from": {
      "kind": "element",
      "id": "4xh06zxz"
@@ -4854,6 +5051,38 @@
     "via": [],
     "note": "",
     "id": "5uq6eao5"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "h27ye5zs"
+    },
+    "to": {
+     "kind": "element",
+     "id": "qk27oay9"
+    },
+    "via": [],
+    "note": "",
+    "id": "1dytqbhf"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "96xkr415"
+    },
+    "to": {
+     "kind": "element",
+     "id": "v5x462mf"
+    },
+    "via": [],
+    "note": "",
+    "id": "acw98fsd"
    }
   ],
   "categories": [
@@ -4963,7 +5192,7 @@
   "view": {
    "kind": "room",
    "roomId": "j5g1ml5l",
-   "wall": 1
+   "wall": 3
   }
  }
 }
