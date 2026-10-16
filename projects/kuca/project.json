@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-16T20:04:11.199Z",
+ "savedAt": "2026-10-16T20:06:36.104Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -1454,8 +1454,8 @@
       "y": 1599.204878085176
      },
      {
-      "x": 877.906981697958,
-      "y": 1581.1332475900913
+      "x": 877.9723260859475,
+      "y": 1566.3980880984584
      }
     ],
     "from": "",
@@ -1463,7 +1463,8 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "start": 2.18
+     "start": 2.18,
+     "end": 2
     }
    },
    {
@@ -1473,8 +1474,8 @@
     "diameter": 20,
     "points": [
      {
-      "x": 876.7755394917509,
-      "y": 1566.4244989093986
+      "x": 876.8358893383959,
+      "y": 1552.815608490971
      },
      {
       "x": 907.9133826954123,
@@ -1484,7 +1485,10 @@
     "from": "",
     "to": "",
     "note": "",
-    "categoryId": "todo"
+    "categoryId": "todo",
+    "exitZ": {
+     "start": 2
+    }
    }
   ],
   "rooms": [
@@ -5252,6 +5256,41 @@
     "via": [],
     "note": "",
     "id": "ncwdtkp0"
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 3,
+    "type": "PE Cu 16 mm²",
+    "from": {
+     "kind": "element",
+     "id": "9nas1akx"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "smrgpimc",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "9n6tas77"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "PE Cu 16 mm²",
+    "from": {
+     "kind": "exit",
+     "conduitId": "smrgpimc",
+     "end": "end"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "o1kxxk1i",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "vhdbtru6"
    }
   ],
   "categories": [
@@ -5360,8 +5399,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "xyw3llcm",
-   "wall": 3
+   "roomId": "c2b55x6m",
+   "wall": 1
   }
  }
 }
