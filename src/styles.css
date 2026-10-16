@@ -53,7 +53,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
 .menu-sep { height: 1px; background: var(--line); margin: 4px 0; }
 
 /* tool rail */
-.tool-rail { width: 52px; background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; padding: 8px 0; gap: 8px; }
+.tool-rail { width: 52px; background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; padding: 8px 0; gap: 6px; overflow-y: auto; scrollbar-width: none; }
 .tool-group { display: flex; flex-direction: column; gap: 2px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
 .tool-group:last-child { border-bottom: none; }
 .tool { position: relative; width: 40px; height: 40px; padding: 0; justify-content: center; border-color: transparent; background: transparent; }

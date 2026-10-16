@@ -7,6 +7,7 @@ export interface WallToolDef { id: WallTool; type?: ElementType; switchKind?: 't
 export const WALL_TOOLS: WallToolDef[] = [
   { id: 'select', label: 'Odaberi', key: 'V', icon: 'cursor', hint: 'Klik označi · vuci element, izlaz bužira ili točku kabela · Alt = bez snapa · Delete briše' },
   { id: 'pan', label: 'Pomakni', key: 'H', icon: 'hand', hint: 'Vuci platno · ili drži Space · kotačić zumira' },
+  { id: 'cable', label: 'Kabel', key: 'C', icon: 'cable', hint: 'Klik na izlaz bužira ili element počinje · klikovi dodaju lomove · klik na element završi · klik na rub zida = kut, nastavak na susjednom zidu · Enter = slobodan kraj' },
   { id: 'element', type: 'box', label: ELEMENT_META.box.label, key: 'K', icon: 'box', hint: 'Klik postavi kutiju · Esc natrag na Odaberi' },
   { id: 'element', type: 'socket', label: ELEMENT_META.socket.label, key: 'U', icon: 'socket', hint: 'Klik postavi utičnicu · klik na modularnu dozu stavi je u nju' },
   { id: 'element', type: 'switch', label: ELEMENT_META.switch.label, key: 'P', icon: 'switch', hint: 'Klik postavi prekidač · klik na modularnu dozu stavi ga u nju' },
@@ -18,7 +19,6 @@ export const WALL_TOOLS: WallToolDef[] = [
   { id: 'element', type: 'ledpsu', label: ELEMENT_META.ledpsu.label, key: 'N', icon: 'led', hint: 'Klik postavi LED nišu (traka 24 V + napajanje)' },
   { id: 'element', type: 'motor', label: ELEMENT_META.motor.label, key: 'D', icon: 'motor', hint: 'Klik postavi upravljačku jedinicu vrata (rolo / sekcijska): L N PE + impuls sa Shellyja' },
   { id: 'element', type: 'kip', label: ELEMENT_META.kip.label, key: 'Z', icon: 'earth', hint: 'Klik postavi KIP (glavno uzemljenje): traka iz temelja, Cu 16 do ormara, Cu 6 izjednačenje' },
-  { id: 'cable', label: 'Kabel', key: 'C', icon: 'cable', hint: 'Klik na izlaz bužira ili element počinje · klikovi dodaju lomove · klik na element završi · klik na rub zida = kut, nastavak na susjednom zidu · Enter = slobodan kraj' },
 ]
 
 const GROUPS: number[][] = [[0, 1], [2, 3, 4, 5, 6, 7], [8, 9, 10, 11], [12]]
