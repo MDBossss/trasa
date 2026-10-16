@@ -699,7 +699,8 @@ function kipJunctionFor(el: WallElement, p: Project): Junction {
   const checks: Check[] = []
   const resolved = p.cables.filter((c) => isAtBox(c, el)).map((c) => resolveCable(c, el, p))
   const short = (r: Omit<BoxCable, 'wires' | 'side' | 'order'>) => (r.far.element?.type === 'panel' ? 'RO' : (r.cable.note || r.far.element?.label || 'IP').slice(0, 8))
-  const ports = ['FeZn', ...resolved.map(short)]
+  const seen = new Map<string, number>()
+  const ports = ['FeZn', ...resolved.map(short).map((n) => { const k = (seen.get(n) ?? 0) + 1; seen.set(n, k); return k > 1 ? `${n} ${k}` : n })]
   const device: Device = { el, label: `${el.label} sabirnica za izjednačenje potencijala`, ports, wMm: Math.max(40, ports.length * 9), hMm: 16, kind: 'terminal' }
   const cables: BoxCable[] = resolved.map((r, i) => {
     const sect = sectionOf(r.cable.type)

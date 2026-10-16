@@ -241,7 +241,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
               const cx = x + mm(pitch * (i + 0.5))
               const py = pl.flip ? y : y + mm(pl.h) - mm(3)
               return (
-                <g key={p}>
+                <g key={`${p}#${i}`}>
                   <rect x={cx - mm(1.6)} y={py} width={mm(3.2)} height={mm(3)} fill="#111" />
                   <text x={cx} y={pl.flip ? y + mm(6.5) : y + mm(pl.h) - mm(4)} textAnchor="middle" fontSize={7.5} fill={look.text}>{p}</text>
                 </g>
