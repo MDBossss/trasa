@@ -551,6 +551,21 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   assert.equal(cx.midPorts, 4, 'a cross switch has four terminals'); assert.deepEqual(cx.bad, [], 'no errors in the chain')
   await page.evaluate(({ cx }) => { const s = window.__trasa.getState(); const drop = new Set(cx.ids); s.patchProject({ cables: s.project.cables.filter((c) => !drop.has(c.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) }) }, { cx })
 
+  // main earthing terminal: FeZn tail on a busbar, Cu 16 to the board, Cu 6 bonding; sections are checked
+  const kp = await page.evaluate(() => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
+    const kip = s.addElement({ roomId: room, wall: 0, type: 'kip', xM: 0.4, zM: 1, note: '' }); const ro = s.addElement({ roomId: room, wall: 0, type: 'panel', xM: 1.2, zM: 1.5, note: '' }); s = window.__trasa.getState()
+    const c1 = s.addCable({ roomId: room, wall: 0, type: 'PE Cu 16 mm²', from: { kind: 'element', id: kip }, to: { kind: 'element', id: ro }, via: [], note: '' }); s = window.__trasa.getState()
+    const c2 = s.addCable({ roomId: room, wall: 0, type: 'PE Cu 6 mm²', from: { kind: 'element', id: kip }, to: { kind: 'free', xM: 0.2, zM: 0.3 }, via: [], note: 'vodovod' }); s = window.__trasa.getState()
+    const ok = E.allLeafJunctions(s.project).find((j) => j.box.id === kip)
+    s.updateCable(c1, { type: 'PE Cu 6 mm²' }); s = window.__trasa.getState()
+    const thin = E.allLeafJunctions(s.project).find((j) => j.box.id === kip)
+    return { ports: ok.devices[0].ports, okLevels: ok.checks.map((c) => c.level), thinErr: thin.checks.filter((c) => c.level === 'err').map((c) => c.text), ids: [kip, ro, c1, c2] } })
+  assert.deepEqual(kp.ports, ['FeZn', 'RO', 'vodovod']); assert.ok(!kp.okLevels.includes('err') && !kp.okLevels.includes('warn'), 'a complete KIP has no complaints')
+  assert.ok(kp.thinErr.some((t) => /16 mm²/.test(t)), 'a thin main earthing conductor is an error')
+  await page.evaluate(() => window.__trasa.getState().setView({ kind: 'bom' }))
+  await page.getByText('KIP kutija za izjednačenje potencijala', { exact: false }).first().waitFor()
+  await page.evaluate(({ kp }) => { const s = window.__trasa.getState(); const drop = new Set(kp.ids); s.patchProject({ cables: s.project.cables.filter((c) => !drop.has(c.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) }); s.setView({ kind: 'junctions', elementId: null }) }, { kp })
+
   // an overfull box first grows along the catalogue of real boxes; a split is offered only when the entries run out
   const extra = await page.evaluate(({ box }) => { const s = window.__trasa.getState(); const room = s.project.rooms[0].id; const ids = []; for (let i = 0; i < 3; i++) { const u = s.addElement({ roomId: room, wall: 0, type: 'socket', xM: 0.3 + i * 0.4, zM: 0.3, note: '' }); ids.push(u, s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: u }, via: [], note: '' })) } return ids }, ids)
   await page.locator('.junctions-list .list li', { hasText: 'K1' }).click()

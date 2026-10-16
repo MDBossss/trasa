@@ -23,7 +23,7 @@ const entryOf = (side: Side, i: number, n: number, W: number, H: number) => {
 // Size of the drawing's viewBox, for layouts that need the aspect ratio before rendering.
 export function junctionViewBox(j: Junction): { w: number; h: number } {
   const lay = boxLayout(j)
-  return { w: OX + lay.W * S + 150, h: OY + lay.H * S + (j.cables.some((c) => c.side === 'bottom') ? 200 : 60) }
+  return { w: OX + lay.W * S + 150, h: OY + lay.H * S + (j.cables.some((c) => c.side === 'bottom') || j.box.type === 'kip' ? 200 : 60) }
 }
 
 // Where each cable's sheath leaves the drawing (svg coordinates) and the box centre, for the room board.
@@ -69,7 +69,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
   const placedWago = (t: Terminal) => lay.placed.find((p): p is Placed & { kind: 'wago' } => p.kind === 'wago' && p.t.id === t.id)
   const placedDev = (id: string) => lay.placed.find((p): p is Placed & { kind: 'device' } => p.kind === 'device' && p.d.el.id === id)
   const vbW = OX + mm(W) + 150
-  const vbH = OY + mm(H) + (sides.bottom.length ? 200 : 60)
+  const vbH = OY + mm(H) + (sides.bottom.length || j.box.type === 'kip' ? 200 : 60)
   const [bx, by] = px(0, 0)
   const idx = (k: string) => plan.findIndex((w) => w.key === k)
   const wireState = (k: string) => {
@@ -153,6 +153,22 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
         })}
       </g>
 
+      {j.box.type === 'kip' && (() => {
+        const pd = placedDev(j.box.id)
+        if (!pd) return null
+        const fe = devPort(pd, 'FeZn')
+        const [fx, fy] = px(fe.x, fe.y)
+        const [, by2] = px(0, H + 40)
+        return (
+          <g>
+            <rect x={fx - mm(12.5)} y={fy} width={mm(25)} height={by2 - fy} fill="#9aa0a8" stroke="#5f6670" strokeWidth={1.2} />
+            <rect x={fx - mm(12.5)} y={fy} width={mm(25)} height={mm(4)} fill="#c9a227" stroke="#8a6d10" strokeWidth={1} />
+            <circle cx={fx} cy={fy + mm(2)} r={mm(1.6)} fill="#6b5410" />
+            <text x={fx} y={by2 + 14} textAnchor="middle" fontSize={11} fontWeight={600} fill="currentColor">traka FeZn 25 × 4 iz temelja</text>
+            <text x={fx} y={by2 + 27} textAnchor="middle" fontSize={10} fill="var(--muted)">temeljni uzemljivač · vijak M10, mjedena podloška</text>
+          </g>
+        )
+      })()}
       {lay.placed.map((pl, pi) => {
         const [x, y] = px(pl.x, pl.y)
         const rowIdx = lay.placed.filter((q, qi) => qi < pi && q.flip === pl.flip && Math.abs(q.y - pl.y) < 20).length
@@ -239,8 +255,8 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
         )
       })}
 
-      <line x1={bx} y1={by + mm(H + 8) + 6} x2={bx + mm(20)} y2={by + mm(H + 8) + 6} stroke="currentColor" strokeWidth={1.5} />
-      <text x={bx + mm(20) + 6} y={by + mm(H + 8) + 10} fontSize={10} fill="var(--muted)">20 mm · {j.box.type === 'box' ? `kutija ${boxSizeLabel(W, H)}` : `${W} × ${H} mm`}{lay.overflow ? (j.box.type === 'box' ? ' (10 × 10 je premala)' : ' (standardna je premala)') : ''}</text>
+      <line x1={bx + (j.box.type === 'kip' ? mm(40) : 0)} y1={by + mm(H + 8) + 6} x2={bx + (j.box.type === 'kip' ? mm(40) : 0) + mm(20)} y2={by + mm(H + 8) + 6} stroke="currentColor" strokeWidth={1.5} />
+      <text x={bx + (j.box.type === 'kip' ? mm(40) : 0) + mm(20) + 6} y={by + mm(H + 8) + 10} fontSize={10} fill="var(--muted)">20 mm · {j.box.type === 'box' ? `kutija ${boxSizeLabel(W, H)}` : `${W} × ${H} mm`}{lay.overflow ? (j.box.type === 'box' ? ' (10 × 10 je premala)' : ' (standardna je premala)') : ''}</text>
     </svg>
   )
 }
@@ -248,7 +264,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
 function roleShort(c: BoxCable) {
   if (c.role === 'lowv' && /utp|ftp|cat\s?[5-8]/i.test(c.sub)) return 'internet'
   if (c.role === 'lowv' && /koaks|coax|rg-?6/i.test(c.sub)) return 'antena'
-  return ({ feed: 'dolaz', pass: 'prolaz', socket: 'utičnica', light: 'svjetlo', motor: 'vrata', switch: 'prekidač', lowv: 'slaba struja', unknown: '?' } as Record<string, string>)[c.role]
+  return ({ feed: 'dolaz', pass: 'prolaz', socket: 'utičnica', light: 'svjetlo', motor: 'vrata', switch: 'prekidač', lowv: 'slaba struja', earth: 'uzemljenje', unknown: '?' } as Record<string, string>)[c.role]
 }
 
 export const wireSwatch = (c: WireColor) => (c === 'gnye' ? 'repeating-linear-gradient(90deg,#2e8b3a 0 3px,#f2d31b 3px 6px)' : WIRE_HEX[c])

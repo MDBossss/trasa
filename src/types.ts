@@ -50,7 +50,7 @@ export interface Wall {
   photo?: string
 }
 
-export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'motor'
+export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'motor' | 'kip'
 
 // Smart relays that sit in a box: inputs are SW terminals, outputs are O terminals.
 export type RelayModel = 'gen4' | 'zbminir2' | 'rgbw'
@@ -75,6 +75,8 @@ export const SOCKET_KINDS: Record<SocketKind, { label: string; modules: number }
 export const DATA_KINDS: SocketKind[] = ['rj45', 'tv']
 export const isData = (e: { type: ElementType; socketKind?: SocketKind } | undefined) => !!e && e.type === 'socket' && DATA_KINDS.includes(e.socketKind ?? 'schuko')
 export const isUtp = (type: string) => /utp|ftp|cat\s?[5-8]/i.test(type)
+// cross-section of a cable type in mm² (NYM 3x1.5 → 1.5, PE Cu 16 mm² → 16)
+export const sectionOf = (type: string) => { const m = /(\d+(?:[.,]\d+)?)\s*(?:mm|$)/.exec(type.replace(/^.*[x×]/, '')); return m ? +m[1].replace(',', '.') : 0 }
 export const isCoax = (type: string) => /koaks|coax|rg-?6|rg-?59/i.test(type)
 // which data outlet a signal cable lands on
 export const dataKindOf = (type: string): SocketKind | null => (isUtp(type) ? 'rj45' : isCoax(type) ? 'tv' : null)
@@ -177,9 +179,9 @@ export interface Cable {
   role?: CableRole
 }
 
-export type CableRole = 'auto' | 'feed' | 'pass' | 'socket' | 'light' | 'switch' | 'motor' | 'lowv'
+export type CableRole = 'auto' | 'feed' | 'pass' | 'socket' | 'light' | 'switch' | 'motor' | 'lowv' | 'earth'
 export const CABLE_ROLES: Record<Exclude<CableRole, 'auto'>, string> = {
-  feed: 'Dolaz (napajanje)', pass: 'Prolaz u drugu kutiju', socket: 'Utičnica', light: 'Svjetlo', switch: 'Prekidač', motor: 'Vrata / motor (napajanje + impuls)', lowv: 'Slaba struja',
+  feed: 'Dolaz (napajanje)', pass: 'Prolaz u drugu kutiju', socket: 'Utičnica', light: 'Svjetlo', switch: 'Prekidač', motor: 'Vrata / motor (napajanje + impuls)', lowv: 'Slaba struja', earth: 'Uzemljenje / izjednačenje potencijala',
 }
 
 export type WireColor = 'brown' | 'blue' | 'gnye' | 'black' | 'grey' | 'black2' | 'grey2' | 'other'
@@ -187,6 +189,8 @@ export type WireColor = 'brown' | 'blue' | 'gnye' | 'black' | 'grey' | 'black2' 
 export function coreColors(type: string): WireColor[] {
   const t = type.toLowerCase()
   if (/utp|koaks|zvono|ostalo/.test(t)) return []
+  // single green-yellow protective conductor (H07V-K) pulled through a conduit
+  if (/^pe\b/.test(t)) return ['gnye']
   const m = /(\d)\s*[x×]/.exec(t)
   const n = m ? +m[1] : 3
   if (t.includes('nym-o')) return n <= 3 ? ['brown', 'black', 'grey'] : ['brown', 'black', 'grey', 'black2']
@@ -198,7 +202,7 @@ export function coreColors(type: string): WireColor[] {
 export const WIRE_LABEL: Record<WireColor, string> = { brown: 'smeđa', blue: 'plava', gnye: 'žuto-zelena', black: 'crna', grey: 'siva', black2: 'crna 2', grey2: 'siva 2', other: 'UTP' }
 export const WIRE_HEX: Record<WireColor, string> = { brown: '#6b3a1e', blue: '#1f4fb3', gnye: '#2e8b3a', black: '#222', grey: '#8c8c8c', black2: '#3a3a3a', grey2: '#a5a5a5', other: '#4a90d9' }
 
-export const CABLE_TYPES = ['NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-O 3x1.5', 'NYM-J 5x1.5', 'NYM-J 5x2.5', 'NYM-J 7x1.5', 'NYM-J 4x1.5', 'UTP cat6', 'koaks', 'zvono 2x0.75', 'ostalo']
+export const CABLE_TYPES = ['NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-O 3x1.5', 'NYM-J 5x1.5', 'NYM-J 5x2.5', 'NYM-J 7x1.5', 'NYM-J 4x1.5', 'PE Cu 16 mm²', 'PE Cu 6 mm²', 'UTP cat6', 'koaks', 'zvono 2x0.75', 'ostalo']
 
 export const ELEMENT_META: Record<ElementType, { label: string; key: string; prefix: string; zM: number }> = {
   box: { label: 'Razvodna kutija', key: 'K', prefix: 'K', zM: 2.3 },
@@ -211,6 +215,8 @@ export const ELEMENT_META: Record<ElementType, { label: string; key: string; pre
   ledpsu: { label: 'LED niša', key: 'N', prefix: 'N', zM: 2.5 },
   // garage door / roller shutter control unit: fed L N PE, driven by a dry-contact pulse from a Shelly Plus 1
   motor: { label: 'Vrata / motor', key: 'D', prefix: 'V', zM: 2.3 },
+  // main earthing terminal: the FeZn foundation-electrode tail lands on a busbar; Cu 16 to the board, Cu 6 bonding
+  kip: { label: 'KIP · izjednačenje potencijala', key: 'Z', prefix: 'KIP', zM: 1.0 },
 }
 // places where cables are joined (have a junction drawing)
 export const PLACE_TYPES: ElementType[] = ['box', 'modbox']

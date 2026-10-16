@@ -61,6 +61,11 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
         add(out, 'Prekidači', `${e.switchKind === 'tipkalo' ? 'Tipkalo' : `Prekidač ${e.switchKind ?? 'obični'}`}${e.host ? ` ${e.modules ?? 1}M` : ''}`, 'kom', 1); break
       case 'light': add(out, 'Svjetla', 'Svjetlo (rasvjetno mjesto)', 'kom', 1); break
       case 'panel': add(out, 'Ostalo', ELEMENT_META.panel.label, 'kom', 1); break
+      case 'kip':
+        add(out, 'Ostalo', 'KIP kutija za izjednačenje potencijala sa sabirnicom', 'kom', 1)
+        add(out, 'Ostalo', 'Križna spojnica FeZn/Cu + vijak M10 s mjedenom podloškom', 'kom', 1)
+        add(out, 'Ostalo', 'Antikorozivna (bitumenska) traka za izlaz FeZn iz betona', 'kom', 1)
+        break
       case 'relay': add(out, 'Releji', RELAY_MODELS[relayModelOf(e)].label, 'kom', 1); break
       case 'ledpsu': {
         const m = e.ledM ?? 5, w = e.ledWpm ?? 10

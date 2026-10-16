@@ -63,7 +63,9 @@ pregledniku i vraćaju nakon osvježavanja.
     žila kabel između kutije i doze mora nositi (L, N, PE + izlazi), piše to na kabelu ("4 potrebno · 3 ima → uzmi 5×1,5")
     i crta dozu s relejima, tipkalima i kratkim žilama (tipkalo → SW izravno, bez stezaljke). Signal tipkala putuje
     kroz lanac kutija (doza → K1 → K2) najkraćim putem: svaki kabel na putu ga nosi, usputna kutija ga samo prolazi
-    kroz WAGO 412; prsten kutija ne udvostručuje signale. Internet i TV: utičnice vrste RJ45 (1M keystone) i TV antena (1M, F-konektor) u modularnoj; UTP
+    kroz WAGO 412; prsten kutija ne udvostručuje signale. Uzemljenje: element KIP (tipka Z) je glavna sabirnica; traka FeZn iz temelja dolazi odozdo, kabel do
+    ormara mora biti PE Cu 16 mm², kabeli izjednačenja (vodovod, grijanje, plin, bojler) PE Cu 6 mm², s
+    bilješkom što spajaju; provjere drže presjeke po HD 60364-5-54. Internet i TV: utičnice vrste RJ45 (1M keystone) i TV antena (1M, F-konektor) u modularnoj; UTP
     odnosno koaks iz bužira ide na njih izravno, bez WAGO-a, i tako se broje u materijalu. Dva signalna
     kabela smiju dijeliti bužir. Veličina kutije se računa iz sadržaja po ljestvici kutija koje se prodaju u HR (10 × 10, 10 × 12 položena
     vodoravno, 15 × 13 Vimar V70005, 17 × 17 Legrand 089374, 23 × 18 Legrand 089275) i ide u materijal; kabel ulazi u kutiju sa strane na kojoj mu je drugi kraj na zidu (bužir lijevo → ulaz

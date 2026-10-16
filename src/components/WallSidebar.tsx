@@ -172,6 +172,9 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
               {!el.feedRelayId && <div className="stat"><span>Pali ga</span><b>{controllers(el.id).map((s) => s.label).join(', ') || '—'}</b><span className="muted">označi na prekidaču</span></div>}
             </>
           )}
+          {el.type === 'kip' && (
+            <p className="muted">Traka FeZn iz temelja na sabirnicu. Kabel do ormara je Cu 16 mm² (glavni zaštitni vodič), kabeli do slobodnog kraja su Cu 6 mm² za izjednačenje: u bilješku kabela upiši što spaja (vodovod, grijanje, plin, bojler, kada).</p>
+          )}
           {el.type === 'motor' && (
             <>
               <label>
@@ -238,7 +241,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
             </label>
           )}
           {el.type === 'box' && <button onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori kutiju (spojevi)</button>}
-          {(el.type === 'light' || el.type === 'motor' || (el.type === 'socket' && !el.host)) && <button onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori spoj (koje žile kamo)</button>}
+          {(el.type === 'light' || el.type === 'motor' || el.type === 'kip' || (el.type === 'socket' && !el.host)) && <button onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori spoj (koje žile kamo)</button>}
           {el.host && <div className="stat"><span>U</span><b>{hostLabel(el.host)}</b></div>}
           <div className="field-row" hidden={!!el.host}>
             <label>Od lijevo (m) <input type="number" step={0.01} value={el.xM} onChange={(e) => updateElement(el.id, { xM: +e.target.value || 0 })} /></label>
