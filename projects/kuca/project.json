@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-16T20:06:36.104Z",
+ "savedAt": "2026-10-16T20:08:22.361Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -145,8 +145,8 @@
     "diameter": 20,
     "points": [
      {
-      "x": 911.8502478841713,
-      "y": 1521.1668106611146
+      "x": 913.0456492470468,
+      "y": 1549.415077941676
      },
      {
       "x": 968.5292972324189,
@@ -156,7 +156,10 @@
     "from": "",
     "to": "",
     "note": "",
-    "categoryId": "rasvjeta"
+    "categoryId": "rasvjeta",
+    "exitZ": {
+     "start": 2.26
+    }
    },
    {
     "id": "g4yul0vy",
@@ -165,8 +168,8 @@
     "diameter": 20,
     "points": [
      {
-      "x": 919.770343327621,
-      "y": 1520.0353684549073
+      "x": 915.2851449852084,
+      "y": 1542.614790724274
      },
      {
       "x": 1245.0905058239807,
@@ -176,7 +179,10 @@
     "from": "",
     "to": "",
     "note": "",
-    "categoryId": "rasvjeta"
+    "categoryId": "rasvjeta",
+    "exitZ": {
+     "start": 2.26
+    }
    },
    {
     "id": "a5pqhsnu",
@@ -185,8 +191,8 @@
     "diameter": 20,
     "points": [
      {
-      "x": 907.3244790593428,
-      "y": 1541.5327703728424
+      "x": 907.3885888357552,
+      "y": 1553.970066996847
      },
      {
       "x": 530.270446215523,
@@ -196,7 +202,10 @@
     "from": "",
     "to": "",
     "note": "",
-    "categoryId": "rasvjeta"
+    "categoryId": "rasvjeta",
+    "exitZ": {
+     "start": 2.35
+    }
    },
    {
     "id": "sttep0d7",
@@ -205,8 +214,8 @@
     "diameter": 20,
     "points": [
      {
-      "x": 906.1930368531357,
-      "y": 1556.2415190535348
+      "x": 906.3096665883056,
+      "y": 1578.8676876765003
      },
      {
       "x": 644.2383859354501,
@@ -216,7 +225,10 @@
     "from": "",
     "to": "",
     "note": "",
-    "categoryId": "rasvjeta"
+    "categoryId": "rasvjeta",
+    "exitZ": {
+     "start": 2.32
+    }
    },
    {
     "id": "s8yl2bgn",
@@ -236,7 +248,10 @@
     "from": "",
     "to": "",
     "note": "",
-    "categoryId": "dolaz"
+    "categoryId": "dolaz",
+    "exitZ": {
+     "start": 2.22
+    }
    },
    {
     "id": "d3mxdiis",
@@ -3661,6 +3676,16 @@
     "note": "",
     "id": "9nas1akx",
     "label": "KIP1"
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 3,
+    "type": "box",
+    "xM": 1.32,
+    "zM": 1.99,
+    "note": "",
+    "id": "1otjln7x",
+    "label": "K16"
    }
   ],
   "cables": [
@@ -5399,8 +5424,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "c2b55x6m",
-   "wall": 1
+   "roomId": "xyw3llcm",
+   "wall": 3
   }
  }
 }
