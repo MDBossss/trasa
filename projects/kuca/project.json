@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-14T21:57:19.189Z",
+ "savedAt": "2026-10-16T20:04:11.199Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -1442,6 +1442,49 @@
     "exitZ": {
      "start": 1.98
     }
+   },
+   {
+    "id": "smrgpimc",
+    "name": "UZEMLJENJE",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 911.943400618682,
+      "y": 1599.204878085176
+     },
+     {
+      "x": 877.906981697958,
+      "y": 1581.1332475900913
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "todo",
+    "exitZ": {
+     "start": 2.18
+    }
+   },
+   {
+    "id": "o1kxxk1i",
+    "name": "UZEMLJENJE ORMAR",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 876.7755394917509,
+      "y": 1566.4244989093986
+     },
+     {
+      "x": 907.9133826954123,
+      "y": 1196.3886988803965
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "todo"
    }
   ],
   "rooms": [
@@ -3604,6 +3647,16 @@
     "id": "w0lqnqr9",
     "label": "U67",
     "slotOrder": 1
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 3,
+    "type": "kip",
+    "xM": 1.2,
+    "zM": 0.74,
+    "note": "",
+    "id": "9nas1akx",
+    "label": "KIP1"
    }
   ],
   "cables": [
@@ -5307,8 +5360,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "j5g1ml5l",
-   "wall": 2
+   "roomId": "xyw3llcm",
+   "wall": 3
   }
  }
 }
