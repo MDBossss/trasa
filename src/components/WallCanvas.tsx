@@ -422,6 +422,8 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
             const isSel = el.id === selectedId
             return (
               <Group key={el.id} name={el.id} x={toX(p)} y={toY(p)} {...elementDrag(el)}>
+                {/* invisible hit area: symbols are thin strokes with gaps, a click a pixel off would miss them */}
+                {el.type === 'modbox' ? <Rect x={-((el.modules ?? 3) * MODW) / 2 - 4} y={-10} width={(el.modules ?? 3) * MODW + 8} height={20} fill="#000" opacity={0.001} /> : <Circle radius={14} fill="#000" opacity={0.001} />}
                 <Symbol type={el.type} selected={isSel} px={px} modules={el.modules} swKind={el.switchKind} data={isData(el)} tv={el.socketKind === 'tv'} />
                 {(() => {
                   const hosted = hostedOf(el.id)
