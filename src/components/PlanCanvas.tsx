@@ -4,7 +4,7 @@ import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import useImage from 'use-image'
 import { conduitVisible, gridStepPx, planDims, useStore } from '../store'
-import { centroid, dist, fmtMeters, midpointOfPolyline, polylineLength, snapPoint, snapToGrid } from '../geometry'
+import { centroid, dist, fmtMeters, midpointOfPolyline, polylineLength, signedArea, snapPoint, snapToGrid } from '../geometry'
 import type { Pt } from '../types'
 import { CanvasHud } from './CanvasHud'
 import { middlePan, pinch, useMobile, wheelNav, type Camera } from '../mobile'
@@ -298,7 +298,8 @@ export function PlanCanvas() {
         </Layer>
 
         <Layer listening={tool === 'select'}>
-          {project.rooms.map((r0) => {
+          {/* biggest rooms at the bottom: a room drawn over a smaller one would make the smaller one unclickable */}
+          {[...project.rooms].sort((a, b) => Math.abs(signedArea(b.points)) - Math.abs(signedArea(a.points))).map((r0) => {
             const r = live?.id === r0.id ? { ...r0, points: live.points } : r0
             const c = centroid(r.points)
             const isSel = r.id === sel
