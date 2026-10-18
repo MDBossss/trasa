@@ -82,7 +82,7 @@ Sve kutije i doze sobe poredane kako stoje, u tri reda po visini, s pravim plaš
 <td valign="top">
 
 ### Materijal i PDF za majstora
-Popis za kupnju po grupama, s podjelom po sobama, kvačicom "nabavljeno", kopiranjem i CSV-om. PDF ispis po sobi i A4 list za svaku kutiju.
+Popis za kupnju po grupama, s TEM MODUL šiframa (SM60PW, VM10PW, OL30PW + NM30, slijepi moduli…), s podjelom po sobama, kvačicom "nabavljeno", kopiranjem i CSV-om. PDF ispis po sobi i A4 list za svaku kutiju.
 
 </td>
 </tr>

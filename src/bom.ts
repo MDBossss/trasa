@@ -1,6 +1,7 @@
 import { polylineLength } from './geometry'
 import { allJunctions, boxSizeLabel } from './junction'
-import { ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, type Project, relayModelOf , DATA_META } from './types'
+import { ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, type Project, relayModelOf, hostedFront, modulesOf } from './types'
+import { TEM_BLANK, TEM_FRAME, TEM_SOCKET, TEM_SWITCH, temCode } from './tem'
 import { cableLengthM, wallExits } from './walls'
 
 // Bill of materials summed from the drawing: cable metres (wall runs + conduit runs + reserve),
@@ -45,20 +46,47 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
     if (!inScope(j.room.id)) continue
     for (const b of j.bom) if (b.item.startsWith('WAGO')) add(out, 'Stezaljke', b.item, 'kom', b.qty)
   }
+  // a single device on its own sits in a round Ø60 box with a 2M frame (a 1M device gets a blank beside it)
+  const single = (depth: string, mods: number) => {
+    add(out, 'Doze i kutije', `Doza Ø60${depth}`, 'kom', 1)
+    add(out, 'Dekorativno', `${temCode(TEM_FRAME[2].frame)} · okvir LINE 2M`, 'kom', 1)
+    add(out, 'Dekorativno', `${temCode(TEM_FRAME[2].carrier, false)} · ${TEM_FRAME[2].carrierName}`, 'kom', 1)
+    if (mods < 2) add(out, 'Dekorativno', `${temCode(TEM_BLANK.code)} · ${TEM_BLANK.name}`, 'kom', 1)
+  }
   // elements
   for (const e of p.elements) {
     if (!inScope(e.roomId)) continue
     const depth = e.depth === 'duboka' ? ', duboka' : ''
     switch (e.type) {
       case 'box': add(out, 'Doze i kutije', `Razvodna kutija ${sizes.get(e.id) ?? '10 × 10'}${depth}`, 'kom', 1); break
-      case 'modbox': { const m = e.modules ?? 3; add(out, 'Doze i kutije', `Doza modularna ${m}M${m === 3 ? ' (TEM PM3)' : m === 4 ? ' (TEM PM4)' : m === 7 ? (e.depth === 'duboka' ? ' (TEM PM7-65)' : ' (TEM PM7)') : ''}${depth}`, 'kom', 1); add(out, 'Dekorativno', `Nosivi okvir + ukrasni okvir ${m}M`, 'kom', 1); break }
-      case 'socket':
-        if (!e.host) add(out, 'Doze i kutije', `Doza Ø60${depth}`, 'kom', 1)
-        if (e.socketKind === 'rj45' || e.socketKind === 'tv') { add(out, 'Utičnice', `${DATA_META[e.socketKind].item}${e.host ? ' (u modularnoj)' : ''}`, 'kom', 1); break }
-        add(out, 'Utičnice', `Utičnica ${SOCKET_KINDS[e.socketKind ?? 'schuko'].label.toLowerCase()} ${SOCKET_KINDS[e.socketKind ?? 'schuko'].modules}M${e.host ? ' (u modularnoj)' : ''}`, 'kom', 1); break
-      case 'switch':
-        if (!e.host) add(out, 'Doze i kutije', `Doza Ø60${depth}`, 'kom', 1)
-        add(out, 'Prekidači', `${e.switchKind === 'tipkalo' ? 'Tipkalo' : `Prekidač ${e.switchKind ?? 'obični'}`}${e.host ? ` ${e.modules ?? 1}M` : ''}`, 'kom', 1); break
+      case 'modbox': {
+        const m = e.modules ?? 3
+        add(out, 'Doze i kutije', `Doza modularna ${m}M${m === 3 ? ' (TEM PM3)' : m === 4 ? ' (TEM PM4)' : m === 7 ? (e.depth === 'duboka' ? ' (TEM PM7-65)' : ' (TEM PM7)') : ''}${depth}`, 'kom', 1)
+        const f = TEM_FRAME[m]
+        if (f) { add(out, 'Dekorativno', `${temCode(f.frame)} · okvir LINE ${m}M`, 'kom', 1); add(out, 'Dekorativno', `${temCode(f.carrier, false)} · ${f.carrierName}`, 'kom', 1) }
+        else add(out, 'Dekorativno', `Nosač + okvir ${m}M`, 'kom', 1)
+        // empty modules (gaps and the free end) get a blank
+        const front = hostedFront(p.elements, e.id)
+        const used = front.reduce((n, x) => n + (x.gapBefore ?? 0) + Math.max(1, modulesOf(x)), 0)
+        const free = Math.max(0, m - used) + front.reduce((n, x) => n + (x.gapBefore ?? 0), 0)
+        if (free > 0) add(out, 'Dekorativno', `${temCode(TEM_BLANK.code)} · ${TEM_BLANK.name}`, 'kom', free)
+        break
+      }
+      case 'socket': {
+        const kind = e.socketKind ?? 'schuko'
+        const t = TEM_SOCKET[kind]
+        if (!e.host) single(depth, SOCKET_KINDS[kind].modules)
+        add(out, 'Utičnice', `${temCode(t.code)} · ${t.name}`, 'kom', 1)
+        break
+      }
+      case 'switch': {
+        const t = TEM_SWITCH[e.switchKind ?? 'obicni']
+        const mods = e.modules ?? 1
+        if (!e.host) single(depth, mods)
+        if (t.code) add(out, 'Prekidači', `${temCode(t.code)} · ${t.name}${mods > 1 ? ` (s tipkom ${mods}M)` : ''}`, 'kom', 1)
+        else add(out, 'Prekidači', `${temCode('SM10')} × 2 · ${t.name}`, 'kom', 1)
+        break
+      }
       case 'light': add(out, 'Svjetla', 'Svjetlo (rasvjetno mjesto)', 'kom', 1); break
       case 'panel': add(out, 'Ostalo', ELEMENT_META.panel.label, 'kom', 1); break
       case 'kip':
