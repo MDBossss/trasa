@@ -1,0 +1,83 @@
+# Trasa · upute
+
+[← natrag na README](../README.md)
+
+## Rad u aplikaciji
+
+Raspored ekrana (računalo): gore glavna navigacija Tlocrt / Sobe / Spojevi / Materijal i **izbor sobe** koji vrijedi za
+Sobe, Spojeve i Materijal ("Cijela kuća" samo u Materijalu); lijevo uska traka alata (gdje se crta); sredina platno; desno jedan panel
+(lista + svojstva odabranog; u Spojevima lista kutija je lijevo, stezaljke desno). Drugi red pogleda drži samo način
+prikaza (lijevo) i akcije (desno). Na mobitelu je donja traka i sheet. Pogled, soba, zid, odabir i zum pamte se u
+pregledniku i vraćaju nakon osvježavanja.
+
+1. **Učitaj tlocrt** (gumb ili drag & drop slike). Gumbi ↺/↻ rotiraju tlocrt po 90°, nacrtano se rotira s njim. Grid pokriva cijelo platno pa se može crtati i izvan slike. Nakrivljen sken: **Nagib slike** u sidebaru (±1°, ±0.1°, upis), **Auto poravnaj** (traži kut pod kojim su zidovi najoštrije poravnati s gridom) ili **Poravnaj (A)**: dva klika duž zida koji treba biti ravan. Nagib pomiče samo sliku, pa poravnaj prije crtanja.
+2. **Mjerilo (C)**: dva klika na poznatu udaljenost, upiši metre. Nakon toga grid je u cm, a duljine u metrima.
+5. **Soba (R)**: klikaj kutove, zatvori klikom na prvi kut ili Enterom.
+6. **Bužir (B)**: klikaj točke trase kroz deku, Enter ili dupli klik završi. Svaki dobije svoju boju i naziv (B1, B2...). Backspace briše zadnju točku, Esc odustaje.
+7. **Odaberi (V)**: klik označi bužir ili sobu, vuci cijelu liniju ili pojedine točke, Delete briše. Odabrani bužir je isprekidan. Držanje **Alt** isključuje snap (slobodno pomicanje i crtanje).
+8. **Otvori sobu**: zid-view je editor na fotki zida (jedinice cm, x od lijevog kuta gledano iznutra, visina od poda).
+   Na gornjem rubu su izlazi bužira iz deke (projekcija kraja trase na najbliži zid); izlaz se vuče po fotki,
+   lijevo-desno pomiče kraj bužira i na tlocrtu, gore-dolje postavlja visinu izlaza. Alati: **Kutija (K)**,
+   **Utičnica (U)**, **Prekidač (P)**, **Svjetlo (L)**, **Ormar (O)** postavljaju element klikom (snap 1 cm i
+   poravnanje s drugim elementima po x i visini; fotka je okvirna, pa nema snapa na apsolutne visine). **Kabel (C)**: klik na izlaz bužira ili element
+   počinje, klikovi dodaju vodoravne/okomite lomove, klik na element završava; kabel je vezan za oba kraja i prati
+   ih pri pomicanju. Klik na **rub zida** završi kabel u kutu: na susjednom zidu se pojavi na istoj visini i tamo ga
+   nastaviš drugim kabelom (spojevi i materijal ga prate kroz kut, visinu u kutu mijenjaš u svojstvima). Desno: fotka zida, svojstva
+   odabira (tip, oznaka, pozicija, vrsta prekidača, tip kabela, duljina) i lista svega na zidu.
+9. **Spojevi** (gumb u headeru): za svaku razvodnu kutiju slika u mjerilu (kutija 10 × 10 ili 10 × 12, WAGO 221-412/413/415 s pravim
+   dimenzijama, žile u bojama po HD 308) izvedena iz nacrtanog: kabel vezan na kutiju dobije ulogu iz onoga što mu je na
+   drugom kraju (utičnica, svjetlo, prekidač, bužir kategorije Dolaz = napajanje, bužir do kutije u drugoj sobi = prolaz),
+   a žile se grupiraju na stezaljke L / N / PE / povratna / putne / parkirano. Na prekidaču označi **Pali svjetla** i vrstu
+   (obični, tipkalo, serijski, izmjenični, križni; križni je član lanca s dva para putnih, pa se vidi
+   i izravni kabel doza–doza); ulogu kabela možeš ručno prepisati. **Korak po korak** vodi žilu po
+   žilu (strelice ← →), desno je materijal po kutiji i provjere (kutija bez dolaza, prekidač bez svjetla, premalo žila…).
+   Na dozi možeš označiti dubinu (plitka / duboka) za kasnije releje.
+10. **Pametna rasvjeta**: **Modularna doza (M)** je okvir (2M–7M) s dubinom; **Tipkalo (T)** i **Relej (R)** se
+    postave klikom na dozu/kutiju/nišu i žive u njoj. Relej: **Sonoff ZBMINIR2** (Zigbee, za svjetla; stezaljke L N Lout Nout
+    S1 S2, tipkalo na S1/S2 je niski napon bez faze), **Shelly 1 Gen4** (Zigbee, jedini sa suhim kontaktom, za vrata;
+    L N SW I O) i Shelly Plus RGBW PM za LED nišu. Stariji save-ovi s Plus 1 / 2PM / Dimmer / i4 se učitaju kao Gen4. Shelly ima ulaze SW i izlaze O: na tipkalu odaberi "Na relej" + ulaz, na svjetlu "Napaja ga" + izlaz. Iz toga aplikacija izvede koliko
+    žila kabel između kutije i doze mora nositi (L, N, PE + izlazi), piše to na kabelu ("4 potrebno · 3 ima → uzmi 5×1,5")
+    i crta dozu s relejima, tipkalima i kratkim žilama (tipkalo → SW izravno, bez stezaljke). Signal tipkala putuje
+    kroz lanac kutija (doza → K1 → K2) najkraćim putem: svaki kabel na putu ga nosi, usputna kutija ga samo prolazi
+    kroz WAGO 412; prsten kutija ne udvostručuje signale. Uzemljenje: element KIP (tipka Z) je glavna sabirnica; traka FeZn iz temelja dolazi odozdo, kabel do
+    ormara mora biti PE Cu 16 mm², kabeli izjednačenja (vodovod, grijanje, plin, bojler) PE Cu 6 mm², s
+    bilješkom što spajaju; provjere drže presjeke po HD 60364-5-54. Internet i TV: utičnice vrste RJ45 (1M keystone) i TV antena (1M, F-konektor) u modularnoj; UTP
+    odnosno koaks iz bužira ide na njih izravno, bez WAGO-a, i tako se broje u materijalu. Dva signalna
+    kabela smiju dijeliti bužir. Veličina kutije se računa iz sadržaja po ljestvici kutija koje se prodaju u HR (10 × 10, 10 × 12 položena
+    vodoravno, 15 × 13 Vimar V70005, 17 × 17 Legrand 089374, 23 × 18 Legrand 089275) i ide u materijal; kabel ulazi u kutiju sa strane na kojoj mu je drugi kraj na zidu (bužir lijevo → ulaz
+    lijevo, doza ispod → odozdo; kad je razlika po visini veća, gore/dolje); provjere kažu koju kutiju uzeti, a podjelu predlažu tek kad ni najveća ne stane ili ponestane uvodnica, kad je kabela
+    više od uvodnica (8 odnosno 10) i kad bi stezaljka trebala 3 WAGO-a. Više od 5 žila na stezaljci = dva (ili tri) WAGO 221-415 Gumb **Podijeli na dvije** to napravi sam: utičnice i vrata (ili pola svjetala) odu u novu kutiju
+    35 cm pored, napajanu iz stare, vezom 3×1,5 ili 5×1,5 prema potrebi.
+    spojena kratkom premosnicom, nacrtano i numerirano "WAGO 2, port 3". Mjesto u okviru: na tipkalu/utičnici ◀ ▶ mijenja redoslijed, "Praznih lijevo" ostavlja prazne module;
+    slika spoja i provlačenje utičnica slijede isti redoslijed. **LED niša (N)**: traka
+    (m, W/m, 12/24 V) i napajanje × 1,2; napaja se kao svjetlo. Provjere: relej bez nule, relej u plitkoj dozi, kabel s
+    premalo žila, izlaz releja bez kabela do svjetla, klasični prekidač na releju.
+    **Vrata / motor (D)**: upravljačka jedinica rolo ili sekcijskih vrata; na njoj odaberi "Pali ga relej" (samo Shelly
+    1 Gen4). Taj Shelly tada radi kao suhi kontakt: I i O idu na "impuls" jedinice (stezaljke IMP1/IMP2, bez napona),
+    kabel do vrata 5×1,5 (L N PE + 2 impuls). Shelly Gen4 u modu svjetla crta se s premosnicom L → I.
+11. **Materijal** (header): popis po sobi ili za kuću (kabeli u metrima: zid + bužir + 30 cm rezerve po kraju, bez bužira,
+    WAGO, doze, oprema, releji, LED). **PDF za majstora**: pregled za ispis po sobi (tlocrt sobe s bužirima, svaki zid s
+    elementima i kotama, svaka kutija i doza sa slikom i tablicom stezaljki, releji, materijal, otvorene provjere);
+    u dijalogu ispisa odaberi "Spremi kao PDF". U Spojevima kartica **Cijela soba** je shema sobe: kutije i doze slijeva nadesno
+    kako stoje po sobi (zid po zid) i u tri reda po visini (razvodne kutije gore, prekidači u sredini, utičnice dolje),
+    svaka nacrtana kao na svom listu, a kabeli između kutija kao plaštevi prave
+    debljine koji izlaze iz istih mjesta kao na slici kutije (susjedi ravno, ostali preko "traka" iznad ili ispod reda).
+    Svjetla, vrata i samostalne utičnice imaju svoj spoj (priključna stezaljka L N PE, kod vrata i IMP 1/2, i žile
+    kabela koje idu na nju): u listi Spojeva, na shemi sobe kao čvor s kabelom do kutije, u PDF-u i preko "Otvori spoj"
+    na zidu. Prijelaz mišem preko kabela osvijetli njegove žile u obje kutije i kaže što nosi; vuci za pomicanje, kotačić
+    zumira prema pokazivaču, "Uklopi" vrati sve u ekran, klik na kutiju ide u njene korake. U Spojevima gumb **Ispiši kutiju** daje jedan A4 vodoravni list za tu kutiju: gdje je u sobi,
+    legenda, kabeli i velika slika spoja.
+13. **Mobitel = terenski način** (ekran ≤ 760 px): donja traka Tlocrt / Sobe / Spojevi / Materijal, paneli su
+    "sheet" koji se povlači odozdo, kanvas se pomiče jednim prstom i zumira s dva, dodir odabire. Nema alata za
+    crtanje (to ostaje na računalu). U Sobama gumb s kamerom slika zid direktno s mobitela; u Spojevima je slika
+    spoja preko cijelog ekrana, koraci su ispod nje, stezaljke i materijal u sheetu.
+14. **Postavke projekta** (☰ → Postavke projekta…, ili "postavke" uz materijal kutije): spremaju se u save.
+    *Rezervne žile u kutiji*: "Presavij i izoliraj" (kapica/traka, ne popisuje se) ili "Svaka u svoj WAGO"
+    (dosadašnje ponašanje; stariji projekti bez postavke ostaju na njemu). PE iz kabela za prekidač uvijek ide na
+    zajednički PE u kutiji, u dozi prekidača se presavije. Žila koja u kutiji nema s čime (npr. jedini PE u dozi s
+    tipkalom i relejem) u načinu "kapica" dobiva kapicu, ne vlastiti WAGO; kapice se slažu u red uz WAGO-e.
+    Materijal (grupe: kabeli, stezaljke, doze, utičnice, prekidači, dekorativno, svjetla, releji, LED) je i popis za kupnju: kvačica "nabavljeno" (ostaje na uređaju), podjela po sobama uz stavku, napomena o
+    pakiranju (WAGO 50/100, koluti kabela), "Kopiraj popis" kao tekst i "Preuzmi CSV" za Excel.
+12. **Lista bužira**: Svi / Po kategoriji / Po sobama. Bužir pripada sobi ako mu početak ili kraj leži u sobi ili
+   najviše 10 cm izvan njezina zida. **Fokus** na sobu sakrije ostale bužire, kamera ostaje gdje je.
+

@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "e2e": "node e2e/smoke.mjs",
+    "shots": "node e2e/screenshots.mjs",
     "deploy": "vite build && wrangler deploy"
   },
   "dependencies": {
