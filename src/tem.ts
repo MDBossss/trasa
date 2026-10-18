@@ -1,8 +1,7 @@
 import type { SocketKind, SwitchKind } from './types'
 
-// TEM Čatež MODUL (Line, bijela sjaj = PW), codes as listed by modulmanager.tem.si (2026-10).
-// Mechanisms and frames carry the colour suffix, carriers do not.
-export const TEM_COLOR = 'PW'
+// TEM Čatež MODUL, codes as listed by modulmanager.tem.si (2026-10). Listed without the colour suffix
+// (PW = bijela sjaj, …): the colour of elements and frames is picked when buying.
 export const TEM_SWITCH: Record<SwitchKind, { code: string | null; name: string }> = {
   obicni: { code: 'SM10', name: 'prekidač jednopolni 16AX' },
   tipkalo: { code: 'SM11', name: 'tipkalo jednopolno 16A' },
@@ -24,4 +23,4 @@ export const TEM_FRAME: Record<number, { frame: string; carrier: string; carrier
   7: { frame: 'OL70', carrier: 'NM70', carrierName: 'nosač s vijcima 7M' },
 }
 export const TEM_BLANK = { code: 'TM21', name: 'slijepi modul (polnilo) 1M' }
-export const temCode = (code: string, color = true) => (color ? `${code}${TEM_COLOR}` : code)
+export const temCode = (code: string, _color = true) => code
