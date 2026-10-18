@@ -231,7 +231,12 @@ assert.ok(Math.abs((await page.evaluate(() => window.__trasa.getState().camera))
 // drawing outside the image works and snaps to the same grid (zoom out first so it is on screen)
 const box = await page.locator('.canvas-wrap').boundingBox()
 await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
-for (let i = 0; i < 5; i++) await page.mouse.wheel(0, 300)
+// plain wheel pans (Excalidraw-style), Ctrl + wheel zooms at the pointer
+{ const c0 = await page.evaluate(() => window.__trasa.getState().camera); await page.mouse.wheel(0, 120); await page.waitForTimeout(50)
+  const c1 = await page.evaluate(() => window.__trasa.getState().camera); assert.equal(c1.scale, c0.scale); assert.ok(Math.abs(c1.y - (c0.y - 120)) < 1e-6, 'wheel pans'); await page.mouse.wheel(0, -120) }
+await page.keyboard.down('Control')
+for (let i = 0; i < 3; i++) await page.mouse.wheel(0, 20)
+await page.keyboard.up('Control')
 await page.keyboard.press('b')
 await clickImg(-100, 100); await clickImg(-97, 302); await page.keyboard.press('Enter')
 st = await state()

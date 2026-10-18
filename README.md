@@ -131,6 +131,8 @@ Detaljne upute za rad: **[docs/UPUTE.md](docs/UPUTE.md)**.
 | <kbd>O</kbd> ishodište | <kbd>Alt</kbd> bez snapa | <kbd>R</kbd> relej | <kbd>L</kbd> svjetlo |
 | <kbd>⌘</kbd> <kbd>S</kbd> spremi | <kbd>⌘</kbd> <kbd>Z</kbd> undo | <kbd>D</kbd> vrata / motor | <kbd>Z</kbd> KIP uzemljenje |
 
+**Kretanje po platnu** (kao u Excalidrawu): kotačić ili dva prsta na trackpadu pomiču, <kbd>Shift</kbd> + kotačić vodoravno, <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + kotačić ili pinch zumira prema pokazivaču, <kbd>Space</kbd> ili srednja tipka miša + vuci pomiče iz bilo kojeg alata.
+
 ## Spremanje i privatnost
 
 - **Lokalno:** projekt se automatski sprema u IndexedDB preglednika. **Spremi** (<kbd>⌘</kbd> <kbd>S</kbd>) piše `.trasa.json` (u Chromeu uvijek u istu datoteku), **Otvori** je vraća.

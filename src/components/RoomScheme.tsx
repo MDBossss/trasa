@@ -5,6 +5,7 @@ import { ELEMENT_META, WIRE_LABEL, isPlace } from '../types'
 import { coreColors } from '../types'
 import { Hud } from './Hud'
 import { JunctionCanvas, junctionAnchors, junctionViewBox } from './JunctionCanvas'
+import { wheelNav } from '../mobile'
 
 // One room as a clean schematic: every box drawn as on its own sheet, laid out left to right in the
 // order they sit around the room, and the box-to-box cables drawn as sheaths between the matching
@@ -148,7 +149,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
   })
   useEffect(() => {
     const el = wrap.current!
-    const onWheel = (e: WheelEvent) => { e.preventDefault(); const r = el.getBoundingClientRect(); const f = e.ctrlKey || e.metaKey ? 1.03 : 1.1; zoomAt(e.deltaY > 0 ? 1 / f : f, e.clientX - r.left, e.clientY - r.top) }
+    const onWheel = (e: WheelEvent) => { const r = el.getBoundingClientRect(); wheelNav(e, { x: e.clientX - r.left, y: e.clientY - r.top }, setCam, [0.1, 4]) }
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => el.removeEventListener('wheel', onWheel)
   }, [])

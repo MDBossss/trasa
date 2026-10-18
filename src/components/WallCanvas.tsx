@@ -9,7 +9,7 @@ import { CABLE_COLOR, cableColor, cablePath, cornerAt, endPos, neighbourWall, ty
 import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement, RELAY_LOOK, relayBrand, relayModelOf, hostedFront , isData } from '../types'
 import { Hud } from './Hud'
 import { activeWallTool } from './WallToolRail'
-import { pinch, useMobile } from '../mobile'
+import { middlePan, pinch, useMobile, wheelNav, type Camera } from '../mobile'
 
 type P = { xM: number; zM: number }
 // one TEM module on the wall symbol: half as wide as tall, like the real 22.5 × 45 mm (2M is a square)
@@ -238,12 +238,9 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
     else setCursor({ xM: Math.round(raw.xM * 100) / 100, zM: Math.round(raw.zM * 100) / 100 })
   }
 
-  const onWheel = (e: KonvaEventObject<WheelEvent>) => {
-    e.evt.preventDefault()
-    const p = stageRef.current!.getPointerPosition()!
-    const factor = e.evt.ctrlKey || e.evt.metaKey ? 1.03 : 1.1
-    wallZoomBy(e.evt.deltaY > 0 ? 1 / factor : factor, p)
-  }
+  const camUpdate = (f: (c: Camera) => Camera) => useStore.getState().setWallCamera(f(useStore.getState().wallCamera))
+  const onWheel = (e: KonvaEventObject<WheelEvent>) => wheelNav(e.evt, stageRef.current!.getPointerPosition()!, camUpdate, [0.1, 30])
+  const onMouseDown = (e: KonvaEventObject<MouseEvent>) => middlePan(e.evt, camUpdate)
 
   const dragPos = (e: KonvaEventObject<DragEvent>): P => ({ xM: e.target.x() / 100, zM: (H - e.target.y()) / 100 })
   const elementDrag = (el: WallElement) => ({
@@ -316,6 +313,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
         draggable={panning}
         onDragEnd={(e) => { if (e.target === stageRef.current) setWallCamera({ ...camera, x: e.target.x(), y: e.target.y() }) }}
         onWheel={onWheel}
+        onMouseDown={onMouseDown}
         onClick={onClick}
         onTap={onClick}
         onDblClick={onDblClick}

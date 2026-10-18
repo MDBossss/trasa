@@ -7,7 +7,7 @@ import { conduitVisible, gridStepPx, planDims, useStore } from '../store'
 import { centroid, dist, fmtMeters, midpointOfPolyline, polylineLength, snapPoint, snapToGrid } from '../geometry'
 import type { Pt } from '../types'
 import { CanvasHud } from './CanvasHud'
-import { pinch, useMobile } from '../mobile'
+import { middlePan, pinch, useMobile, wheelNav, type Camera } from '../mobile'
 import { Icon } from './Icons'
 
 export function PlanCanvas() {
@@ -115,12 +115,9 @@ export function PlanCanvas() {
     return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onUp); window.removeEventListener('blur', onBlur) }
   }, [draft.length, selectedId, finishDraft, select, setTool, removeSelected, size])
 
-  const onWheel = (e: KonvaEventObject<WheelEvent>) => {
-    e.evt.preventDefault()
-    const p = stageRef.current!.getPointerPosition()!
-    const factor = e.evt.ctrlKey || e.evt.metaKey ? 1.03 : 1.1
-    useStore.getState().zoomBy(e.evt.deltaY > 0 ? 1 / factor : factor, p)
-  }
+  const camUpdate = (f: (c: Camera) => Camera) => useStore.getState().setCamera(f(useStore.getState().camera))
+  const onWheel = (e: KonvaEventObject<WheelEvent>) => wheelNav(e.evt, stageRef.current!.getPointerPosition()!, camUpdate, [0.05, 20])
+  const onMouseDown = (e: KonvaEventObject<MouseEvent>) => middlePan(e.evt, camUpdate)
 
   // a phone pans with one finger and zooms with two; shapes are not draggable there
   const panning = tool === 'pan' || space || mobile
@@ -244,6 +241,7 @@ export function PlanCanvas() {
         draggable={panning}
         onDragEnd={(e) => { if (e.target === stageRef.current) setView({ ...view, x: e.target.x(), y: e.target.y() }) }}
         onWheel={onWheel}
+        onMouseDown={onMouseDown}
         onClick={onClick}
         onTap={onClick}
         onDblClick={onDblClick}

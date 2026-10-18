@@ -46,3 +46,32 @@ export function pinch(stage: () => Konva.Stage | null, get: () => Camera, set: (
   const onTouchEnd = () => { lastDist = 0; lastCenter = null }
   return { onTouchMove, onTouchEnd }
 }
+
+// Desktop navigation as in Excalidraw / Figma: wheel or two-finger scroll pans (Shift = sideways),
+// Ctrl/⌘ + wheel and trackpad pinch (which the browser reports as ctrl + wheel) zoom at the pointer.
+export function wheelNav(e: WheelEvent, at: Pt, update: (f: (c: Camera) => Camera) => void, limits: [number, number]) {
+  e.preventDefault()
+  const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1
+  let dx = e.deltaX * k, dy = e.deltaY * k
+  if (e.ctrlKey || e.metaKey) {
+    const d = Math.max(-40, Math.min(40, dy))
+    update((c) => {
+      const scale = Math.max(limits[0], Math.min(limits[1], c.scale * Math.exp(-d * 0.01)))
+      return { scale, x: at.x - ((at.x - c.x) / c.scale) * scale, y: at.y - ((at.y - c.y) / c.scale) * scale }
+    })
+    return
+  }
+  if (e.shiftKey && dx === 0) { dx = dy; dy = 0 }
+  update((c) => ({ ...c, x: c.x - dx, y: c.y - dy }))
+}
+
+// Middle mouse button drags the canvas from any tool.
+export function middlePan(e: MouseEvent, update: (f: (c: Camera) => Camera) => void) {
+  if (e.button !== 1) return false
+  e.preventDefault()
+  let last = { x: e.clientX, y: e.clientY }
+  const move = (m: MouseEvent) => { const dx = m.clientX - last.x, dy = m.clientY - last.y; last = { x: m.clientX, y: m.clientY }; update((c) => ({ ...c, x: c.x + dx, y: c.y + dy })) }
+  const up = () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up) }
+  window.addEventListener('mousemove', move); window.addEventListener('mouseup', up)
+  return true
+}
