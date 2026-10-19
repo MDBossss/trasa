@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-19T19:05:27.993Z",
+ "savedAt": "2026-10-19T19:12:10.238Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -3870,6 +3870,179 @@
     "controls": [
      "6t090yt4"
     ]
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 0,
+    "type": "socket",
+    "xM": 0.88,
+    "zM": 0.56,
+    "note": "",
+    "host": "plouxqbp",
+    "id": "iq98ei4b",
+    "label": "U68",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 0,
+    "type": "socket",
+    "xM": 0.88,
+    "zM": 0.56,
+    "note": "",
+    "host": "plouxqbp",
+    "id": "2sj64147",
+    "label": "U69",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "socket",
+    "xM": 0.66,
+    "zM": 0.73,
+    "note": "",
+    "host": "4m6gsvwx",
+    "id": "dq87gfhv",
+    "label": "U70",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "socket",
+    "xM": 0.66,
+    "zM": 0.73,
+    "note": "",
+    "host": "4m6gsvwx",
+    "id": "vn2yvaxj",
+    "label": "U71",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "socket",
+    "xM": 2.17,
+    "zM": 0.73,
+    "note": "",
+    "host": "t3oy54wk",
+    "id": "my1w4u8s",
+    "label": "U72",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "socket",
+    "xM": 2.17,
+    "zM": 0.73,
+    "note": "",
+    "host": "t3oy54wk",
+    "id": "7nomqtnd",
+    "label": "U73",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 2,
+    "type": "socket",
+    "xM": 1.55,
+    "zM": 0.49,
+    "note": "",
+    "host": "ae6m1y2h",
+    "id": "j6n5np9j",
+    "label": "U74",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 2,
+    "type": "socket",
+    "xM": 1.55,
+    "zM": 0.49,
+    "note": "",
+    "host": "ae6m1y2h",
+    "id": "8ik5n89g",
+    "label": "U75",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 3,
+    "type": "socket",
+    "xM": 1.44,
+    "zM": 1.1,
+    "note": "",
+    "host": "xl40zdmi",
+    "id": "00995uor",
+    "label": "U76",
+    "slotOrder": 0,
+    "socketKind": "rj45"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 3,
+    "type": "socket",
+    "xM": 1.44,
+    "zM": 1.1,
+    "note": "",
+    "host": "xl40zdmi",
+    "id": "pltu7ko0",
+    "label": "U77",
+    "slotOrder": 1,
+    "socketKind": "tv"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 3,
+    "type": "socket",
+    "xM": 1.44,
+    "zM": 1.1,
+    "note": "",
+    "host": "xl40zdmi",
+    "id": "qqmk6jb8",
+    "label": "U78",
+    "slotOrder": 3,
+    "socketKind": "euro"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 3,
+    "type": "socket",
+    "xM": 1.44,
+    "zM": 1.1,
+    "note": "",
+    "host": "xl40zdmi",
+    "id": "41c3ovyr",
+    "label": "U79",
+    "slotOrder": 4,
+    "socketKind": "euro"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 3,
+    "type": "socket",
+    "xM": 1.44,
+    "zM": 1.1,
+    "note": "",
+    "host": "xl40zdmi",
+    "id": "9quc199f",
+    "label": "U80",
+    "slotOrder": 2
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 3,
+    "type": "socket",
+    "xM": 1.44,
+    "zM": 1.1,
+    "note": "",
+    "host": "xl40zdmi",
+    "id": "wyvym5y4",
+    "label": "U81",
+    "slotOrder": 5,
+    "socketKind": "euro"
    }
   ],
   "cables": [
@@ -5633,7 +5806,7 @@
    {
     "roomId": "mmcst90r",
     "wall": 0,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 5x1.5",
     "from": {
      "kind": "element",
      "id": "t9bfjuzh"
@@ -5687,7 +5860,7 @@
    {
     "roomId": "mmcst90r",
     "wall": 1,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 7x1.5",
     "from": {
      "kind": "element",
      "id": "ym95itv2"
@@ -5735,7 +5908,7 @@
    {
     "roomId": "mmcst90r",
     "wall": 1,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 7x1.5",
     "from": {
      "kind": "element",
      "id": "kgp7x3ag"
@@ -5756,7 +5929,7 @@
    {
     "roomId": "mmcst90r",
     "wall": 1,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 7x1.5",
     "from": {
      "kind": "element",
      "id": "ym95itv2"
@@ -5789,7 +5962,7 @@
    {
     "roomId": "mmcst90r",
     "wall": 0,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 7x1.5",
     "from": {
      "kind": "element",
      "id": "08dog5e8"
@@ -5896,6 +6069,50 @@
     ],
     "note": "",
     "id": "hyt16536"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 3,
+    "type": "UTP cat6",
+    "from": {
+     "kind": "element",
+     "id": "xl40zdmi"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "h1edv1eg",
+     "end": "end"
+    },
+    "via": [
+     {
+      "xM": 1.34,
+      "zM": 1.61
+     }
+    ],
+    "note": "",
+    "id": "cq3lmzu2"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 3,
+    "type": "koaks",
+    "from": {
+     "kind": "element",
+     "id": "xl40zdmi"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "h1edv1eg",
+     "end": "end"
+    },
+    "via": [
+     {
+      "xM": 1.28,
+      "zM": 1.57
+     }
+    ],
+    "note": "",
+    "id": "44gdz2zw"
    }
   ],
   "categories": [
@@ -6003,9 +6220,8 @@
  },
  "ui": {
   "view": {
-   "kind": "room",
-   "roomId": "mmcst90r",
-   "wall": 0
+   "kind": "junctions",
+   "elementId": "ym95itv2"
   }
  }
 }
