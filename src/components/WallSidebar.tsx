@@ -92,7 +92,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
         <section>
           <h3>Fotka zida {current.i + 1}</h3>
           <div className="field-row">
-            <button className="primary" onClick={() => fileRef.current?.click()}><Icon.camera /> {room.walls[current.i]?.photo ? 'Zamijeni fotku' : 'Učitaj fotku'}</button>
+            <button onClick={() => fileRef.current?.click()}><Icon.camera /> {room.walls[current.i]?.photo ? 'Zamijeni fotku' : 'Učitaj fotku'}</button>
             {room.walls[current.i]?.photo && <button className="icon-btn danger" title="Ukloni fotku" aria-label="Ukloni fotku" onClick={() => setWallPhoto(room.id, current.i, undefined)}><Icon.trash /></button>}
           </div>
           <input ref={fileRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => void onPhoto(e.target.files?.[0])} />
@@ -231,7 +231,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
               {RELAY_MODELS[relayModelOf(el)].dc && <p className="muted">24 V strana: traka i napajanje u niši, 230 V dolaz na L/N. Tipkala preko mreže (Plus i4) ili na DC ulaze.</p>}
             </>
           )}
-          {el.type === 'modbox' && <button onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori dozu (spojevi)</button>}
+          {el.type === 'modbox' && <button className="primary" onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori dozu (spojevi)</button>}
           {(isPlace(el) || el.type === 'socket' || (el.type === 'switch' && !el.host)) && (
             <label>
               Doza
@@ -240,8 +240,8 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
               </select>
             </label>
           )}
-          {el.type === 'box' && <button onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori kutiju (spojevi)</button>}
-          {(el.type === 'light' || el.type === 'motor' || el.type === 'kip' || (el.type === 'socket' && !el.host)) && <button onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori spoj (koje žile kamo)</button>}
+          {el.type === 'box' && <button className="primary" onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori kutiju (spojevi)</button>}
+          {(el.type === 'light' || el.type === 'motor' || el.type === 'kip' || (el.type === 'socket' && !el.host)) && <button className="primary" onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori spoj (koje žile kamo)</button>}
           {el.host && <div className="stat"><span>U</span><b>{hostLabel(el.host)}</b></div>}
           <div className="field-row" hidden={!!el.host}>
             <label>Od lijevo (m) <input type="number" step={0.01} value={el.xM} onChange={(e) => updateElement(el.id, { xM: +e.target.value || 0 })} /></label>
