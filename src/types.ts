@@ -50,7 +50,7 @@ export interface Wall {
   photo?: string
 }
 
-export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'motor' | 'kip'
+export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'motor' | 'kip' | 'boiler'
 
 // Smart relays that sit in a box: inputs are SW terminals, outputs are O terminals.
 export type RelayModel = 'gen4' | 'zbminir2' | 'rgbw'
@@ -217,6 +217,8 @@ export const ELEMENT_META: Record<ElementType, { label: string; key: string; pre
   motor: { label: 'Vrata / motor', key: 'D', prefix: 'V', zM: 2.3 },
   // main earthing terminal: the FeZn foundation-electrode tail lands on a busbar; Cu 16 to the board, Cu 6 bonding
   kip: { label: 'KIP · izjednačenje potencijala', key: 'Z', prefix: 'KIP', zM: 1.0 },
+  // electric water heater: fixed connection L N PE on its own circuit (3×2,5, B16), via a flush outlet box
+  boiler: { label: 'Bojler', key: 'B', prefix: 'BO', zM: 1.8 },
 }
 // places where cables are joined (have a junction drawing)
 export const PLACE_TYPES: ElementType[] = ['box', 'modbox']

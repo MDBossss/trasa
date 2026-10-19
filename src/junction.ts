@@ -103,6 +103,7 @@ function roleOfElement(e: WallElement): Role {
     case 'light': case 'ledpsu': return 'light'
     case 'motor': return 'motor'
     case 'kip': return 'earth'
+    case 'boiler': return 'socket'
     case 'switch': return 'switch'
     case 'box': case 'modbox': return 'pass'
     case 'panel': return 'feed'
@@ -648,7 +649,7 @@ export function allJunctions(p: Project): Junction[] {
 }
 
 // A light, a door unit or a stand-alone socket: one terminal block (klema) and the cable's cores going straight onto it.
-export const LEAF_TYPES: ElementType[] = ['light', 'motor', 'socket', 'kip']
+export const LEAF_TYPES: ElementType[] = ['light', 'motor', 'socket', 'kip', 'boiler']
 export const isLeaf = (e: WallElement) => LEAF_TYPES.includes(e.type) && !e.host
 export function leafJunctionFor(el: WallElement, p: Project): Junction {
   if (el.type === 'kip') return kipJunctionFor(el, p)
@@ -657,7 +658,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   const data = isData(el)
   const dm = data ? DATA_META[el.socketKind as 'rj45' | 'tv'] : null
   const ports = el.type === 'motor' ? ['L', 'N', 'PE', 'IMP 1', 'IMP 2'] : dm ? [dm.port] : ['L', 'N', 'PE']
-  const name = el.type === 'light' ? 'svjetiljka' : el.type === 'motor' ? 'upravljačka jedinica' : dm ? dm.name : 'utičnica'
+  const name = el.type === 'light' ? 'svjetiljka' : el.type === 'motor' ? 'upravljačka jedinica' : el.type === 'boiler' ? 'bojler, priključna stezaljka' : dm ? dm.name : 'utičnica'
   const device: Device = { el, label: `${el.label} ${name}`, ports, wMm: Math.max(24, ports.length * 8), hMm: 16, kind: 'terminal' }
   const cables: BoxCable[] = p.cables
     .filter((c) => isAtBox(c, el))
@@ -675,6 +676,11 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
       return { ...r, ...sideOf(r, el, p), wires }
     })
   if (!cables.length) checks.push({ level: 'warn', text: `${el.label}: do ${name === 'svjetiljka' ? 'svjetla' : name} ne dolazi nijedan kabel.` })
+  if (el.type === 'boiler') for (const c of cables) {
+    // a water heater (~2 kW, hours at a time) gets its own circuit: 2,5 mm² on B16, straight from the board
+    if (sectionOf(c.cable.type) < 2.5) checks.push({ level: 'warn', text: `${el.label}: bojler vuče ~2 kW satima, kabel ${c.cable.type} je pretanak. Uzmi 3×2,5 na osigurač B16.` })
+    if (c.far.place) checks.push({ level: 'warn', text: `${el.label}: bojler se napaja preko kutije ${c.far.place.label}. Uobičajeno je vlastiti krug ravno iz ormara (bužir kategorije Dolaz ili kabel do ormara).` })
+  }
   if (cables.length > 1) checks.push({ level: 'warn', text: `${el.label}: ${cables.length} kabela na jednom uređaju; obično je jedan (ili provlačenje kroz dozu).` })
   const map = new Map<string, TerminalWire[]>()
   const add = (id: string, w: TerminalWire) => { if (!map.has(id)) map.set(id, []); map.get(id)!.push(w) }

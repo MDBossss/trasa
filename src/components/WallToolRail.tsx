@@ -18,6 +18,7 @@ export const WALL_TOOLS: WallToolDef[] = [
   { id: 'element', type: 'relay', label: ELEMENT_META.relay.label, key: 'R', icon: 'relay', hint: 'Klik na kutiju, dozu ili LED nišu stavi relej (Shelly) u nju' },
   { id: 'element', type: 'ledpsu', label: ELEMENT_META.ledpsu.label, key: 'N', icon: 'led', hint: 'Klik postavi LED nišu (traka 24 V + napajanje)' },
   { id: 'element', type: 'motor', label: ELEMENT_META.motor.label, key: 'D', icon: 'motor', hint: 'Klik postavi upravljačku jedinicu vrata (rolo / sekcijska): L N PE + impuls sa Shellyja' },
+  { id: 'element', type: 'boiler', label: ELEMENT_META.boiler.label, key: 'B', icon: 'boiler', hint: 'Klik postavi bojler: fiksni priključak L N PE, kabel 3×2,5 na vlastiti krug' },
   { id: 'element', type: 'kip', label: ELEMENT_META.kip.label, key: 'Z', icon: 'earth', hint: 'Klik postavi KIP (glavno uzemljenje): traka iz temelja, Cu 16 do ormara, Cu 6 izjednačenje' },
 ]
 

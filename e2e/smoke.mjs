@@ -556,6 +556,16 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   assert.equal(cx.midPorts, 4, 'a cross switch has four terminals'); assert.deepEqual(cx.bad, [], 'no errors in the chain')
   await page.evaluate(({ cx }) => { const s = window.__trasa.getState(); const drop = new Set(cx.ids); s.patchProject({ cables: s.project.cables.filter((c) => !drop.has(c.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) }) }, { cx })
 
+  // water heater: fixed L N PE, too-thin cable or a feed through a room box is flagged
+  const bo = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
+    const b = s.addElement({ roomId: room, wall: 0, type: 'boiler', xM: 3.2, zM: 1.8, note: '' }); s = window.__trasa.getState()
+    const c = s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: b }, via: [], note: '' }); s = window.__trasa.getState()
+    const j = E.allLeafJunctions(s.project).find((x) => x.box.id === b)
+    return { terms: j.terminals.map((t) => t.label), warns: j.checks.filter((x) => x.level === 'warn').map((x) => x.text), ids: [b, c] } }, ids)
+  assert.deepEqual(bo.terms, ['L', 'N', 'PE'])
+  assert.ok(bo.warns.some((t) => /3×2,5/.test(t)) && bo.warns.some((t) => /ormara/.test(t)), bo.warns.join(' | '))
+  await page.evaluate(({ bo }) => { const s = window.__trasa.getState(); const drop = new Set(bo.ids); s.patchProject({ cables: s.project.cables.filter((c) => !drop.has(c.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) }) }, { bo })
+
   // main earthing terminal: FeZn tail on a busbar, Cu 16 to the board, Cu 6 bonding; sections are checked
   const kp = await page.evaluate(() => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
     const kip = s.addElement({ roomId: room, wall: 0, type: 'kip', xM: 0.4, zM: 1, note: '' }); const ro = s.addElement({ roomId: room, wall: 0, type: 'panel', xM: 1.2, zM: 1.5, note: '' }); s = window.__trasa.getState()

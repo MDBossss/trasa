@@ -149,7 +149,9 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       }
       // from the earthing terminal: Cu 16 to the board, Cu 6 bonding elsewhere
       const earth = kipEnd(draft.from) || kipEnd(to) ? (panelEnd(draft.from) || panelEnd(to) ? 'PE Cu 16 mm²' : 'PE Cu 6 mm²') : null
-      addCable({ roomId, wall: wall.i, type: earth ?? dataEnd(to) ?? dataEnd(draft.from) ?? 'NYM-J 3x1.5', from: draft.from, to, via: draft.via, note: '' })
+      const boilerEnd = (e: CableEnd) => e.kind === 'element' && project.elements.find((x) => x.id === e.id)?.type === 'boiler'
+      const heavy = boilerEnd(draft.from) || boilerEnd(to) ? 'NYM-J 3x2.5' : null
+      addCable({ roomId, wall: wall.i, type: earth ?? heavy ?? dataEnd(to) ?? dataEnd(draft.from) ?? 'NYM-J 3x1.5', from: draft.from, to, via: draft.via, note: '' })
       setDraft(null)
     },
     [draft, addCable, roomId, wall.i],
@@ -166,7 +168,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       if (e.key === 'Backspace' && draft) { setDraft({ ...draft, via: draft.via.slice(0, -1) }); return }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) { removeSelected(); return }
       if (e.metaKey || e.ctrlKey) return
-      const map: Record<string, [typeof tool, ElementType?, 'tipkalo'?]> = { v: ['select'], h: ['pan'], k: ['element', 'box'], u: ['element', 'socket'], p: ['element', 'switch'], t: ['element', 'switch', 'tipkalo'], l: ['element', 'light'], o: ['element', 'panel'], m: ['element', 'modbox'], r: ['element', 'relay'], n: ['element', 'ledpsu'], d: ['element', 'motor'], z: ['element', 'kip'], c: ['cable'] }
+      const map: Record<string, [typeof tool, ElementType?, 'tipkalo'?]> = { v: ['select'], h: ['pan'], k: ['element', 'box'], u: ['element', 'socket'], p: ['element', 'switch'], t: ['element', 'switch', 'tipkalo'], l: ['element', 'light'], o: ['element', 'panel'], m: ['element', 'modbox'], r: ['element', 'relay'], n: ['element', 'ledpsu'], d: ['element', 'motor'], z: ['element', 'kip'], b: ['element', 'boiler'], c: ['cable'] }
       if (map[e.key]) setWallTool(...map[e.key])
       if (e.key === 'g') toggle('showGrid')
       if (e.key === '+' || e.key === '=') wallZoomBy(1.2, { x: size.w / 2, y: size.h / 2 })
@@ -540,6 +542,8 @@ function Symbol({ type, selected, px, modules, swKind, data, tv }: { type: Eleme
     }
     case 'light':
       return <>{halo}<Circle radius={7} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-5, -5, 5, 5]} stroke={stroke} strokeWidth={sw} /><Line points={[-5, 5, 5, -5]} stroke={stroke} strokeWidth={sw} /></>
+    case 'boiler': // water heater: upright tank with the heating element zigzag
+      return <>{halo}<Rect x={-8} y={-13} width={16} height={26} cornerRadius={8} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-3, -6, 3, -3, -3, 0, 3, 3, -3, 6]} stroke={stroke} strokeWidth={sw} lineJoin="round" /></>
     case 'kip': // box with the IEC earth symbol (vertical stem, three shortening bars)
       return <>{halo}<Rect x={-9} y={-9} width={18} height={18} cornerRadius={2} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[0, -6, 0, 0]} stroke={stroke} strokeWidth={sw} /><Line points={[-6, 0, 6, 0]} stroke={stroke} strokeWidth={sw} /><Line points={[-4, 2.5, 4, 2.5]} stroke={stroke} strokeWidth={sw} /><Line points={[-2, 5, 2, 5]} stroke={stroke} strokeWidth={sw} /></>
     case 'motor': // control unit box with the motor circle: M in a box
