@@ -1,5 +1,6 @@
 import { useStore } from './store'
 import { download } from './images'
+import { ghConnected, linkedSlug, saveToGitHub } from './sync'
 import type { Project, View } from './types'
 
 // Save file = project + UI position, so opening it resumes where you stopped.
@@ -36,6 +37,8 @@ export function applySaveFile(f: SaveFile) {
 }
 
 export async function save(as = false) {
+  // a project opened from or saved to GitHub keeps saving there; "Spremi kao…" always asks for a file
+  if (!as && linkedSlug() && ghConnected()) { await saveToGitHub().catch(() => {}); return }
   const w = window as FsWindow
   const data = JSON.stringify(buildSaveFile())
   const fileName = `${useStore.getState().project.name.replace(/\s+/g, '_') || 'projekt'}.trasa.json`

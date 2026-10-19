@@ -33,14 +33,19 @@ export async function saveRemote(cfg: GhConfig, onStatus: (s: string) => void) {
   const existing = new Set((await ghList(cfg, `${dir}/img`)).map((e) => e.name.replace(/\.enc$/, '')))
   const refs = new Map<string, string>()
 
+  // count the images that still have to go up, so the progress can say "3 / 12"
+  const all = [file.project.planImage, ...file.project.rooms.flatMap((r) => Object.values(r.walls).map((w) => w.photo))].filter((u): u is string => !!u)
+  const names = new Map<string, string>()
+  for (const u of new Set(all)) names.set(u, `${await sha256Hex(u)}.${dataUrlToBytes(u).mime === 'image/png' ? 'png' : 'jpg'}`)
+  const total = [...new Set(names.values())].filter((n) => !existing.has(n)).length
+  let sent = 0
   const upload = async (dataUrl: string) => {
     if (refs.has(dataUrl)) return refs.get(dataUrl)!
-    const { mime, bytes } = dataUrlToBytes(dataUrl)
-    const ext = mime === 'image/png' ? 'png' : 'jpg'
-    const name = `${await sha256Hex(dataUrl)}.${ext}`
+    const { bytes } = dataUrlToBytes(dataUrl)
+    const name = names.get(dataUrl)!
     const path = `${dir}/img/${name}`
     if (!existing.has(name)) {
-      onStatus(`Šaljem sliku ${refs.size + 1}…`)
+      onStatus(`Šaljem slike ${++sent} / ${total}…`)
       await ghPut(cfg, enc(cfg, path), await seal(cfg, bytes), `trasa: ${slug} slika`)
       existing.add(name)
     }

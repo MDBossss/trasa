@@ -38,6 +38,8 @@ interface State {
   fitNonce: number
   dirty: boolean
   fileName: string | null
+  // cloud save in progress / last result, shown in the header chip
+  sync: { busy: boolean; text: string; error: string | null; at: number | null }
 
   setTool: (t: Tool) => void
   setWallTool: (t: WallTool, type?: ElementType, placeSwitchKind?: 'tipkalo') => void
@@ -100,6 +102,7 @@ export const useStore = create<State>()(
       fitNonce: 0,
       dirty: false,
       fileName: null,
+      sync: { busy: false, text: '', error: null, at: null },
 
       setTool: (tool) => set({ tool, selectedId: null }),
       setWallTool: (wallTool, type, placeSwitchKind) => set((s) => ({ wallTool, elementType: type ?? s.elementType, placeSwitchKind: type ? placeSwitchKind : s.placeSwitchKind, selectedId: null })),

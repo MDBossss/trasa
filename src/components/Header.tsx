@@ -4,6 +4,7 @@ import { fileToDataUrl } from '../images'
 import { emptyProject } from '../types'
 import { open, save } from '../persistence'
 import { GitHubPanel } from './GitHubPanel'
+import { ghConnected } from '../sync'
 import { SettingsPanel } from './SettingsPanel'
 import { Icon } from './Icons'
 
@@ -11,6 +12,8 @@ export function Header() {
   const project = useStore((s) => s.project)
   const dirty = useStore((s) => s.dirty)
   const fileName = useStore((s) => s.fileName)
+  const sync = useStore((s) => s.sync)
+  const toGitHub = !!fileName?.startsWith('gh:') && ghConnected()
   const { patchProject, replaceProject, setView } = useStore.getState()
   const view = useStore((s) => s.view)
   const roomId = useStore((s) => s.roomId)
@@ -65,7 +68,7 @@ export function Header() {
             {item('Novi projekt', 'file', reset)}
             {item('Otvori…', 'folder', () => (hasPicker ? void open() : jsonInput.current?.click()), '⌘O')}
             {item('Spremi', 'save', () => void save(), '⌘S')}
-            {hasPicker && item('Spremi kao…', 'save', () => void save(true), '⇧⌘S')}
+            {hasPicker && item(toGitHub ? 'Spremi kao datoteku…' : 'Spremi kao…', 'save', () => void save(true), '⇧⌘S')}
             <div className="menu-sep" />
             {item('GitHub projekti…', 'cloud', () => setGh(true))}
             <div className="menu-sep" />
@@ -77,9 +80,11 @@ export function Header() {
       </div>
       <div className="brand">Trasa</div>
       <input className="project-name" value={project.name} onChange={(e) => patchProject({ name: e.target.value })} aria-label="Naziv projekta" />
-      <span className={`save-state ${dirty ? 'dirty' : ''}`} title={fileName ?? 'nije spremljeno u datoteku'}>
-        {dirty ? 'Nespremljeno' : 'Spremljeno'}{fileName ? ` · ${fileName.replace(/^gh:/, 'GitHub/')}` : ''}
-      </span>
+      {sync.busy ? <span className="save-state busy"><span className="spinner" /> {sync.text}</span>
+        : sync.error ? <button className="save-state err" onClick={() => setGh(true)} title={sync.error}>Spremanje nije uspjelo · detalji</button>
+        : <span className={`save-state ${dirty ? 'dirty' : ''}`} title={fileName ?? 'nije spremljeno u datoteku'}>
+            {dirty ? 'Nespremljeno' : 'Spremljeno'}{fileName ? ` · ${fileName.replace(/^gh:/, 'GitHub/')}` : ''}
+          </span>}
       <div className="spacer" />
       <nav className="segmented view-nav" aria-label="Pogled">
         <button className={view.kind === 'plan' ? 'on' : ''} aria-pressed={view.kind === 'plan'} onClick={() => setView({ kind: 'plan' })}>Tlocrt</button>
@@ -99,7 +104,7 @@ export function Header() {
         </select>
       )}
       <div className="spacer" />
-      <button className="primary" onClick={() => void save()} title="Spremi (⌘S)" aria-label="Spremi"><Icon.save /><span className="lbl">Spremi</span></button>
+      <button className="primary" onClick={() => void save()} disabled={sync.busy} title={toGitHub ? `Spremi na GitHub (⌘S) · ${fileName?.slice(3)}` : 'Spremi u datoteku (⌘S)'} aria-label="Spremi">{toGitHub ? <Icon.cloud /> : <Icon.save />}<span className="lbl">Spremi</span></button>
       <button onClick={() => setGh(true)} title="Projekti u GitHub repou" aria-label="GitHub"><Icon.cloud /><span className="lbl">GitHub</span></button>
       <button className="icon-btn" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} title="Svijetla / tamna tema" aria-label="Tema">
         {theme === 'dark' ? <Icon.sun /> : <Icon.moon />}

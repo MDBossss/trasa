@@ -828,8 +828,9 @@ await page.locator('.sidebar .list li', { hasText: 'Dnevna' }).getByText('Otvori
 await page.locator('.sidebar .list li', { hasText: 'Zid 3' }).click()
 await page.locator('.wall-nav', { hasText: 'Zid 3' }).waitFor()
 await page.getByRole('button', { name: 'GitHub' }).click()
-await page.locator('.modal').getByText('Spremi "Kuća" u repo').click()
-await page.locator('.modal .list').getByText('kuca').waitFor()
+await page.locator('.gh-card').getByRole('button', { name: 'Spremi na GitHub' }).click()
+await page.locator('.gh-list').getByText('kuca').waitFor()
+await page.locator('.gh-card .gh-state.ok', { hasText: 'Spremljeno' }).waitFor()
 // plan and wall photo are the same PNG here, so they dedupe to one image file
 assert.deepEqual([...repo.keys()].filter((k) => !k.includes('/img/')), ['projects/kuca/project.json.enc'])
 assert.equal([...repo.keys()].filter((k) => k.includes('/img/')).length, 1)
@@ -850,18 +851,22 @@ assert.equal(await page.evaluate(() => window.__trasa.getState().fileName), 'gh:
 // saving again re-uses the images and updates project.json even if the file changed elsewhere (stale sha → refetch)
 repo.get('projects/kuca/project.json.enc').sha = 'sha_changed_on_another_device'
 const shaBefore = repo.get('projects/kuca/project.json.enc').sha
-await page.locator('.modal').getByText('Spremi "Kuća" u repo').click()
+// the project is now linked to GitHub: Cmd+S in the app saves there (no file dialog)
+await page.locator('.modal-head button').click()
+await page.evaluate(() => window.__trasa.getState().patchProject({ name: 'Kuća' }))
+await page.keyboard.press('ControlOrMeta+s')
 for (let i = 0; i < 50 && repo.get('projects/kuca/project.json.enc').sha === shaBefore; i++) await page.waitForTimeout(100)
 assert.notEqual(repo.get('projects/kuca/project.json.enc').sha, shaBefore)
 assert.equal(repo.size, 2)
-await page.locator('.modal-head button').click()
+await page.locator('.save-state', { hasText: 'GitHub/kuca' }).waitFor()
 
 // wipe, open from GitHub → identical project and view
 await menu('Novi projekt')
 await page.locator('.list').getByText('B1-ormar').waitFor({ state: 'hidden' })
 await page.evaluate(() => new Promise((r) => { const q = indexedDB.deleteDatabase('keyval-store'); q.onsuccess = q.onerror = q.onblocked = () => r() }))
 await page.getByRole('button', { name: 'GitHub' }).click()
-await page.locator('.modal .list li', { hasText: 'kuca' }).getByText('Otvori').click()
+await page.locator('.gh-list li', { hasText: 'kuca' }).getByRole('button', { name: 'Otvori', exact: true }).click()
+if (await page.getByRole('button', { name: 'Otvori svejedno' }).isVisible().catch(() => false)) await page.getByRole('button', { name: 'Otvori svejedno' }).click()
 await page.locator('.room-head h2', { hasText: 'Dnevna' }).waitFor()
 await page.locator('.wall-nav', { hasText: 'Zid 3' }).waitFor()
 await page.waitForFunction(() => window.Konva.stages[0].findOne('Image'))
