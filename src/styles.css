@@ -488,3 +488,22 @@ button.chip:hover { filter: brightness(0.97); }
 .save-state.busy { background: var(--accent-soft); color: var(--accent); }
 .save-state.err { background: var(--danger-soft); color: var(--danger); cursor: pointer; }
 @media (max-width: 760px) { .modal.gh { width: 100%; max-width: 100%; max-height: 92vh; border-radius: 14px 14px 0 0; align-self: end; } .gh-card { flex-direction: column; align-items: stretch; } }
+
+/* cable core schedule in the wall sidebar */
+.cores { display: flex; flex-direction: column; gap: 8px; }
+.cores .check > span:last-child { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.cores .check .fix { background: var(--danger); color: #fff; border-color: var(--danger); }
+.core-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.core-table td { padding: 5px 4px; border-top: 1px solid var(--line); vertical-align: middle; }
+.core-table tr:first-child td { border-top: 0; }
+.core-table td:first-child { width: 14px; padding-left: 0; }
+.core-dot { display: block; width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
+.core-dot.none { background: transparent; box-shadow: inset 0 0 0 1.5px var(--danger); }
+.core-color { color: var(--muted); white-space: nowrap; width: 1%; }
+.core-sig { font-weight: 700; white-space: nowrap; width: 1%; }
+.core-desc { color: var(--muted); }
+.core-table tr.spare td { color: var(--muted); }
+.core-table tr.spare .core-sig { font-weight: 400; }
+.core-table tr.missing td { color: var(--danger); }
+
+.btn-kbd { margin-left: 6px; font-size: 11px; padding: 1px 6px; border-radius: 5px; background: rgba(255,255,255,.22); border: 0; color: inherit; font-family: inherit; }

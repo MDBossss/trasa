@@ -5,6 +5,7 @@ import { emptyProject } from '../types'
 import { open, save } from '../persistence'
 import { GitHubPanel } from './GitHubPanel'
 import { ghConnected } from '../sync'
+import { kbd } from '../keys'
 import { SettingsPanel } from './SettingsPanel'
 import { Icon } from './Icons'
 
@@ -66,9 +67,9 @@ export function Header() {
         {menu && (
           <div className="menu">
             {item('Novi projekt', 'file', reset)}
-            {item('Otvori…', 'folder', () => (hasPicker ? void open() : jsonInput.current?.click()), '⌘O')}
-            {item('Spremi', 'save', () => void save(), '⌘S')}
-            {hasPicker && item(toGitHub ? 'Spremi kao datoteku…' : 'Spremi kao…', 'save', () => void save(true), '⇧⌘S')}
+            {item('Otvori…', 'folder', () => (hasPicker ? void open() : jsonInput.current?.click()), kbd('O'))}
+            {item(toGitHub ? 'Spremi na GitHub' : 'Spremi', toGitHub ? 'cloud' : 'save', () => void save(), kbd('S'))}
+            {hasPicker && item(toGitHub ? 'Spremi kao datoteku…' : 'Spremi kao…', 'save', () => void save(true), kbd('S', true))}
             <div className="menu-sep" />
             {item('GitHub projekti…', 'cloud', () => setGh(true))}
             <div className="menu-sep" />
@@ -104,7 +105,7 @@ export function Header() {
         </select>
       )}
       <div className="spacer" />
-      <button className="primary" onClick={() => void save()} disabled={sync.busy} title={toGitHub ? `Spremi na GitHub (⌘S) · ${fileName?.slice(3)}` : 'Spremi u datoteku (⌘S)'} aria-label="Spremi">{toGitHub ? <Icon.cloud /> : <Icon.save />}<span className="lbl">Spremi</span></button>
+      <button className="primary" onClick={() => void save()} disabled={sync.busy} title={toGitHub ? `Spremi na GitHub (${kbd('S')}) · ${fileName?.slice(3)}` : `Spremi u datoteku (${kbd('S')})`} aria-label="Spremi">{toGitHub ? <Icon.cloud /> : <Icon.save />}<span className="lbl">Spremi</span></button>
       <button onClick={() => setGh(true)} title="Projekti u GitHub repou" aria-label="GitHub"><Icon.cloud /><span className="lbl">GitHub</span></button>
       <button className="icon-btn" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} title="Svijetla / tamna tema" aria-label="Tema">
         {theme === 'dark' ? <Icon.sun /> : <Icon.moon />}

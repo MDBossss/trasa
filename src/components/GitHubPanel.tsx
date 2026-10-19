@@ -4,6 +4,7 @@ import { listRemoteProjects, openRemote, slugify } from '../remote'
 import { useStore } from '../store'
 import { saveToGitHub } from '../sync'
 import { Icon } from './Icons'
+import { kbd } from '../keys'
 
 const DEFAULT: GhConfig = { token: '', repo: 'mdbossss/trasa', branch: 'main', passphrase: '' }
 const cleanRepo = (r: string) => r.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '').replace(/\/$/, '')
@@ -130,17 +131,19 @@ export function GitHubPanel({ onClose }: { onClose: () => void }) {
                 <div className={`gh-state ${sync.error ? 'err' : dirty || !linked ? 'warn' : 'ok'}`}>
                   {sync.busy ? <><span className="spinner" />{sync.text}</>
                     : sync.error ? <><Icon.alert width={14} height={14} />Spremanje nije uspjelo</>
+                    : !linked && projects?.includes(slug) ? 'Na GitHubu postoji, spremi da se poveže'
                     : !linked ? 'Još nije spremljen na GitHub'
                     : dirty ? 'Nespremljene promjene'
                     : <><Icon.check width={14} height={14} />Spremljeno{sync.at ? ` · ${ago(sync.at)}` : ''}</>}
                 </div>
               </div>
               <button className="primary" onClick={() => void save()} disabled={working}>
-                <Icon.cloud /> {linked ? 'Spremi' : 'Spremi na GitHub'}
+                <Icon.cloud /> {linked ? 'Spremi' : 'Spremi na GitHub'}{linked && <kbd className="btn-kbd">{kbd('S')}</kbd>}
               </button>
             </section>
             {sync.busy && <div className="gh-progress"><span /></div>}
-            {linked && <span className="gh-help">Projekt je vezan uz GitHub: <kbd>⌘</kbd> <kbd>S</kbd> i gumb Spremi u zaglavlju spremaju ovdje. "Spremi kao…" u izborniku sprema u datoteku.</span>}
+            {linked && <span className="gh-help">Projekt je vezan uz GitHub: <kbd>{kbd('S')}</kbd> i gumb Spremi u zaglavlju spremaju ovdje, a "Spremi kao datoteku…" ({kbd('S', true)}) sprema lokalno.</span>}
+            {!linked && <span className="gh-help">Nakon prvog spremanja projekt ostaje vezan uz GitHub, pa ga dalje spremaš s <kbd>{kbd('S')}</kbd>.</span>}
 
             <div className="gh-list-head">
               <h4>Projekti u repou {projects && <span className="count">{projects.length}</span>}</h4>

@@ -590,7 +590,14 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   await page.locator('.jsteps li.hdr', { hasText: 'S1 · 221-412 · R1 izlaz 1 → svjetlo' }).waitFor()
   // the wall props say how many cores the frame cable needs
   await page.evaluate(({ c }) => { const s = window.__trasa.getState(); s.setView({ kind: 'room', roomId: s.project.rooms[0].id, wall: 0 }); s.select(c) }, ids2)
-  await page.locator('.props .stat', { hasText: '4 potrebno · 5 ima' }).waitFor()
+  await page.locator('.props .cores .check', { hasText: 'Dovoljno žila: 4 od 5, 1 rezervna' }).waitFor()
+  await page.locator('.props .core-table tr', { hasText: 'smeđa' }).getByText('L', { exact: true }).waitFor()
+  // too few cores: red status, the missing signal is listed, and the quick fix swaps the cable type
+  await page.evaluate(({ c }) => window.__trasa.getState().updateCable(c, { type: 'NYM-J 3x1.5' }), ids2)
+  await page.locator('.props .cores .check.err', { hasText: 'Treba 4 žila, kabel ima 3' }).waitFor()
+  await page.locator('.props .core-table tr.missing').first().waitFor()
+  await page.getByRole('button', { name: 'Zamijeni s 5x1.5' }).click()
+  await page.locator('.props .cores .check', { hasText: 'Dovoljno žila: 4 od 5' }).waitFor()
   // phase 3: material for the house and the print preview
   await page.getByRole('button', { name: 'Materijal' }).click()
   await page.locator('.bom-table tr', { hasText: 'Doza modularna 3M (TEM PM3), duboka' }).getByText('1 kom').waitFor()
@@ -875,6 +882,12 @@ assert.equal(st.planImage, before.planImage)
 assert.deepEqual(st.rooms[0].walls, before.rooms[0].walls)
 assert.deepEqual(st.conduits, before.conduits)
 await page.screenshot({ path: `${SHOTS}/trasa-github.png` })
+// the GitHub link survives a reload, and a new project is not linked to it
+await page.reload(); await page.waitForFunction(() => window.__trasa?.getState().loaded)
+assert.equal(await page.evaluate(() => window.__trasa.getState().fileName), 'gh:kuca')
+await page.locator('.save-state', { hasText: 'GitHub/kuca' }).waitFor()
+await page.evaluate(() => window.__trasa.getState().replaceProject({ ...window.__trasa.getState().project }))
+assert.equal(await page.evaluate(() => window.__trasa.getState().fileName), null)
 
 assert.deepEqual(errors, [], 'console/page errors')
 console.log('OK', { prompts })

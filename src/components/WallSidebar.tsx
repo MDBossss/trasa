@@ -2,9 +2,19 @@ import { Fragment, useRef } from 'react'
 import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
-import { CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, type BoxDepth, type CableRole, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
+import { CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, coreColors, WIRE_LABEL, type BoxDepth, type CableRole, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
 import { cableNeeds, resolveCable, roleLabel, terminalMeta } from '../junction'
 import { Icon } from './Icons'
+import { wireSwatch } from './JunctionCanvas'
+
+// smallest NYM-J of the same cross-section that has enough cores
+const upgradeType = (type: string, needed: number) => {
+  const sect = /2[.,]5/.test(type) ? '2.5' : '1.5'
+  const n = [3, 5, 7].find((x) => x >= needed)
+  if (!n) return null
+  const t = `NYM-J ${n}x${sect}`
+  return CABLE_TYPES.includes(t) ? t : `NYM-J ${n}x1.5`
+}
 
 const SWITCH_KINDS: { id: SwitchKind; label: string; wires: string }[] = [
   { id: 'obicni', label: 'Obični', wires: 'L + povratna' },
@@ -268,12 +278,51 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
           {(['from', 'to'] as const).map((k) => { const e = cable[k]; return e.kind === 'corner' ? <label key={k}>Visina u kutu (m) <input type="number" step={0.01} value={e.zM} onChange={(ev) => updateCable(cable.id, { [k]: { ...e, zM: +ev.target.value || 0 } })} /></label> : null })}
           {(() => {
             const needs = cableNeeds(cable, project)
-            if (needs) return (
-              <div className={`stat ${needs.has < needs.needed ? 'warn' : ''}`}>
-                <span>Žile</span><b>{needs.needed} potrebno · {needs.has} ima</b>
-                <span className="muted">{needs.signals.map((s) => terminalMeta(s, project).label).join(', ')}{needs.has < needs.needed ? ` → uzmi ${needs.suggest}` : ''}</span>
-              </div>
-            )
+            if (needs) {
+              // core schedule (žilni raspored): which core carries what, same assignment as the junction drawing
+              const cores = coreColors(cable.type)
+              const extras = needs.signals.filter((x) => !['L', 'N', 'PE'].includes(x))
+              let k = 0
+              const rows = cores.map((c) => {
+                const sig = c === 'brown' ? 'L' : c === 'blue' ? 'N' : c === 'gnye' ? 'PE' : extras[k++]
+                return { c, sig }
+              })
+              const missing = extras.slice(k)
+              const ok = missing.length === 0 && needs.has >= needs.needed
+              const spare = rows.filter((r) => !r.sig).length
+              const fix = upgradeType(cable.type, needs.needed)
+              return (
+                <div className="cores">
+                  <div className={`check ${ok ? '' : 'err'}`}>
+                    <span>{ok ? '✓' : '✕'}</span>
+                    <span>
+                      {ok ? <>Dovoljno žila: {needs.needed} od {needs.has}{spare ? `, ${spare} rezervna` : ''}</> : <>Treba {needs.needed} žila, kabel ima {needs.has}</>}
+                      {!ok && fix && <button className="mini fix" onClick={() => updateCable(cable.id, { type: fix })}>Zamijeni s {fix.replace('NYM-J ', '')}</button>}
+                    </span>
+                  </div>
+                  <table className="core-table">
+                    <tbody>
+                      {rows.map((r, i) => (
+                        <tr key={i} className={r.sig ? '' : 'spare'}>
+                          <td><i className="core-dot" style={{ background: wireSwatch(r.c) }} /></td>
+                          <td className="core-color">{WIRE_LABEL[r.c]}</td>
+                          <td className="core-sig">{r.sig ? terminalMeta(r.sig, project).label : '—'}</td>
+                          <td className="core-desc">{r.sig ? terminalMeta(r.sig, project).desc : 'rezerva'}</td>
+                        </tr>
+                      ))}
+                      {missing.map((sig) => (
+                        <tr key={sig} className="missing">
+                          <td><i className="core-dot none" /></td>
+                          <td className="core-color">nema žile</td>
+                          <td className="core-sig">{terminalMeta(sig, project).label}</td>
+                          <td className="core-desc">{terminalMeta(sig, project).desc}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )
+            }
             const box = [cable.from, cable.to].map((e) => (e.kind === 'element' ? project.elements.find((x) => x.id === e.id) : undefined)).find((x) => x && isPlace(x))
             const derived = box ? resolveCable(cable, box, project).role : null
             return (

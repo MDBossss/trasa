@@ -150,7 +150,8 @@ export const useStore = create<State>()(
       setSoloCategory: (soloCategory) => set({ soloCategory }),
       toggleHiddenConduit: (id) => set((s) => ({ hiddenConduits: s.hiddenConduits.includes(id) ? s.hiddenConduits.filter((x) => x !== id) : [...s.hiddenConduits, id] })),
       patchProject: (p) => set((s) => ({ project: { ...s.project, ...p } })),
-      replaceProject: (project) => set({ project: normalize(project), selectedId: null, view: { kind: 'plan' } }),
+      // a replaced project is no longer the file / GitHub project the old one was linked to (openers re-link it)
+      replaceProject: (project) => set({ project: normalize(project), selectedId: null, view: { kind: 'plan' }, fileName: null }),
 
       addConduit: (points) => {
         const id = uid()
@@ -336,9 +337,22 @@ export async function loadPersisted() {
       if (ui.wallCamera && Number.isFinite(ui.wallCamera.scale)) useStore.setState({ wallCamera: ui.wallCamera })
     }
   } catch { /* private mode or an old snapshot */ }
+  // a project linked to GitHub stays linked after a reload, with its unsaved flag
+  try {
+    const link = JSON.parse(localStorage.getItem(LINK_KEY) ?? 'null') as { fileName: string; dirty: boolean } | null
+    if (link?.fileName?.startsWith('gh:')) useStore.setState({ fileName: link.fileName, dirty: !!link.dirty })
+  } catch { /* private mode */ }
   useStore.setState({ loaded: true })
   useStore.temporal.getState().clear()
 }
+const LINK_KEY = 'trasa-link'
+useStore.subscribe((s, prev) => {
+  if (!s.loaded || (s.fileName === prev.fileName && s.dirty === prev.dirty)) return
+  try {
+    if (s.fileName?.startsWith('gh:')) localStorage.setItem(LINK_KEY, JSON.stringify({ fileName: s.fileName, dirty: s.dirty }))
+    else localStorage.removeItem(LINK_KEY)
+  } catch { /* private mode */ }
+})
 let uiTimer: number | undefined
 useStore.subscribe((s, prev) => {
   if (!s.loaded) return
