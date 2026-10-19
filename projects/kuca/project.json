@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-19T18:56:30.600Z",
+ "savedAt": "2026-10-19T19:05:27.993Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -3818,6 +3818,58 @@
     "id": "ae6m1y2h",
     "label": "D39",
     "modules": 4
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 0,
+    "type": "switch",
+    "xM": 0.77,
+    "zM": 1.33,
+    "note": "",
+    "host": "t9bfjuzh",
+    "switchKind": "izmjenicni",
+    "id": "odfg9rw9",
+    "label": "P12",
+    "slotOrder": 0,
+    "modules": 2,
+    "controls": [
+     "6t090yt4"
+    ]
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "switch",
+    "xM": 0.66,
+    "zM": 0.97,
+    "note": "",
+    "host": "9q36pcg1",
+    "switchKind": "krizni",
+    "id": "k54s5l57",
+    "label": "P13",
+    "slotOrder": 0,
+    "gapBefore": 1,
+    "modules": 2,
+    "controls": [
+     "6t090yt4"
+    ]
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "switch",
+    "xM": 2.17,
+    "zM": 1,
+    "note": "",
+    "host": "kgp7x3ag",
+    "switchKind": "izmjenicni",
+    "id": "3zyenpl6",
+    "label": "P14",
+    "slotOrder": 0,
+    "modules": 2,
+    "controls": [
+     "6t090yt4"
+    ]
    }
   ],
   "cables": [
@@ -5953,7 +6005,7 @@
   "view": {
    "kind": "room",
    "roomId": "mmcst90r",
-   "wall": 1
+   "wall": 0
   }
  }
 }
