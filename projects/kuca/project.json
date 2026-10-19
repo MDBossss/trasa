@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-19T19:24:29.657Z",
+ "savedAt": "2026-10-19T19:34:32.622Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -802,8 +802,8 @@
       "y": 1335.6102888431487
      },
      {
-      "x": 1161.801749123756,
-      "y": 1381.124429156817
+      "x": 1160.7675332497352,
+      "y": 1335.6102888431487
      }
     ],
     "from": "",
@@ -834,7 +834,7 @@
    {
     "id": "3hkut1lt",
     "name": "SPAJZA ZID",
-    "color": "#911eb4",
+    "color": "#ff0000",
     "diameter": 20,
     "points": [
      {
@@ -842,8 +842,8 @@
       "y": 1377.4736504728116
      },
      {
-      "x": 1262.4823335638687,
-      "y": 1280.1732224496188
+      "x": 1265.5558111146174,
+      "y": 1308.44341174638
      }
     ],
     "from": "",
@@ -851,7 +851,8 @@
     "note": "",
     "exitZ": {
      "end": 2.21
-    }
+    },
+    "categoryId": "dolaz"
    },
    {
     "id": "x3v27diw",
@@ -864,8 +865,8 @@
       "y": 1180.602706592775
      },
      {
-      "x": 1261.9549198208833,
-      "y": 1314.1197542978161
+      "x": 1262.0028108841354,
+      "y": 1323.1711652524252
      }
     ],
     "from": "",
@@ -873,7 +874,7 @@
     "note": "",
     "categoryId": "dolaz",
     "exitZ": {
-     "end": 2.2
+     "end": 2.18
     }
    },
    {
@@ -1016,8 +1017,8 @@
       "y": 1336.7417310493556
      },
      {
-      "x": 1310.8783261588153,
-      "y": 1437.1898270167924
+      "x": 1298.8034824070023,
+      "y": 1471.4691519573103
      }
     ],
     "from": "",
@@ -1025,7 +1026,7 @@
     "note": "",
     "categoryId": "rasvjeta",
     "exitZ": {
-     "end": 2.3,
+     "end": 2.47,
      "start": 1.89
     }
    },
@@ -4043,6 +4044,59 @@
     "label": "U81",
     "slotOrder": 5,
     "socketKind": "euro"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 1,
+    "type": "modbox",
+    "xM": 0.56,
+    "zM": 1.67,
+    "note": "",
+    "id": "uagf2fvr",
+    "label": "D40",
+    "depth": "duboka"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 1,
+    "type": "modbox",
+    "xM": 0.66,
+    "zM": 0.66,
+    "note": "",
+    "id": "bu93v75g",
+    "label": "D41",
+    "modules": 4
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 3,
+    "type": "modbox",
+    "xM": 1.18,
+    "zM": 0.85,
+    "note": "",
+    "id": "s56aem4a",
+    "label": "D42",
+    "modules": 7
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 3,
+    "type": "box",
+    "xM": 1.73,
+    "zM": 1.89,
+    "note": "",
+    "id": "tyh7zosp",
+    "label": "K20"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 2,
+    "type": "light",
+    "xM": 0.5499999999999996,
+    "zM": 2.26,
+    "note": "",
+    "id": "cfzsb3e9",
+    "label": "S10"
    }
   ],
   "cables": [
@@ -6113,6 +6167,61 @@
     ],
     "note": "",
     "id": "44gdz2zw"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "tyh7zosp"
+    },
+    "to": {
+     "kind": "element",
+     "id": "s56aem4a"
+    },
+    "via": [
+     {
+      "xM": 1.25,
+      "zM": 1.89
+     }
+    ],
+    "note": "",
+    "id": "cbftcxpm"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "3hkut1lt",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "tyh7zosp"
+    },
+    "via": [],
+    "note": "",
+    "id": "fkojnk39"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 2,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "cfzsb3e9"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "58bvmyvx",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "uizdduxf"
    }
   ],
   "categories": [
@@ -6220,7 +6329,9 @@
  },
  "ui": {
   "view": {
-   "kind": "plan"
+   "kind": "room",
+   "roomId": "j02a68g1",
+   "wall": 1
   }
  }
 }
