@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-20T20:42:48.565Z",
+ "savedAt": "2026-10-20T20:48:40.304Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -4138,6 +4138,65 @@
     "note": "",
     "id": "4zir1mti",
     "label": "K21"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 3,
+    "type": "boiler",
+    "xM": 0.3,
+    "zM": 1.67,
+    "note": "",
+    "id": "cedgyh07",
+    "label": "BO1"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 3,
+    "type": "socket",
+    "xM": 1.18,
+    "zM": 0.85,
+    "note": "",
+    "host": "s56aem4a",
+    "id": "ab5nz4xt",
+    "label": "U82",
+    "slotOrder": 1,
+    "socketKind": "euro"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 3,
+    "type": "socket",
+    "xM": 1.18,
+    "zM": 0.85,
+    "note": "",
+    "host": "s56aem4a",
+    "id": "aunqwx32",
+    "label": "U83",
+    "slotOrder": 2
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 3,
+    "type": "socket",
+    "xM": 1.18,
+    "zM": 0.85,
+    "note": "",
+    "host": "s56aem4a",
+    "id": "vd75iahe",
+    "label": "U84",
+    "slotOrder": 3
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 3,
+    "type": "socket",
+    "xM": 1.18,
+    "zM": 0.85,
+    "note": "",
+    "host": "s56aem4a",
+    "id": "1wetz9cg",
+    "label": "U85",
+    "slotOrder": 0
    }
   ],
   "cables": [
@@ -6302,6 +6361,23 @@
     ],
     "note": "",
     "id": "0t45qmh1"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 3,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "x3v27diw",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "cedgyh07"
+    },
+    "via": [],
+    "note": "",
+    "id": "i7z8svl9"
    }
   ],
   "categories": [
