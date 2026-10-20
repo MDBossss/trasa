@@ -36,7 +36,7 @@ Nacrtaš trase na tlocrtu i elemente na zidu, a Trasa izvede koje žile idu u ko
 <td width="50%" valign="top">
 
 ### Tlocrt i bužiri
-Učitaš sken tlocrta, postaviš mjerilo i nacrtaš sobe i trase bužira kroz deku. Bužiri imaju kategorije (dolaz, rasvjeta, internet, TODO…) i duljine u metrima.
+Učitaš sken tlocrta, postaviš mjerilo i nacrtaš sobe i trase bužira kroz deku. Bužiri imaju kategorije (dolaz, rasvjeta, internet, TODO…) i duljine u metrima; bilo koji bužir se kvačicom može označiti kao dolaz iz ormara.
 
 </td>
 <td width="50%"><img src="docs/img/plan.png" alt="Tlocrt"></td>

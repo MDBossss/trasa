@@ -359,7 +359,7 @@ export function PlanCanvas() {
                 <Rect name={c.id} x={b.x - px(5)} y={b.y - px(5)} width={px(10)} height={px(10)} fill={c.color} stroke="#fff" strokeWidth={px(1.5)} />
                 <Label x={mid.x} y={mid.y} name={c.id} offsetY={px(10)}>
                   <Tag fill={c.color} cornerRadius={px(3)} opacity={0.95} />
-                  <Text text={c.name} fontSize={px(11)} fill="#fff" padding={px(3)} fontStyle="bold" name={c.id} />
+                  <Text text={c.feed && c.categoryId !== 'dolaz' ? `⚡ ${c.name}` : c.name} fontSize={px(11)} fill="#fff" padding={px(3)} fontStyle="bold" name={c.id} />
                 </Label>
               </Group>
             )

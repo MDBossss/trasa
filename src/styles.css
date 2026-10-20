@@ -507,3 +507,6 @@ button.chip:hover { filter: brightness(0.97); }
 .core-table tr.missing td { color: var(--danger); }
 
 .btn-kbd { margin-left: 6px; font-size: 11px; padding: 1px 6px; border-radius: 5px; background: rgba(255,255,255,.22); border: 0; color: inherit; font-family: inherit; }
+
+.check-row { display: flex !important; flex-direction: row !important; align-items: center; gap: 8px; justify-content: flex-start !important; cursor: pointer; }
+.check-row input { width: auto !important; margin: 0; }

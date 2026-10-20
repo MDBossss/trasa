@@ -16,7 +16,10 @@ export interface Conduit {
   note: string
   // height from floor (m) where each end leaves the wall; undefined = ceiling
   exitZ?: { start?: number; end?: number }
+  // brings the supply from the board, whatever its category (e.g. a TODO conduit that will be a feed)
+  feed?: boolean
 }
+export const isFeedConduit = (c: { categoryId?: string; feed?: boolean } | undefined) => !!c && (c.categoryId === 'dolaz' || !!c.feed)
 
 // A category gives conduits a constant colour; keywords in the conduit name assign it automatically.
 export interface Category {

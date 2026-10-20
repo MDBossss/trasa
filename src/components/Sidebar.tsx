@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { conduitVisible, useStore } from '../store'
 import { fmtMeters, polylineLength } from '../geometry'
-import { DIAMETERS, conduitLabel, type Category, type Conduit } from '../types'
+import { DIAMETERS, conduitLabel, type Category, type Conduit, isFeedConduit } from '../types'
 import { conduitTouchesRoom } from '../walls'
 import { uid } from '../store'
 import { detectSkew } from '../images'
@@ -59,6 +59,10 @@ export function Sidebar({ part }: { part?: 'nav' | 'props' } = {}) {
               <option value="">(bez, vlastita boja)</option>
               {project.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
+          </label>
+          <label className="check-row" title="Kabel iz ovog bužira je napajanje kutije (dolaz iz ormara), neovisno o kategoriji">
+            <input type="checkbox" checked={isFeedConduit(conduit)} disabled={conduit.categoryId === 'dolaz'} onChange={(e) => updateConduit(conduit.id, { feed: e.target.checked || undefined })} />
+            <span>Dolaz iz ormara (napajanje){conduit.categoryId === 'dolaz' && <span className="muted"> · po kategoriji</span>}</span>
           </label>
           <div className="field-row">
             <label>Boja <input type="color" value={conduit.color} onChange={(e) => updateConduit(conduit.id, { color: e.target.value, categoryId: undefined })} /></label>

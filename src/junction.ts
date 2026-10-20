@@ -1,4 +1,4 @@
-import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isPlace, isData, dataKindOf, DATA_META, sectionOf, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, relayModelOf, hostedFront, type ElementType } from './types'
+import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isFeedConduit, isPlace, isData, dataKindOf, DATA_META, sectionOf, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, relayModelOf, hostedFront, type ElementType } from './types'
 import { wallExits } from './walls'
 
 // Everything a box needs: which cables enter it, what each core goes to, which devices sit inside
@@ -88,7 +88,7 @@ function follow(p: Project, c: Cable, end: CableEnd, hops = 0): { end: CableEnd;
   }
   if (end.kind === 'exit') {
     const cd = p.conduits.find((x) => x.id === end.conduitId)
-    if (!cd || cd.categoryId === 'dolaz') return { end, via: [], cable: c }
+    if (!cd || isFeedConduit(cd)) return { end, via: [], cable: c }
     const t = throughConduit(p, cd.id, end.end)
     if (!t) return { end, via: [cd.name], cable: c }
     const r = follow(p, t.cable, t.end, hops + 1)
@@ -126,7 +126,7 @@ export function resolveCable(c: Cable, box: WallElement, p: Project): Omit<BoxCa
     label = cd ? `${cd.name} ${role === 'feed' ? '←' : '→'} ${target.label}${room && room.id !== box.roomId ? ` (${room.name})` : ''}` : name
   }
   const cd0 = end.kind === 'exit' ? p.conduits.find((x) => x.id === end.conduitId) : undefined
-  if (cd0?.categoryId === 'dolaz') { role = 'feed'; label = `${cd0.name} ← dolaz`; far = { conduit: cd0 } }
+  if (cd0 && isFeedConduit(cd0)) { role = 'feed'; label = `${cd0.name} ← dolaz`; far = { conduit: cd0 } }
   else {
     const f = follow(p, c, end)
     const e = f.end.kind === 'element' ? el(p, f.end.id) : undefined
@@ -362,7 +362,7 @@ export function chainCables(c: Cable, p: Project): Cable[] {
     if (hops > 8) return
     let t: { cable: Cable; end: CableEnd } | null = null
     if (end.kind === 'corner') t = throughCorner(p, x, end)
-    else if (end.kind === 'exit') { const cd = p.conduits.find((k) => k.id === end.conduitId); if (cd && cd.categoryId !== 'dolaz') t = throughConduit(p, cd.id, end.end) }
+    else if (end.kind === 'exit') { const cd = p.conduits.find((k) => k.id === end.conduitId); if (cd && !isFeedConduit(cd)) t = throughConduit(p, cd.id, end.end) }
     if (!t || seen.has(t.cable.id)) return
     seen.set(t.cable.id, t.cable); walk(t.cable, t.end, hops + 1)
   }

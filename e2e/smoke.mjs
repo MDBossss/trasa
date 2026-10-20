@@ -556,6 +556,18 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   assert.equal(cx.midPorts, 4, 'a cross switch has four terminals'); assert.deepEqual(cx.bad, [], 'no errors in the chain')
   await page.evaluate(({ cx }) => { const s = window.__trasa.getState(); const drop = new Set(cx.ids); s.patchProject({ cables: s.project.cables.filter((c) => !drop.has(c.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) }) }, { cx })
 
+  // any conduit can be flagged as the supply from the board (e.g. a TODO one): its cable feeds the box
+  const fd = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
+    const k = s.addElement({ roomId: room, wall: 0, type: 'box', xM: 3.6, zM: 2.3, note: '' }); s = window.__trasa.getState()
+    const cd = s.addConduit([{ x: 480, y: 20 }, { x: 480, y: 102 }]); s = window.__trasa.getState(); s.updateConduit(cd, { name: 'TODO dolaz', categoryId: 'todo' }); s = window.__trasa.getState()
+    const c = s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'exit', conduitId: cd, end: 'end' }, to: { kind: 'element', id: k }, via: [], note: '' }); s = window.__trasa.getState()
+    const before = E.allJunctions(s.project).find((j) => j.box.id === k).checks.some((x) => /nema dolaza/.test(x.text))
+    s.updateConduit(cd, { feed: true }); s = window.__trasa.getState()
+    const j = E.allJunctions(s.project).find((x) => x.box.id === k)
+    return { before, after: j.checks.some((x) => /nema dolaza/.test(x.text)), role: j.cables[0].role, cat: s.project.conduits.find((x) => x.id === cd).categoryId, ids: [k, cd, c] } }, ids)
+  assert.ok(fd.before && !fd.after, 'flagging the conduit as a feed gives the box its supply'); assert.equal(fd.role, 'feed'); assert.equal(fd.cat, 'todo')
+  await page.evaluate(({ fd }) => { const s = window.__trasa.getState(); const drop = new Set(fd.ids); s.patchProject({ cables: s.project.cables.filter((c) => !drop.has(c.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)), conduits: s.project.conduits.filter((c) => !drop.has(c.id)) }) }, { fd })
+
   // water heater: fixed L N PE, too-thin cable or a feed through a room box is flagged
   const bo = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
     const b = s.addElement({ roomId: room, wall: 0, type: 'boiler', xM: 3.2, zM: 1.8, note: '' }); s = window.__trasa.getState()
