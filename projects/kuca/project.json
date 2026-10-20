@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-19T19:34:32.622Z",
+ "savedAt": "2026-10-20T20:42:48.565Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -834,7 +834,7 @@
    {
     "id": "3hkut1lt",
     "name": "SPAJZA ZID",
-    "color": "#ff0000",
+    "color": "#8000ff",
     "diameter": 20,
     "points": [
      {
@@ -852,7 +852,7 @@
     "exitZ": {
      "end": 2.21
     },
-    "categoryId": "dolaz"
+    "feed": true
    },
    {
     "id": "x3v27diw",
@@ -865,7 +865,7 @@
       "y": 1180.602706592775
      },
      {
-      "x": 1262.0028108841354,
+      "x": 1265.7512034602294,
       "y": 1323.1711652524252
      }
     ],
@@ -1442,7 +1442,7 @@
    {
     "id": "vx1mkoex",
     "name": "DOLAZ ZA SOBU 1",
-    "color": "#ff0000",
+    "color": "#06b6b4",
     "diameter": 20,
     "points": [
      {
@@ -1457,11 +1457,12 @@
     "from": "",
     "to": "",
     "note": "",
-    "categoryId": "dolaz",
+    "categoryId": "todo",
     "exitZ": {
      "start": 1.98,
      "end": 2.34
-    }
+    },
+    "feed": true
    },
    {
     "id": "smrgpimc",
@@ -1509,6 +1510,26 @@
     "exitZ": {
      "start": 2
     }
+   },
+   {
+    "id": "wfvva2oc",
+    "name": "KUPAONA UTICNICA",
+    "color": "#e6194b",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1046.491870422817,
+      "y": 1385.3937459162617
+     },
+     {
+      "x": 1075.909367784202,
+      "y": 1385.3937459162617
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "struja"
    }
   ],
   "rooms": [
@@ -4097,6 +4118,26 @@
     "note": "",
     "id": "cfzsb3e9",
     "label": "S10"
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 0,
+    "type": "light",
+    "xM": 0.8000000000000004,
+    "zM": 2.31,
+    "note": "",
+    "id": "1cy26wsr",
+    "label": "S11"
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 3,
+    "type": "box",
+    "xM": 1.43,
+    "zM": 2.35,
+    "note": "",
+    "id": "4zir1mti",
+    "label": "K21"
    }
   ],
   "cables": [
@@ -6222,6 +6263,45 @@
     "via": [],
     "note": "",
     "id": "uizdduxf"
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "9t44fvgq",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "1cy26wsr"
+    },
+    "via": [],
+    "note": "",
+    "id": "yv2uimit"
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "4zir1mti"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "wfvva2oc",
+     "end": "end"
+    },
+    "via": [
+     {
+      "xM": 0.97,
+      "zM": 2.35
+     }
+    ],
+    "note": "",
+    "id": "0t45qmh1"
    }
   ],
   "categories": [
@@ -6331,7 +6411,7 @@
   "view": {
    "kind": "room",
    "roomId": "j02a68g1",
-   "wall": 1
+   "wall": 3
   }
  }
 }
