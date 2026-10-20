@@ -22,7 +22,12 @@ export const WALL_TOOLS: WallToolDef[] = [
   { id: 'element', type: 'kip', label: ELEMENT_META.kip.label, key: 'Z', icon: 'earth', hint: 'Klik postavi KIP (glavno uzemljenje): traka iz temelja, Cu 16 do ormara, Cu 6 izjednačenje' },
 ]
 
-const GROUPS: number[][] = [[0, 1], [2, 3, 4, 5, 6, 7], [8, 9, 10, 11], [12]]
+// grouped by name, not position, so a new tool can never fall out of the rail
+const key = (t: WallToolDef) => (t.id === 'element' ? `${t.type}${t.switchKind ? `:${t.switchKind}` : ''}` : t.id)
+const GROUP_KEYS = [['select', 'pan', 'cable'], ['box', 'modbox', 'socket', 'switch', 'switch:tipkalo', 'light'], ['relay', 'ledpsu', 'motor', 'boiler'], ['panel', 'kip']]
+const GROUPS: number[][] = GROUP_KEYS.map((g) => g.map((k) => WALL_TOOLS.findIndex((t) => key(t) === k)).filter((i) => i >= 0))
+const rest = WALL_TOOLS.map((_, i) => i).filter((i) => !GROUPS.flat().includes(i))
+if (rest.length) GROUPS.push(rest)
 
 export function WallToolRail() {
   const tool = useStore((s) => s.wallTool)

@@ -568,6 +568,9 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   assert.ok(fd.before && !fd.after, 'flagging the conduit as a feed gives the box its supply'); assert.equal(fd.role, 'feed'); assert.equal(fd.cat, 'todo')
   await page.evaluate(({ fd }) => { const s = window.__trasa.getState(); const drop = new Set(fd.ids); s.patchProject({ cables: s.project.cables.filter((c) => !drop.has(c.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)), conduits: s.project.conduits.filter((c) => !drop.has(c.id)) }) }, { fd })
 
+  // every wall tool is in the rail
+  await page.evaluate(() => { const s = window.__trasa.getState(); s.setView({ kind: 'room', roomId: s.project.rooms[0].id, wall: 0 }) })
+  for (const name of ['Kabel', 'Bojler', 'KIP · izjednačenje potencijala', 'Vrata / motor']) await page.locator('.tool-rail').getByRole('button', { name, exact: true }).waitFor({ state: 'attached' })
   // water heater: fixed L N PE, too-thin cable or a feed through a room box is flagged
   const bo = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
     const b = s.addElement({ roomId: room, wall: 0, type: 'boiler', xM: 3.2, zM: 1.8, note: '' }); s = window.__trasa.getState()
