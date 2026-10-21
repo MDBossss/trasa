@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-21T20:01:54.840Z",
+ "savedAt": "2026-10-21T20:18:58.127Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -4282,6 +4282,7 @@
     "zM": 1.67,
     "note": "",
     "host": "uagf2fvr",
+    "switchKind": "tipkalo",
     "id": "g2lplaf1",
     "label": "P16",
     "slotOrder": 1,
@@ -6794,8 +6795,9 @@
  },
  "ui": {
   "view": {
-   "kind": "junctions",
-   "elementId": "uagf2fvr"
+   "kind": "room",
+   "roomId": "j02a68g1",
+   "wall": 1
   }
  }
 }
