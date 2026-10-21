@@ -3,7 +3,7 @@ import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
 import { CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, coreColors, WIRE_LABEL, type BoxDepth, type CableRole, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
-import { cableNeeds, resolveCable, roleLabel, terminalMeta } from '../junction'
+import { cableNeeds, circuitsOf, resolveCable, roleLabel, terminalMeta } from '../junction'
 import { Icon } from './Icons'
 import { wireSwatch } from './JunctionCanvas'
 
@@ -278,6 +278,23 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
           </label>
           <div className="stat"><span>Od</span><b>{endLabel(cable.from, project)}</b></div>
           <div className="stat"><span>Do</span><b>{endLabel(cable.to, project)}</b></div>
+          {(() => {
+            // only meaningful when the house has more than one supply
+            const circ = circuitsOf(project)
+            if (circ.names.size < 2) return null
+            const cur = circ.byCable.get(cable.id)
+            const box = [cable.from, cable.to].map((e) => (e.kind === 'element' ? project.elements.find((x) => x.id === e.id) : undefined)).find((x) => x && isPlace(x))
+            if (box && resolveCable(cable, box, project).role === 'feed') return null
+            return (
+              <label>
+                Strujni krug
+                <select value={cable.circuit ?? ''} onChange={(e) => updateCable(cable.id, { circuit: e.target.value || undefined })}>
+                  <option value="">{cur ? `izvedeno: ${cur.name}${cur.tie ? ' (nejasno)' : ''}` : 'izvedeno'}</option>
+                  {[...circ.names].map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+                </select>
+              </label>
+            )
+          })()}
           {(['from', 'to'] as const).map((k) => { const e = cable[k]; return e.kind === 'corner' ? <label key={k}>Visina u kutu (m) <input type="number" step={0.01} value={e.zM} onChange={(ev) => updateCable(cable.id, { [k]: { ...e, zM: +ev.target.value || 0 } })} /></label> : null })}
           {(() => {
             const needs = cableNeeds(cable, project)

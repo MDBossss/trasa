@@ -461,6 +461,7 @@ function crossWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallEle
 export function terminalMeta(id: string, p: Project): { label: string; desc: string } {
   if (id === 'L') return { label: 'L', desc: 'faza' }
   if (id === 'N') return { label: 'N', desc: 'nula' }
+  if (id.startsWith('L@') || id.startsWith('N@')) { const name = circuitsOf(p).names.get(id.slice(2)) ?? 'krug'; return { label: id[0], desc: `${id[0] === 'L' ? 'faza' : 'nula'} · ${name}` } }
   if (id === 'PE') return { label: 'PE', desc: 'zaštitni' }
   if (id.startsWith('SI:')) { const [, rid, , k] = id.split(':'); return { label: `S${k}`, desc: `tipkalo → ${el(p, rid)?.label ?? ''} S${k}, niski napon` } }
   if (id.startsWith('JMP:')) return { label: 'L→I', desc: 'premosnica na Shellyju (pali fazom)' }
@@ -485,7 +486,7 @@ const ROLE_ORDER: Role[] = ['feed', 'pass', 'socket', 'light', 'motor', 'switch'
 const SIDE_ORDER: Side[] = ['top', 'right', 'bottom', 'left']
 // loop-through terminals follow the socket order in the frame, L N PE per socket
 const chainPos = (id: string, p: Project) => (id.startsWith('CH:') ? p.elements.findIndex((e) => e.id === id.split(':')[2]) * 3 + ['L', 'N', 'PE'].indexOf(id.split(':')[1]) : 0)
-const ORDER = (id: string) => (id.startsWith('DATA:') ? 9 : id === 'L' ? 0 : id === 'N' ? 1 : id === 'PE' ? 2 : id.startsWith('O:') ? 3 : id.startsWith('SW') ? 4 : id.startsWith('I:') ? 5 : id.startsWith('PUT') ? 6 : id.startsWith('CH:') ? 7 : 8)
+const ORDER = (id: string) => (id.startsWith('DATA:') ? 9 : baseId(id) === 'L' ? 0 : baseId(id) === 'N' ? 1 : id === 'PE' ? 2 : id.startsWith('O:') ? 3 : id.startsWith('SW') ? 4 : id.startsWith('I:') ? 5 : id.startsWith('PUT') ? 6 : id.startsWith('CH:') ? 7 : 8)
 
 // Flush junction boxes sold in Croatia (Knauf/Terma, Vimar at Ellabo, Legrand at Gromel), smallest first: inner size in mm,
 // retail label (outer size) and number of cable entries. The box grows along this ladder before a split is suggested.
@@ -555,23 +556,60 @@ function isFed(place: WallElement, p: Project, seen = new Set<string>()): boolea
   return false
 }
 
-// Supplies reachable from a place over its place-to-place cables, without walking back through `from`.
-// A supply is a feed cable: its conduit (or the board it comes from) identifies the circuit.
-function feedsBeyond(start: WallElement, from: WallElement, p: Project): Map<string, string> {
-  const out = new Map<string, string>()
-  const seen = new Set([from.id])
-  const walk = (place: WallElement) => {
-    if (seen.has(place.id)) return
-    seen.add(place.id)
-    for (const c of p.cables.filter((x) => isAtBox(x, place))) {
-      const r = resolveCable(c, place, p)
-      if (r.role === 'feed') { const id = r.far.conduit?.id ?? r.far.element?.id ?? c.id; out.set(id, r.far.conduit?.name ?? r.far.element?.label ?? 'dolaz') }
-      else if (r.far.place && r.far.place.id !== place.id) walk(r.far.place)
-    }
+// Which supply each cable's L and N belong to. Every feed cable starts a circuit; a cable gets the circuit
+// whose feed is nearest over the box graph (ties are reported); a cable's own "circuit" setting wins.
+export interface CircuitInfo { id: string; name: string; tie: boolean }
+const circuitCache = new WeakMap<Project, { byCable: Map<string, CircuitInfo>; names: Map<string, string> }>()
+export function circuitsOf(p: Project) {
+  const hit = circuitCache.get(p)
+  if (hit) return hit
+  const names = new Map<string, string>()
+  const places = p.elements.filter(isPlace)
+  const dist = new Map<string, Map<string, number>>() // circuit -> place -> hops
+  const feedOf = new Map<string, string>() // feed cable -> circuit
+  const queue: [string, string][] = []
+  for (const pl of places) for (const c of p.cables.filter((x) => isAtBox(x, pl))) {
+    const r = resolveCable(c, pl, p)
+    if (r.role !== 'feed') continue
+    const id = r.far.conduit?.id ?? r.far.element?.id ?? c.id
+    names.set(id, r.far.conduit?.name ?? r.far.element?.label ?? 'dolaz')
+    for (const x of chainCables(c, p)) feedOf.set(x.id, id)
+    if (!dist.has(id)) dist.set(id, new Map())
+    if (!dist.get(id)!.has(pl.id)) { dist.get(id)!.set(pl.id, 0); queue.push([id, pl.id]) }
   }
-  walk(start)
+  const adj = new Map<string, string[]>()
+  for (const c of p.cables) { const pl = cablePlaces(c, p); if (!pl) continue; adj.set(pl[0].id, [...(adj.get(pl[0].id) ?? []), pl[1].id]); adj.set(pl[1].id, [...(adj.get(pl[1].id) ?? []), pl[0].id]) }
+  while (queue.length) {
+    const [k, at] = queue.shift()!
+    const d = dist.get(k)!.get(at)!
+    for (const nb of adj.get(at) ?? []) if (!dist.get(k)!.has(nb)) { dist.get(k)!.set(nb, d + 1); queue.push([k, nb]) }
+  }
+  const nearest = (ends: string[]): { id: string; tie: boolean } | null => {
+    let best = Infinity, ids: string[] = []
+    for (const [k, m] of dist) { const d = Math.min(...ends.map((e) => m.get(e) ?? Infinity)); if (d < best) { best = d; ids = [k] } else if (d === best && d < Infinity) ids.push(k) }
+    return ids.length ? { id: ids[0], tie: ids.length > 1 } : null
+  }
+  const byCable = new Map<string, CircuitInfo>()
+  for (const c of p.cables) {
+    if (byCable.has(c.id)) continue
+    const chain = chainCables(c, p)
+    const own = chain.map((x) => feedOf.get(x.id)).find(Boolean)
+    const pick = chain.map((x) => x.circuit).find((x) => x && names.has(x))
+    let info: CircuitInfo | null = null
+    if (own) info = { id: own, name: names.get(own)!, tie: false }
+    else if (pick) info = { id: pick, name: names.get(pick)!, tie: false }
+    else {
+      const ends = cableEnds(c, p).filter((e): e is WallElement => !!e && isPlace(e)).map((e) => e.id)
+      const n = nearest(ends)
+      if (n) info = { id: n.id, name: names.get(n.id)!, tie: n.tie }
+    }
+    if (info) for (const x of chain) byCable.set(x.id, info)
+  }
+  const out = { byCable, names }
+  circuitCache.set(p, out)
   return out
 }
+const baseId = (id: string) => id.split('@')[0]
 
 export function junctionFor(box: WallElement, p: Project): Junction {
   const room = p.rooms.find((r) => r.id === box.roomId)!
@@ -587,20 +625,36 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   const devices = devicesIn(box, p)
   for (const d of devices) if (d.kind === 'relay' && !RELAY_MODELS[relayModelOf(d.el)].dry && pulseTarget(d.el, p)) checks.push({ level: 'err', text: `${d.el.label}: suhi kontakt za vrata ima samo Shelly 1 Gen4; ${RELAY_MODELS[relayModelOf(d.el)].label} pali fazom.` })
   const feeds = cables.filter((c) => c.role === 'feed').length
-  // two supplies meeting here means two circuits share one L / N terminal: the drawing would bridge them
-  {
-    // only where they actually meet: at least two of this box's cables bring different supplies
-    const circuits = new Map<string, string>()
-    let sides = 0
-    for (const c of cables) {
-      const here = c.role === 'feed' ? new Map([[c.far.conduit?.id ?? c.far.element?.id ?? c.cable.id, c.far.conduit?.name ?? c.far.element?.label ?? 'dolaz']]) : c.far.place && c.far.place.id !== box.id ? feedsBeyond(c.far.place, box, p) : new Map<string, string>()
-      if (here.size) sides++
-      for (const [id, n] of here) circuits.set(id, n)
-    }
-    if (circuits.size > 1 && sides > 1) checks.push({ level: 'err', text: `Ovdje se sastaju ${circuits.size} strujna kruga (${[...circuits.values()].join(', ')}). Slika ih spaja na iste L i N stezaljke, a to se ne smije: svaki krug drži svoj L i N. Odvoji krugove (kabel ne vodi iz jednog kruga u drugi) ili nacrtaj samo jedan dolaz.` })
-  }
   const hasL = cables.some((c) => c.wires.some((w) => w.terminal === 'L'))
   const hasN = cables.some((c) => c.wires.some((w) => w.terminal === 'N'))
+  // two or more circuits in this box: each keeps its own L and N (PE stays common)
+  const circ = circuitsOf(p)
+  const circOf = (bc: BoxCable) => (bc.role === 'lowv' || bc.role === 'earth' ? undefined : circ.byCable.get(bc.cable.id))
+  const here = new Map<string, string>()
+  for (const bc of cables) { const c = circOf(bc); if (c) here.set(c.id, c.name) }
+  const multi = here.size > 1
+  const devCirc = new Map<string, string>()
+  if (multi) {
+    for (const bc of cables) { const c = circOf(bc); if (c?.tie) checks.push({ level: 'err', text: `Kabel ${bc.label}: ne zna se na kojem je strujnom krugu (${[...here.values()].join(' ili ')}). Odaberi krug u svojstvima kabela.` }) }
+    // a device belongs to the circuit of the cable that carries its signals (a switch's return, a relay's output)
+    const ports = new Map(devices.map((d) => [d.el.id, devicePorts(d, p, []).map((m) => m.terminal).filter((t) => !LNPE.includes(t))]))
+    for (let round = 0; round < 3; round++) for (const d of devices) {
+      if (devCirc.has(d.el.id)) continue
+      for (const t of ports.get(d.el.id) ?? []) {
+        const viaCable = cables.find((bc) => bc.wires.some((w) => w.terminal === t))
+        const viaDev = devices.find((o) => o.el.id !== d.el.id && devCirc.has(o.el.id) && (ports.get(o.el.id) ?? []).includes(t))
+        const c = viaCable ? circOf(viaCable)?.id : viaDev ? devCirc.get(viaDev.el.id) : undefined
+        if (c) { devCirc.set(d.el.id, c); break }
+      }
+    }
+    const fallback = [...here.keys()][0]
+    const guessed = devices.filter((d) => !devCirc.has(d.el.id) && !isData(d.el))
+    for (const d of guessed) devCirc.set(d.el.id, fallback)
+    if (guessed.length) checks.push({ level: 'warn', text: `${guessed.map((d) => d.el.label).join(', ')}: pretpostavljeno na krugu ${here.get(fallback)}.` })
+    const per = [...here].map(([id, name]) => `${name}: ${[...cables.filter((bc) => circOf(bc)?.id === id).map((bc) => bc.label), ...devices.filter((d) => devCirc.get(d.el.id) === id).map((d) => d.el.label)].join(', ')}`)
+    checks.push({ level: 'ok', text: `${here.size} strujna kruga u ${box.label}, svaki sa svojim L i N (PE zajednički). ${per.join(' · ')}. Krivo? Promijeni krug na kabelu.` })
+  }
+  const tagged = (t: string, c: string | undefined) => (multi && c && (t === 'L' || t === 'N') ? `${t}@${c}` : t)
   if (!cables.length) checks.push({ level: 'warn', text: 'U kutiju ne ulazi nijedan kabel.' })
   else if (box.type === 'box' && feeds === 0 && !isFed(box, p)) checks.push({ level: 'err', text: 'Kutija nema dolaza: ni izravno (bužir kategorije Dolaz, ormar, uloga "Dolaz") ni preko druge kutije koja ga ima.' })
   else if (box.type === 'modbox' && !hasL && devices.some((d) => !isData(d.el))) checks.push({ level: 'err', text: 'Doza nema faze: treba kabel iz razvodne kutije.' })
@@ -610,7 +664,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   const add = (id: string, w: TerminalWire) => { if (!map.has(id)) map.set(id, []); map.get(id)!.push(w) }
   for (const bc of cables) for (const w of bc.wires) {
     if (!w.terminal) continue
-    add(w.terminal === 'PARK' ? `PARK:${bc.cable.id}:${w.color}` : w.terminal, { kind: 'core', cableId: bc.cable.id, cableLabel: bc.label, color: w.color, note: w.note })
+    add(w.terminal === 'PARK' ? `PARK:${bc.cable.id}:${w.color}` : tagged(w.terminal, circOf(bc)?.id), { kind: 'core', cableId: bc.cable.id, cableLabel: bc.label, color: w.color, note: w.note })
   }
   // buttons first (they create the I:/SW: demands), then relays whose SW/O ports only join when something uses them
   const sorted = [...devices].sort((a, b) => (a.kind === 'relay' ? 1 : 0) - (b.kind === 'relay' ? 1 : 0))
@@ -629,7 +683,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
         }
         continue
       }
-      add(pm.terminal, { kind: 'port', deviceId: d.el.id, deviceLabel: d.label, port: pm.port, color: pm.color, note: pm.note })
+      add(tagged(pm.terminal, devCirc.get(d.el.id)), { kind: 'port', deviceId: d.el.id, deviceLabel: d.label, port: pm.port, color: pm.color, note: pm.note })
     }
   }
   if (box.type === 'modbox') { const used = devices.reduce((n, d) => n + modulesOf(d.el) + (d.el.gapBefore ?? 0), 0); if (used > (box.modules ?? 3)) checks.push({ level: 'err', text: `Doza je ${box.modules ?? 3}M, a unutra je ${used}M (šuko 2M, tipkalo i euro 1M). Uzmi veću dozu ili makni element.` }) }
@@ -641,19 +695,24 @@ export function junctionFor(box: WallElement, p: Project): Junction {
       const n = wires.length
       const direct = n === 2 && wires.some((w) => w.kind === 'port') && !id.startsWith('PARK')
       // a core with nothing to join (spare, or e.g. the only PE in a switch frame) is a spare too
-      const lone = n === 1 && wires[0].kind === 'core' && LNPE.includes(id)
+      const lone = n === 1 && wires[0].kind === 'core' && LNPE.includes(baseId(id))
       const cap = (id.startsWith('PARK') || lone) && spareCoresOf(p) === 'cap'
       const wago: Terminal['wago'] = direct || cap ? 0 : n <= 2 ? 412 : n <= 3 ? 413 : 415
       const chained = n <= 5 ? 1 : Math.ceil((n - 2) / 3)
       const meta = terminalMeta(id, p)
       if (cap && lone) meta.desc = `${meta.desc}, sam`
       if (id.startsWith('SW:?')) checks.push({ level: 'warn', text: `${meta.desc}: povratna nema para.` })
-      else if (!LNPE.includes(id) && !id.startsWith('PARK') && !id.startsWith('CH:') && n === 1) {
+      else if (!LNPE.includes(baseId(id)) && !id.startsWith('PARK') && !id.startsWith('CH:') && n === 1) {
         const w = wires[0]
         checks.push({ level: 'warn', text: `Stezaljka ${meta.label} (${meta.desc}): samo ${w.kind === 'core' ? w.cableLabel : `${w.deviceLabel} ${w.port}`}, nedostaje druga strana.` })
       }
       return { id, ...meta, wago, chained, wires, cap }
     })
+  // a light or socket whose only neutral is its own cable: nothing brings N into this box
+  for (const t of terminals) if (baseId(t.id) === 'N' && t.wires.length === 1 && t.wires[0].kind === 'core') {
+    const w = t.wires[0], bc = cables.find((c) => c.cable.id === (w as { cableId: string }).cableId)
+    if (bc && ['light', 'socket', 'motor'].includes(bc.role)) checks.push({ level: 'err', text: `${bc.label}: nema nule. U ${box.label} ne dolazi nijedan kabel s plavom žilom (NYM-O nema nulu); dovedi N, npr. kabel NYM-J.` })
+  }
   const bom = new Map<string, number>()
   for (const t of terminals) if (t.wago) bom.set(`WAGO 221-${t.wago}`, (bom.get(`WAGO 221-${t.wago}`) ?? 0) + t.chained)
   for (const d of devices) if (d.kind === 'relay') { const k = RELAY_MODELS[relayModelOf(d.el)].label; bom.set(k, (bom.get(k) ?? 0) + 1) }

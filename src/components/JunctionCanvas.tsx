@@ -181,7 +181,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
           const usedPorts = new Set<string>()
           pl.t.wires.forEach((_, i) => { const sl = wagoSlot(pl.t, i); usedPorts.add(`${sl.unit}:${sl.port}`) })
           for (let u = 0; u < k - 1; u++) { usedPorts.add(`${u}:${n - 1}`); usedPorts.add(`${u + 1}:0`) }
-          const bridgeColor = pl.t.id === 'L' ? WIRE_HEX.brown : pl.t.id === 'N' ? WIRE_HEX.blue : pl.t.id === 'PE' ? WIRE_HEX.gnye : WIRE_HEX.black
+          const bridgeColor = pl.t.id.startsWith('L') && /^L(@|$)/.test(pl.t.id) ? WIRE_HEX.brown : /^N(@|$)/.test(pl.t.id) ? WIRE_HEX.blue : pl.t.id === 'PE' ? WIRE_HEX.gnye : WIRE_HEX.black
           return (
             <g key={pl.t.id}>
               {Array.from({ length: k }, (_, u) => {

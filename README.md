@@ -54,7 +54,7 @@ Svaki zid je editor na fotki zida: razvodne kutije, modularne doze, utičnice (�
 <td valign="top">
 
 ### Spoj svake kutije u mjerilu
-Iz nacrtanog izvede ulogu svakog kabela i složi žile na stezaljke: WAGO 221-412/413/415 u pravim dimenzijama, premosnice iznad 5 žila, boje po HD 308. Kutija sama naraste na pravu veličinu iz ljestvice kutija koje se prodaju u Hrvatskoj.
+Iz nacrtanog izvede ulogu svakog kabela i složi žile na stezaljke: WAGO 221-412/413/415 u pravim dimenzijama, premosnice iznad 5 žila, boje po HD 308. Kutija sama naraste na pravu veličinu iz ljestvice kutija koje se prodaju u Hrvatskoj. Kad se u kutiji sretnu dva strujna kruga, svaki dobije svoje L i N stezaljke (PE je zajednički), a krug kabela se može i ručno odabrati.
 
 </td>
 <td><img src="docs/img/junction.png" alt="Spoj razvodne kutije"></td>

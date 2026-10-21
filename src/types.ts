@@ -182,6 +182,8 @@ export interface Cable {
   note: string
   // what the cable does in the box; 'auto' derives it from its ends
   role?: CableRole
+  // which supply (feed conduit / board id) this cable's L and N belong to, when a box holds two circuits
+  circuit?: string
 }
 
 export type CableRole = 'auto' | 'feed' | 'pass' | 'socket' | 'light' | 'switch' | 'motor' | 'lowv' | 'earth'
