@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-20T20:48:40.304Z",
+ "savedAt": "2026-10-21T19:20:49.855Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -1050,7 +1050,7 @@
     "note": "",
     "categoryId": "rasvjeta",
     "exitZ": {
-     "start": 2.08
+     "start": 1.95
     }
    },
    {
@@ -1530,6 +1530,30 @@
     "to": "",
     "note": "",
     "categoryId": "struja"
+   },
+   {
+    "id": "is1ge4ad",
+    "name": "SVJETLO NAZAD SPAJZA",
+    "color": "#3cb44b",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1384.7930900787426,
+      "y": 1351.4504797300483
+     },
+     {
+      "x": 1358.769919335979,
+      "y": 1388.788072534883
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "rasvjeta",
+    "exitZ": {
+     "start": 1.89,
+     "end": 2.52
+    }
    }
   ],
   "rooms": [
@@ -4197,6 +4221,65 @@
     "id": "1wetz9cg",
     "label": "U85",
     "slotOrder": 0
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 1,
+    "type": "socket",
+    "xM": 0.66,
+    "zM": 0.66,
+    "note": "",
+    "host": "bu93v75g",
+    "id": "6z83bqxp",
+    "label": "U86",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 1,
+    "type": "socket",
+    "xM": 0.66,
+    "zM": 0.66,
+    "note": "",
+    "host": "bu93v75g",
+    "id": "6edtt4cl",
+    "label": "U87",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 1,
+    "type": "box",
+    "xM": 0.63,
+    "zM": 2.34,
+    "note": "",
+    "id": "rbnyjj0n",
+    "label": "K22"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 1,
+    "type": "switch",
+    "xM": 0.56,
+    "zM": 1.67,
+    "note": "",
+    "host": "uagf2fvr",
+    "id": "cxxwnu5b",
+    "label": "P15",
+    "slotOrder": 0,
+    "modules": 2
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 1,
+    "type": "switch",
+    "xM": 0.56,
+    "zM": 1.67,
+    "note": "",
+    "host": "uagf2fvr",
+    "id": "g2lplaf1",
+    "label": "P16",
+    "slotOrder": 1
    }
   ],
   "cables": [
@@ -6378,6 +6461,125 @@
     "via": [],
     "note": "",
     "id": "i7z8svl9"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "tyh7zosp"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 0,
+     "zM": 2.49
+    },
+    "via": [],
+    "note": "",
+    "id": "wx6lintk"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 0,
+     "zM": 2.49
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 2.45
+    },
+    "via": [],
+    "note": "",
+    "id": "rrei5rmp"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "uagf2fvr"
+    },
+    "to": {
+     "kind": "element",
+     "id": "bu93v75g"
+    },
+    "via": [],
+    "note": "",
+    "id": "ng4wso13"
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 2,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "is1ge4ad",
+     "end": "start"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "58bvmyvx",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "vrxpa8fr"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "rbnyjj0n"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "is1ge4ad",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "tu5ymkof"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "rbnyjj0n"
+    },
+    "to": {
+     "kind": "element",
+     "id": "uagf2fvr"
+    },
+    "via": [],
+    "note": "",
+    "id": "e88bg117"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "rbnyjj0n"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 2.45
+    },
+    "via": [],
+    "note": "",
+    "id": "y4ax4qd5"
    }
   ],
   "categories": [
@@ -6487,7 +6689,7 @@
   "view": {
    "kind": "room",
    "roomId": "j02a68g1",
-   "wall": 3
+   "wall": 1
   }
  }
 }
