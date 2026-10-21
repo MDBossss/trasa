@@ -555,6 +555,24 @@ function isFed(place: WallElement, p: Project, seen = new Set<string>()): boolea
   return false
 }
 
+// Supplies reachable from a place over its place-to-place cables, without walking back through `from`.
+// A supply is a feed cable: its conduit (or the board it comes from) identifies the circuit.
+function feedsBeyond(start: WallElement, from: WallElement, p: Project): Map<string, string> {
+  const out = new Map<string, string>()
+  const seen = new Set([from.id])
+  const walk = (place: WallElement) => {
+    if (seen.has(place.id)) return
+    seen.add(place.id)
+    for (const c of p.cables.filter((x) => isAtBox(x, place))) {
+      const r = resolveCable(c, place, p)
+      if (r.role === 'feed') { const id = r.far.conduit?.id ?? r.far.element?.id ?? c.id; out.set(id, r.far.conduit?.name ?? r.far.element?.label ?? 'dolaz') }
+      else if (r.far.place && r.far.place.id !== place.id) walk(r.far.place)
+    }
+  }
+  walk(start)
+  return out
+}
+
 export function junctionFor(box: WallElement, p: Project): Junction {
   const room = p.rooms.find((r) => r.id === box.roomId)!
   const checks: Check[] = []
@@ -569,6 +587,18 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   const devices = devicesIn(box, p)
   for (const d of devices) if (d.kind === 'relay' && !RELAY_MODELS[relayModelOf(d.el)].dry && pulseTarget(d.el, p)) checks.push({ level: 'err', text: `${d.el.label}: suhi kontakt za vrata ima samo Shelly 1 Gen4; ${RELAY_MODELS[relayModelOf(d.el)].label} pali fazom.` })
   const feeds = cables.filter((c) => c.role === 'feed').length
+  // two supplies meeting here means two circuits share one L / N terminal: the drawing would bridge them
+  {
+    // only where they actually meet: at least two of this box's cables bring different supplies
+    const circuits = new Map<string, string>()
+    let sides = 0
+    for (const c of cables) {
+      const here = c.role === 'feed' ? new Map([[c.far.conduit?.id ?? c.far.element?.id ?? c.cable.id, c.far.conduit?.name ?? c.far.element?.label ?? 'dolaz']]) : c.far.place && c.far.place.id !== box.id ? feedsBeyond(c.far.place, box, p) : new Map<string, string>()
+      if (here.size) sides++
+      for (const [id, n] of here) circuits.set(id, n)
+    }
+    if (circuits.size > 1 && sides > 1) checks.push({ level: 'err', text: `Ovdje se sastaju ${circuits.size} strujna kruga (${[...circuits.values()].join(', ')}). Slika ih spaja na iste L i N stezaljke, a to se ne smije: svaki krug drži svoj L i N. Odvoji krugove (kabel ne vodi iz jednog kruga u drugi) ili nacrtaj samo jedan dolaz.` })
+  }
   const hasL = cables.some((c) => c.wires.some((w) => w.terminal === 'L'))
   const hasN = cables.some((c) => c.wires.some((w) => w.terminal === 'N'))
   if (!cables.length) checks.push({ level: 'warn', text: 'U kutiju ne ulazi nijedan kabel.' })

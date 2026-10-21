@@ -571,6 +571,18 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   // every wall tool is in the rail
   await page.evaluate(() => { const s = window.__trasa.getState(); s.setView({ kind: 'room', roomId: s.project.rooms[0].id, wall: 0 }) })
   for (const name of ['Kabel', 'Bojler', 'KIP · izjednačenje potencijala', 'Vrata / motor']) await page.locator('.tool-rail').getByRole('button', { name, exact: true }).waitFor({ state: 'attached' })
+  // two supplies meeting in one frame is an error (the drawing would bridge two circuits); a leaf beyond it is not flagged
+  const two = await page.evaluate(() => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
+    const mk = (name, x) => { const cd = s.addConduit([{ x, y: 20 }, { x, y: 102 }]); s = window.__trasa.getState(); s.updateConduit(cd, { name, categoryId: 'dolaz' }); s = window.__trasa.getState(); return cd }
+    const a = mk('DOLAZ A', 420), b = mk('DOLAZ B', 470)
+    const ka = s.addElement({ roomId: room, wall: 0, type: 'box', xM: 3.2, zM: 2.3, note: '' }), kb = s.addElement({ roomId: room, wall: 0, type: 'box', xM: 3.7, zM: 2.3, note: '' }), d = s.addElement({ roomId: room, wall: 0, type: 'modbox', xM: 3.5, zM: 1.1, modules: 3, note: '' }), d2 = s.addElement({ roomId: room, wall: 0, type: 'modbox', xM: 3.5, zM: 0.4, modules: 3, note: '' }); s = window.__trasa.getState()
+    const cab = (f, t) => { const id = s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: f, to: t, via: [], note: '' }); s = window.__trasa.getState(); return id }
+    const cs = [cab({ kind: 'exit', conduitId: a, end: 'end' }, { kind: 'element', id: ka }), cab({ kind: 'exit', conduitId: b, end: 'end' }, { kind: 'element', id: kb }), cab({ kind: 'element', id: ka }, { kind: 'element', id: d }), cab({ kind: 'element', id: kb }, { kind: 'element', id: d }), cab({ kind: 'element', id: d }, { kind: 'element', id: d2 })]
+    const err = (id) => E.allJunctions(window.__trasa.getState().project).find((j) => j.box.id === id).checks.some((c) => /strujna kruga/.test(c.text))
+    return { d: err(d), d2: err(d2), ids: [ka, kb, d, d2, ...cs], cds: [a, b] } })
+  assert.ok(two.d && !two.d2, JSON.stringify(two))
+  await page.evaluate(({ two }) => { const s = window.__trasa.getState(); const drop = new Set([...two.ids, ...two.cds]); s.patchProject({ cables: s.project.cables.filter((c) => !drop.has(c.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)), conduits: s.project.conduits.filter((c) => !drop.has(c.id)) }) }, { two })
+
   // water heater: fixed L N PE, too-thin cable or a feed through a room box is flagged
   const bo = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
     const b = s.addElement({ roomId: room, wall: 0, type: 'boiler', xM: 3.2, zM: 1.8, note: '' }); s = window.__trasa.getState()
