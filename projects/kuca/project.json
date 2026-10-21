@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-21T20:56:18.721Z",
+ "savedAt": "2026-10-21T21:01:13.519Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -4534,6 +4534,38 @@
     "id": "jnjj9n7e",
     "label": "U100",
     "slotOrder": 2
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 2,
+    "type": "appliance",
+    "xM": 0.94,
+    "zM": 1.44,
+    "note": "",
+    "id": "bi1a0sut",
+    "label": "UR1",
+    "appliance": "hood"
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 2,
+    "type": "appliance",
+    "xM": 0.96,
+    "zM": 0.94,
+    "note": "",
+    "id": "nppib216",
+    "label": "UR2"
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 0,
+    "type": "appliance",
+    "xM": 1.35,
+    "zM": 0.89,
+    "note": "",
+    "id": "znn4t95x",
+    "label": "UR3",
+    "appliance": "oven"
    }
   ],
   "cables": [
@@ -6915,20 +6947,81 @@
    },
    {
     "roomId": "z6exkgda",
-    "wall": 2,
-    "type": "NYM-J 3x1.5",
+    "wall": 0,
+    "type": "NYM-J 3x2.5",
     "from": {
-     "kind": "free",
-     "xM": 0.82,
-     "zM": 1.05
+     "kind": "exit",
+     "conduitId": "dgiyoisg",
+     "end": "start"
     },
     "to": {
      "kind": "element",
-     "id": "9cgabio4"
+     "id": "znn4t95x"
+    },
+    "via": [
+     {
+      "xM": 1.6499999999999988,
+      "zM": 0.86
+     }
+    ],
+    "note": "",
+    "id": "h9qqbpry"
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "pnzjp1ak",
+     "end": "start"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 2,
+     "zM": 1.99
     },
     "via": [],
-    "note": "napa",
-    "id": "w2osa5yy"
+    "note": "",
+    "id": "y6dcqyiq"
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 2,
+    "type": "NYM-J 5x2.5",
+    "from": {
+     "kind": "corner",
+     "corner": 2,
+     "zM": 1.99
+    },
+    "to": {
+     "kind": "element",
+     "id": "nppib216"
+    },
+    "via": [
+     {
+      "xM": 0.97,
+      "zM": 1.9
+     }
+    ],
+    "note": "",
+    "id": "2pdtyk16"
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 2,
+    "type": "NYM-J 5x2.5",
+    "from": {
+     "kind": "element",
+     "id": "9cgabio4"
+    },
+    "to": {
+     "kind": "element",
+     "id": "bi1a0sut"
+    },
+    "via": [],
+    "note": "",
+    "id": "96i4bd6j"
    }
   ],
   "categories": [
