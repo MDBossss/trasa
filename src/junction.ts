@@ -157,6 +157,25 @@ function lightTerminal(light: WallElement, p: Project): { id: string; by?: WallE
   return { id: `SW:${s.id}`, by: s }
 }
 
+// A control lamp in a switch shows the load's state: it hangs between the switched output and N.
+// With a relay that is the relay output; on a classic one-way switch it is the switch's own return.
+function lampOf(sw: WallElement, p: Project, checks: Check[]): string | null {
+  if (!sw.lamp) return null
+  if (sw.relayId) {
+    const r = el(p, sw.relayId)
+    if (!r) return null
+    const m = RELAY_MODELS[relayModelOf(r)]
+    if (m.dry && pulseTarget(r, p)) { checks.push({ level: 'warn', text: `${sw.label}: lampica ne može pokazati stanje vrata (relej daje samo impuls). Makni kvačicu ili koristi senzor vrata.` }); return null }
+    if (m.outputs !== 1) { checks.push({ level: 'warn', text: `${sw.label}: lampica uz ${m.label} nije podržana (više izlaza).` }); return null }
+    return `O:${r.id}:1`
+  }
+  const kind = sw.switchKind ?? 'obicni'
+  if (kind === 'obicni') return `SW:${sw.id}`
+  if (kind === 'serijski') return `SW:${sw.id}:0`
+  checks.push({ level: 'warn', text: `${sw.label}: kontrolna lampica uz ${kind} prekidač traži dodatnu žilu od svjetla; aplikacija je zasad crta samo za obični prekidač ili tipkalo na releju.` })
+  return null
+}
+
 // What a switch's conductors carry (cable cores or hosted-button ports): L in, returns out.
 function switchSignals(sw: WallElement, p: Project, checks: Check[], usable: number): { terminal: string; note: string }[] {
   const kind = sw.switchKind ?? 'obicni'
@@ -243,11 +262,15 @@ function leafWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallElem
   }
   const sw = bc.far.element
   if (!sw) return cores.map((c) => park(c, 'nepoznato'))
-  const usable = cores.filter((c) => c !== 'gnye')
-  const sig = switchSignals(sw, p, checks, usable.length)
+  const lamp = lampOf(sw, p, checks)
+  const usable = cores.filter((c) => c !== 'gnye' && !(lamp && c === 'blue'))
+  const sig = [...switchSignals(sw, p, checks, usable.length), ...(lamp ? [{ terminal: lamp, note: 'kontrolna lampica' }] : [])]
+  if (lamp && !cores.includes('blue')) checks.push({ level: 'err', text: `${sw.label}: kontrolna lampica treba nulu, a kabel ${bc.sub} nema plavu žilu.` })
+  if (lamp && usable.length < sig.length) checks.push({ level: 'err', text: `${sw.label}: s kontrolnom lampicom kabel treba ${sig.length + 2} žile (${sig.length} + N + PE), ima ${cores.length}. Uzmi ${sig.length + 2 <= 5 ? '5×1,5' : '7×1,5'}.` })
   if (!sig.length) return cores.map((c) => ({ color: c, terminal: null, note: 'prolazi do drugog prekidača' }))
   return cores.map((c) => {
     if (c === 'gnye') return { color: c, terminal: 'PE', note: 'prekidač nema PE: u dozi presavij i izoliraj' }
+    if (lamp && c === 'blue') return { color: c, terminal: 'N', note: 'nula za kontrolnu lampicu' }
     const s = sig[usable.indexOf(c)]
     if (!s) return park(c)
     return { color: c, terminal: s.terminal, note: [s.note, c === 'blue' && s.terminal !== 'L' ? 'plava označena kao povratna' : ''].filter(Boolean).join(', ') }
@@ -288,7 +311,7 @@ export function devicesIn(place: WallElement, p: Project): Device[] {
       }
       if (isData(e)) { const m = DATA_META[e.socketKind as 'rj45' | 'tv']; return { el: e, label: `${e.label} ${m.name}`, ports: [m.port], wMm: 14, hMm: 18, kind: 'socket' as const } }
       if (e.type === 'socket') { const k = SOCKET_KINDS[e.socketKind ?? 'schuko']; return { el: e, label: `${e.label} ${k.label.toLowerCase()} utičnica`, ports: ['L', 'N', 'PE', 'L′', 'N′', 'PE′'], wMm: Math.max(24, k.modules * 11), hMm: 18, kind: 'socket' as const } }
-      return { el: e, label: `${e.label} ${(e.switchKind ?? 'obicni') === 'tipkalo' ? 'tipkalo' : 'prekidač'}${(e.modules ?? 1) > 1 ? ` ${e.modules}M` : ''}`, ports: ['1', '2', '3', '4'].slice(0, e.switchKind === 'krizni' ? 4 : (e.switchKind === 'serijski' || e.switchKind === 'izmjenicni') ? 3 : 2), wMm: Math.max(14, (e.modules ?? 1) * 11), hMm: 18, kind: 'button' as const }
+      return { el: e, label: `${e.label} ${(e.switchKind ?? 'obicni') === 'tipkalo' ? 'tipkalo' : 'prekidač'}${(e.modules ?? 1) > 1 ? ` ${e.modules}M` : ''}`, ports: [...['1', '2', '3', '4'].slice(0, e.switchKind === 'krizni' ? 4 : (e.switchKind === 'serijski' || e.switchKind === 'izmjenicni') ? 3 : 2), ...(e.lamp ? ['X1', 'X2'] : [])], wMm: Math.max(14, (e.modules ?? 1) * 11), hMm: 18, kind: 'button' as const }
     })
 }
 
@@ -337,7 +360,10 @@ function devicePorts(d: Device, p: Project, checks: Check[]): PortMember[] {
   // a hosted switch has no cable of its own: the frame's cables are checked by crossWires, so no core limit here
   const sig = switchSignals(d.el, p, checks, Infinity)
   if (!sig.length) return out
-  return sig.map((s, i) => ({ port: `${i + 1}`, terminal: s.terminal, color: i === 0 && s.terminal === 'L' ? 'brown' : 'black', note: s.note }))
+  const ports: PortMember[] = sig.map((s, i) => ({ port: `${i + 1}`, terminal: s.terminal, color: i === 0 && s.terminal === 'L' ? 'brown' : 'black', note: s.note }))
+  const lamp = lampOf(d.el, p, checks)
+  if (lamp) ports.push({ port: 'X1', terminal: lamp, color: 'black', note: 'kontrolna lampica' }, { port: 'X2', terminal: 'N', color: 'blue', note: 'kontrolna lampica, nula' })
+  return ports
 }
 
 // Signals a place needs on its own (leaf cables + devices), without place-to-place cables.

@@ -153,6 +153,8 @@ export interface WallElement {
   // switch wired to a relay input (1-based) instead of straight to the light
   relayId?: string
   relayInput?: number
+  // switch / push button with a control lamp (LED insert, e.g. TEM IA20): lit while its load is on
+  lamp?: boolean
   // light / LED supply powered by a relay output (1-based) instead of a classic switch
   feedRelayId?: string
   feedOutput?: number

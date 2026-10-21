@@ -591,6 +591,20 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   assert.ok(two.tie && !two.tieAfter, 'an equidistant branch asks for its circuit; choosing one settles it'); assert.ok(!two.d2, 'a single-circuit frame keeps plain L / N')
   await page.evaluate(({ two }) => { const s = window.__trasa.getState(); const drop = new Set([...two.ids, ...two.cds]); s.patchProject({ cables: s.project.cables.filter((c) => !drop.has(c.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)), conduits: s.project.conduits.filter((c) => !drop.has(c.id)) }) }, { two })
 
+  // a push button with a control lamp: the lamp hangs on the relay output and N, so the frame cable carries the output too
+  const lp = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
+    const r = s.addElement({ roomId: room, wall: 0, type: 'relay', xM: 0, zM: 0, note: '', host: box, relayModel: 'gen4pm' })
+    const d = s.addElement({ roomId: room, wall: 0, type: 'modbox', xM: 3.4, zM: 1.1, modules: 2, note: '' })
+    const t = s.addElement({ roomId: room, wall: 0, type: 'switch', switchKind: 'tipkalo', xM: 3.4, zM: 1.1, note: '', host: d, relayId: r, relayInput: 1, lamp: true })
+    const l = s.addElement({ roomId: room, wall: 0, type: 'light', xM: 3.4, zM: 2.6, note: '', feedRelayId: r, feedOutput: 1 }); s = window.__trasa.getState()
+    const c1 = s.addCable({ roomId: room, wall: 0, type: 'NYM-J 5x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: d }, via: [], note: '' })
+    const c2 = s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: l }, via: [], note: '' }); s = window.__trasa.getState()
+    const P = s.project, j = E.allJunctions(P).find((x) => x.box.id === d)
+    const port = (pt) => j.terminals.find((x) => x.wires.some((w) => w.kind === 'port' && w.port === pt))?.id
+    return { x1: port('X1'), x2: port('X2'), r, need: E.cableNeeds(P.cables.find((c) => c.id === c1), P).needed, ids: [r, d, t, l, c1, c2] } }, ids)
+  assert.equal(lp.x1, `O:${lp.r}:1`, 'lamp on the relay output'); assert.equal(lp.x2, 'N', 'lamp on N'); assert.equal(lp.need, 5, 'L N PE + input + output')
+  await page.evaluate(({ lp }) => { const s = window.__trasa.getState(); const drop = new Set(lp.ids); s.patchProject({ cables: s.project.cables.filter((c) => !drop.has(c.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) }) }, { lp })
+
   // water heater: fixed L N PE, too-thin cable or a feed through a room box is flagged
   const bo = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
     const b = s.addElement({ roomId: room, wall: 0, type: 'boiler', xM: 3.2, zM: 1.8, note: '' }); s = window.__trasa.getState()

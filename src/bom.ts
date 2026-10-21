@@ -84,6 +84,7 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
         const mods = e.modules ?? 1
         if (!e.host) single(depth, mods)
         if (t.code) add(out, 'Prekidači', `${temCode(t.code)} · ${t.name}${mods > 1 ? ` (s tipkom ${mods}M)` : ''}`, 'kom', 1)
+        if (e.lamp) { add(out, 'Prekidači', 'Tipka s prozorčićem za indikator (ista serija)', 'kom', 1); add(out, 'Prekidači', 'IA20 · LED umetak 230 V za kontrolnu lampicu', 'kom', 1) }
         else add(out, 'Prekidači', `${temCode('SM10')} × 2 · ${t.name}`, 'kom', 1) // two SM10 side by side
         break
       }

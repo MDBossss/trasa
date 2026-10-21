@@ -145,6 +145,10 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
                   </select>
                 </label>
               )}
+              <label className="check-row" title="LED u tipki svijetli dok je trošilo upaljeno; spaja se na izlaz (releja ili prekidača) i nulu">
+                <input type="checkbox" checked={!!el.lamp} onChange={(e) => updateElement(el.id, { lamp: e.target.checked || undefined })} />
+                <span>S kontrolnom lampicom <span className="muted">(svijetli kad je upaljeno)</span></span>
+              </label>
               {el.host && (
                 <label>
                   Širina
