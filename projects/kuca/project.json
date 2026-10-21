@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-21T20:36:40.706Z",
+ "savedAt": "2026-10-21T20:56:18.721Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -1038,7 +1038,7 @@
     "points": [
      {
       "x": 1382.5302056663284,
-      "y": 1343.5303842865983
+      "y": 1369.5535550293619
      },
      {
       "x": 1501.3578391390806,
@@ -1050,7 +1050,7 @@
     "note": "",
     "categoryId": "rasvjeta",
     "exitZ": {
-     "start": 1.95
+     "start": 1.9
     }
    },
    {
@@ -4366,6 +4366,174 @@
     "id": "3h3gwlrf",
     "label": "D47",
     "modules": 4
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 2,
+    "type": "box",
+    "xM": 0.82,
+    "zM": 1.73,
+    "note": "",
+    "id": "9cgabio4",
+    "label": "K24"
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 1,
+    "type": "socket",
+    "xM": 1.54,
+    "zM": 1.01,
+    "note": "",
+    "host": "iy6knzmd",
+    "id": "ph3oalyy",
+    "label": "U88",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 1,
+    "type": "socket",
+    "xM": 1.54,
+    "zM": 1.01,
+    "note": "",
+    "host": "iy6knzmd",
+    "id": "q87gftkn",
+    "label": "U89",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 1,
+    "type": "socket",
+    "xM": 1.54,
+    "zM": 1.01,
+    "note": "",
+    "host": "iy6knzmd",
+    "id": "5cgx1bvj",
+    "label": "U90",
+    "slotOrder": 2
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 1,
+    "type": "socket",
+    "xM": 1.54,
+    "zM": 1.01,
+    "note": "",
+    "host": "iy6knzmd",
+    "id": "l3xg7ctv",
+    "label": "U91",
+    "slotOrder": 3,
+    "socketKind": "euro"
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 0,
+    "type": "socket",
+    "xM": 2,
+    "zM": 1.11,
+    "note": "",
+    "host": "k2tjxcbn",
+    "id": "5n69xo8f",
+    "label": "U92",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 0,
+    "type": "socket",
+    "xM": 2,
+    "zM": 1.11,
+    "note": "",
+    "host": "k2tjxcbn",
+    "id": "9m58s7nh",
+    "label": "U93",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 0,
+    "type": "socket",
+    "xM": 2,
+    "zM": 1.11,
+    "note": "",
+    "host": "k2tjxcbn",
+    "id": "buxr21oy",
+    "label": "U94",
+    "slotOrder": 2
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 0,
+    "type": "socket",
+    "xM": 2,
+    "zM": 1.11,
+    "note": "",
+    "host": "k2tjxcbn",
+    "id": "dsdx3g8x",
+    "label": "U95",
+    "slotOrder": 3,
+    "socketKind": "euro"
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 0,
+    "type": "socket",
+    "xM": 1.2,
+    "zM": 1.11,
+    "note": "mikrovalna",
+    "host": "l5skfh1n",
+    "id": "4ds36tcm",
+    "label": "U96",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 0,
+    "type": "socket",
+    "xM": 1.2,
+    "zM": 1.11,
+    "note": "frizider",
+    "host": "l5skfh1n",
+    "id": "s4iquk6p",
+    "label": "U97",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 0,
+    "type": "socket",
+    "xM": 0.72,
+    "zM": 1.11,
+    "note": "",
+    "host": "3h3gwlrf",
+    "id": "al0yaouu",
+    "label": "U98",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 0,
+    "type": "socket",
+    "xM": 0.72,
+    "zM": 1.11,
+    "note": "",
+    "host": "3h3gwlrf",
+    "id": "dkr7qebr",
+    "label": "U99",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 0,
+    "type": "socket",
+    "xM": 1.2,
+    "zM": 1.11,
+    "note": "perilica (desno od prozora)",
+    "host": "l5skfh1n",
+    "id": "jnjj9n7e",
+    "label": "U100",
+    "slotOrder": 2
    }
   ],
   "cables": [
@@ -6744,6 +6912,23 @@
     ],
     "note": "",
     "id": "5lhp56kr"
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 2,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "free",
+     "xM": 0.82,
+     "zM": 1.05
+    },
+    "to": {
+     "kind": "element",
+     "id": "9cgabio4"
+    },
+    "via": [],
+    "note": "napa",
+    "id": "w2osa5yy"
    }
   ],
   "categories": [
