@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-21T20:21:39.801Z",
+ "savedAt": "2026-10-21T20:36:40.706Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -4311,6 +4311,61 @@
     "note": "",
     "id": "j7rccbto",
     "label": "K23"
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 2,
+    "type": "modbox",
+    "xM": 1.87,
+    "zM": 1.23,
+    "note": "",
+    "id": "3jpippck",
+    "label": "D43",
+    "modules": 7
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 1,
+    "type": "modbox",
+    "xM": 1.54,
+    "zM": 1.01,
+    "note": "",
+    "id": "iy6knzmd",
+    "label": "D44",
+    "modules": 7
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 0,
+    "type": "modbox",
+    "xM": 2,
+    "zM": 1.11,
+    "note": "",
+    "id": "k2tjxcbn",
+    "label": "D45",
+    "modules": 7
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 0,
+    "type": "modbox",
+    "xM": 1.2,
+    "zM": 1.11,
+    "note": "",
+    "id": "l5skfh1n",
+    "label": "D46",
+    "modules": 7
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 0,
+    "type": "modbox",
+    "xM": 0.72,
+    "zM": 1.11,
+    "note": "",
+    "id": "3h3gwlrf",
+    "label": "D47",
+    "modules": 4
    }
   ],
   "cables": [
@@ -6796,8 +6851,9 @@
  },
  "ui": {
   "view": {
-   "kind": "junctions",
-   "elementId": "uagf2fvr"
+   "kind": "room",
+   "roomId": "z6exkgda",
+   "wall": 2
   }
  }
 }
