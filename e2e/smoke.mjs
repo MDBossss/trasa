@@ -579,6 +579,16 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     return { terms: j.terminals.map((t) => t.label), warns: j.checks.filter((x) => x.level === 'warn').map((x) => x.text), ids: [b, c] } }, ids)
   assert.deepEqual(bo.terms, ['L', 'N', 'PE'])
   assert.ok(bo.warns.some((t) => /3×2,5/.test(t)) && bo.warns.some((t) => /ormara/.test(t)), bo.warns.join(' | '))
+  // a Shelly 1PM Gen4 can switch the boiler: its output feeds the boiler's L
+  const pm = await page.evaluate(({ bo, box }) => { let s = window.__trasa.getState(); const E = window.__trasaEngine
+    const r = s.addElement({ roomId: s.project.rooms[0].id, wall: 0, type: 'relay', xM: 0, zM: 0, note: '', host: box, relayModel: 'gen4pm' }); s = window.__trasa.getState()
+    s.updateElement(bo.ids[0], { feedRelayId: r, feedOutput: 1 }); s = window.__trasa.getState()
+    const j = E.allJunctions(s.project).find((x) => x.box.id === box)
+    const t = j.terminals.find((x) => x.id === `O:${r}:1`)
+    const leaf = E.allLeafJunctions(s.project).find((x) => x.box.id === bo.ids[0])
+    return { r, desc: t?.desc, wires: t?.wires.length, warns: leaf.checks.filter((x) => x.level === 'warn').map((x) => x.text) } }, { bo, box: ids.box })
+  assert.match(pm.desc ?? '', /→ bojler/); assert.equal(pm.wires, 2); assert.ok(!pm.warns.some((t) => /preko kutije|Shelly 1PM/.test(t)), pm.warns.join(' | '))
+  bo.ids.push(pm.r)
   await page.evaluate(({ bo }) => { const s = window.__trasa.getState(); const drop = new Set(bo.ids); s.patchProject({ cables: s.project.cables.filter((c) => !drop.has(c.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) }) }, { bo })
 
   // main earthing terminal: FeZn tail on a busbar, Cu 16 to the board, Cu 6 bonding; sections are checked

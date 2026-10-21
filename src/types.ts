@@ -56,11 +56,13 @@ export interface Wall {
 export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'motor' | 'kip' | 'boiler'
 
 // Smart relays that sit in a box: inputs are SW terminals, outputs are O terminals.
-export type RelayModel = 'gen4' | 'zbminir2' | 'rgbw'
+export type RelayModel = 'gen4' | 'gen4pm' | 'zbminir2' | 'rgbw'
 // dry: relay contact is potential-free (I/O), usable as an impulse for a door unit
 // swLow: the button input is a low-voltage pair (S1/S2) instead of L-referenced SW
 export const RELAY_MODELS: Record<RelayModel, { label: string; inputs: number; outputs: number; needsN: boolean; dim: boolean; dc: boolean; dry: boolean; swLow: boolean; ports: string[]; wMm: number; hMm: number }> = {
   zbminir2: { label: 'Sonoff ZBMINIR2 (Zigbee)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: false, swLow: true, ports: ['L', 'N', 'Lout', 'Nout', 'S1', 'S2'], wMm: 40, hMm: 33 },
+  // switched output (phase on O) with power metering; for heavier loads such as a water heater
+  gen4pm: { label: 'Shelly 1PM Gen4 (Zigbee, mjerenje, 16 A)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: false, swLow: false, ports: ['L', 'N', 'SW1', 'O'], wMm: 37, hMm: 42 },
   gen4: { label: 'Shelly 1 Gen4 (Zigbee, suhi kontakt)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: true, swLow: false, ports: ['L', 'N', 'SW1', 'I', 'O'], wMm: 37, hMm: 42 },
   rgbw: { label: 'Shelly Plus RGBW PM (24 V)', inputs: 4, outputs: 4, needsN: true, dim: true, dc: true, dry: false, swLow: false, ports: ['L', 'N'], wMm: 37, hMm: 42 },
 }

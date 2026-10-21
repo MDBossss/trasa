@@ -103,7 +103,7 @@ function roleOfElement(e: WallElement): Role {
     case 'light': case 'ledpsu': return 'light'
     case 'motor': return 'motor'
     case 'kip': return 'earth'
-    case 'boiler': return 'socket'
+    case 'boiler': return e.feedRelayId ? 'light' : 'socket'
     case 'switch': return 'switch'
     case 'box': case 'modbox': return 'pass'
     case 'panel': return 'feed'
@@ -470,7 +470,7 @@ export function terminalMeta(id: string, p: Project): { label: string; desc: str
   const [kind, a, b] = id.split(':')
   if (kind === 'CH') return { label: a, desc: `provlačenje ${el(p, b)?.label ?? ''} → sljedeća utičnica` }
   if (kind === 'PUT1' || kind === 'PUT2') { const seg = +(b ?? 0); return { label: `${kind === 'PUT1' ? 'p1' : 'p2'}${"′".repeat(seg)}`, desc: `putna ${kind.slice(-1)}${seg ? ` · dionica ${seg + 1}` : ''} · ${el(p, a)?.label ?? '?'}` } }
-  if (kind === 'O') { const r = el(p, a); const lights = p.elements.filter((e) => e.feedRelayId === a && (e.feedOutput ?? 1) === +b); return { label: lights.map((l) => l.label).join('+') || `O${b}`, desc: `${r?.label ?? 'relej'} izlaz ${b} → svjetlo` } }
+  if (kind === 'O') { const r = el(p, a); const lights = p.elements.filter((e) => e.feedRelayId === a && (e.feedOutput ?? 1) === +b); return { label: lights.map((l) => l.label).join('+') || `O${b}`, desc: `${r?.label ?? 'relej'} izlaz ${b} → ${lights.some((l) => l.type === 'boiler') ? 'bojler' : lights.some((l) => l.type === 'ledpsu') ? 'LED' : 'svjetlo'}` } }
   if (kind === 'I') { const r = el(p, a); return { label: `SW${b}`, desc: `${r?.label ?? 'relej'} ulaz ${b} ← tipkalo` } }
   if (a === '?') return { label: '?', desc: `${el(p, b)?.label ?? 'svjetlo'} bez prekidača` }
   if (a === 'L') return { label: el(p, b)?.label ?? 'S', desc: 'povratna → svjetlo' }
@@ -676,10 +676,14 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
       return { ...r, ...sideOf(r, el, p), wires }
     })
   if (!cables.length) checks.push({ level: 'warn', text: `${el.label}: do ${name === 'svjetiljka' ? 'svjetla' : name} ne dolazi nijedan kabel.` })
+  if (el.type === 'boiler' && el.feedRelayId) {
+    const r = p.elements.find((x) => x.id === el.feedRelayId)
+    if (r && relayModelOf(r) !== 'gen4pm') checks.push({ level: 'warn', text: `${el.label}: bojler (~9 A satima) pali ${r.label}. Za trajno opterećenje uzmi Shelly 1PM Gen4 ili sklopnik u ormaru.` })
+  }
   if (el.type === 'boiler') for (const c of cables) {
     // a water heater (~2 kW, hours at a time) gets its own circuit: 2,5 mm² on B16, straight from the board
     if (sectionOf(c.cable.type) < 2.5) checks.push({ level: 'warn', text: `${el.label}: bojler vuče ~2 kW satima, kabel ${c.cable.type} je pretanak. Uzmi 3×2,5 na osigurač B16.` })
-    if (c.far.place) checks.push({ level: 'warn', text: `${el.label}: bojler se napaja preko kutije ${c.far.place.label}. Uobičajeno je vlastiti krug ravno iz ormara (bužir kategorije Dolaz ili kabel do ormara).` })
+    if (c.far.place && !el.feedRelayId) checks.push({ level: 'warn', text: `${el.label}: bojler se napaja preko kutije ${c.far.place.label}. Uobičajeno je vlastiti krug ravno iz ormara (bužir kategorije Dolaz ili kabel do ormara).` })
   }
   if (cables.length > 1) checks.push({ level: 'warn', text: `${el.label}: ${cables.length} kabela na jednom uređaju; obično je jedan (ili provlačenje kroz dozu).` })
   const map = new Map<string, TerminalWire[]>()

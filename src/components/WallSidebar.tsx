@@ -170,16 +170,16 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
               </div>
             </>
           )}
-          {(el.type === 'light' || el.type === 'ledpsu') && (
+          {(el.type === 'light' || el.type === 'ledpsu' || el.type === 'boiler') && (
             <>
               <label>
                 Napaja ga
                 <select value={el.feedRelayId ? `${el.feedRelayId}:${el.feedOutput ?? 1}` : ''} onChange={(e) => { const [r, n] = e.target.value.split(':'); updateElement(el.id, { feedRelayId: r || undefined, feedOutput: r ? +n : undefined }) }}>
-                  <option value="">prekidač (klasično)</option>
+                  <option value="">{el.type === 'boiler' ? 'izravno (bez releja)' : 'prekidač (klasično)'}</option>
                   {relayGroups(relays.filter((r) => RELAY_MODELS[relayModelOf(r)].outputs > 0), (r) => <Fragment key={r.id}>{Array.from({ length: RELAY_MODELS[relayModelOf(r)].outputs }, (_, i) => <option key={`${r.id}:${i + 1}`} value={`${r.id}:${i + 1}`}>{r.label} {RELAY_MODELS[relayModelOf(r)].label} · izlaz O{i + 1} · u {hostLabel(r.host)}{r.roomId !== room.id ? ` (${roomName(r.roomId)})` : ''}</option>)}</Fragment>)}
                 </select>
               </label>
-              {!el.feedRelayId && <div className="stat"><span>Pali ga</span><b>{controllers(el.id).map((s) => s.label).join(', ') || '—'}</b><span className="muted">označi na prekidaču</span></div>}
+              {!el.feedRelayId && el.type !== 'boiler' && <div className="stat"><span>Pali ga</span><b>{controllers(el.id).map((s) => s.label).join(', ') || '—'}</b><span className="muted">označi na prekidaču</span></div>}
             </>
           )}
           {el.type === 'boiler' && (
