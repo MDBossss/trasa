@@ -605,6 +605,17 @@ export function circuitsOf(p: Project) {
     }
     if (info) for (const x of chain) byCable.set(x.id, info)
   }
+  // a tie between two boxes goes to the circuit the other end already has on its own, so that box stays
+  // single-circuit (e.g. the cable from a mixed frame back to the light circuit's box)
+  for (const c of p.cables) {
+    const info = byCable.get(c.id)
+    if (!info?.tie) continue
+    const ends = cableEnds(c, p).filter((e): e is WallElement => !!e && isPlace(e))
+    for (const end of ends) {
+      const others = new Set(p.cables.filter((x) => x.id !== c.id && isAtBox(x, end) && !chainCables(c, p).some((y) => y.id === x.id)).map((x) => byCable.get(x.id)).filter((x): x is CircuitInfo => !!x && !x.tie).map((x) => x.id))
+      if (others.size === 1) { const id = [...others][0]; for (const x of chainCables(c, p)) byCable.set(x.id, { id, name: names.get(id)!, tie: false }); break }
+    }
+  }
   const out = { byCable, names }
   circuitCache.set(p, out)
   return out
