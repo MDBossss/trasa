@@ -46,7 +46,7 @@ Učitaš sken tlocrta, postaviš mjerilo i nacrtaš sobe i trase bužira kroz de
 <td valign="top">
 
 ### Zid po zid
-Svaki zid je editor na fotki zida: razvodne kutije, modularne doze, utičnice (šuko, euro, RJ45, TV), prekidači po IEC simbolima, releji, svjetla, vrata, bojler, KIP. Kabeli se vuku od izlaza bužira do elemenata i nastavljaju oko kuta.
+Svaki zid je editor na fotki zida: razvodne kutije, modularne doze, utičnice (šuko, euro, RJ45, TV), prekidači po IEC simbolima, releji, svjetla, vrata, bojler, indukcija / pećnica / napa (fiksni priključak), KIP. Kabeli se vuku od izlaza bužira do elemenata i nastavljaju oko kuta.
 
 </td>
 </tr>

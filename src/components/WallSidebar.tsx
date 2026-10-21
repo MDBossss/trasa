@@ -2,7 +2,7 @@ import { Fragment, useRef } from 'react'
 import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
-import { CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, coreColors, WIRE_LABEL, type BoxDepth, type CableRole, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
+import { CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, coreColors, WIRE_LABEL, APPLIANCES, type ApplianceKind, type BoxDepth, type CableRole, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
 import { cableNeeds, circuitsOf, resolveCable, roleLabel, terminalMeta } from '../junction'
 import { Icon } from './Icons'
 import { wireSwatch } from './JunctionCanvas'
@@ -186,6 +186,17 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
               {!el.feedRelayId && el.type !== 'boiler' && <div className="stat"><span>Pali ga</span><b>{controllers(el.id).map((s) => s.label).join(', ') || '—'}</b><span className="muted">označi na prekidaču</span></div>}
             </>
           )}
+          {el.type === 'appliance' && (
+            <>
+              <label>
+                Uređaj
+                <select value={el.appliance ?? 'hob'} onChange={(e) => updateElement(el.id, { appliance: e.target.value as ApplianceKind })}>
+                  {(Object.keys(APPLIANCES) as ApplianceKind[]).map((k) => <option key={k} value={k}>{APPLIANCES[k].label} · {APPLIANCES[k].cable.replace('NYM-J ', '')}</option>)}
+                </select>
+              </label>
+              <p className="muted">{APPLIANCES[el.appliance ?? 'hob'].note}</p>
+            </>
+          )}
           {el.type === 'boiler' && (
             <p className="muted">Fiksni priključak bez utikača: kabel <b>3×2,5</b> na vlastiti krug (<b>B16</b>, FID 30 mA), ravno iz ormara. Na zidu podžbukna priključna kutija s izvodom kabela; kod bojlera u kupaoni po želji dvopolni prekidač (TEM SM20) da se isključe i faza i nula.</p>
           )}
@@ -258,7 +269,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
             </label>
           )}
           {el.type === 'box' && <button className="primary" onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori kutiju (spojevi)</button>}
-          {(el.type === 'light' || el.type === 'motor' || el.type === 'kip' || el.type === 'boiler' || (el.type === 'socket' && !el.host)) && <button className="primary" onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori spoj (koje žile kamo)</button>}
+          {(el.type === 'light' || el.type === 'motor' || el.type === 'kip' || el.type === 'boiler' || el.type === 'appliance' || (el.type === 'socket' && !el.host)) && <button className="primary" onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori spoj (koje žile kamo)</button>}
           {el.host && <div className="stat"><span>U</span><b>{hostLabel(el.host)}</b></div>}
           <div className="field-row" hidden={!!el.host}>
             <label>Od lijevo (m) <input type="number" step={0.01} value={el.xM} onChange={(e) => updateElement(el.id, { xM: +e.target.value || 0 })} /></label>

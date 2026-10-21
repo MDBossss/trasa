@@ -6,7 +6,7 @@ import useImage from 'use-image'
 import { useStore } from '../store'
 import { cornerPartner } from '../junction'
 import { CABLE_COLOR, cableColor, cablePath, cornerAt, endPos, neighbourWall, type Exit, type WallCtx, type WallInfo } from '../walls'
-import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement, RELAY_LOOK, relayBrand, relayModelOf, hostedFront , isData } from '../types'
+import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement, RELAY_LOOK, relayBrand, relayModelOf, hostedFront , isData, APPLIANCES } from '../types'
 import { Hud } from './Hud'
 import { activeWallTool } from './WallToolRail'
 import { middlePan, pinch, useMobile, wheelNav, type Camera } from '../mobile'
@@ -150,7 +150,8 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       // from the earthing terminal: Cu 16 to the board, Cu 6 bonding elsewhere
       const earth = kipEnd(draft.from) || kipEnd(to) ? (panelEnd(draft.from) || panelEnd(to) ? 'PE Cu 16 mm²' : 'PE Cu 6 mm²') : null
       const boilerEnd = (e: CableEnd) => e.kind === 'element' && project.elements.find((x) => x.id === e.id)?.type === 'boiler'
-      const heavy = boilerEnd(draft.from) || boilerEnd(to) ? 'NYM-J 3x2.5' : null
+      const appOf = (e: CableEnd) => { const x = e.kind === 'element' ? project.elements.find((y) => y.id === e.id) : undefined; return x?.type === 'appliance' ? APPLIANCES[x.appliance ?? 'hob'].cable : null }
+      const heavy = boilerEnd(draft.from) || boilerEnd(to) ? 'NYM-J 3x2.5' : appOf(to) ?? appOf(draft.from)
       addCable({ roomId, wall: wall.i, type: earth ?? heavy ?? dataEnd(to) ?? dataEnd(draft.from) ?? 'NYM-J 3x1.5', from: draft.from, to, via: draft.via, note: '' })
       setDraft(null)
     },
@@ -168,7 +169,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       if (e.key === 'Backspace' && draft) { setDraft({ ...draft, via: draft.via.slice(0, -1) }); return }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) { removeSelected(); return }
       if (e.metaKey || e.ctrlKey) return
-      const map: Record<string, [typeof tool, ElementType?, 'tipkalo'?]> = { v: ['select'], h: ['pan'], k: ['element', 'box'], u: ['element', 'socket'], p: ['element', 'switch'], t: ['element', 'switch', 'tipkalo'], l: ['element', 'light'], o: ['element', 'panel'], m: ['element', 'modbox'], r: ['element', 'relay'], n: ['element', 'ledpsu'], d: ['element', 'motor'], z: ['element', 'kip'], b: ['element', 'boiler'], c: ['cable'] }
+      const map: Record<string, [typeof tool, ElementType?, 'tipkalo'?]> = { v: ['select'], h: ['pan'], k: ['element', 'box'], u: ['element', 'socket'], p: ['element', 'switch'], t: ['element', 'switch', 'tipkalo'], l: ['element', 'light'], o: ['element', 'panel'], m: ['element', 'modbox'], r: ['element', 'relay'], n: ['element', 'ledpsu'], d: ['element', 'motor'], z: ['element', 'kip'], b: ['element', 'boiler'], f: ['element', 'appliance'], c: ['cable'] }
       if (map[e.key]) setWallTool(...map[e.key])
       if (e.key === 'g') toggle('showGrid')
       if (e.key === '+' || e.key === '=') wallZoomBy(1.2, { x: size.w / 2, y: size.h / 2 })
@@ -426,7 +427,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
               <Group key={el.id} name={el.id} x={toX(p)} y={toY(p)} {...elementDrag(el)}>
                 {/* invisible hit area: symbols are thin strokes with gaps, a click a pixel off would miss them */}
                 {el.type === 'modbox' ? <Rect x={-((el.modules ?? 3) * MODW) / 2 - 4} y={-10} width={(el.modules ?? 3) * MODW + 8} height={20} fill="#000" opacity={0.001} /> : <Circle radius={14} fill="#000" opacity={0.001} />}
-                <Symbol type={el.type} selected={isSel} px={px} modules={el.modules} swKind={el.switchKind} data={isData(el)} tv={el.socketKind === 'tv'} />
+                <Symbol type={el.type} selected={isSel} px={px} modules={el.modules} swKind={el.switchKind} data={isData(el)} tv={el.socketKind === 'tv'} appKind={el.appliance} />
                 {(() => {
                   const hosted = hostedOf(el.id)
                   const mods = hostedFront(project.elements, el.id)
@@ -512,7 +513,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
 }
 
 // IEC 60617-style symbols drawn in centimetres so they keep real-world size.
-function Symbol({ type, selected, px, modules, swKind, data, tv }: { type: ElementType; selected: boolean; px: (n: number) => number; modules?: number; swKind?: string; data?: boolean; tv?: boolean }) {
+function Symbol({ type, selected, px, modules, swKind, data, tv, appKind }: { type: ElementType; selected: boolean; px: (n: number) => number; modules?: number; swKind?: string; data?: boolean; tv?: boolean; appKind?: string }) {
   const stroke = selected ? '#1e88e5' : '#1f2430'
   const sw = px(2)
   const halo = selected ? <Circle radius={13} fill="rgba(30,136,229,0.18)" /> : null
@@ -542,6 +543,12 @@ function Symbol({ type, selected, px, modules, swKind, data, tv }: { type: Eleme
     }
     case 'light':
       return <>{halo}<Circle radius={7} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-5, -5, 5, 5]} stroke={stroke} strokeWidth={sw} /><Line points={[-5, 5, 5, -5]} stroke={stroke} strokeWidth={sw} /></>
+    case 'appliance': { // fixed-connection appliance: hob (four rings), oven (window), hood (canopy)
+      const k = appKind ?? 'hob'
+      if (k === 'hood') return <>{halo}<Line points={[-12, 6, -6, -6, 6, -6, 12, 6]} closed fill="#fff" stroke={stroke} strokeWidth={sw} lineJoin="round" /><Line points={[-3, -6, -3, -12, 3, -12, 3, -6]} stroke={stroke} strokeWidth={sw} /></>
+      if (k === 'oven') return <>{halo}<Rect x={-11} y={-10} width={22} height={20} cornerRadius={2} fill="#fff" stroke={stroke} strokeWidth={sw} /><Rect x={-7} y={-3} width={14} height={9} cornerRadius={1} fill="#fff" stroke={stroke} strokeWidth={0.9} /><Line points={[-7, -6, 7, -6]} stroke={stroke} strokeWidth={0.9} /></>
+      return <>{halo}<Rect x={-12} y={-9} width={24} height={18} cornerRadius={2} fill="#fff" stroke={stroke} strokeWidth={sw} />{[[-5, -3.5], [5, -3.5], [-5, 3.5], [5, 3.5]].map(([x, y]) => <Circle key={`${x}${y}`} x={x} y={y} radius={2.8} fill="#fff" stroke={stroke} strokeWidth={0.9} />)}</>
+    }
     case 'boiler': // water heater: upright tank with the heating element zigzag
       return <>{halo}<Rect x={-8} y={-13} width={16} height={26} cornerRadius={8} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-3, -6, 3, -3, -3, 0, 3, 3, -3, 6]} stroke={stroke} strokeWidth={sw} lineJoin="round" /></>
     case 'kip': // box with the IEC earth symbol (vertical stem, three shortening bars)

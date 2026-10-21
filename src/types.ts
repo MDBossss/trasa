@@ -53,7 +53,7 @@ export interface Wall {
   photo?: string
 }
 
-export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'motor' | 'kip' | 'boiler'
+export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'motor' | 'kip' | 'boiler' | 'appliance'
 
 // Smart relays that sit in a box: inputs are SW terminals, outputs are O terminals.
 export type RelayModel = 'gen4' | 'gen4pm' | 'zbminir2' | 'rgbw'
@@ -153,6 +153,7 @@ export interface WallElement {
   // switch wired to a relay input (1-based) instead of straight to the light
   relayId?: string
   relayInput?: number
+  appliance?: ApplianceKind
   // switch / push button with a control lamp (LED insert, e.g. TEM IA20): lit while its load is on
   lamp?: boolean
   // light / LED supply powered by a relay output (1-based) instead of a classic switch
@@ -228,6 +229,14 @@ export const ELEMENT_META: Record<ElementType, { label: string; key: string; pre
   kip: { label: 'KIP · izjednačenje potencijala', key: 'Z', prefix: 'KIP', zM: 1.0 },
   // electric water heater: fixed connection L N PE on its own circuit (3×2,5, B16), via a flush outlet box
   boiler: { label: 'Bojler', key: 'B', prefix: 'BO', zM: 1.8 },
+  // a kitchen appliance on a fixed connection (indukcija, pećnica, napa), via a flush outlet box with a cable gland
+  appliance: { label: 'Uređaj (fiksni priključak)', key: 'F', prefix: 'UR', zM: 0.6 },
+}
+export type ApplianceKind = 'hob' | 'oven' | 'hood'
+export const APPLIANCES: Record<ApplianceKind, { label: string; cable: string; zM: number; minMm2: number; note: string }> = {
+  hob: { label: 'Indukcijska ploča', cable: 'NYM-J 5x2.5', zM: 0.6, minMm2: 2.5, note: 'Trofazno 5×2,5 (3× B16) daje punu snagu. Jednofazno: 3×6 na B32, ili 3×2,5 na B16 uz ograničenje snage u ploči (~3,7 kW). Priključna kutija ~60 cm od poda iza elementa ispod ploče.' },
+  oven: { label: 'Pećnica', cable: 'NYM-J 3x2.5', zM: 0.2, minMm2: 2.5, note: 'Vlastiti krug 3×2,5 na B16. Kutija nisko (10–30 cm) ili u susjednom elementu, ne točno iza pećnice; kabel pećnice je ~1,5 m.' },
+  hood: { label: 'Napa', cable: 'NYM-J 3x1.5', zM: 2.1, minMm2: 1.5, note: 'Mala potrošnja: 3×1,5 s kruga kuhinje. Kutija ~2,0–2,2 m, iznad ploče, unutar kućišta nape ili gornjeg elementa.' },
 }
 // places where cables are joined (have a junction drawing)
 export const PLACE_TYPES: ElementType[] = ['box', 'modbox']

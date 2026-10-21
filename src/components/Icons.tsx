@@ -53,6 +53,7 @@ export const Icon = {
   switch: I('<circle cx="7" cy="17" r="2.5"/><path d="M9 15l9-9M15 6h3v3"/>'),
   earth: I('<path d="M12 4v8M5 12h14M7.5 16h9M10 20h4"/>'),
   boiler: I('<rect x="7" y="2" width="10" height="20" rx="5"/><path d="M10 9l2 2-2 2 2 2-2 2"/>'),
+  appliance: I('<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="12" r="2.5"/><circle cx="15.5" cy="12" r="2.5"/>'),
   motor: I('<rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 10h18M3 14h18M3 18h18"/><circle cx="12" cy="7" r="1.3"/>'),
   light: I('<circle cx="12" cy="12" r="8"/><path d="M6.3 6.3l11.4 11.4M17.7 6.3L6.3 17.7"/>'),
   panel: I('<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 8h6M9 12h6M9 16h6"/>'),

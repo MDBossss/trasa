@@ -570,7 +570,7 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
 
   // every wall tool is in the rail
   await page.evaluate(() => { const s = window.__trasa.getState(); s.setView({ kind: 'room', roomId: s.project.rooms[0].id, wall: 0 }) })
-  for (const name of ['Kabel', 'Bojler', 'KIP · izjednačenje potencijala', 'Vrata / motor']) await page.locator('.tool-rail').getByRole('button', { name, exact: true }).waitFor({ state: 'attached' })
+  for (const name of ['Kabel', 'Bojler', 'KIP · izjednačenje potencijala', 'Vrata / motor', 'Uređaj (indukcija, pećnica, napa)']) await page.locator('.tool-rail').getByRole('button', { name, exact: true }).waitFor({ state: 'attached' })
   // two supplies meeting in one frame is an error (the drawing would bridge two circuits); a leaf beyond it is not flagged
   const two = await page.evaluate(() => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
     const mk = (name, x) => { const cd = s.addConduit([{ x, y: 20 }, { x, y: 102 }]); s = window.__trasa.getState(); s.updateConduit(cd, { name, categoryId: 'dolaz' }); s = window.__trasa.getState(); return cd }
@@ -604,6 +604,17 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     return { x1: port('X1'), x2: port('X2'), r, need: E.cableNeeds(P.cables.find((c) => c.id === c1), P).needed, ids: [r, d, t, l, c1, c2] } }, ids)
   assert.equal(lp.x1, `O:${lp.r}:1`, 'lamp on the relay output'); assert.equal(lp.x2, 'N', 'lamp on N'); assert.equal(lp.need, 5, 'L N PE + input + output')
   await page.evaluate(({ lp }) => { const s = window.__trasa.getState(); const drop = new Set(lp.ids); s.patchProject({ cables: s.project.cables.filter((c) => !drop.has(c.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) }) }, { lp })
+
+  // kitchen appliances on a fixed connection: a hob on 5 cores is three-phase, a thin oven cable is an error
+  const ap = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
+    const hob = s.addElement({ roomId: room, wall: 0, type: 'appliance', appliance: 'hob', xM: 3.1, zM: 0.6, note: '' })
+    const oven = s.addElement({ roomId: room, wall: 0, type: 'appliance', appliance: 'oven', xM: 3.4, zM: 0.2, note: '' }); s = window.__trasa.getState()
+    const c1 = s.addCable({ roomId: room, wall: 0, type: 'NYM-J 5x2.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: hob }, via: [], note: '' })
+    const c2 = s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: oven }, via: [], note: '' }); s = window.__trasa.getState()
+    const L = E.allLeafJunctions(s.project)
+    return { hob: L.find((j) => j.box.id === hob).devices[0].ports, ovenErr: L.find((j) => j.box.id === oven).checks.some((c) => c.level === 'err' && /2,5 mm²/.test(c.text)), ids: [hob, oven, c1, c2] } }, ids)
+  assert.deepEqual(ap.hob, ['L1', 'L2', 'L3', 'N', 'PE']); assert.ok(ap.ovenErr)
+  await page.evaluate(({ ap }) => { const s = window.__trasa.getState(); const drop = new Set(ap.ids); s.patchProject({ cables: s.project.cables.filter((c) => !drop.has(c.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) }) }, { ap })
 
   // water heater: fixed L N PE, too-thin cable or a feed through a room box is flagged
   const bo = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine

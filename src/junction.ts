@@ -1,4 +1,4 @@
-import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isFeedConduit, isPlace, isData, dataKindOf, DATA_META, sectionOf, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, relayModelOf, hostedFront, type ElementType } from './types'
+import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isFeedConduit, APPLIANCES, isPlace, isData, dataKindOf, DATA_META, sectionOf, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, relayModelOf, hostedFront, type ElementType } from './types'
 import { wallExits } from './walls'
 
 // Everything a box needs: which cables enter it, what each core goes to, which devices sit inside
@@ -104,6 +104,7 @@ function roleOfElement(e: WallElement): Role {
     case 'motor': return 'motor'
     case 'kip': return 'earth'
     case 'boiler': return e.feedRelayId ? 'light' : 'socket'
+    case 'appliance': return 'socket'
     case 'switch': return 'switch'
     case 'box': case 'modbox': return 'pass'
     case 'panel': return 'feed'
@@ -775,7 +776,7 @@ export function allJunctions(p: Project): Junction[] {
 }
 
 // A light, a door unit or a stand-alone socket: one terminal block (klema) and the cable's cores going straight onto it.
-export const LEAF_TYPES: ElementType[] = ['light', 'motor', 'socket', 'kip', 'boiler']
+export const LEAF_TYPES: ElementType[] = ['light', 'motor', 'socket', 'kip', 'boiler', 'appliance']
 export const isLeaf = (e: WallElement) => LEAF_TYPES.includes(e.type) && !e.host
 export function leafJunctionFor(el: WallElement, p: Project): Junction {
   if (el.type === 'kip') return kipJunctionFor(el, p)
@@ -783,8 +784,11 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   const checks: Check[] = []
   const data = isData(el)
   const dm = data ? DATA_META[el.socketKind as 'rj45' | 'tv'] : null
-  const ports = el.type === 'motor' ? ['L', 'N', 'PE', 'IMP 1', 'IMP 2'] : dm ? [dm.port] : ['L', 'N', 'PE']
-  const name = el.type === 'light' ? 'svjetiljka' : el.type === 'motor' ? 'upravljačka jedinica' : el.type === 'boiler' ? 'bojler, priključna stezaljka' : dm ? dm.name : 'utičnica'
+  const ap = el.type === 'appliance' ? APPLIANCES[el.appliance ?? 'hob'] : null
+  // a hob on a 5-core cable is three-phase: L1 L2 L3 on brown, black, grey
+  const threePhase = el.type === 'appliance' && (el.appliance ?? 'hob') === 'hob' && p.cables.some((c) => isAtBox(c, el) && coreColors(c.type).length >= 5)
+  const ports = el.type === 'motor' ? ['L', 'N', 'PE', 'IMP 1', 'IMP 2'] : dm ? [dm.port] : threePhase ? ['L1', 'L2', 'L3', 'N', 'PE'] : ['L', 'N', 'PE']
+  const name = el.type === 'light' ? 'svjetiljka' : el.type === 'motor' ? 'upravljačka jedinica' : el.type === 'boiler' ? 'bojler, priključna stezaljka' : ap ? `${ap.label.toLowerCase()}, priključna stezaljka` : dm ? dm.name : 'utičnica'
   const device: Device = { el, label: `${el.label} ${name}`, ports, wMm: Math.max(24, ports.length * 8), hMm: 16, kind: 'terminal' }
   const cables: BoxCable[] = p.cables
     .filter((c) => isAtBox(c, el))
@@ -792,6 +796,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
       const r = resolveCable(c, el, p)
       const spare = r.cores.filter((k) => k !== 'brown' && k !== 'blue' && k !== 'gnye')
       const wires: Wire[] = dm && dataKindOf(c.type) ? [{ color: 'other', terminal: dm.port, note: dm.wire }] : r.cores.map((k) => {
+        if (threePhase && (k === 'brown' || k === 'black' || k === 'grey')) { const n = k === 'brown' ? 1 : k === 'black' ? 2 : 3; return { color: k, terminal: `L${n}`, note: `faza L${n}` } }
         if (k === 'brown') return { color: k, terminal: 'L', note: el.type === 'light' ? 'faza sa prekidača / releja' : 'faza' }
         if (k === 'blue') return { color: k, terminal: 'N' }
         if (k === 'gnye') return { color: k, terminal: 'PE' }
@@ -802,6 +807,13 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
       return { ...r, ...sideOf(r, el, p), wires }
     })
   if (!cables.length) checks.push({ level: 'warn', text: `${el.label}: do ${name === 'svjetiljka' ? 'svjetla' : name} ne dolazi nijedan kabel.` })
+  if (ap) for (const c of cables) {
+    const sect = sectionOf(c.cable.type), cores = coreColors(c.cable.type).length
+    const kind = el.appliance ?? 'hob'
+    if (sect < ap.minMm2) checks.push({ level: 'err', text: `${el.label}: ${ap.label.toLowerCase()} treba barem ${String(ap.minMm2).replace('.', ',')} mm², kabel je ${c.cable.type}.` })
+    else if (kind === 'hob' && cores < 5 && sect < 6) checks.push({ level: 'warn', text: `${el.label}: jednofazno na ${c.cable.type} ploča radi samo uz ograničenje snage (~3,7 kW, B16). Za punu snagu 5×2,5 trofazno ili 3×6 na B32.` })
+    if (kind !== 'hood' && c.far.place) checks.push({ level: 'warn', text: `${el.label}: ${ap.label.toLowerCase()} se napaja preko kutije ${c.far.place.label}. Uobičajeno je vlastiti krug ravno iz ormara.` })
+  }
   if (el.type === 'boiler' && el.feedRelayId) {
     const r = p.elements.find((x) => x.id === el.feedRelayId)
     if (r && relayModelOf(r) !== 'gen4pm') checks.push({ level: 'warn', text: `${el.label}: bojler (~9 A satima) pali ${r.label}. Za trajno opterećenje uzmi Shelly 1PM Gen4 ili sklopnik u ormaru.` })
@@ -815,9 +827,9 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   const map = new Map<string, TerminalWire[]>()
   const add = (id: string, w: TerminalWire) => { if (!map.has(id)) map.set(id, []); map.get(id)!.push(w) }
   for (const bc of cables) for (const w of bc.wires) if (w.terminal) add(w.terminal === 'PARK' ? `PARK:${bc.cable.id}:${w.color}` : w.terminal, { kind: 'core', cableId: bc.cable.id, cableLabel: bc.label, color: w.color, note: w.note })
-  for (const port of ports) { const id = port.replace(' ', ''); if (map.has(id)) add(id, { kind: 'port', deviceId: el.id, deviceLabel: device.label, port, color: id === 'L' ? 'brown' : id === 'N' ? 'blue' : id === 'PE' ? 'gnye' : id === 'UTP' || id === 'ANT' ? 'other' : 'black' }) }
+  for (const port of ports) { const id = port.replace(' ', ''); if (map.has(id)) add(id, { kind: 'port', deviceId: el.id, deviceLabel: device.label, port, color: id === 'L' || id === 'L1' ? 'brown' : id === 'N' ? 'blue' : id === 'PE' ? 'gnye' : id === 'L3' ? 'grey' : id === 'UTP' || id === 'ANT' ? 'other' : 'black' }) }
   const terminals: Terminal[] = [...map.entries()].map(([id, wires]) => {
-    const meta = id.startsWith('IMP') ? { label: id, desc: 'impuls, suhi kontakt' } : id.startsWith('PARK') ? (spareCoresOf(p) === 'cap' ? { label: '·', desc: 'rezerva' } : { label: '·', desc: 'parkirano' }) : terminalMeta(id, p)
+    const meta = /^L[123]$/.test(id) ? { label: id, desc: `faza ${id}` } : id.startsWith('IMP') ? { label: id, desc: 'impuls, suhi kontakt' } : id.startsWith('PARK') ? (spareCoresOf(p) === 'cap' ? { label: '·', desc: 'rezerva' } : { label: '·', desc: 'parkirano' }) : terminalMeta(id, p)
     const cap = id.startsWith('PARK') && spareCoresOf(p) === 'cap'
     const direct = wires.length === 2 && wires.some((w) => w.kind === 'port')
     const wago: Terminal['wago'] = direct || cap ? 0 : wires.length <= 2 ? 412 : wires.length <= 3 ? 413 : 415
