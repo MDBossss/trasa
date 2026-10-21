@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-21T19:37:34.996Z",
+ "savedAt": "2026-10-21T19:40:18.474Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -4280,6 +4280,18 @@
     "id": "g2lplaf1",
     "label": "P16",
     "slotOrder": 1
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 1,
+    "type": "relay",
+    "xM": 0.56,
+    "zM": 1.67,
+    "note": "",
+    "host": "uagf2fvr",
+    "relayModel": "zbminir2",
+    "id": "vdtsgeo9",
+    "label": "R6"
    }
   ],
   "cables": [
