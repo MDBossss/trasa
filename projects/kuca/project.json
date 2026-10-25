@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T20:02:06.923Z",
+ "savedAt": "2026-10-25T20:03:45.299Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -6960,7 +6960,10 @@
     "note": "",
     "id": "15xsh387",
     "label": "N5",
-    "ledM": 6
+    "ledM": 6,
+    "feedRelayId": "j9h358in",
+    "feedOutput": 1,
+    "ledWpm": 6
    }
   ],
   "cables": [
@@ -11392,8 +11395,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "9lsb9f44",
-   "wall": 3
+   "roomId": "c2b55x6m",
+   "wall": 1
   }
  }
 }
