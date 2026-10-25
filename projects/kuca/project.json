@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T09:15:33.393Z",
+ "savedAt": "2026-10-25T09:20:42.992Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -1573,8 +1573,8 @@
       "y": 1646.6226885139267
      },
      {
-      "x": 916.5935688627635,
-      "y": 2029.0501542119293
+      "x": 1000.1027399683257,
+      "y": 1967.9522750767455
      }
     ],
     "from": "",
@@ -1582,7 +1582,8 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "start": 0.7
+     "start": 0.7,
+     "end": 2.5
     }
    },
    {
@@ -1600,8 +1601,8 @@
       "y": 1658.006411109674
      },
      {
-      "x": 908.4623384372297,
-      "y": 2029.1194547456055
+      "x": 959.3708205448698,
+      "y": 1965.7586911980075
      }
     ],
     "from": "",
@@ -1609,7 +1610,8 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "start": 0.78
+     "start": 0.78,
+     "end": 2.57
     }
    }
   ],
@@ -5283,7 +5285,7 @@
    {
     "roomId": "c2b55x6m",
     "wall": 1,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 5x1.5",
     "from": {
      "kind": "element",
      "id": "k5aw2h5a"
@@ -5299,7 +5301,7 @@
    {
     "roomId": "c2b55x6m",
     "wall": 1,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 5x1.5",
     "from": {
      "kind": "element",
      "id": "k5aw2h5a"
@@ -5316,7 +5318,7 @@
    {
     "roomId": "c2b55x6m",
     "wall": 0,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 5x1.5",
     "from": {
      "kind": "corner",
      "corner": 1,
@@ -7347,7 +7349,7 @@
    {
     "roomId": "c2b55x6m",
     "wall": 1,
-    "type": "zvono 2x0.75",
+    "type": "upravljački 2x0.75",
     "from": {
      "kind": "element",
      "id": "wdkwpzx7"
@@ -7365,6 +7367,127 @@
     ],
     "note": "",
     "id": "ugy2k6u6"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "upravljački 2x0.75",
+    "from": {
+     "kind": "element",
+     "id": "wdkwpzx7"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "p072mniu",
+     "end": "start"
+    },
+    "via": [
+     {
+      "xM": 2.28,
+      "zM": 0.68
+     }
+    ],
+    "note": "",
+    "id": "bgxredn7"
+   },
+   {
+    "roomId": "irxyujn8",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "3cbmal92",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "9yzmvtmq"
+    },
+    "via": [],
+    "note": "",
+    "id": "6l1yauq6"
+   },
+   {
+    "roomId": "irxyujn8",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "9yzmvtmq"
+    },
+    "to": {
+     "kind": "element",
+     "id": "gcxo07n6"
+    },
+    "via": [],
+    "note": "",
+    "id": "pgfaizp2"
+   },
+   {
+    "roomId": "irxyujn8",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "9yzmvtmq"
+    },
+    "to": {
+     "kind": "element",
+     "id": "2z03m73d"
+    },
+    "via": [],
+    "note": "",
+    "id": "tb150bj3"
+   },
+   {
+    "roomId": "irxyujn8",
+    "wall": 1,
+    "type": "upravljački 2x0.75",
+    "from": {
+     "kind": "element",
+     "id": "2z03m73d"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "p072mniu",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "p6fnnqcb"
+   },
+   {
+    "roomId": "irxyujn8",
+    "wall": 1,
+    "type": "upravljački 2x0.75",
+    "from": {
+     "kind": "element",
+     "id": "gcxo07n6"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "p072mniu",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "erzas2er"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "2jyaql5v"
+    },
+    "to": {
+     "kind": "element",
+     "id": "6xxku054"
+    },
+    "via": [],
+    "note": "",
+    "id": "d47th21y"
    }
   ],
   "categories": [
@@ -7472,9 +7595,8 @@
  },
  "ui": {
   "view": {
-   "kind": "room",
-   "roomId": "c2b55x6m",
-   "wall": 1
+   "kind": "junctions",
+   "elementId": "wdkwpzx7"
   }
  }
 }
