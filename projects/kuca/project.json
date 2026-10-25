@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T16:42:32.229Z",
+ "savedAt": "2026-10-25T17:02:07.339Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -170,8 +170,8 @@
     "diameter": 20,
     "points": [
      {
-      "x": 915.2851449852084,
-      "y": 1542.614790724274
+      "x": 915.3434659736168,
+      "y": 1553.9290624755176
      },
      {
       "x": 1258.0715629835463,
@@ -183,7 +183,7 @@
     "note": "",
     "categoryId": "rasvjeta",
     "exitZ": {
-     "start": 2.26,
+     "start": 2.19,
      "end": 2.21
     }
    },
@@ -194,8 +194,8 @@
     "diameter": 20,
     "points": [
      {
-      "x": 907.3885888357552,
-      "y": 1553.970066996847
+      "x": 907.4469098241636,
+      "y": 1565.2843387480907
      },
      {
       "x": 530.270446215523,
@@ -207,7 +207,7 @@
     "note": "",
     "categoryId": "rasvjeta",
     "exitZ": {
-     "start": 2.35
+     "start": 2.01
     }
    },
    {
@@ -217,8 +217,8 @@
     "diameter": 20,
     "points": [
      {
-      "x": 906.3096665883056,
-      "y": 1578.8676876765003
+      "x": 906.2105209080112,
+      "y": 1559.633425699386
      },
      {
       "x": 644.2383859354501,
@@ -230,7 +230,7 @@
     "note": "",
     "categoryId": "rasvjeta",
     "exitZ": {
-     "start": 2.32
+     "start": 2.1
     }
    },
    {
@@ -240,8 +240,8 @@
     "diameter": 20,
     "points": [
      {
-      "x": 910.7188056779642,
-      "y": 1532.4812327231857
+      "x": 910.8878024277842,
+      "y": 1565.266602188278
      },
      {
       "x": 906.1715357531419,
@@ -253,7 +253,7 @@
     "note": "",
     "categoryId": "dolaz",
     "exitZ": {
-     "start": 2.22,
+     "start": 1.89,
      "end": 2.53
     }
    },
@@ -780,14 +780,15 @@
      },
      {
       "x": 1045.4756003884343,
-      "y": 1331.1412813300728
+      "y": 1312.9814447190065
      }
     ],
     "from": "",
     "to": "",
     "note": "",
     "exitZ": {
-     "start": 2.49
+     "start": 2.49,
+     "end": 2.41
     }
    },
    {
@@ -802,14 +803,15 @@
      },
      {
       "x": 1046.4051080714837,
-      "y": 1480.7920183010326
+      "y": 1398.9710523907468
      }
     ],
     "from": "",
     "to": "",
     "note": "",
     "exitZ": {
-     "start": 2.33
+     "start": 2.33,
+     "end": 2.43
     }
    },
    {
@@ -820,7 +822,7 @@
     "points": [
      {
       "x": 1045.36042821661,
-      "y": 1335.6102888431487
+      "y": 1332.2159622245274
      },
      {
       "x": 1160.7675332497352,
@@ -830,7 +832,10 @@
     "from": "",
     "to": "",
     "note": "",
-    "categoryId": "rasvjeta"
+    "categoryId": "rasvjeta",
+    "exitZ": {
+     "start": 2.49
+    }
    },
    {
     "id": "07n6jc5d",
@@ -840,7 +845,7 @@
     "points": [
      {
       "x": 1048.7547548352313,
-      "y": 1369.553555029362
+      "y": 1350.3190375238412
      },
      {
       "x": 905.2902286109295,
@@ -851,7 +856,9 @@
     "to": "",
     "note": "",
     "categoryId": "dolaz",
-    "exitZ": {}
+    "exitZ": {
+     "start": 2.41
+    }
    },
    {
     "id": "3hkut1lt",
@@ -861,7 +868,7 @@
     "points": [
      {
       "x": 1048.7547548352313,
-      "y": 1377.4736504728116
+      "y": 1367.2906706169479
      },
      {
       "x": 1265.5558111146174,
@@ -872,7 +879,8 @@
     "to": "",
     "note": "",
     "exitZ": {
-     "end": 2.21
+     "end": 2.21,
+     "start": 2.47
     },
     "feed": true
    },
@@ -1573,7 +1581,8 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "end": 2.07
+     "end": 2.07,
+     "start": 2.51
     },
     "feed": true
    },
@@ -2093,6 +2102,122 @@
     "categoryId": "internet",
     "exitZ": {
      "start": 1.92
+    }
+   },
+   {
+    "id": "8m7bsspa",
+    "name": "SVJETLO STROP VANI (ULAZ 2)",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 915.2444542549295,
+      "y": 1536.983673462566
+     },
+     {
+      "x": 915.2445745027926,
+      "y": 1487.2235444749015
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "todo",
+    "exitZ": {
+     "start": 2.27
+    }
+   },
+   {
+    "id": "xlkg62nb",
+    "name": "SVJETLO ZID NAPRED (ULAZ 1)",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 919.7701028318947,
+      "y": 1536.9603453771176
+     },
+     {
+      "x": 919.770343327621,
+      "y": 1487.2235444749015
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "todo",
+    "exitZ": {
+     "start": 2.18
+    }
+   },
+   {
+    "id": "f54hn34x",
+    "name": "SVJETLO LIJEVO (JURA)",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 924.29575140886,
+      "y": 1536.9370172916695
+     },
+     {
+      "x": 924.2961121524495,
+      "y": 1487.2235444749015
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "todo",
+    "exitZ": {
+     "start": 1.96
+    }
+   },
+   {
+    "id": "a0vivtfa",
+    "name": "SVJETLO GARAZA",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 910.7188056779642,
+      "y": 1537.0070015480142
+     },
+     {
+      "x": 910.7188056779642,
+      "y": 1486.0921022686944
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "todo",
+    "exitZ": {
+     "start": 2.06
+    }
+   },
+   {
+    "id": "krtvcnx7",
+    "name": "DOLAZ",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 906.1930368531357,
+      "y": 1537.0070015480142
+     },
+     {
+      "x": 906.1930368531357,
+      "y": 1486.0921022686944
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "todo",
+    "feed": true,
+    "exitZ": {
+     "start": 1.85
     }
    }
   ],
@@ -4328,16 +4453,6 @@
     "label": "KIP1"
    },
    {
-    "roomId": "xyw3llcm",
-    "wall": 3,
-    "type": "box",
-    "xM": 1.48,
-    "zM": 1.99,
-    "note": "",
-    "id": "1otjln7x",
-    "label": "K16"
-   },
-   {
     "roomId": "mmcst90r",
     "wall": 0,
     "type": "box",
@@ -6518,6 +6633,40 @@
     "label": "P33",
     "slotOrder": 0,
     "modules": 2
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "socket",
+    "xM": 1.2,
+    "zM": 0.59,
+    "note": "",
+    "host": "4xzchbu7",
+    "id": "ovb9lvil",
+    "label": "U137",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "socket",
+    "xM": 1.2,
+    "zM": 0.59,
+    "note": "",
+    "host": "4xzchbu7",
+    "id": "c6c9n5bm",
+    "label": "U138",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 0,
+    "type": "light",
+    "xM": 2.83,
+    "zM": 1.39,
+    "note": "",
+    "id": "otqs5faa",
+    "label": "S22"
    }
   ],
   "cables": [
@@ -8148,96 +8297,6 @@
     "via": [],
     "note": "",
     "id": "vhdbtru6"
-   },
-   {
-    "roomId": "xyw3llcm",
-    "wall": 3,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "exit",
-     "conduitId": "s8yl2bgn",
-     "end": "start"
-    },
-    "to": {
-     "kind": "element",
-     "id": "1otjln7x"
-    },
-    "via": [
-     {
-      "xM": 1.789770037223019,
-      "zM": 1.98
-     }
-    ],
-    "note": "",
-    "id": "tm4qbryj"
-   },
-   {
-    "roomId": "xyw3llcm",
-    "wall": 3,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "exit",
-     "conduitId": "sttep0d7",
-     "end": "start"
-    },
-    "to": {
-     "kind": "element",
-     "id": "1otjln7x"
-    },
-    "via": [],
-    "note": "",
-    "id": "ugsr97sw"
-   },
-   {
-    "roomId": "xyw3llcm",
-    "wall": 3,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "exit",
-     "conduitId": "a5pqhsnu",
-     "end": "start"
-    },
-    "to": {
-     "kind": "element",
-     "id": "1otjln7x"
-    },
-    "via": [],
-    "note": "",
-    "id": "m0tw9let"
-   },
-   {
-    "roomId": "xyw3llcm",
-    "wall": 3,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "exit",
-     "conduitId": "6she46hx",
-     "end": "start"
-    },
-    "to": {
-     "kind": "element",
-     "id": "1otjln7x"
-    },
-    "via": [],
-    "note": "",
-    "id": "ckvy03cq"
-   },
-   {
-    "roomId": "xyw3llcm",
-    "wall": 3,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "exit",
-     "conduitId": "g4yul0vy",
-     "end": "start"
-    },
-    "to": {
-     "kind": "element",
-     "id": "1otjln7x"
-    },
-    "via": [],
-    "note": "",
-    "id": "zw7kybo3"
    },
    {
     "roomId": "mmcst90r",
@@ -10427,6 +10486,180 @@
     "via": [],
     "note": "",
     "id": "o30ydzxi"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "it8y3736",
+     "end": "end"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 0,
+     "zM": 2.46
+    },
+    "via": [],
+    "note": "",
+    "id": "gxduvff3"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 7,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 0,
+     "zM": 2.46
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 7,
+     "zM": 2.46
+    },
+    "via": [],
+    "note": "",
+    "id": "nonvc8g0"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 7,
+     "zM": 2.46
+    },
+    "to": {
+     "kind": "element",
+     "id": "w47v74u9"
+    },
+    "via": [
+     {
+      "xM": 1.85,
+      "zM": 1.92
+     },
+     {
+      "xM": 1.29,
+      "zM": 1.92
+     }
+    ],
+    "note": "",
+    "id": "vr7rhjc9"
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "g4yul0vy",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "otqs5faa"
+    },
+    "via": [
+     {
+      "xM": 2.76,
+      "zM": 1.83
+     }
+    ],
+    "note": "",
+    "id": "w7j4umpt"
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "6she46hx",
+     "end": "start"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "8m7bsspa",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "895ogiig"
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "a0vivtfa",
+     "end": "start"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "sttep0d7",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "bpfez8vi"
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "g4yul0vy",
+     "end": "start"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "xlkg62nb",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "eho8vcq7"
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "a5pqhsnu",
+     "end": "start"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "f54hn34x",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "3q6t4f88"
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "krtvcnx7",
+     "end": "start"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "s8yl2bgn",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "dwcyk4yk"
    }
   ],
   "categories": [
