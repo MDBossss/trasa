@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T09:20:42.992Z",
+ "savedAt": "2026-10-25T09:23:50.749Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -1514,7 +1514,7 @@
    {
     "id": "wfvva2oc",
     "name": "KUPAONA UTICNICA",
-    "color": "#e6194b",
+    "color": "#06b6b4",
     "diameter": 20,
     "points": [
      {
@@ -1529,10 +1529,11 @@
     "from": "",
     "to": "",
     "note": "",
-    "categoryId": "struja",
+    "categoryId": "todo",
     "exitZ": {
      "end": 2.07
-    }
+    },
+    "feed": true
    },
    {
     "id": "is1ge4ad",
@@ -7595,8 +7596,7 @@
  },
  "ui": {
   "view": {
-   "kind": "junctions",
-   "elementId": "wdkwpzx7"
+   "kind": "plan"
   }
  }
 }
