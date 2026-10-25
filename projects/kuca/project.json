@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T12:12:27.769Z",
+ "savedAt": "2026-10-25T12:39:00.281Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -1771,6 +1771,68 @@
     "exitZ": {
      "start": 1.32,
      "end": 1.92
+    }
+   },
+   {
+    "id": "6r42jw2o",
+    "name": "DOLAZ INTERNET B2",
+    "color": "#4363d8",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 874.5126550793367,
+      "y": 1232.6490480783018
+     },
+     {
+      "x": 1287.4890603449312,
+      "y": 1232.6490480783018
+     },
+     {
+      "x": 1287.4890603449312,
+      "y": 911.319461515483
+     },
+     {
+      "x": 1216.2312300729575,
+      "y": 796.8745206300387
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "internet",
+    "exitZ": {
+     "end": 1.71
+    }
+   },
+   {
+    "id": "v6711hr5",
+    "name": "DOLAZ INTERNET B2",
+    "color": "#4363d8",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 873.3812128731296,
+      "y": 1240.5691435217516
+     },
+     {
+      "x": 1295.409155788381,
+      "y": 1240.5691435217516
+     },
+     {
+      "x": 1295.409155788381,
+      "y": 903.3993660720332
+     },
+     {
+      "x": 1206.0444655576105,
+      "y": 794.8364310983967
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "internet",
+    "exitZ": {
+     "end": 1.72
     }
    }
   ],
@@ -5442,7 +5504,8 @@
     "id": "d7fdb5jk",
     "label": "U116",
     "slotOrder": 1,
-    "socketKind": "rj45"
+    "socketKind": "rj45",
+    "depth": "duboka"
    },
    {
     "roomId": "icogq6ir",
@@ -9037,6 +9100,111 @@
     "via": [],
     "note": "",
     "id": "6sl06qgb"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "UTP cat6",
+    "from": {
+     "kind": "element",
+     "id": "gz3o49nx"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "0kr0pe58",
+     "end": "start"
+    },
+    "via": [
+     {
+      "xM": 1.78,
+      "zM": 1.27
+     }
+    ],
+    "note": "",
+    "id": "cvon9z29"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "6jmaitsp",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "4dmc1bb7"
+    },
+    "via": [],
+    "note": "",
+    "id": "dgqf6gtm"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "koaks",
+    "from": {
+     "kind": "exit",
+     "conduitId": "0kr0pe58",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "gz3o49nx"
+    },
+    "via": [
+     {
+      "xM": 1.81,
+      "zM": 1.27
+     }
+    ],
+    "note": "",
+    "id": "q0mhfabo"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "UTP cat6",
+    "from": {
+     "kind": "element",
+     "id": "gz3o49nx"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "6r42jw2o",
+     "end": "end"
+    },
+    "via": [
+     {
+      "xM": 1.75,
+      "zM": 1.27
+     }
+    ],
+    "note": "",
+    "id": "8b4mzblz"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "UTP cat6",
+    "from": {
+     "kind": "element",
+     "id": "gz3o49nx"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "v6711hr5",
+     "end": "end"
+    },
+    "via": [
+     {
+      "xM": 1.72,
+      "zM": 1.25
+     }
+    ],
+    "note": "",
+    "id": "ulsfadm5"
    }
   ],
   "categories": [
