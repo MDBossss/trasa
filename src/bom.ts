@@ -104,6 +104,7 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
         add(out, 'LED', `LED traka ${e.ledV ?? 24} V COB (${w} W/m)`, 'm', m)
         add(out, 'LED', `Alu profil s difuzorom`, 'm', m)
         add(out, 'LED', `Napajanje ${e.ledV ?? 24} V ≥ ${Math.ceil((m * w * 1.2) / 10) * 10} W`, 'kom', 1)
+        add(out, 'Utičnice', 'Šuko utičnica nadžbukna, u elementu (za napajanje LED trake)', 'kom', 1)
         break
       }
     }

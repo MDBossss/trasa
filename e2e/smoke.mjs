@@ -623,9 +623,14 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const cs = [cab('NYM-J 3x1.5', box, n), cab('upravljački 2x0.75', d, n)]
     const P = window.__trasa.getState().project
     const jk = E.allJunctions(P).find((j) => j.box.id === box), jd = E.allJunctions(P).find((j) => j.box.id === d)
-    const out = { strip: jk.cables.find((c) => c.cable.id === cs[0]).wires.map((w) => w.terminal), dErr: jd.checks.filter((c) => c.level !== 'ok').map((c) => c.text), dT: jd.terminals.map((x) => x.label).sort() }
-    const drop = new Set([n, r, d, t, ...cs]); s.patchProject({ cables: s.project.cables.filter((x) => !drop.has(x.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) })
+    const jl = E.allLeafJunctions(P).find((j) => j.box.id === n)
+    const out = { n, drop: [n, r, d, t, ...cs], strip: jk.cables.find((c) => c.cable.id === cs[0]).wires.map((w) => w.terminal), dErr: jd.checks.filter((c) => c.level !== 'ok').map((c) => c.text), dT: jd.terminals.map((x) => x.label).sort(), leafT: jl.terminals.map((x) => x.label).sort(), leafLevel: jl.level }
+    s.setView({ kind: 'junctions', elementId: n })
     return out }, { box: ids.box })
+  await page.locator('.junction-main .room-head h2', { hasText: 'LED traka' }).waitFor()
+  await page.locator('.checks').getByText(/napajanje 24 V od barem 30 W/).waitFor()
+  await page.evaluate(({ drop }) => { const s = window.__trasa.getState(); const d = new Set(drop); s.patchProject({ cables: s.project.cables.filter((x) => !d.has(x.id)), elements: s.project.elements.filter((e) => !d.has(e.id)) }) }, led)
+  assert.deepEqual(led.leafT, ['+24', 'L', 'N', 'PE', 'SW1'], 'the LED socket shows L N PE and the button pair on the controller'); assert.equal(led.leafLevel, 'ok')
   assert.deepEqual(led.strip, ['L', 'N', 'PE'], 'the LED supply is fed straight, not through a switch')
   assert.deepEqual(led.dErr, [], 'a frame with only a 24 V push button needs no phase')
   assert.deepEqual(led.dT, ['+24', 'SW1'], 'the button lands on the controller +24 V and SW1')
