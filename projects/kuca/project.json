@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T10:43:10.292Z",
+ "savedAt": "2026-10-25T11:06:06.750Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -1108,19 +1108,19 @@
     "points": [
      {
       "x": 1625.7902800008565,
-      "y": 1160.2367468810469
+      "y": 1155.7109780562184
      },
      {
       "x": 1625.7902800008565,
-      "y": 905.6622504844476
+      "y": 883.0334063603053
      }
     ],
     "from": "",
     "to": "",
     "note": "",
     "exitZ": {
-     "end": 1.61,
-     "start": 1.72
+     "end": 1.47,
+     "start": 1.52
     }
    },
    {
@@ -1130,20 +1130,20 @@
     "diameter": 20,
     "points": [
      {
-      "x": 1625.7902800008565,
-      "y": 1131.950691725869
+      "x": 1626.9217222070638,
+      "y": 1163.6310734996682
      },
      {
       "x": 1625.7902800008565,
-      "y": 1052.7497372913715
+      "y": 1047.0925262603362
      }
     ],
     "from": "",
     "to": "",
     "note": "",
     "exitZ": {
-     "start": 1.66,
-     "end": 1.63
+     "start": 1.52,
+     "end": 1.36
     }
    },
    {
@@ -1158,14 +1158,14 @@
      },
      {
       "x": 1625.415703561477,
-      "y": 1026.7265665486082
+      "y": 1047.0925262603362
      }
     ],
     "from": "",
     "to": "",
     "note": "",
     "exitZ": {
-     "end": 1.78
+     "end": 1.18
     }
    },
    {
@@ -1176,7 +1176,7 @@
     "points": [
      {
       "x": 1624.6588377946496,
-      "y": 1001.8348380120517
+      "y": 1034.646661992058
      },
      {
       "x": 1201.439182022881,
@@ -1187,7 +1187,7 @@
     "to": "",
     "note": "",
     "exitZ": {
-     "start": 1.68,
+     "start": 1.43,
      "end": 2.43
     }
    },
@@ -1422,13 +1422,13 @@
    },
    {
     "id": "tro4q0lb",
-    "name": "SVJETLO VANI",
-    "color": "#3cb44b",
+    "name": "SVJETLO VANI (spoj nazad unutra za dlz)",
+    "color": "#ff0000",
     "diameter": 20,
     "points": [
      {
-      "x": 1658.602103980863,
-      "y": 1049.3554106727502
+      "x": 1679.005891973745,
+      "y": 1050.2477815082948
      },
      {
       "x": 916.6611239835552,
@@ -1438,7 +1438,8 @@
     "from": "",
     "to": "",
     "note": "",
-    "categoryId": "rasvjeta"
+    "categoryId": "dolaz",
+    "exitZ": {}
    },
    {
     "id": "vx1mkoex",
@@ -1614,6 +1615,52 @@
     "exitZ": {
      "start": 0.78,
      "end": 2.57
+    }
+   },
+   {
+    "id": "oehazb2q",
+    "name": "SVJETLO (ZA RAZVOD VAN ->)",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1624.6588377946496,
+      "y": 1039.1724308168862
+     },
+     {
+      "x": 1674.2491077471313,
+      "y": 1036.7570153065774
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "todo",
+    "exitZ": {
+     "start": 1.18
+    }
+   },
+   {
+    "id": "fz9stvbz",
+    "name": "DOLAZ (<-- SVJETLO VANI)",
+    "color": "#ff0000",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1679.0904931665002,
+      "y": 1061.5625985579395
+     },
+     {
+      "x": 1621.2645111760285,
+      "y": 1052.7497372913715
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "dolaz",
+    "exitZ": {
+     "end": 1.34
     }
    }
   ],
@@ -1982,7 +2029,8 @@
       "photo": "gh:projects/kuca/img/998c896232712825.jpg"
      },
      "4": {
-      "photo": "gh:projects/kuca/img/463d98284417f858.jpg"
+      "photo": "gh:projects/kuca/img/463d98284417f858.jpg",
+      "photoStretch": true
      },
      "5": {
       "photo": "gh:projects/kuca/img/9dec1fcdf04959c5.jpg"
@@ -2134,6 +2182,29 @@
      {
       "x": 1130.2185936821431,
       "y": 2040.4987833101773
+     }
+    ],
+    "walls": {}
+   },
+   {
+    "id": "49c80zwd",
+    "name": "Vani desno",
+    "points": [
+     {
+      "x": 1666.5221994243125,
+      "y": 1083.2986768589635
+     },
+     {
+      "x": 1720.8314253222536,
+      "y": 1083.2986768589635
+     },
+     {
+      "x": 1720.8314253222536,
+      "y": 962.2343607948029
+     },
+     {
+      "x": 1664.2593150118983,
+      "y": 962.2343607948029
      }
     ],
     "walls": {}
@@ -4433,17 +4504,6 @@
    },
    {
     "roomId": "z6exkgda",
-    "wall": 0,
-    "type": "modbox",
-    "xM": 0.72,
-    "zM": 1.11,
-    "note": "",
-    "id": "3h3gwlrf",
-    "label": "D47",
-    "modules": 4
-   },
-   {
-    "roomId": "z6exkgda",
     "wall": 2,
     "type": "box",
     "xM": 0.82,
@@ -4572,30 +4632,6 @@
     "host": "l5skfh1n",
     "id": "s4iquk6p",
     "label": "U97",
-    "slotOrder": 1
-   },
-   {
-    "roomId": "z6exkgda",
-    "wall": 0,
-    "type": "socket",
-    "xM": 0.72,
-    "zM": 1.11,
-    "note": "",
-    "host": "3h3gwlrf",
-    "id": "al0yaouu",
-    "label": "U98",
-    "slotOrder": 0
-   },
-   {
-    "roomId": "z6exkgda",
-    "wall": 0,
-    "type": "socket",
-    "xM": 0.72,
-    "zM": 1.11,
-    "note": "",
-    "host": "3h3gwlrf",
-    "id": "dkr7qebr",
-    "label": "U99",
     "slotOrder": 1
    },
    {
@@ -4936,6 +4972,165 @@
     "note": "",
     "id": "dxw24ie8",
     "label": "S14"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "modbox",
+    "xM": 3.4,
+    "zM": 0.87,
+    "note": "",
+    "id": "mnxtsz4w",
+    "label": "D49",
+    "modules": 4
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "socket",
+    "xM": 3.17,
+    "zM": 0.88,
+    "note": "",
+    "host": "mnxtsz4w",
+    "id": "wuimxtpk",
+    "label": "U100",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "socket",
+    "xM": 3.17,
+    "zM": 0.88,
+    "note": "",
+    "host": "mnxtsz4w",
+    "id": "ywav9vmy",
+    "label": "U101",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "box",
+    "xM": 2.19,
+    "zM": 1.3,
+    "note": "",
+    "id": "hv9me1wu",
+    "label": "K27"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "modbox",
+    "xM": 0.77,
+    "zM": 0.51,
+    "note": "",
+    "id": "rcj4fycy",
+    "label": "D50",
+    "modules": 4
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "socket",
+    "xM": 0.77,
+    "zM": 0.51,
+    "note": "",
+    "host": "rcj4fycy",
+    "id": "yq4elak7",
+    "label": "U102",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "socket",
+    "xM": 0.77,
+    "zM": 0.51,
+    "note": "",
+    "host": "rcj4fycy",
+    "id": "j0rom2x8",
+    "label": "U103",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "modbox",
+    "xM": 2.299999999999999,
+    "zM": 0.51,
+    "note": "",
+    "id": "2jxijjm3",
+    "label": "D51",
+    "modules": 4
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "socket",
+    "xM": 2.299999999999999,
+    "zM": 0.51,
+    "note": "",
+    "host": "2jxijjm3",
+    "id": "47kk9684",
+    "label": "U104",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "socket",
+    "xM": 2.299999999999999,
+    "zM": 0.51,
+    "note": "",
+    "host": "2jxijjm3",
+    "id": "f4ywppwh",
+    "label": "U105",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "box",
+    "xM": 3.3600000000000003,
+    "zM": 1.36,
+    "note": "",
+    "id": "jx6eo67v",
+    "label": "K28"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "modbox",
+    "xM": 3.27,
+    "zM": 0.7,
+    "note": "",
+    "id": "os8kd7cq",
+    "label": "D52",
+    "modules": 4
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "modbox",
+    "xM": 3.27,
+    "zM": 1.11,
+    "note": "",
+    "id": "wm9b12lo",
+    "label": "D53",
+    "modules": 4,
+    "depth": "duboka"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "modbox",
+    "xM": 1.94,
+    "zM": 1.11,
+    "note": "",
+    "id": "gz3o49nx",
+    "label": "D54",
+    "modules": 7
    }
   ],
   "cables": [
@@ -7882,22 +8077,6 @@
     "type": "NYM-J 3x1.5",
     "from": {
      "kind": "element",
-     "id": "3h3gwlrf"
-    },
-    "to": {
-     "kind": "element",
-     "id": "l5skfh1n"
-    },
-    "via": [],
-    "note": "",
-    "id": "1lurm6ix"
-   },
-   {
-    "roomId": "z6exkgda",
-    "wall": 0,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "element",
      "id": "l5skfh1n"
     },
     "to": {
@@ -7907,6 +8086,196 @@
     "via": [],
     "note": "",
     "id": "5vuzxk8q"
+   },
+   {
+    "roomId": "49c80zwd",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "tro4q0lb",
+     "end": "start"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "fz9stvbz",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "0hfagn6i"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "oehazb2q",
+     "end": "start"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "6qarioga",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "ipjy7css"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "fz9stvbz",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "hv9me1wu"
+    },
+    "via": [],
+    "note": "",
+    "id": "gby3vzq2"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "hv9me1wu"
+    },
+    "to": {
+     "kind": "element",
+     "id": "hv9me1wu"
+    },
+    "via": [],
+    "note": "",
+    "id": "s89mgcln"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "hv9me1wu"
+    },
+    "to": {
+     "kind": "element",
+     "id": "hv9me1wu"
+    },
+    "via": [],
+    "note": "",
+    "id": "h9b4luz7"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "94j2bpxj",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "hv9me1wu"
+    },
+    "via": [],
+    "note": "",
+    "id": "v4yryfv6"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "8hucqsmq",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "rcj4fycy"
+    },
+    "via": [],
+    "note": "",
+    "id": "i777gcak"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "hv9me1wu"
+    },
+    "to": {
+     "kind": "element",
+     "id": "2jxijjm3"
+    },
+    "via": [
+     {
+      "xM": 2.22,
+      "zM": 0.74
+     }
+    ],
+    "note": "",
+    "id": "1n7aqaip"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "jx6eo67v"
+    },
+    "to": {
+     "kind": "element",
+     "id": "mnxtsz4w"
+    },
+    "via": [],
+    "note": "",
+    "id": "k7300epu"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "94j2bpxj",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "jx6eo67v"
+    },
+    "via": [],
+    "note": "",
+    "id": "j8tog9bq"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 4,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "8hucqsmq",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "jx6eo67v"
+    },
+    "via": [],
+    "note": "",
+    "id": "0gtvc6gl"
    }
   ],
   "categories": [
@@ -8015,8 +8384,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "z6exkgda",
-   "wall": 2
+   "roomId": "icogq6ir",
+   "wall": 5
   }
  }
 }
