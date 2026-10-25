@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T19:16:19.032Z",
+ "savedAt": "2026-10-25T19:27:04.786Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -6659,7 +6659,8 @@
     "note": "",
     "id": "w47v74u9",
     "label": "D72",
-    "modules": 7
+    "modules": 7,
+    "depth": "duboka"
    },
    {
     "roomId": "akuvhdws",
@@ -6670,7 +6671,8 @@
     "note": "",
     "id": "en9n5irk",
     "label": "D73",
-    "modules": 7
+    "modules": 7,
+    "depth": "duboka"
    },
    {
     "roomId": "akuvhdws",
@@ -6717,7 +6719,9 @@
     "zM": 1.39,
     "note": "",
     "id": "otqs5faa",
-    "label": "S22"
+    "label": "S22",
+    "feedRelayId": "j9h358in",
+    "feedOutput": 1
    },
    {
     "roomId": "akuvhdws",
@@ -6815,7 +6819,9 @@
     "zM": 2.31,
     "note": "",
     "id": "fa52hgkv",
-    "label": "S24"
+    "label": "S24",
+    "feedRelayId": "j9h358in",
+    "feedOutput": 1
    },
    {
     "roomId": "fcv0y1qm",
@@ -6825,7 +6831,9 @@
     "zM": 2.37,
     "note": "",
     "id": "zm42tjnv",
-    "label": "S25"
+    "label": "S25",
+    "feedRelayId": "1mmd4lti",
+    "feedOutput": 1
    }
   ],
   "cables": [
@@ -10853,7 +10861,8 @@
     },
     "via": [],
     "note": "",
-    "id": "odj3pb7f"
+    "id": "odj3pb7f",
+    "role": "feed"
    },
    {
     "roomId": "akuvhdws",
