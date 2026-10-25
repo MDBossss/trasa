@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T20:03:45.299Z",
+ "savedAt": "2026-10-25T20:09:35.929Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -6957,7 +6957,7 @@
     "type": "ledpsu",
     "xM": 3.4101438525170775,
     "zM": 1.25,
-    "note": "",
+    "note": "\"24 V, H05RN-F 2×0,75, ostaviti 50 cm kabela na kraju\".",
     "id": "15xsh387",
     "label": "N5",
     "ledM": 6,
