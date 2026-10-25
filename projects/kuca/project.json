@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T17:02:07.339Z",
+ "savedAt": "2026-10-25T17:09:46.819Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2115,8 +2115,8 @@
       "y": 1536.983673462566
      },
      {
-      "x": 915.2445745027926,
-      "y": 1487.2235444749015
+      "x": 919.7700713790076,
+      "y": 1487.188463103768
      }
     ],
     "from": "",
@@ -2124,7 +2124,8 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "start": 2.27
+     "start": 2.27,
+     "end": 1.85
     }
    },
    {
@@ -2138,8 +2139,8 @@
       "y": 1536.9603453771176
      },
      {
-      "x": 919.770343327621,
-      "y": 1487.2235444749015
+      "x": 933.308251299334,
+      "y": 1487.118599451865
      }
     ],
     "from": "",
@@ -2147,7 +2148,8 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "start": 2.18
+     "start": 2.18,
+     "end": 2.07
     }
    },
    {
@@ -2161,8 +2163,8 @@
       "y": 1536.9370172916695
      },
      {
-      "x": 924.2961121524495,
-      "y": 1487.2235444749015
+      "x": 949.148238217624,
+      "y": 1487.0308923348614
      }
     ],
     "from": "",
@@ -2170,7 +2172,8 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "start": 1.96
+     "start": 1.96,
+     "end": 2.24
     }
    },
    {
@@ -2193,7 +2196,8 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "start": 2.06
+     "start": 2.06,
+     "end": 1.64
     }
    },
    {
@@ -2207,8 +2211,8 @@
       "y": 1537.0070015480142
      },
      {
-      "x": 906.1930368531357,
-      "y": 1486.0921022686944
+      "x": 959.3215789533124,
+      "y": 1485.7479775109741
      }
     ],
     "from": "",
@@ -2217,7 +2221,8 @@
     "categoryId": "todo",
     "feed": true,
     "exitZ": {
-     "start": 1.85
+     "start": 1.85,
+     "end": 2.34
     }
    }
   ],
@@ -6667,6 +6672,61 @@
     "note": "",
     "id": "otqs5faa",
     "label": "S22"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "switch",
+    "xM": 1.85,
+    "zM": 1.28,
+    "note": "",
+    "host": "en9n5irk",
+    "switchKind": "tipkalo",
+    "id": "bz31j1au",
+    "label": "P34",
+    "slotOrder": 0,
+    "gapBefore": 5,
+    "relayId": "1mmd4lti",
+    "relayInput": 1
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "switch",
+    "xM": 1.85,
+    "zM": 1.28,
+    "note": "",
+    "host": "en9n5irk",
+    "switchKind": "tipkalo",
+    "id": "eph1e9kj",
+    "label": "P35",
+    "slotOrder": 1,
+    "relayId": "j9h358in",
+    "relayInput": 1
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "relay",
+    "xM": 1.85,
+    "zM": 1.28,
+    "note": "",
+    "host": "en9n5irk",
+    "relayModel": "zbminir2",
+    "id": "j9h358in",
+    "label": "R14"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "relay",
+    "xM": 1.85,
+    "zM": 1.28,
+    "note": "",
+    "host": "en9n5irk",
+    "relayModel": "zbminir2",
+    "id": "1mmd4lti",
+    "label": "R15"
    }
   ],
   "cables": [
@@ -10660,6 +10720,181 @@
     "via": [],
     "note": "",
     "id": "dwcyk4yk"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 7,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "krtvcnx7",
+     "end": "end"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 7,
+     "zM": 2.34
+    },
+    "via": [],
+    "note": "",
+    "id": "9xin97j0"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "en9n5irk"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 7,
+     "zM": 2.34
+    },
+    "via": [],
+    "note": "",
+    "id": "odj3pb7f"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 7,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "f54hn34x",
+     "end": "end"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 7,
+     "zM": 2.24
+    },
+    "via": [],
+    "note": "",
+    "id": "dn0je3ik"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 7,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "xlkg62nb",
+     "end": "end"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 7,
+     "zM": 2.11
+    },
+    "via": [],
+    "note": "",
+    "id": "n2nbf0uf"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 7,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "8m7bsspa",
+     "end": "end"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 7,
+     "zM": 1.99
+    },
+    "via": [],
+    "note": "",
+    "id": "zjb36n7l"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 7,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "a0vivtfa",
+     "end": "end"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 7,
+     "zM": 1.89
+    },
+    "via": [],
+    "note": "",
+    "id": "tksy0dif"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 7,
+     "zM": 1.89
+    },
+    "to": {
+     "kind": "element",
+     "id": "en9n5irk"
+    },
+    "via": [],
+    "note": "",
+    "id": "nbt1jl69"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 7,
+     "zM": 1.99
+    },
+    "to": {
+     "kind": "element",
+     "id": "en9n5irk"
+    },
+    "via": [],
+    "note": "",
+    "id": "0fxgrzy1"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 7,
+     "zM": 2.11
+    },
+    "to": {
+     "kind": "element",
+     "id": "en9n5irk"
+    },
+    "via": [],
+    "note": "",
+    "id": "y9rr737m"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 7,
+     "zM": 2.24
+    },
+    "to": {
+     "kind": "element",
+     "id": "en9n5irk"
+    },
+    "via": [],
+    "note": "",
+    "id": "hatr056z"
    }
   ],
   "categories": [
@@ -10767,7 +11002,9 @@
  },
  "ui": {
   "view": {
-   "kind": "plan"
+   "kind": "room",
+   "roomId": "akuvhdws",
+   "wall": 6
   }
  }
 }
