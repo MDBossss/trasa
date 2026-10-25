@@ -670,6 +670,18 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   assert.deepEqual(await page.evaluate(({ sw }) => window.__trasa.getState().project.elements.find((e) => e.id === sw).controls, xr), [xr.lx])
   await page.evaluate(({ other, lx, d, sw }) => { const s = window.__trasa.getState(); const drop = new Set([lx, d, sw]); s.patchProject({ elements: s.project.elements.filter((e) => !drop.has(e.id)), rooms: s.project.rooms.filter((r) => r.id !== other) }) }, xr)
 
+  // a LED supply without a controller: control cables leaving it are its 24 V outputs, joined in parallel (V+ / V−)
+  const psu = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
+    const n = s.addElement({ roomId: room, wall: 0, type: 'ledpsu', xM: 3.8, zM: 0.3, note: '', ledM: 3, ledWpm: 6 }); s = window.__trasa.getState()
+    const cab = (type, f, t) => { const id = s.addCable({ roomId: room, wall: 0, type, from: f, to: t, via: [], note: '' }); s = window.__trasa.getState(); return id }
+    const el = (id) => ({ kind: 'element', id })
+    const cs = [cab('NYM-J 3x1.5', el(box), el(n)), ...[0, 1, 2].map(() => cab('upravljački 2x0.75', el(n), { kind: 'corner', corner: 1, zM: 0.3 }))]
+    const j = E.allLeafJunctions(window.__trasa.getState().project).find((x) => x.box.id === n)
+    const out = { vplus: j.terminals.find((t) => t.id === 'V+')?.wires.length, vminus: j.terminals.find((t) => t.id === 'V-')?.wires.length, wago: j.terminals.find((t) => t.id === 'V+')?.wago }
+    s = window.__trasa.getState(); const drop = new Set([n, ...cs]); s.patchProject({ cables: s.project.cables.filter((x) => !drop.has(x.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) })
+    return out }, { box: ids.box })
+  assert.deepEqual(psu, { vplus: 4, vminus: 4, wago: 415 }, 'three strips and the supply output share one 5-way WAGO per pole')
+
   // a push button with a control lamp: the lamp hangs on the relay output and N, so the frame cable carries the output too
   const lp = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
     const r = s.addElement({ roomId: room, wall: 0, type: 'relay', xM: 0, zM: 0, note: '', host: box, relayModel: 'gen4pm' })
