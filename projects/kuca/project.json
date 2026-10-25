@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T19:54:38.762Z",
+ "savedAt": "2026-10-25T20:01:56.171Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -6953,16 +6953,6 @@
     "feedOutput": 1
    },
    {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "box",
-    "xM": 3.5,
-    "zM": 1.25,
-    "note": "",
-    "id": "cgjqz3uo",
-    "label": "K30"
-   },
-   {
     "roomId": "9lsb9f44",
     "wall": 0,
     "type": "ledpsu",
@@ -6973,6 +6963,17 @@
     "label": "N4",
     "feedRelayId": "j9h358in",
     "feedOutput": 1,
+    "ledM": 6
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "ledpsu",
+    "xM": 3.4101438525170775,
+    "zM": 1.25,
+    "note": "",
+    "id": "15xsh387",
+    "label": "N5",
     "ledM": 6
    }
   ],
@@ -11191,79 +11192,6 @@
     "id": "przpoc13"
    },
    {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "upravljački 2x0.75",
-    "from": {
-     "kind": "element",
-     "id": "cgjqz3uo"
-    },
-    "to": {
-     "kind": "exit",
-     "conduitId": "7o1ft6lk",
-     "end": "end"
-    },
-    "via": [],
-    "note": "",
-    "id": "93rcvnwu"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "upravljački 2x0.75",
-    "from": {
-     "kind": "element",
-     "id": "cgjqz3uo"
-    },
-    "to": {
-     "kind": "exit",
-     "conduitId": "xjt16odh",
-     "end": "start"
-    },
-    "via": [],
-    "note": "",
-    "id": "47q39z4t"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "upravljački 2x0.75",
-    "from": {
-     "kind": "element",
-     "id": "cgjqz3uo"
-    },
-    "to": {
-     "kind": "exit",
-     "conduitId": "f2b1ltp1",
-     "end": "start"
-    },
-    "via": [],
-    "note": "",
-    "id": "1x3rrxh0"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "exit",
-     "conduitId": "ckksywc5",
-     "end": "start"
-    },
-    "to": {
-     "kind": "element",
-     "id": "cgjqz3uo"
-    },
-    "via": [
-     {
-      "xM": 3.46,
-      "zM": 1.94
-     }
-    ],
-    "note": "",
-    "id": "1eqzbxkw"
-   },
-   {
     "roomId": "akuvhdws",
     "wall": 7,
     "type": "NYM-J 3x1.5",
@@ -11297,6 +11225,79 @@
     "via": [],
     "note": "",
     "id": "b33fk3x1"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "ckksywc5",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "15xsh387"
+    },
+    "via": [
+     {
+      "xM": 3.36,
+      "zM": 1.94
+     }
+    ],
+    "note": "",
+    "id": "vhavjb4k"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "upravljački 2x0.75",
+    "from": {
+     "kind": "element",
+     "id": "15xsh387"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "f2b1ltp1",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "7oraz2a3"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "upravljački 2x0.75",
+    "from": {
+     "kind": "element",
+     "id": "15xsh387"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "xjt16odh",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "8xhu5p4g"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "upravljački 2x0.75",
+    "from": {
+     "kind": "exit",
+     "conduitId": "7o1ft6lk",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "15xsh387"
+    },
+    "via": [],
+    "note": "",
+    "id": "wg6pv84p"
    }
   ],
   "categories": [
