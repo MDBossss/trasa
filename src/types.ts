@@ -227,7 +227,7 @@ export const ELEMENT_META: Record<ElementType, { label: string; key: string; pre
   panel: { label: 'Ormar', key: 'O', prefix: 'RO', zM: 1.5 },
   modbox: { label: 'Modularna doza', key: 'M', prefix: 'D', zM: 1.05 },
   relay: { label: 'Relej', key: 'R', prefix: 'R', zM: 1.05 },
-  ledpsu: { label: 'LED niša', key: 'N', prefix: 'N', zM: 2.5 },
+  ledpsu: { label: 'LED traka', key: 'N', prefix: 'N', zM: 2.5 },
   // garage door / roller shutter control unit: fed L N PE, driven by a dry-contact pulse from a Shelly Plus 1
   motor: { label: 'Vrata / motor', key: 'D', prefix: 'V', zM: 2.3 },
   // main earthing terminal: the FeZn foundation-electrode tail lands on a busbar; Cu 16 to the board, Cu 6 bonding

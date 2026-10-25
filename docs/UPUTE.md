@@ -33,9 +33,9 @@ pregledniku i vraćaju nakon osvježavanja.
    žilu (strelice ← →), desno je materijal po kutiji i provjere (kutija bez dolaza, prekidač bez svjetla, premalo žila…).
    Na dozi možeš označiti dubinu (plitka / duboka) za kasnije releje.
 10. **Pametna rasvjeta**: **Modularna doza (M)** je okvir (2M–7M) s dubinom; **Tipkalo (T)** i **Relej (R)** se
-    postave klikom na dozu/kutiju/nišu i žive u njoj. Relej: **Sonoff ZBMINIR2** (Zigbee, za svjetla; stezaljke L N Lout Nout
+    postave klikom na dozu/kutiju/LED traku i žive u njoj. Relej: **Sonoff ZBMINIR2** (Zigbee, za svjetla; stezaljke L N Lout Nout
     S1 S2, tipkalo na S1/S2 je niski napon bez faze), **Shelly 1 Gen4** (Zigbee, jedini sa suhim kontaktom, za vrata;
-    L N SW I O) i Shelly Plus RGBW PM za LED nišu. Stariji save-ovi s Plus 1 / 2PM / Dimmer / i4 se učitaju kao Gen4. Shelly ima ulaze SW i izlaze O: na tipkalu odaberi "Na relej" + ulaz, na svjetlu "Napaja ga" + izlaz. Iz toga aplikacija izvede koliko
+    L N SW I O) i Shelly Plus RGBW PM za LED traku. Stariji save-ovi s Plus 1 / 2PM / Dimmer / i4 se učitaju kao Gen4. Shelly ima ulaze SW i izlaze O: na tipkalu odaberi "Na relej" + ulaz, na svjetlu "Napaja ga" + izlaz. Iz toga aplikacija izvede koliko
     žila kabel između kutije i doze mora nositi (L, N, PE + izlazi), piše to na kabelu ("4 potrebno · 3 ima → uzmi 5×1,5")
     i crta dozu s relejima, tipkalima i kratkim žilama (tipkalo → SW izravno, bez stezaljke). Signal tipkala putuje
     kroz lanac kutija (doza → K1 → K2) najkraćim putem: svaki kabel na putu ga nosi, usputna kutija ga samo prolazi
@@ -49,7 +49,7 @@ pregledniku i vraćaju nakon osvježavanja.
     više od uvodnica (8 odnosno 10) i kad bi stezaljka trebala 3 WAGO-a. Više od 5 žila na stezaljci = dva (ili tri) WAGO 221-415 Gumb **Podijeli na dvije** to napravi sam: utičnice i vrata (ili pola svjetala) odu u novu kutiju
     35 cm pored, napajanu iz stare, vezom 3×1,5 ili 5×1,5 prema potrebi.
     spojena kratkom premosnicom, nacrtano i numerirano "WAGO 2, port 3". Mjesto u okviru: na tipkalu/utičnici ◀ ▶ mijenja redoslijed, "Praznih lijevo" ostavlja prazne module;
-    slika spoja i provlačenje utičnica slijede isti redoslijed. **LED niša (N)**: traka
+    slika spoja i provlačenje utičnica slijede isti redoslijed. **LED traka (N)**: traka
     (m, W/m, 12/24 V) i napajanje × 1,2; napaja se kao svjetlo. Provjere: relej bez nule, relej u plitkoj dozi, kabel s
     premalo žila, izlaz releja bez kabela do svjetla, klasični prekidač na releju.
     **Vrata / motor (D)**: upravljačka jedinica rolo ili sekcijskih vrata; na njoj odaberi "Pali ga relej" (samo Shelly

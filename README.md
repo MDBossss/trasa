@@ -163,7 +163,7 @@ docs/             UPUTE.md, img/
 ## Plan
 
 - [ ] Strujni krugovi: osigurači, snaga po krugu, faze, tablica ormara
-- [ ] 24 V strana LED niše (RGBW PM) u slici spoja
+- [ ] 24 V strana LED trake (RGBW PM) u slici spoja
 - [ ] Ispravljanje perspektive fotke zida (4 kuta → pravokutnik u metrima)
 - [ ] Checklist izvedbe po kutiji
 

@@ -232,7 +232,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
               </div>
               <label>Napon <select value={el.ledV ?? 24} onChange={(e) => updateElement(el.id, { ledV: +e.target.value as 12 | 24 })}><option value={24}>24 V (preporuka)</option><option value={12}>12 V</option></select></label>
               <div className="stat"><span>Napajanje</span><b>≥ {Math.ceil(((el.ledM ?? 5) * (el.ledWpm ?? 10) * 1.2) / 10) * 10} W</b><span className="muted">{(el.ledM ?? 5) * (el.ledWpm ?? 10)} W trake × 1,2</span></div>
-              <div className="stat"><span>Releji u niši</span><b>{project.elements.filter((h) => h.host === el.id).map((h) => `${h.label} ${RELAY_MODELS[relayModelOf(h)].label}`).join(', ') || '—'}</b></div>
+              <div className="stat"><span>Releji uz traku</span><b>{project.elements.filter((h) => h.host === el.id).map((h) => `${h.label} ${RELAY_MODELS[relayModelOf(h)].label}`).join(', ') || '—'}</b></div>
             </>
           )}
           {el.type === 'socket' && (
@@ -265,7 +265,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
               <div className="stat"><span>U</span><b>{hostLabel(el.host)}</b><span className="muted">klikni relejem na drugu kutiju da ga preseliš</span></div>
               <div className="stat"><span>Ulazi</span><b>{project.elements.filter((s) => s.relayId === el.id).map((s) => `${s.label}→SW${s.relayInput ?? 1}`).join(', ') || '—'}</b></div>
               <div className="stat"><span>Izlazi</span><b>{project.elements.filter((l) => l.feedRelayId === el.id).map((l) => `O${l.feedOutput ?? 1}→${l.label}`).join(', ') || '—'}</b></div>
-              {RELAY_MODELS[relayModelOf(el)].dc && <p className="muted">24 V strana: traka i napajanje u niši, 230 V dolaz na L/N. Tipkala preko mreže (Plus i4) ili na DC ulaze.</p>}
+              {RELAY_MODELS[relayModelOf(el)].dc && <p className="muted">24 V strana: traka i njeno napajanje, 230 V dolaz na L/N. Tipkala preko mreže (Plus i4) ili na DC ulaze.</p>}
             </>
           )}
           {el.type === 'modbox' && <button className="primary" onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori dozu (spojevi)</button>}
