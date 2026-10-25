@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T19:27:04.786Z",
+ "savedAt": "2026-10-25T19:44:55.488Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2224,6 +2224,99 @@
      "start": 1.85,
      "end": 2.34
     }
+   },
+   {
+    "id": "7o1ft6lk",
+    "name": "STEPENICE TRAKA 1",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 937.8734186269348,
+      "y": 1791.5814979446136
+     },
+     {
+      "x": 877.0663085598468,
+      "y": 1620.7038301890889
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "todo",
+    "exitZ": {
+     "end": 1.4
+    }
+   },
+   {
+    "id": "xjt16odh",
+    "name": "STEPENICA TRAKA 2",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 877.8870283974628,
+      "y": 1616.181656419351
+     },
+     {
+      "x": 931.53781954935,
+      "y": 1794.9859059463818
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "todo",
+    "exitZ": {
+     "start": 1.48
+    }
+   },
+   {
+    "id": "f2b1ltp1",
+    "name": "STEPENICE TRAKA 3",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 880.1698661103723,
+      "y": 1606.0249761266477
+     },
+     {
+      "x": 925.0740220745729,
+      "y": 1798.466412278954
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "todo",
+    "exitZ": {
+     "start": 1.54
+    }
+   },
+   {
+    "id": "ckksywc5",
+    "name": "KUTIJA STEPENICE TRAKA",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 872.2497706669225,
+      "y": 1466.8575847631732
+     },
+     {
+      "x": 915.6109550305215,
+      "y": 1484.77293246762
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "todo",
+    "exitZ": {
+     "start": 1.94,
+     "end": 1.35
+    }
    }
   ],
   "rooms": [
@@ -2836,6 +2929,29 @@
      {
       "x": 487.55942055650564,
       "y": 1034.646661992058
+     }
+    ],
+    "walls": {}
+   },
+   {
+    "id": "9lsb9f44",
+    "name": "Stepenice",
+    "points": [
+     {
+      "x": 905.0615946469286,
+      "y": 1746.3238096963291
+     },
+     {
+      "x": 1019.3372574738465,
+      "y": 1746.3238096963291
+     },
+     {
+      "x": 1019.3372574738465,
+      "y": 1862.8623569356614
+     },
+     {
+      "x": 906.1930368531357,
+      "y": 1862.8623569356614
      }
     ],
     "walls": {}
@@ -6757,7 +6873,8 @@
     "relayInput": 1,
     "controls": [
      "fa52hgkv",
-     "otqs5faa"
+     "otqs5faa",
+     "tf5d4q75"
     ]
    },
    {
@@ -6834,6 +6951,29 @@
     "label": "S25",
     "feedRelayId": "1mmd4lti",
     "feedOutput": 1
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "box",
+    "xM": 3.5,
+    "zM": 1.25,
+    "note": "",
+    "id": "cgjqz3uo",
+    "label": "K30"
+   },
+   {
+    "roomId": "9lsb9f44",
+    "wall": 0,
+    "type": "ledpsu",
+    "xM": 0.38,
+    "zM": 1.72,
+    "note": "",
+    "id": "tf5d4q75",
+    "label": "N4",
+    "feedRelayId": "j9h358in",
+    "feedOutput": 1,
+    "ledM": 6
    }
   ],
   "cables": [
@@ -7385,27 +7525,6 @@
     "via": [],
     "note": "",
     "id": "gbx6368q"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 0,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "element",
-     "id": "6xxku054"
-    },
-    "to": {
-     "kind": "element",
-     "id": "mvlk35ir"
-    },
-    "via": [
-     {
-      "xM": 0.76,
-      "zM": 1.87
-     }
-    ],
-    "note": "",
-    "id": "zavnhctp"
    },
    {
     "roomId": "24uhwdfi",
@@ -11054,6 +11173,130 @@
     "via": [],
     "note": "",
     "id": "rbcqwljs"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "69004nya"
+    },
+    "to": {
+     "kind": "element",
+     "id": "mvlk35ir"
+    },
+    "via": [],
+    "note": "",
+    "id": "przpoc13"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "cgjqz3uo"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "7o1ft6lk",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "93rcvnwu"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "cgjqz3uo"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "xjt16odh",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "47q39z4t"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "cgjqz3uo"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "f2b1ltp1",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "1x3rrxh0"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "ckksywc5",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "cgjqz3uo"
+    },
+    "via": [
+     {
+      "xM": 3.46,
+      "zM": 1.94
+     }
+    ],
+    "note": "",
+    "id": "1eqzbxkw"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 7,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "ckksywc5",
+     "end": "end"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 7,
+     "zM": 1.77
+    },
+    "via": [],
+    "note": "",
+    "id": "ae77dh49"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 7,
+     "zM": 1.77
+    },
+    "to": {
+     "kind": "element",
+     "id": "en9n5irk"
+    },
+    "via": [],
+    "note": "",
+    "id": "b33fk3x1"
    }
   ],
   "categories": [
@@ -11161,7 +11404,9 @@
  },
  "ui": {
   "view": {
-   "kind": "plan"
+   "kind": "room",
+   "roomId": "9lsb9f44",
+   "wall": 0
   }
  }
 }
