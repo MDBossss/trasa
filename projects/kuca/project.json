@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T20:01:56.171Z",
+ "savedAt": "2026-10-25T20:02:06.923Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -6873,8 +6873,7 @@
     "relayInput": 1,
     "controls": [
      "fa52hgkv",
-     "otqs5faa",
-     "tf5d4q75"
+     "otqs5faa"
     ]
    },
    {
@@ -6951,19 +6950,6 @@
     "label": "S25",
     "feedRelayId": "1mmd4lti",
     "feedOutput": 1
-   },
-   {
-    "roomId": "9lsb9f44",
-    "wall": 0,
-    "type": "ledpsu",
-    "xM": 0.38,
-    "zM": 1.72,
-    "note": "",
-    "id": "tf5d4q75",
-    "label": "N4",
-    "feedRelayId": "j9h358in",
-    "feedOutput": 1,
-    "ledM": 6
    },
    {
     "roomId": "c2b55x6m",
@@ -11406,8 +11392,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "c2b55x6m",
-   "wall": 1
+   "roomId": "9lsb9f44",
+   "wall": 3
   }
  }
 }
