@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T08:48:33.355Z",
+ "savedAt": "2026-10-25T09:15:33.393Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -1559,18 +1559,22 @@
     }
    },
    {
-    "id": "ohaj2t3p",
+    "id": "p072mniu",
     "name": "SIGNALI VRATA",
     "color": "#06b6b4",
     "diameter": 20,
     "points": [
      {
-      "x": 871.1386478756287,
-      "y": 1612.7573701257497
+      "x": 874.5178550019295,
+      "y": 1626.3497954998834
      },
      {
-      "x": 912.9816900903784,
-      "y": 1659.2027598183818
+      "x": 916.5935688627635,
+      "y": 1646.6226885139267
+     },
+     {
+      "x": 916.5935688627635,
+      "y": 2029.0501542119293
      }
     ],
     "from": "",
@@ -1578,22 +1582,26 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "start": 0.87
+     "start": 0.7
     }
    },
    {
-    "id": "au3e81g0",
+    "id": "3cbmal92",
     "name": "NAPAJANJE VRATA",
     "color": "#06b6b4",
     "diameter": 20,
     "points": [
      {
-      "x": 868.8554440483013,
-      "y": 1626.3909358383758
+      "x": 872.2497706669225,
+      "y": 1637.7053579004464
      },
      {
-      "x": 911.8502478841714,
-      "y": 1669.3857396742458
+      "x": 908.4623384372297,
+      "y": 1658.006411109674
+     },
+     {
+      "x": 908.4623384372297,
+      "y": 2029.1194547456055
      }
     ],
     "from": "",
@@ -1601,7 +1609,7 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "start": 0.88
+     "start": 0.78
     }
    }
   ],
@@ -4671,7 +4679,8 @@
     "note": "",
     "id": "wdkwpzx7",
     "label": "D49",
-    "modules": 7
+    "modules": 7,
+    "depth": "duboka"
    },
    {
     "roomId": "c2b55x6m",
@@ -4713,10 +4722,13 @@
     "zM": 1.25,
     "note": "",
     "host": "wdkwpzx7",
+    "switchKind": "tipkalo",
     "id": "p3mofdju",
     "label": "P19",
     "slotOrder": 2,
-    "gapBefore": 1
+    "gapBefore": 1,
+    "relayId": "0irscwbr",
+    "relayInput": 1
    },
    {
     "roomId": "c2b55x6m",
@@ -4726,9 +4738,12 @@
     "zM": 1.25,
     "note": "",
     "host": "wdkwpzx7",
+    "switchKind": "tipkalo",
     "id": "snf2ny7j",
     "label": "P20",
-    "slotOrder": 3
+    "slotOrder": 3,
+    "relayId": "ly4lnm99",
+    "relayInput": 1
    },
    {
     "roomId": "c2b55x6m",
@@ -4763,7 +4778,8 @@
     "zM": 2.14,
     "note": "",
     "id": "2z03m73d",
-    "label": "V3"
+    "label": "V3",
+    "feedRelayId": "0irscwbr"
    },
    {
     "roomId": "irxyujn8",
@@ -4773,7 +4789,32 @@
     "zM": 2.14,
     "note": "",
     "id": "gcxo07n6",
-    "label": "V4"
+    "label": "V4",
+    "feedRelayId": "ly4lnm99"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "relay",
+    "xM": 2.24,
+    "zM": 1.25,
+    "note": "",
+    "host": "wdkwpzx7",
+    "relayModel": "gen4",
+    "id": "0irscwbr",
+    "label": "R7"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "relay",
+    "xM": 2.24,
+    "zM": 1.25,
+    "note": "",
+    "host": "wdkwpzx7",
+    "relayModel": "gen4",
+    "id": "ly4lnm99",
+    "label": "R8"
    }
   ],
   "cables": [
@@ -7291,22 +7332,39 @@
     "wall": 1,
     "type": "NYM-J 3x1.5",
     "from": {
+     "kind": "exit",
+     "conduitId": "3cbmal92",
+     "end": "start"
+    },
+    "to": {
      "kind": "element",
      "id": "ve09jahx"
     },
+    "via": [],
+    "note": "",
+    "id": "8c0f528f"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "zvono 2x0.75",
+    "from": {
+     "kind": "element",
+     "id": "wdkwpzx7"
+    },
     "to": {
      "kind": "exit",
-     "conduitId": "au3e81g0",
+     "conduitId": "p072mniu",
      "end": "start"
     },
     "via": [
      {
-      "xM": 3.6,
-      "zM": 0.78
+      "xM": 2.24,
+      "zM": 0.65
      }
     ],
     "note": "",
-    "id": "umznnjqi"
+    "id": "ugy2k6u6"
    }
   ],
   "categories": [
@@ -7415,7 +7473,7 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "irxyujn8",
+   "roomId": "c2b55x6m",
    "wall": 1
   }
  }
