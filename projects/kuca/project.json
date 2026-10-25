@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T12:39:00.281Z",
+ "savedAt": "2026-10-25T12:39:53.800Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -5725,6 +5725,41 @@
     "note": "",
     "id": "wca98adc",
     "label": "S17"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 0,
+    "type": "modbox",
+    "xM": 2.05,
+    "zM": 0.58,
+    "note": "",
+    "id": "a49rbfti",
+    "label": "D59",
+    "modules": 4
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 0,
+    "type": "socket",
+    "xM": 2.05,
+    "zM": 0.58,
+    "note": "",
+    "host": "a49rbfti",
+    "id": "o3t6iwdc",
+    "label": "U124",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 0,
+    "type": "socket",
+    "xM": 2.05,
+    "zM": 0.58,
+    "note": "",
+    "host": "a49rbfti",
+    "id": "u2l1zhoi",
+    "label": "U125",
+    "slotOrder": 1
    }
   ],
   "cables": [
@@ -9205,6 +9240,40 @@
     ],
     "note": "",
     "id": "ulsfadm5"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "a49rbfti"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 0,
+     "zM": 0.56
+    },
+    "via": [],
+    "note": "",
+    "id": "rwy446qf"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 0,
+     "zM": 0.56
+    },
+    "to": {
+     "kind": "element",
+     "id": "yd4aiivl"
+    },
+    "via": [],
+    "note": "",
+    "id": "07e3khnv"
    }
   ],
   "categories": [
@@ -9314,7 +9383,7 @@
   "view": {
    "kind": "room",
    "roomId": "icogq6ir",
-   "wall": 5
+   "wall": 1
   }
  }
 }
