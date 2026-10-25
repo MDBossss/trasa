@@ -244,13 +244,14 @@ export const ELEMENT_META: Record<ElementType, { label: string; key: string; pre
   kip: { label: 'KIP · izjednačenje potencijala', key: 'Z', prefix: 'KIP', zM: 1.0 },
   // electric water heater: fixed connection L N PE on its own circuit (3×2,5, B16), via a flush outlet box
   boiler: { label: 'Bojler', key: 'B', prefix: 'BO', zM: 1.8 },
-  // a kitchen appliance on a fixed connection (indukcija, pećnica, napa), via a flush outlet box with a cable gland
+  // an appliance on a fixed connection (indukcija, pećnica, napa, klima), via a flush outlet box with a cable gland
   appliance: { label: 'Uređaj (fiksni priključak)', key: 'F', prefix: 'UR', zM: 0.6 },
 }
-export type ApplianceKind = 'hob' | 'oven' | 'hood'
+export type ApplianceKind = 'hob' | 'oven' | 'hood' | 'ac'
 export const APPLIANCES: Record<ApplianceKind, { label: string; cable: string; zM: number; minMm2: number; note: string }> = {
   hob: { label: 'Indukcijska ploča', cable: 'NYM-J 5x2.5', zM: 0.6, minMm2: 2.5, note: 'Trofazno 5×2,5 (3× B16) daje punu snagu. Jednofazno: 3×6 na B32, ili 3×2,5 na B16 uz ograničenje snage u ploči (~3,7 kW). Priključna kutija ~60 cm od poda iza elementa ispod ploče.' },
   oven: { label: 'Pećnica', cable: 'NYM-J 3x2.5', zM: 0.2, minMm2: 2.5, note: 'Vlastiti krug 3×2,5 na B16. Kutija nisko (10–30 cm) ili u susjednom elementu, ne točno iza pećnice; kabel pećnice je ~1,5 m.' },
+  ac: { label: 'Klima (unutarnja jedinica)', cable: 'NYM-J 3x2.5', zM: 2.2, minMm2: 2.5, note: 'Split klima: vlastiti krug 3×2,5 na B16. Priključna kutija ~2,2 m uz unutarnju jedinicu (kod nekih modela struja ide na vanjsku, provjeri upute). Do vanjske jedinice spojni kabel (obično 5×1,5 H07RN-F), a bakrene cijevi i odvod kondenzata u svom kanalu, s prodorom kroz zid.' },
   hood: { label: 'Napa', cable: 'NYM-J 3x1.5', zM: 2.1, minMm2: 1.5, note: 'Mala potrošnja: 3×1,5 s kruga kuhinje. Kutija ~2,0–2,2 m, iznad ploče, unutar kućišta nape ili gornjeg elementa.' },
 }
 // places where cables are joined (have a junction drawing)

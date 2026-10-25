@@ -592,7 +592,7 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
 
   // every wall tool is in the rail
   await page.evaluate(() => { const s = window.__trasa.getState(); s.setView({ kind: 'room', roomId: s.project.rooms[0].id, wall: 0 }) })
-  for (const name of ['Kabel', 'Bojler', 'KIP · izjednačenje potencijala', 'Vrata / motor', 'Uređaj (indukcija, pećnica, napa)']) await page.locator('.tool-rail').getByRole('button', { name, exact: true }).waitFor({ state: 'attached' })
+  for (const name of ['Kabel', 'Bojler', 'KIP · izjednačenje potencijala', 'Vrata / motor', 'Uređaj (indukcija, pećnica, napa, klima)']) await page.locator('.tool-rail').getByRole('button', { name, exact: true }).waitFor({ state: 'attached' })
   // two supplies meeting in one frame is an error (the drawing would bridge two circuits); a leaf beyond it is not flagged
   const two = await page.evaluate(() => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
     const mk = (name, x) => { const cd = s.addConduit([{ x, y: 20 }, { x, y: 102 }]); s = window.__trasa.getState(); s.updateConduit(cd, { name, categoryId: 'dolaz' }); s = window.__trasa.getState(); return cd }
@@ -645,6 +645,17 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const drop = new Set([d, ...us]); s = window.__trasa.getState(); s.patchProject({ elements: s.project.elements.filter((e) => !drop.has(e.id)) })
     return { six, seven } })
   assert.deepEqual(two7, { six: false, seven: true }, '2×7M holds six šuko, a seventh would straddle the rows')
+
+  // a split AC is a fixed connection that needs 2,5 mm²
+  const ac = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
+    const a = s.addElement({ roomId: room, wall: 0, type: 'appliance', appliance: 'ac', xM: 3.4, zM: 2.2, note: '' }); s = window.__trasa.getState()
+    const c = s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: a }, via: [], note: '' }); s = window.__trasa.getState()
+    const thin = E.allLeafJunctions(s.project).find((j) => j.box.id === a).checks.some((x) => x.level === 'err' && /Klima .* treba barem 2,5 mm²/i.test(x.text))
+    s.updateCable(c, { type: 'NYM-J 3x2.5' }); s = window.__trasa.getState()
+    const ok = !E.allLeafJunctions(s.project).find((j) => j.box.id === a).checks.some((x) => x.level === 'err')
+    s.patchProject({ cables: s.project.cables.filter((x) => x.id !== c), elements: s.project.elements.filter((e) => e.id !== a) })
+    return { thin, ok } }, { box: ids.box })
+  assert.deepEqual(ac, { thin: true, ok: true }, 'a split AC on 3×1,5 is an error, on 3×2,5 it is fine')
 
   // a push button with a control lamp: the lamp hangs on the relay output and N, so the frame cable carries the output too
   const lp = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine

@@ -548,8 +548,10 @@ function Symbol({ type, selected, px, modules, swKind, data, tv, appKind }: { ty
     }
     case 'light':
       return <>{halo}<Circle radius={7} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-5, -5, 5, 5]} stroke={stroke} strokeWidth={sw} /><Line points={[-5, 5, 5, -5]} stroke={stroke} strokeWidth={sw} /></>
-    case 'appliance': { // fixed-connection appliance: hob (four rings), oven (window), hood (canopy)
+    case 'appliance': { // fixed-connection appliance: hob (four rings), oven (window), hood (canopy), AC (split unit)
       const k = appKind ?? 'hob'
+      // split AC indoor unit: a long rounded body with the air outlet and a snowflake
+      if (k === 'ac') return <>{halo}<Rect x={-14} y={-6} width={28} height={12} cornerRadius={4} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-10, 3, 10, 3]} stroke={stroke} strokeWidth={0.9} />{[0, 60, 120].map((a) => { const r = (a * Math.PI) / 180, dx = 2.6 * Math.cos(r), dy = 2.6 * Math.sin(r); return <Line key={a} points={[-7 - dx, -1.5 - dy, -7 + dx, -1.5 + dy]} stroke={stroke} strokeWidth={0.9} lineCap="round" /> })}</>
       if (k === 'hood') return <>{halo}<Line points={[-12, 6, -6, -6, 6, -6, 12, 6]} closed fill="#fff" stroke={stroke} strokeWidth={sw} lineJoin="round" /><Line points={[-3, -6, -3, -12, 3, -12, 3, -6]} stroke={stroke} strokeWidth={sw} /></>
       if (k === 'oven') return <>{halo}<Rect x={-11} y={-10} width={22} height={20} cornerRadius={2} fill="#fff" stroke={stroke} strokeWidth={sw} /><Rect x={-7} y={-3} width={14} height={9} cornerRadius={1} fill="#fff" stroke={stroke} strokeWidth={0.9} /><Line points={[-7, -6, 7, -6]} stroke={stroke} strokeWidth={0.9} /></>
       return <>{halo}<Rect x={-12} y={-9} width={24} height={18} cornerRadius={2} fill="#fff" stroke={stroke} strokeWidth={sw} />{[[-5, -3.5], [5, -3.5], [-5, 3.5], [5, 3.5]].map(([x, y]) => <Circle key={`${x}${y}`} x={x} y={y} radius={2.8} fill="#fff" stroke={stroke} strokeWidth={0.9} />)}</>

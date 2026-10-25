@@ -19,7 +19,7 @@ export const WALL_TOOLS: WallToolDef[] = [
   { id: 'element', type: 'ledpsu', label: ELEMENT_META.ledpsu.label, key: 'N', icon: 'led', hint: 'Klik postavi LED traku (mjesto napajanja 24 V + traka)' },
   { id: 'element', type: 'motor', label: ELEMENT_META.motor.label, key: 'D', icon: 'motor', hint: 'Klik postavi upravljačku jedinicu vrata (rolo / sekcijska): L N PE + impuls sa Shellyja' },
   { id: 'element', type: 'boiler', label: ELEMENT_META.boiler.label, key: 'B', icon: 'boiler', hint: 'Klik postavi bojler: fiksni priključak L N PE, kabel 3×2,5 na vlastiti krug' },
-  { id: 'element', type: 'appliance', label: 'Uređaj (indukcija, pećnica, napa)', key: 'F', icon: 'appliance', hint: 'Klik postavi fiksni priključak uređaja; vrstu biraš desno (indukcija, pećnica, napa)' },
+  { id: 'element', type: 'appliance', label: 'Uređaj (indukcija, pećnica, napa, klima)', key: 'F', icon: 'appliance', hint: 'Klik postavi fiksni priključak uređaja; vrstu biraš desno (indukcija, pećnica, napa, klima)' },
   { id: 'element', type: 'kip', label: ELEMENT_META.kip.label, key: 'Z', icon: 'earth', hint: 'Klik postavi KIP (glavno uzemljenje): traka iz temelja, Cu 16 do ormara, Cu 6 izjednačenje' },
 ]
 

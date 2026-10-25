@@ -199,7 +199,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
             <>
               <label>
                 Uređaj
-                <select value={el.appliance ?? 'hob'} onChange={(e) => updateElement(el.id, { appliance: e.target.value as ApplianceKind })}>
+                <select value={el.appliance ?? 'hob'} onChange={(e) => { const k = e.target.value as ApplianceKind; const was = APPLIANCES[el.appliance ?? 'hob']; updateElement(el.id, { appliance: k, ...(Math.abs(el.zM - was.zM) < 0.01 ? { zM: APPLIANCES[k].zM } : {}) }) }}>
                   {(Object.keys(APPLIANCES) as ApplianceKind[]).map((k) => <option key={k} value={k}>{APPLIANCES[k].label} · {APPLIANCES[k].cable.replace('NYM-J ', '')}</option>)}
                 </select>
               </label>
