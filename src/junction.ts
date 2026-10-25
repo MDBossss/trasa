@@ -859,10 +859,11 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
     })
   if (!cables.length) checks.push({ level: 'warn', text: `${el.label}: do ${name === 'svjetiljka' ? 'svjetla' : name} ne dolazi nijedan kabel.` })
   if (ap) for (const c of cables) {
-    const sect = sectionOf(c.cable.type), cores = coreColors(c.cable.type).length
+    // the thinnest segment of the run decides (a 3×1,5 stub before a corner limits the whole cable)
+    const thin = thinnest(c.cable, p).type, sect = sectionOf(thin), cores = coreColors(thin).length
     const kind = el.appliance ?? 'hob'
-    if (sect < ap.minMm2) checks.push({ level: 'err', text: `${el.label}: ${ap.label.toLowerCase()} treba barem ${String(ap.minMm2).replace('.', ',')} mm², kabel je ${c.cable.type}.` })
-    else if (kind === 'hob' && cores < 5 && sect < 6) checks.push({ level: 'warn', text: `${el.label}: jednofazno na ${c.cable.type} ploča radi samo uz ograničenje snage (~3,7 kW, B16). Za punu snagu 5×2,5 trofazno ili 3×6 na B32.` })
+    if (sect < ap.minMm2) checks.push({ level: 'err', text: `${el.label}: ${ap.label.toLowerCase()} treba barem ${String(ap.minMm2).replace('.', ',')} mm², kabel je ${thin}${thin !== c.cable.type ? ' na dijelu trase' : ''}.` })
+    else if (kind === 'hob' && cores < 5 && sect < 6) checks.push({ level: 'warn', text: `${el.label}: jednofazno na ${thin} ploča radi samo uz ograničenje snage (~3,7 kW, B16). Za punu snagu 5×2,5 trofazno ili 3×6 na B32.` })
     if (kind !== 'hood' && c.far.place) checks.push({ level: 'warn', text: `${el.label}: ${ap.label.toLowerCase()} se napaja preko kutije ${c.far.place.label}. Uobičajeno je vlastiti krug ravno iz ormara.` })
   }
   if (el.type === 'ledpsu') {
@@ -877,7 +878,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   }
   if (el.type === 'boiler') for (const c of cables) {
     // a water heater (~2 kW, hours at a time) gets its own circuit: 2,5 mm² on B16, straight from the board
-    if (sectionOf(c.cable.type) < 2.5) checks.push({ level: 'warn', text: `${el.label}: bojler vuče ~2 kW satima, kabel ${c.cable.type} je pretanak. Uzmi 3×2,5 na osigurač B16.` })
+    if (sectionOf(thinnest(c.cable, p).type) < 2.5) checks.push({ level: 'warn', text: `${el.label}: bojler vuče ~2 kW satima, kabel ${thinnest(c.cable, p).type} je pretanak. Uzmi 3×2,5 na osigurač B16.` })
     if (c.far.place && !el.feedRelayId) checks.push({ level: 'warn', text: `${el.label}: bojler se napaja preko kutije ${c.far.place.label}. Uobičajeno je vlastiti krug ravno iz ormara (bužir kategorije Dolaz ili kabel do ormara).` })
   }
   // a door unit may take power and pulse over two cables (L N PE + a control pair)
