@@ -221,7 +221,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
                   {relayGroups(relays.filter((r) => RELAY_MODELS[relayModelOf(r)].dry), (r) => <option key={r.id} value={r.id}>{r.label} {RELAY_MODELS[relayModelOf(r)].label} · u {hostLabel(r.host)}{r.roomId !== room.id ? ` (${roomName(r.roomId)})` : ''}</option>)}
                 </select>
               </label>
-              <p className="muted">Jedinica vrata dobiva L N PE i dvije žile "impuls" s I i O releja (suhi kontakt, bez napona). Kabel 5×1,5. Shelly: Auto OFF 0,5 s. Tipkalo veži na taj relej ("Na relej"). Sonoff nema suhi kontakt, zato za vrata nije u izboru.</p>
+              <p className="muted">Jedinica vrata dobiva L N PE i dvije žile "impuls" s I i O releja (suhi kontakt, bez napona). Kabel 5×1,5, ili 3×1,5 za napajanje i zaseban upravljački 2×0,75 za impuls. Shelly: Auto OFF 0,5 s. Tipkalo veži na taj relej ("Na relej"). Sonoff nema suhi kontakt, zato za vrata nije u izboru.</p>
             </>
           )}
           {el.type === 'ledpsu' && (

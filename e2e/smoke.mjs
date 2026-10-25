@@ -509,6 +509,28 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   assert.equal(await page.locator('.jsteps li.hdr', { hasText: 'L→I' }).count(), 0, 'R2 in pulse mode has no L→I jumper (R1 with its jumper sits in D1)')
   await page.locator('.bom div', { hasText: 'Shelly 1 Gen4' }).getByText('1 kom').waitFor()
   await page.screenshot({ path: `${SHOTS}/trasa-vrata.png` })
+  // power and pulse may come over two cables: 3×1,5 for L N PE and a separate control pair; two control cables
+  // through one conduit each keep their own door (cables through a conduit pair one-to-one)
+  const sep = await page.evaluate(({ box, v1, c, r2 }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
+    s.updateCable(c, { type: 'NYM-J 3x1.5' }); s = window.__trasa.getState()
+    const r9 = s.addElement({ roomId: room, wall: 0, type: 'relay', xM: 2, zM: 2.3, note: '', host: box, relayModel: 'gen4' })
+    const v2 = s.addElement({ roomId: room, wall: 0, type: 'motor', xM: 4.4, zM: 2.3, note: '', feedRelayId: r9 })
+    const cd = s.addConduit([{ x: 300, y: 20 }, { x: 300, y: 102 }]); s = window.__trasa.getState()
+    const cab = (type, f, t) => { const id = s.addCable({ roomId: room, wall: 0, type, from: f, to: t, via: [], note: '' }); s = window.__trasa.getState(); return id }
+    const el = (id) => ({ kind: 'element', id }), ex = (end) => ({ kind: 'exit', conduitId: cd, end })
+    const ids = [cab('NYM-J 3x1.5', el(box), el(v2)), cab('upravljački 2x0.75', el(box), ex('start')), cab('upravljački 2x0.75', el(box), ex('start')), cab('upravljački 2x0.75', ex('end'), el(v1)), cab('upravljački 2x0.75', ex('end'), el(v2))]
+    const P = window.__trasa.getState().project
+    const k1 = E.allJunctions(P).find((j) => j.box.id === box)
+    const leaf = (id) => E.allLeafJunctions(P).find((j) => j.box.id === id)
+    const imp = k1.terminals.filter((t) => t.id.startsWith('IMP:')).map((t) => t.wires.length)
+    const out = { imp, k1err: k1.checks.filter((x) => x.level === 'err').map((x) => x.text), v1: leaf(v1).level, v2: leaf(v2).level, v1imp: leaf(v1).terminals.filter((t) => t.id.startsWith('IMP')).map((t) => t.wires.find((w) => w.kind === 'core')?.cableId) }
+    s = window.__trasa.getState(); s.updateCable(c, { type: 'NYM-J 5x1.5' }); s = window.__trasa.getState()
+    const drop = new Set([...ids, r9, v2, cd]); s.patchProject({ cables: s.project.cables.filter((x) => !drop.has(x.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)), conduits: s.project.conduits.filter((x) => !drop.has(x.id)) })
+    return { ...out, ctl1: ids[3] } }, { box: ids.box, ...gar })
+  assert.deepEqual(sep.imp, [2, 2, 2, 2], 'each door pulse pair lands on its own relay I/O in K1')
+  assert.deepEqual(sep.k1err, [], 'a 3×1,5 is enough once a control cable carries the pulse')
+  assert.equal(sep.v1, 'ok'); assert.equal(sep.v2, 'ok')
+  assert.deepEqual(sep.v1imp, [sep.ctl1, sep.ctl1], 'V1 takes its pulse from its own control cable')
   // the door props offer only Plus 1 relays
   await page.evaluate(({ v1 }) => { const s = window.__trasa.getState(); s.setView({ kind: 'room', roomId: s.project.rooms[0].id, wall: 0 }); s.select(v1) }, gar)
   await page.locator('.props h3', { hasText: 'Vrata / motor' }).waitFor()

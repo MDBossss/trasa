@@ -198,6 +198,7 @@ export const CABLE_ROLES: Record<Exclude<CableRole, 'auto'>, string> = {
 
 export type WireColor = 'brown' | 'blue' | 'gnye' | 'black' | 'grey' | 'black2' | 'grey2' | 'other'
 // core colours by cable type (HD 308 S2); NYM-O has no PE: brown / black / grey
+export const isControlCable = (type: string) => /upravlja/i.test(type)
 export function coreColors(type: string): WireColor[] {
   const t = type.toLowerCase()
   if (/utp|koaks|zvono|ostalo/.test(t)) return []
@@ -205,6 +206,8 @@ export function coreColors(type: string): WireColor[] {
   if (/^pe\b/.test(t)) return ['gnye']
   const m = /(\d)\s*[x×]/.exec(t)
   const n = m ? +m[1] : 3
+  // control cable (H05VV-F / LiYY): signal pairs only, never L N PE
+  if (isControlCable(t)) return (['black', 'grey', 'black2', 'grey2'] as WireColor[]).slice(0, n)
   if (t.includes('nym-o')) return n <= 3 ? ['brown', 'black', 'grey'] : ['brown', 'black', 'grey', 'black2']
   if (n <= 3) return ['brown', 'blue', 'gnye']
   if (n === 4) return ['brown', 'black', 'blue', 'gnye']
@@ -214,7 +217,7 @@ export function coreColors(type: string): WireColor[] {
 export const WIRE_LABEL: Record<WireColor, string> = { brown: 'smeđa', blue: 'plava', gnye: 'žuto-zelena', black: 'crna', grey: 'siva', black2: 'crna 2', grey2: 'siva 2', other: 'UTP' }
 export const WIRE_HEX: Record<WireColor, string> = { brown: '#6b3a1e', blue: '#1f4fb3', gnye: '#2e8b3a', black: '#222', grey: '#8c8c8c', black2: '#3a3a3a', grey2: '#a5a5a5', other: '#4a90d9' }
 
-export const CABLE_TYPES = ['NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-O 3x1.5', 'NYM-J 5x1.5', 'NYM-J 5x2.5', 'NYM-J 7x1.5', 'NYM-J 4x1.5', 'PE Cu 16 mm²', 'PE Cu 6 mm²', 'UTP cat6', 'koaks', 'zvono 2x0.75', 'ostalo']
+export const CABLE_TYPES = ['NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-O 3x1.5', 'NYM-J 5x1.5', 'NYM-J 5x2.5', 'NYM-J 7x1.5', 'NYM-J 4x1.5', 'PE Cu 16 mm²', 'PE Cu 6 mm²', 'upravljački 2x0.75', 'upravljački 4x0.75', 'UTP cat6', 'koaks', 'zvono 2x0.75', 'ostalo']
 
 export const ELEMENT_META: Record<ElementType, { label: string; key: string; prefix: string; zM: number }> = {
   box: { label: 'Razvodna kutija', key: 'K', prefix: 'K', zM: 2.3 },

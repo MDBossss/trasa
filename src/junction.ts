@@ -1,4 +1,4 @@
-import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isFeedConduit, APPLIANCES, isPlace, isData, dataKindOf, DATA_META, sectionOf, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, relayModelOf, hostedFront, type ElementType } from './types'
+import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isFeedConduit, APPLIANCES, isPlace, isData, dataKindOf, DATA_META, sectionOf, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, isControlCable, relayModelOf, hostedFront, type ElementType } from './types'
 import { wallExits } from './walls'
 
 // Everything a box needs: which cables enter it, what each core goes to, which devices sit inside
@@ -36,13 +36,32 @@ const otherEnd = (c: Cable, box: WallElement): CableEnd => (c.from.kind === 'ele
 const isAtBox = (c: Cable, box: WallElement) => (c.from.kind === 'element' && c.from.id === box.id) || (c.to.kind === 'element' && c.to.id === box.id)
 const el = (p: Project, id: string | undefined) => (id ? p.elements.find((e) => e.id === id) : undefined)
 
-// Follow a conduit from one of its exits to whatever cable is bound to its other exit.
-function throughConduit(p: Project, conduitId: string, end: 'start' | 'end') {
+// Cables bound to a conduit's two exits are paired one-to-one: same cable type first, then drawing order,
+// so several cables through one conduit each keep their own continuation.
+const conduitPairCache = new WeakMap<Project, Map<string, Cable>>()
+function conduitPairs(p: Project): Map<string, Cable> {
+  const hit = conduitPairCache.get(p)
+  if (hit) return hit
+  const out = new Map<string, Cable>()
+  const at = (cd: string, end: 'start' | 'end') => p.cables.filter((x) => [x.from, x.to].some((e) => e.kind === 'exit' && e.conduitId === cd && e.end === end))
+  for (const cd of p.conduits) {
+    const a = at(cd.id, 'start'), b = at(cd.id, 'end')
+    const free = new Set(b)
+    const bind = (x: Cable, y: Cable) => { out.set(`${x.id}@${cd.id}:start`, y); out.set(`${y.id}@${cd.id}:end`, x); free.delete(y) }
+    const rest: Cable[] = []
+    for (const x of a) { const y = [...free].find((y) => y.type === x.type && y.id !== x.id); if (y) bind(x, y); else rest.push(x) }
+    for (const x of rest) { const y = [...free].find((y) => y.id !== x.id); if (y) bind(x, y) }
+  }
+  conduitPairCache.set(p, out)
+  return out
+}
+// Follow a conduit from one of its exits to the cable bound to its other exit.
+function throughConduit(p: Project, c: Cable, conduitId: string, end: 'start' | 'end') {
   const far = end === 'start' ? 'end' : 'start'
-  const c = p.cables.find((x) => [x.from, x.to].some((e) => e.kind === 'exit' && e.conduitId === conduitId && e.end === far))
-  if (!c) return null
-  const e = c.from.kind === 'exit' && c.from.conduitId === conduitId && c.from.end === far ? c.to : c.from
-  return { cable: c, end: e }
+  const x = conduitPairs(p).get(`${c.id}@${conduitId}:${end}`)
+  if (!x) return null
+  const e = x.from.kind === 'exit' && x.from.conduitId === conduitId && x.from.end === far ? x.to : x.from
+  return { cable: x, end: e }
 }
 
 // Cables meeting at a room corner are paired one-to-one across the two walls: closest heights first
@@ -89,7 +108,7 @@ function follow(p: Project, c: Cable, end: CableEnd, hops = 0): { end: CableEnd;
   if (end.kind === 'exit') {
     const cd = p.conduits.find((x) => x.id === end.conduitId)
     if (!cd || isFeedConduit(cd)) return { end, via: [], cable: c }
-    const t = throughConduit(p, cd.id, end.end)
+    const t = throughConduit(p, c, cd.id, end.end)
     if (!t) return { end, via: [cd.name], cable: c }
     const r = follow(p, t.cable, t.end, hops + 1)
     return { end: r.end, via: [cd.name, ...r.via], cable: r.cable }
@@ -145,6 +164,14 @@ export function resolveCable(c: Cable, box: WallElement, p: Project): Omit<BoxCa
 
 // A Plus 1 whose output drives a door control unit works as a dry contact (I/O), not as a phase switch.
 export const pulseTarget = (relay: WallElement, p: Project) => p.elements.find((e) => e.type === 'motor' && e.feedRelayId === relay.id)
+// The cable (all its segments) that brings a door unit its pulse: a separate control cable if there is one,
+// else the first cable with two cores beside L N PE. Power then comes over the other cable.
+export function pulseChain(motor: WallElement, p: Project): Set<string> {
+  const at = p.cables.filter((c) => isAtBox(c, motor))
+  const spare = (c: Cable) => coreColors(c.type).filter((k) => k !== 'brown' && k !== 'blue' && k !== 'gnye').length
+  const pick = at.find((c) => isControlCable(c.type) && spare(c) >= 2) ?? at.find((c) => spare(c) >= 2)
+  return new Set(pick ? chainCables(pick, p).map((c) => c.id) : [])
+}
 
 // Terminal id for the phase that feeds a light (relay output or classic switch return).
 function lightTerminal(light: WallElement, p: Project): { id: string; by?: WallElement } {
@@ -248,11 +275,13 @@ function leafWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallElem
     const relay = m?.feedRelayId ? el(p, m.feedRelayId) : undefined
     if (m && !relay) checks.push({ level: 'warn', text: `Vrata ${m.label}: nitko ih ne pali. Odaberi relej (Shelly Plus 1) pod "Pali ga relej".` })
     const spare = cores.filter((c) => c !== 'brown' && c !== 'blue' && c !== 'gnye')
-    if (m && relay && spare.length < 2) checks.push({ level: 'err', text: `Kabel do ${m.label} (${bc.sub}) nema 2 slobodne žile za impuls: uzmi 5×1,5.` })
+    const pulse = m ? pulseChain(m, p) : new Set<string>()
+    if (m && relay && !pulse.size) checks.push({ level: 'err', text: `Kabel do ${m.label} (${bc.sub}) nema 2 slobodne žile za impuls: uzmi 5×1,5 ili dodaj upravljački 2×0,75.` })
+    const carries = pulse.has(bc.cable.id)
     return cores.map((c) => {
       if (c === 'brown' || c === 'blue' || c === 'gnye') return lnpe(c)
       const k = spare.indexOf(c)
-      return relay && k < 2 ? { color: c, terminal: `IMP:${relay.id}:${k + 1}`, note: `impuls ${k + 1}` } : park(c)
+      return relay && carries && k < 2 ? { color: c, terminal: `IMP:${relay.id}:${k + 1}`, note: `impuls ${k + 1}` } : park(c)
     })
   }
   if (role === 'light') {
@@ -389,7 +418,7 @@ export function chainCables(c: Cable, p: Project): Cable[] {
     if (hops > 8) return
     let t: { cable: Cable; end: CableEnd } | null = null
     if (end.kind === 'corner') t = throughCorner(p, x, end)
-    else if (end.kind === 'exit') { const cd = p.conduits.find((k) => k.id === end.conduitId); if (cd && !isFeedConduit(cd)) t = throughConduit(p, cd.id, end.end) }
+    else if (end.kind === 'exit') { const cd = p.conduits.find((k) => k.id === end.conduitId); if (cd && !isFeedConduit(cd)) t = throughConduit(p, x, cd.id, end.end) }
     if (!t || seen.has(t.cable.id)) return
     seen.set(t.cable.id, t.cable); walk(t.cable, t.end, hops + 1)
   }
@@ -790,6 +819,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   const ports = el.type === 'motor' ? ['L', 'N', 'PE', 'IMP 1', 'IMP 2'] : dm ? [dm.port] : threePhase ? ['L1', 'L2', 'L3', 'N', 'PE'] : ['L', 'N', 'PE']
   const name = el.type === 'light' ? 'svjetiljka' : el.type === 'motor' ? 'upravljačka jedinica' : el.type === 'boiler' ? 'bojler, priključna stezaljka' : ap ? `${ap.label.toLowerCase()}, priključna stezaljka` : dm ? dm.name : 'utičnica'
   const device: Device = { el, label: `${el.label} ${name}`, ports, wMm: Math.max(24, ports.length * 8), hMm: 16, kind: 'terminal' }
+  const pulse = el.type === 'motor' ? pulseChain(el, p) : new Set<string>()
   const cables: BoxCable[] = p.cables
     .filter((c) => isAtBox(c, el))
     .map((c) => {
@@ -801,7 +831,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
         if (k === 'blue') return { color: k, terminal: 'N' }
         if (k === 'gnye') return { color: k, terminal: 'PE' }
         const i = spare.indexOf(k)
-        if (el.type === 'motor' && i < 2) return { color: k, terminal: `IMP${i + 1}`, note: 'impuls sa Shellyja (suhi kontakt)' }
+        if (el.type === 'motor' && pulse.has(c.id) && i < 2) return { color: k, terminal: `IMP${i + 1}`, note: 'impuls sa Shellyja (suhi kontakt)' }
         return { color: k, terminal: 'PARK', note: 'rezerva' }
       })
       return { ...r, ...sideOf(r, el, p), wires }
@@ -823,7 +853,10 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
     if (sectionOf(c.cable.type) < 2.5) checks.push({ level: 'warn', text: `${el.label}: bojler vuče ~2 kW satima, kabel ${c.cable.type} je pretanak. Uzmi 3×2,5 na osigurač B16.` })
     if (c.far.place && !el.feedRelayId) checks.push({ level: 'warn', text: `${el.label}: bojler se napaja preko kutije ${c.far.place.label}. Uobičajeno je vlastiti krug ravno iz ormara (bužir kategorije Dolaz ili kabel do ormara).` })
   }
-  if (cables.length > 1) checks.push({ level: 'warn', text: `${el.label}: ${cables.length} kabela na jednom uređaju; obično je jedan (ili provlačenje kroz dozu).` })
+  // a door unit may take power and pulse over two cables (L N PE + a control pair)
+  const power = cables.filter((c) => !isControlCable(c.cable.type))
+  if (el.type === 'motor' && cables.length && !power.some((c) => c.cores.includes('brown'))) checks.push({ level: 'warn', text: `${el.label}: stiže samo upravljački kabel, nema napajanja (L N PE).` })
+  if (power.length > 1) checks.push({ level: 'warn', text: `${el.label}: ${power.length} kabela na jednom uređaju; obično je jedan (ili provlačenje kroz dozu).` })
   const map = new Map<string, TerminalWire[]>()
   const add = (id: string, w: TerminalWire) => { if (!map.has(id)) map.set(id, []); map.get(id)!.push(w) }
   for (const bc of cables) for (const w of bc.wires) if (w.terminal) add(w.terminal === 'PARK' ? `PARK:${bc.cable.id}:${w.color}` : w.terminal, { kind: 'core', cableId: bc.cable.id, cableLabel: bc.label, color: w.color, note: w.note })

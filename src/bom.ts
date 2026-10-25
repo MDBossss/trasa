@@ -34,10 +34,11 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
     add(out, 'Kabeli', c.type, 'm', m)
   }
   for (const cd of p.conduits) {
-    const bound = (end: 'start' | 'end') => p.cables.find((c) => [c.from, c.to].some((e) => e.kind === 'exit' && e.conduitId === cd.id && e.end === end))
-    const c = bound('start') ?? bound('end')
+    // every cable through the conduit, counted from the exit that has more of them bound
+    const bound = (end: 'start' | 'end') => p.cables.filter((c) => [c.from, c.to].some((e) => e.kind === 'exit' && e.conduitId === cd.id && e.end === end))
+    const a = bound('start'), b = bound('end')
     const lenM = polylineLength(cd.points) / ppm
-    if (c && inScope(c.roomId)) add(out, 'Kabeli', c.type, 'm', lenM + 2 * RESERVE_M)
+    for (const c of a.length >= b.length ? a : b) if (inScope(c.roomId)) add(out, 'Kabeli', c.type, 'm', lenM + 2 * RESERVE_M)
   }
   // junction connectors, and the box size each junction needs
   const sizes = new Map<string, string>()
