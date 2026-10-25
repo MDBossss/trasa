@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T08:41:00.101Z",
+ "savedAt": "2026-10-25T08:48:33.355Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2102,6 +2102,29 @@
       "photo": "gh:projects/kuca/img/607d511c5df68536.jpg"
      }
     }
+   },
+   {
+    "id": "irxyujn8",
+    "name": "Putna vrata",
+    "points": [
+     {
+      "x": 798.7060272634604,
+      "y": 2038.235898897763
+     },
+     {
+      "x": 798.7060272634604,
+      "y": 1954.509175638437
+     },
+     {
+      "x": 1130.2185936821431,
+      "y": 1954.509175638437
+     },
+     {
+      "x": 1130.2185936821431,
+      "y": 2040.4987833101773
+     }
+    ],
+    "walls": {}
    }
   ],
   "elements": [
@@ -4721,6 +4744,36 @@
     "controls": [
      "2jyaql5v"
     ]
+   },
+   {
+    "roomId": "irxyujn8",
+    "wall": 1,
+    "type": "box",
+    "xM": 1.42,
+    "zM": 2.14,
+    "note": "",
+    "id": "9yzmvtmq",
+    "label": "K25"
+   },
+   {
+    "roomId": "irxyujn8",
+    "wall": 1,
+    "type": "motor",
+    "xM": 0.42,
+    "zM": 2.14,
+    "note": "",
+    "id": "2z03m73d",
+    "label": "V3"
+   },
+   {
+    "roomId": "irxyujn8",
+    "wall": 1,
+    "type": "motor",
+    "xM": 2.47,
+    "zM": 2.14,
+    "note": "",
+    "id": "gcxo07n6",
+    "label": "V4"
    }
   ],
   "cables": [
@@ -7361,7 +7414,9 @@
  },
  "ui": {
   "view": {
-   "kind": "plan"
+   "kind": "room",
+   "roomId": "irxyujn8",
+   "wall": 1
   }
  }
 }
