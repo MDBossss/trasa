@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T17:09:46.819Z",
+ "savedAt": "2026-10-25T19:16:19.032Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2790,6 +2790,52 @@
      {
       "x": 1308.9864622628666,
       "y": 427.06219725884074
+     }
+    ],
+    "walls": {}
+   },
+   {
+    "id": "hi0vfa98",
+    "name": "Ispred garaze",
+    "points": [
+     {
+      "x": 565.6289327847961,
+      "y": 1748.5866941087434
+     },
+     {
+      "x": 751.1854546027619,
+      "y": 1748.5866941087434
+     },
+     {
+      "x": 751.1854546027619,
+      "y": 1801.7644778004774
+     },
+     {
+      "x": 565.6289327847961,
+      "y": 1801.7644778004774
+     }
+    ],
+    "walls": {}
+   },
+   {
+    "id": "fcv0y1qm",
+    "name": "Vani lijevo",
+    "points": [
+     {
+      "x": 535.0799932172042,
+      "y": 1034.646661992058
+     },
+     {
+      "x": 535.0799932172042,
+      "y": 888.690617391341
+     },
+     {
+      "x": 487.55942055650564,
+      "y": 888.690617391341
+     },
+     {
+      "x": 487.55942055650564,
+      "y": 1034.646661992058
      }
     ],
     "walls": {}
@@ -6679,15 +6725,17 @@
     "type": "switch",
     "xM": 1.85,
     "zM": 1.28,
-    "note": "",
+    "note": "zid i garaza ispred kuce i stepenice",
     "host": "en9n5irk",
     "switchKind": "tipkalo",
     "id": "bz31j1au",
     "label": "P34",
-    "slotOrder": 0,
-    "gapBefore": 5,
+    "slotOrder": 1,
     "relayId": "1mmd4lti",
-    "relayInput": 1
+    "relayInput": 1,
+    "controls": [
+     "zm42tjnv"
+    ]
    },
    {
     "roomId": "akuvhdws",
@@ -6695,14 +6743,18 @@
     "type": "switch",
     "xM": 1.85,
     "zM": 1.28,
-    "note": "",
+    "note": "zid desno",
     "host": "en9n5irk",
     "switchKind": "tipkalo",
     "id": "eph1e9kj",
     "label": "P35",
-    "slotOrder": 1,
+    "slotOrder": 2,
     "relayId": "j9h358in",
-    "relayInput": 1
+    "relayInput": 1,
+    "controls": [
+     "fa52hgkv",
+     "otqs5faa"
+    ]
    },
    {
     "roomId": "akuvhdws",
@@ -6727,6 +6779,53 @@
     "relayModel": "zbminir2",
     "id": "1mmd4lti",
     "label": "R15"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "switch",
+    "xM": 1.85,
+    "zM": 1.28,
+    "note": "",
+    "host": "en9n5irk",
+    "id": "grckoprz",
+    "label": "P36",
+    "slotOrder": 0,
+    "gapBefore": 3,
+    "modules": 2,
+    "controls": [
+     "p903zbv5"
+    ]
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 0,
+    "type": "light",
+    "xM": 1.4300000000000002,
+    "zM": 2.26,
+    "note": "",
+    "id": "p903zbv5",
+    "label": "S23"
+   },
+   {
+    "roomId": "hi0vfa98",
+    "wall": 0,
+    "type": "light",
+    "xM": 0.694772147613032,
+    "zM": 2.31,
+    "note": "",
+    "id": "fa52hgkv",
+    "label": "S24"
+   },
+   {
+    "roomId": "fcv0y1qm",
+    "wall": 0,
+    "type": "light",
+    "xM": 0.74,
+    "zM": 2.37,
+    "note": "",
+    "id": "zm42tjnv",
+    "label": "S25"
    }
   ],
   "cables": [
@@ -10895,6 +10994,57 @@
     "via": [],
     "note": "",
     "id": "hatr056z"
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "6she46hx",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "p903zbv5"
+    },
+    "via": [],
+    "note": "",
+    "id": "63u3u8sr"
+   },
+   {
+    "roomId": "hi0vfa98",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "sttep0d7",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "fa52hgkv"
+    },
+    "via": [],
+    "note": "",
+    "id": "30f0z7gu"
+   },
+   {
+    "roomId": "fcv0y1qm",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "a5pqhsnu",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "zm42tjnv"
+    },
+    "via": [],
+    "note": "",
+    "id": "rbcqwljs"
    }
   ],
   "categories": [
@@ -11002,9 +11152,7 @@
  },
  "ui": {
   "view": {
-   "kind": "room",
-   "roomId": "akuvhdws",
-   "wall": 6
+   "kind": "plan"
   }
  }
 }
