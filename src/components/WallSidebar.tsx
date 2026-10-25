@@ -46,6 +46,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
   const hostLabel = (id?: string) => project.elements.find((e) => e.id === id)?.label ?? '?'
   const controllers = (lightId: string) => project.elements.filter((e) => e.type === 'switch' && e.controls?.includes(lightId))
   const fileRef = useRef<HTMLInputElement>(null)
+  const galleryRef = useRef<HTMLInputElement>(null)
   const current = wall !== null ? walls[wall] : null
   const elements = current ? project.elements.filter((e) => e.roomId === room.id && e.wall === current.i) : []
   const cables = current ? project.cables.filter((c) => c.roomId === room.id && c.wall === current.i) : []
@@ -102,10 +103,12 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
         <section>
           <h3>Fotka zida {current.i + 1}</h3>
           <div className="field-row">
-            <button onClick={() => fileRef.current?.click()}><Icon.camera /> {room.walls[current.i]?.photo ? 'Zamijeni fotku' : 'Učitaj fotku'}</button>
+            <button onClick={() => fileRef.current?.click()} title="Otvori kameru (na mobitelu)"><Icon.camera /> Slikaj</button>
+            <button onClick={() => galleryRef.current?.click()} title="Odaberi postojeću fotku iz galerije ili mape"><Icon.image /> {room.walls[current.i]?.photo ? 'Zamijeni iz galerije' : 'Iz galerije'}</button>
             {room.walls[current.i]?.photo && <button className="icon-btn danger" title="Ukloni fotku" aria-label="Ukloni fotku" onClick={() => setWallPhoto(room.id, current.i, undefined)}><Icon.trash /></button>}
           </div>
           <input ref={fileRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => void onPhoto(e.target.files?.[0])} />
+          <input ref={galleryRef} type="file" accept="image/*" hidden onChange={(e) => { void onPhoto(e.target.files?.[0]); e.target.value = '' }} />
         </section>
       )}
 

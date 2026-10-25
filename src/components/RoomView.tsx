@@ -18,6 +18,7 @@ export function RoomView({ roomId, wall }: { roomId: string; wall: number | null
   const selectedId = useStore((s) => s.selectedId)
   const [sheet, setSheet] = useState(false)
   const camRef = useRef<HTMLInputElement>(null)
+  const galRef = useRef<HTMLInputElement>(null)
   // tapping an element or cable of this wall on the phone opens its details in the sheet
   const selOnWall = !!selectedId && wall !== null && (project.elements.some((e) => e.id === selectedId && e.roomId === roomId && e.wall === wall) || project.cables.some((c) => c.id === selectedId && c.roomId === roomId && c.wall === wall))
   useEffect(() => { if (mobile && selOnWall) setSheet(true) }, [mobile, selOnWall, selectedId])
@@ -78,7 +79,9 @@ export function RoomView({ roomId, wall }: { roomId: string; wall: number | null
           {mobile && current && (
             <>
               <button className="icon-btn primary" onClick={() => camRef.current?.click()} title="Slikaj zid" aria-label="Slikaj zid"><Icon.camera /></button>
+              <button className="icon-btn" onClick={() => galRef.current?.click()} title="Fotka zida iz galerije" aria-label="Fotka zida iz galerije"><Icon.image /></button>
               <input ref={camRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => void onPhoto(e.target.files?.[0])} />
+              <input ref={galRef} type="file" accept="image/*" hidden onChange={(e) => { void onPhoto(e.target.files?.[0]); e.target.value = '' }} />
             </>
           )}
           {!project.pxPerMeter && !mobile && <span className="warn">Mjerilo nije postavljeno, duljine su procjena.</span>}

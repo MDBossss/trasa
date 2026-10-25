@@ -806,7 +806,10 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
 // wall 3 (bottom): B1 end 0.2 m away; from inside, the bottom wall runs right→left, so 4.5 m from the left
 await page.locator('.sidebar .list li', { hasText: 'Zid 3' }).click()
 await page.locator('.sidebar .list li', { hasText: 'B1-ormar' }).getByText('4.50 m · strop').waitFor()
-await page.locator('input[type=file][capture]').setInputFiles({ name: 'wall.png', mimeType: 'image/png', buffer: Buffer.from(planPng.split(',')[1], 'base64') })
+// two ways in: the camera (capture) and the gallery (no capture); the gallery one is used here
+assert.equal(await page.locator('.sidebar input[type=file][capture]').count(), 1)
+await page.locator('.sidebar').getByRole('button', { name: /Iz galerije/ }).waitFor()
+await page.locator('.sidebar input[type=file]:not([capture])').setInputFiles({ name: 'wall.png', mimeType: 'image/png', buffer: Buffer.from(planPng.split(',')[1], 'base64') })
 await page.waitForFunction(() => window.Konva.stages[0].findOne('Image'))
 await page.locator('.sidebar .list li', { hasText: 'Zid 3' }).getByText('foto').waitFor()
 // the 1200x800 photo keeps its 3:2 ratio: height = wall height (260 cm), width 390 cm, centred on the 500 cm wall
