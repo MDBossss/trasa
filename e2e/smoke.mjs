@@ -657,6 +657,19 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     return { thin, ok } }, { box: ids.box })
   assert.deepEqual(ac, { thin: true, ok: true }, 'a split AC on 3×1,5 is an error, on 3×2,5 it is fine')
 
+  // a switch can drive a light in another room (a terrace light switched from inside)
+  const xr = await page.evaluate(() => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id
+    const other = s.addRoom([{ x: 900, y: 900 }, { x: 1000, y: 900 }, { x: 1000, y: 1000 }], 'Terasa X'); s = window.__trasa.getState()
+    const lx = s.addElement({ roomId: other, wall: 0, type: 'light', xM: 0.5, zM: 2.2, note: '', label: 'SX' }); s = window.__trasa.getState()
+    const d = s.addElement({ roomId: room, wall: 0, type: 'modbox', xM: 0.3, zM: 1.1, modules: 2, note: '' }); s = window.__trasa.getState()
+    const sw = s.addElement({ roomId: room, wall: 0, type: 'switch', xM: 0.3, zM: 1.1, note: '', host: d }); s = window.__trasa.getState()
+    s.setView({ kind: 'room', roomId: room, wall: 0 }); s.select(sw)
+    return { other, lx, d, sw } })
+  await page.locator('.props select[aria-label="Svjetlo u drugoj sobi"]').selectOption(xr.lx)
+  await page.locator('.props label.inline', { hasText: 'Terasa X' }).waitFor()
+  assert.deepEqual(await page.evaluate(({ sw }) => window.__trasa.getState().project.elements.find((e) => e.id === sw).controls, xr), [xr.lx])
+  await page.evaluate(({ other, lx, d, sw }) => { const s = window.__trasa.getState(); const drop = new Set([lx, d, sw]); s.patchProject({ elements: s.project.elements.filter((e) => !drop.has(e.id)), rooms: s.project.rooms.filter((r) => r.id !== other) }) }, xr)
+
   // a push button with a control lamp: the lamp hangs on the relay output and N, so the frame cable carries the output too
   const lp = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
     const r = s.addElement({ roomId: room, wall: 0, type: 'relay', xM: 0, zM: 0, note: '', host: box, relayModel: 'gen4pm' })

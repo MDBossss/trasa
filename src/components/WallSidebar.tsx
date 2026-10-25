@@ -30,7 +30,8 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
   const project = useStore((s) => s.project)
   const selectedId = useStore((s) => s.selectedId)
   const { select, setView, setWallPhoto, updateRoom, updateElement, updateCable, removeSelected, setWallTool } = useStore.getState()
-  const roomLights = project.elements.filter((e) => (e.type === 'light' || e.type === 'ledpsu') && e.roomId === room.id)
+  const allLights = project.elements.filter((e) => e.type === 'light' || e.type === 'ledpsu')
+  const roomLights = allLights.filter((e) => e.roomId === room.id)
   const relays = project.elements.filter((e) => e.type === 'relay')
   const roomName = (id: string) => project.rooms.find((r) => r.id === id)?.name ?? '?'
   // relays of this room first, the rest grouped by room (a hallway relay may sit next door)
@@ -171,15 +172,22 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
               <div className="controls" hidden={!!el.relayId}>
                 <span className="muted">Pali svjetla</span>
                 {!roomLights.length && <span className="muted">(nema svjetala u sobi, postavi Svjetlo (L) na zid)</span>}
-                {roomLights.map((l) => {
+                {/* lights of this room, then lights elsewhere this switch already drives (e.g. a terrace light switched from inside) */}
+                {[...roomLights, ...allLights.filter((l) => l.roomId !== room.id && el.controls?.includes(l.id))].map((l) => {
                   const on = el.controls?.includes(l.id) ?? false
                   return (
                     <label key={l.id} className="inline">
                       <input type="checkbox" checked={on} onChange={(e) => updateElement(el.id, { controls: e.target.checked ? [...(el.controls ?? []), l.id] : (el.controls ?? []).filter((x) => x !== l.id) })} />
-                      {l.label} <span className="muted">zid {l.wall + 1}</span>
+                      {l.label} <span className="muted">{l.roomId !== room.id ? `${roomName(l.roomId)}, ` : ''}zid {l.wall + 1}</span>
                     </label>
                   )
                 })}
+                {allLights.some((l) => l.roomId !== room.id && !el.controls?.includes(l.id)) && (
+                  <select aria-label="Svjetlo u drugoj sobi" value="" onChange={(e) => e.target.value && updateElement(el.id, { controls: [...(el.controls ?? []), e.target.value] })}>
+                    <option value="">+ svjetlo u drugoj sobi…</option>
+                    {project.rooms.filter((r) => r.id !== room.id).map((r) => { const ls = allLights.filter((l) => l.roomId === r.id && !el.controls?.includes(l.id)); return ls.length ? <optgroup key={r.id} label={r.name}>{ls.map((l) => <option key={l.id} value={l.id}>{l.label} · zid {l.wall + 1}</option>)}</optgroup> : null })}
+                  </select>
+                )}
               </div>
             </>
           )}
