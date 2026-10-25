@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T09:23:50.749Z",
+ "savedAt": "2026-10-25T10:23:00.575Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -1041,8 +1041,8 @@
       "y": 1369.5535550293619
      },
      {
-      "x": 1501.3578391390806,
-      "y": 1412.4475306319425
+      "x": 1599.2398771403136,
+      "y": 1458.9374893197235
      }
     ],
     "from": "",
@@ -1050,7 +1050,8 @@
     "note": "",
     "categoryId": "rasvjeta",
     "exitZ": {
-     "start": 1.9
+     "start": 1.9,
+     "end": 2.29
     }
    },
    {
@@ -1538,7 +1539,7 @@
    {
     "id": "is1ge4ad",
     "name": "SVJETLO NAZAD SPAJZA",
-    "color": "#3cb44b",
+    "color": "#06b6b4",
     "diameter": 20,
     "points": [
      {
@@ -1553,7 +1554,7 @@
     "from": "",
     "to": "",
     "note": "",
-    "categoryId": "rasvjeta",
+    "categoryId": "todo",
     "exitZ": {
      "start": 1.89,
      "end": 2.52
@@ -4394,7 +4395,8 @@
     "note": "",
     "id": "3jpippck",
     "label": "D43",
-    "modules": 7
+    "modules": 7,
+    "depth": "duboka"
    },
    {
     "roomId": "z6exkgda",
@@ -4612,9 +4614,9 @@
     "roomId": "z6exkgda",
     "wall": 2,
     "type": "appliance",
-    "xM": 0.94,
-    "zM": 1.44,
-    "note": "",
+    "xM": 0.96,
+    "zM": 1.42,
+    "note": "zapravo uticnica unutar kabineta",
     "id": "bi1a0sut",
     "label": "UR1",
     "appliance": "hood"
@@ -4818,6 +4820,94 @@
     "relayModel": "gen4",
     "id": "ly4lnm99",
     "label": "R8"
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 2,
+    "type": "switch",
+    "xM": 1.87,
+    "zM": 1.23,
+    "note": "glavno svjetlo",
+    "host": "3jpippck",
+    "id": "3k5xeyjf",
+    "label": "P20",
+    "slotOrder": 0,
+    "modules": 2
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 2,
+    "type": "switch",
+    "xM": 1.87,
+    "zM": 1.23,
+    "note": "led ispod ormarica",
+    "host": "3jpippck",
+    "switchKind": "tipkalo",
+    "id": "d08mn68w",
+    "label": "P21",
+    "slotOrder": 1,
+    "modules": 2
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 2,
+    "type": "switch",
+    "xM": 1.87,
+    "zM": 1.23,
+    "note": "svjetlo iznad otoka",
+    "host": "3jpippck",
+    "id": "z8gbs0ef",
+    "label": "P22",
+    "slotOrder": 2,
+    "modules": 2
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 2,
+    "type": "ledpsu",
+    "xM": 0.46,
+    "zM": 1.49,
+    "note": "",
+    "id": "dg1hdfey",
+    "label": "N1",
+    "ledM": 2,
+    "feedRelayId": "4u3ggzz4",
+    "feedOutput": 1
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 0,
+    "type": "ledpsu",
+    "xM": 2.08,
+    "zM": 1.47,
+    "note": "",
+    "id": "v9e4pw6f",
+    "label": "N2",
+    "ledM": 2.5,
+    "feedRelayId": "4u3ggzz4",
+    "feedOutput": 1
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 2,
+    "type": "relay",
+    "xM": 1.87,
+    "zM": 1.23,
+    "note": "",
+    "host": "3jpippck",
+    "relayModel": "zbminir2",
+    "id": "4u3ggzz4",
+    "label": "R9"
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 0,
+    "type": "light",
+    "xM": 2.08,
+    "zM": 2.04,
+    "note": "",
+    "id": "gthgyjn3",
+    "label": "S13"
    }
   ],
   "cables": [
@@ -7252,8 +7342,8 @@
     },
     "via": [
      {
-      "xM": 0.97,
-      "zM": 1.9
+      "xM": 0.29,
+      "zM": 0.93
      }
     ],
     "note": "",
@@ -7489,6 +7579,82 @@
     "via": [],
     "note": "",
     "id": "d47th21y"
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 2,
+    "type": "NYM-J 5x1.5",
+    "from": {
+     "kind": "element",
+     "id": "3jpippck"
+    },
+    "to": {
+     "kind": "element",
+     "id": "9cgabio4"
+    },
+    "via": [
+     {
+      "xM": 1.87,
+      "zM": 1.71
+     }
+    ],
+    "note": "",
+    "id": "fm4naoxe"
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 2,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "9cgabio4"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "jgaz18hd",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "9k9ydwcs"
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 2,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "9cgabio4"
+    },
+    "to": {
+     "kind": "element",
+     "id": "dg1hdfey"
+    },
+    "via": [
+     {
+      "xM": 0.47,
+      "zM": 1.73
+     }
+    ],
+    "note": "",
+    "id": "1nbs89la"
+   },
+   {
+    "roomId": "z6exkgda",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "jgaz18hd",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "gthgyjn3"
+    },
+    "via": [],
+    "note": "",
+    "id": "2ccj69tn"
    }
   ],
   "categories": [
@@ -7596,7 +7762,9 @@
  },
  "ui": {
   "view": {
-   "kind": "plan"
+   "kind": "room",
+   "roomId": "z6exkgda",
+   "wall": 2
   }
  }
 }
