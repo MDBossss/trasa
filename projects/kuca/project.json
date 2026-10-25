@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T15:01:17.070Z",
+ "savedAt": "2026-10-25T16:23:48.997Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -1691,8 +1691,8 @@
       "y": 799.41538362827
      },
      {
-      "x": 1441.365200389098,
-      "y": 1181.734148798982
+      "x": 1395.8938908911964,
+      "y": 1180.9887174957378
      },
      {
       "x": 911.8502478841713,
@@ -1960,6 +1960,110 @@
      "start": 2.4,
      "end": 1.84
     }
+   },
+   {
+    "id": "6bjxlmbb",
+    "name": "DOLAZ DIZALICA UNUTRA",
+    "color": "#ff0000",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1389.318858903571,
+      "y": 759.7062058837306
+     },
+     {
+      "x": 1389.318858903571,
+      "y": 1188.5228020362247
+     },
+     {
+      "x": 906.1930368531357,
+      "y": 1188.5228020362247
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "dolaz"
+   },
+   {
+    "id": "bo5nqtcz",
+    "name": "DOLAZ DIZALICA VAN",
+    "color": "#ff0000",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1298.8034824070023,
+      "y": 470.0570010947108
+     },
+     {
+      "x": 1298.8034824070023,
+      "y": 523.234784786445
+     },
+     {
+      "x": 1374.6101102228786,
+      "y": 523.234784786445
+     },
+     {
+      "x": 1383.717717476778,
+      "y": 825.9605366527854
+     },
+     {
+      "x": 1383.717717476778,
+      "y": 1198.2050224949242
+     },
+     {
+      "x": 908.5119908697925,
+      "y": 1198.2050224949242
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "dolaz"
+   },
+   {
+    "id": "z6ravq23",
+    "name": "SPOJ DIZALICA VAN",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1292.0148291697597,
+      "y": 522.1033425802378
+     },
+     {
+      "x": 1292.0148291697597,
+      "y": 466.66267447608953
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "- FI 110, za vodu\n- komunikacijski kabel buzir\n- senzor tempereature\n",
+    "categoryId": "todo"
+   },
+   {
+    "id": "7hapwd5h",
+    "name": "DOLAZ INTERNET KOTLOVNICA",
+    "color": "#4363d8",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1394.9760699346066,
+      "y": 760.8376480899377
+     },
+     {
+      "x": 1394.9760699346066,
+      "y": 1243.963470140373
+     },
+     {
+      "x": 872.2497706669226,
+      "y": 1243.963470140373
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "internet"
    }
   ],
   "rooms": [
@@ -3552,7 +3656,7 @@
     "id": "xy4ntz2h",
     "label": "U41",
     "slotOrder": 3,
-    "socketKind": "euro"
+    "socketKind": "rj45"
    },
    {
     "roomId": "fqmzanpn",
@@ -6142,6 +6246,16 @@
     "id": "tjtcz5s1",
     "label": "U131",
     "slotOrder": 1
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "socket",
+    "xM": 2.74,
+    "zM": 0.7,
+    "note": "za razdjelnik podnog",
+    "id": "8ozvhtir",
+    "label": "U130"
    }
   ],
   "cables": [
@@ -10018,6 +10132,22 @@
     "via": [],
     "note": "",
     "id": "7n4t2b03"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "os8kd7cq"
+    },
+    "to": {
+     "kind": "element",
+     "id": "8ozvhtir"
+    },
+    "via": [],
+    "note": "",
+    "id": "n4uaizu2"
    }
   ],
   "categories": [
@@ -10125,9 +10255,7 @@
  },
  "ui": {
   "view": {
-   "kind": "room",
-   "roomId": "icogq6ir",
-   "wall": 5
+   "kind": "plan"
   }
  }
 }
