@@ -1,4 +1,4 @@
-import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isFeedConduit, APPLIANCES, isPlace, isData, dataKindOf, DATA_META, sectionOf, modulesOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, isControlCable, relayModelOf, hostedFront, type ElementType } from './types'
+import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isFeedConduit, APPLIANCES, isPlace, isData, dataKindOf, DATA_META, sectionOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, isControlCable, frameSlots, frameName, relayModelOf, hostedFront, type ElementType } from './types'
 import { wallExits } from './walls'
 
 // Everything a box needs: which cables enter it, what each core goes to, which devices sit inside
@@ -590,7 +590,7 @@ export function boxLayout(j: Pick<Junction, 'box' | 'terminals' | 'devices'>): {
     ...j.terminals.filter((t) => t.cap).map((t): Item => ({ kind: 'cap', t, w: CAP_W, h: CAP_H })),
     ...j.devices.map((d): Item => ({ kind: 'device', d, w: d.wMm, h: d.hMm })),
   ]
-  const base = j.box.type === 'modbox' ? [(j.box.modules ?? 3) <= 3 ? [100, 70] : (j.box.modules ?? 3) <= 4 ? [120, 70] : [160, 70], [160, 100], [200, 120]] : isPlace(j.box) ? BOX_SIZES : j.box.type === 'kip' ? [[130, 90]] : [[60, 46], [90, 60]]
+  const base = j.box.type === 'modbox' ? [(j.box.modules ?? 3) <= 3 ? [100, 70] : (j.box.modules ?? 3) <= 4 ? [120, 70] : (j.box.modules ?? 3) <= 7 ? [160, 70] : [160, 120], [160, 100], [200, 120]] : isPlace(j.box) ? BOX_SIZES : j.box.type === 'kip' ? [[130, 90]] : [[60, 46], [90, 60]]
   for (const [W, H] of base) {
     const rows: { y: number; flip: boolean; x: number; items: Placed[]; h: number; inner?: boolean }[] = [
       { y: 5, flip: false, x: 5, items: [], h: DEPTH },
@@ -769,7 +769,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
       add(tagged(pm.terminal, devCirc.get(d.el.id)), { kind: 'port', deviceId: d.el.id, deviceLabel: d.label, port: pm.port, color: pm.color, note: pm.note })
     }
   }
-  if (box.type === 'modbox') { const used = devices.reduce((n, d) => n + modulesOf(d.el) + (d.el.gapBefore ?? 0), 0); if (used > (box.modules ?? 3)) checks.push({ level: 'err', text: `Doza je ${box.modules ?? 3}M, a unutra je ${used}M (šuko 2M, tipkalo i euro 1M). Uzmi veću dozu ili makni element.` }) }
+  if (box.type === 'modbox') { const used = frameSlots(hostedFront(p.elements, box.id), box.modules ?? 3).used; if (used > (box.modules ?? 3)) checks.push({ level: 'err', text: `Doza je ${frameName(box.modules ?? 3)}, a unutra treba ${used}M (šuko 2M, tipkalo i euro 1M${(box.modules ?? 3) > 7 ? ', šuko ne prelazi u drugi red' : ''}). Uzmi veću dozu ili makni element.` }) }
   if (devices.filter((d) => d.kind === 'relay').length > 2) checks.push({ level: 'warn', text: `${devices.filter((d) => d.kind === 'relay').length} releja u jednoj dozi: provjeri stane li uz stezaljke.` })
 
   const terminals: Terminal[] = [...map.entries()]

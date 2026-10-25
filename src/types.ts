@@ -127,6 +127,16 @@ export function keepFramePositions(before: WallElement[], after: WallElement[], 
   return after.map((e) => (patch.has(e.id) ? { ...e, ...patch.get(e.id) } : e))
 }
 // modules an element takes inside a modular frame
+// A 2×7M box is one box with two rows of seven; a 2M device never straddles the rows.
+export const frameCols = (m: number) => (m > 7 ? 7 : m)
+export const frameRows = (m: number) => (m > 7 ? 2 : 1)
+export const frameName = (m: number) => (m === 14 ? '2×7M' : `${m}M`)
+export function frameSlots(front: WallElement[], m: number): { starts: number[]; used: number } {
+  const cols = frameCols(m)
+  let pos = 0
+  const starts = front.map((e) => { pos += e.gapBefore ?? 0; const size = Math.max(1, modulesOf(e)); if ((pos % cols) + size > cols) pos += cols - (pos % cols); const st = pos; pos += size; return st })
+  return { starts, used: pos }
+}
 export const modulesOf = (e: WallElement) => (e.type === 'socket' ? SOCKET_KINDS[e.socketKind ?? 'schuko'].modules : e.type === 'switch' ? (e.modules ?? 1) : 0)
 
 // Placed on a wall: x from the left (inside view), z from the floor, metres.

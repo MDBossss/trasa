@@ -2,7 +2,7 @@ import { Fragment, useRef } from 'react'
 import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
-import { CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, coreColors, WIRE_LABEL, APPLIANCES, type ApplianceKind, type BoxDepth, type CableRole, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
+import { frameSlots, frameName, CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, coreColors, WIRE_LABEL, APPLIANCES, type ApplianceKind, type BoxDepth, type CableRole, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
 import { cableNeeds, circuitsOf, resolveCable, roleLabel, terminalMeta } from '../junction'
 import { Icon } from './Icons'
 import { wireSwatch } from './JunctionCanvas'
@@ -244,12 +244,12 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
             </label>
           )}
           {el.type === 'socket' && el.host && <SlotRow el={el} />}
-          {el.type === 'modbox' && (() => { const front = hostedFront(project.elements, el.id); const used = front.reduce((n, h) => n + modulesOf(h) + (h.gapBefore ?? 0), 0); return <div className={`stat ${used > (el.modules ?? 3) ? 'warn' : ''}`}><span>Zauzeto</span><b>{used} / {el.modules ?? 3} M</b><span className="muted">{front.map((h) => `${h.gapBefore ? '· '.repeat(h.gapBefore) : ''}${h.label}`).join(' → ') || 'prazno'}</span></div> })()}
+          {el.type === 'modbox' && (() => { const front = hostedFront(project.elements, el.id); const used = frameSlots(front, el.modules ?? 3).used; return <div className={`stat ${used > (el.modules ?? 3) ? 'warn' : ''}`}><span>Zauzeto</span><b>{used} / {el.modules ?? 3} M{(el.modules ?? 3) > 7 ? ' (2 reda)' : ''}</b><span className="muted">{front.map((h) => `${h.gapBefore ? '· '.repeat(h.gapBefore) : ''}${h.label}`).join(' → ') || 'prazno'}</span></div> })()}
           {el.type === 'modbox' && (
             <label>
               Moduli
               <select value={el.modules ?? 3} onChange={(e) => updateElement(el.id, { modules: +e.target.value })}>
-                {[1, 2, 3, 4, 7].map((m) => <option key={m} value={m}>{m}M{m === 3 ? ' (TEM PM3)' : m === 4 ? ' (TEM PM4)' : m === 7 ? ' (TEM PM7)' : ''}</option>)}
+                {[1, 2, 3, 4, 7, 14].map((m) => <option key={m} value={m}>{frameName(m)}{m === 3 ? ' (TEM PM3)' : m === 4 ? ' (TEM PM4)' : m === 7 ? ' (TEM PM7)' : m === 14 ? ' (dvoredna, 2 × 7)' : ''}</option>)}
               </select>
             </label>
           )}

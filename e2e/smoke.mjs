@@ -635,6 +635,17 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   assert.deepEqual(led.dErr, [], 'a frame with only a 24 V push button needs no phase')
   assert.deepEqual(led.dT, ['+24', 'SW1'], 'the button lands on the controller +24 V and SW1')
 
+  // a 2×7M box: two rows of seven, a šuko never straddles the rows (6 fit, the 7th does not)
+  const two7 = await page.evaluate(() => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
+    const d = s.addElement({ roomId: room, wall: 0, type: 'modbox', xM: 2.4, zM: 0.4, modules: 14, note: '' }); s = window.__trasa.getState()
+    const add = () => { const id = s.addElement({ roomId: room, wall: 0, type: 'socket', xM: 2.4, zM: 0.4, note: '', host: d }); s = window.__trasa.getState(); return id }
+    const us = Array.from({ length: 6 }, add)
+    const err = () => E.allJunctions(window.__trasa.getState().project).find((j) => j.box.id === d).checks.some((c) => c.level === 'err' && /Doza je 2×7M/.test(c.text))
+    const six = err(); us.push(add()); const seven = err()
+    const drop = new Set([d, ...us]); s = window.__trasa.getState(); s.patchProject({ elements: s.project.elements.filter((e) => !drop.has(e.id)) })
+    return { six, seven } })
+  assert.deepEqual(two7, { six: false, seven: true }, '2×7M holds six šuko, a seventh would straddle the rows')
+
   // a push button with a control lamp: the lamp hangs on the relay output and N, so the frame cable carries the output too
   const lp = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
     const r = s.addElement({ roomId: room, wall: 0, type: 'relay', xM: 0, zM: 0, note: '', host: box, relayModel: 'gen4pm' })

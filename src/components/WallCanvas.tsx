@@ -6,7 +6,7 @@ import useImage from 'use-image'
 import { useStore } from '../store'
 import { cornerPartner } from '../junction'
 import { CABLE_COLOR, cableColor, cablePath, cornerAt, endPos, neighbourWall, type Exit, type WallCtx, type WallInfo } from '../walls'
-import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement, RELAY_LOOK, relayBrand, relayModelOf, hostedFront , isData, APPLIANCES } from '../types'
+import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement, RELAY_LOOK, relayBrand, relayModelOf, hostedFront , isData, APPLIANCES, frameCols, frameRows, frameSlots } from '../types'
 import { Hud } from './Hud'
 import { activeWallTool } from './WallToolRail'
 import { middlePan, pinch, useMobile, wheelNav, type Camera } from '../mobile'
@@ -428,14 +428,16 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
             return (
               <Group key={el.id} name={el.id} x={toX(p)} y={toY(p)} {...elementDrag(el)}>
                 {/* invisible hit area: symbols are thin strokes with gaps, a click a pixel off would miss them */}
-                {el.type === 'modbox' ? <Rect x={-((el.modules ?? 3) * MODW) / 2 - 4} y={-10} width={(el.modules ?? 3) * MODW + 8} height={20} fill="#000" opacity={0.001} /> : <Circle radius={14} fill="#000" opacity={0.001} />}
+                {el.type === 'modbox' ? <Rect x={-(frameCols(el.modules ?? 3) * MODW) / 2 - 4} y={-4 - 6 * frameRows(el.modules ?? 3)} width={frameCols(el.modules ?? 3) * MODW + 8} height={8 + 12 * frameRows(el.modules ?? 3)} fill="#000" opacity={0.001} /> : <Circle radius={14} fill="#000" opacity={0.001} />}
                 <Symbol type={el.type} selected={isSel} px={px} modules={el.modules} swKind={el.switchKind} data={isData(el)} tv={el.socketKind === 'tv'} appKind={el.appliance} />
                 {(() => {
                   const hosted = hostedOf(el.id)
                   const mods = hostedFront(project.elements, el.id)
                   const relays = hosted.filter((h) => h.type === 'relay')
-                  const w = el.type === 'modbox' ? (el.modules ?? 3) * MODW : 16
-                  const top = el.type === 'modbox' ? -6 : el.type === 'ledpsu' ? -3 : -7
+                  const w = el.type === 'modbox' ? frameCols(el.modules ?? 3) * MODW : 16
+                  const rows = el.type === 'modbox' ? frameRows(el.modules ?? 3) : 1
+                  const top = el.type === 'modbox' ? -6 * rows : el.type === 'ledpsu' ? -3 : -7
+                  const slots = frameSlots(mods, el.modules ?? 3).starts
                   const sel = (h: WallElement) => (ev: KonvaEventObject<MouseEvent | TouchEvent>) => { if (tool === 'select') { ev.cancelBubble = true; select(h.id) } }
                   return (
                     <>
@@ -443,10 +445,11 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
                         // frame slots: each front element takes its modules (šuko 2, tipkalo/euro 1)
                         const hs = h.id === selectedId
                         const m = Math.max(1, modulesOf(h))
-                        const before = mods.slice(0, i).reduce((n, x) => n + (x.gapBefore ?? 0) + Math.max(1, modulesOf(x)), 0) + (h.gapBefore ?? 0)
-                        const cx = -w / 2 + (before + m / 2) * MODW
+                        const cols = frameCols(el.modules ?? 3), row = Math.floor(slots[i] / cols)
+                        const cx = -w / 2 + ((slots[i] % cols) + m / 2) * MODW
+                        const cy = rows > 1 ? (row === 0 ? -6 : 6) : 0
                         return (
-                          <Group key={h.id} name={h.id} x={cx} y={0} onClick={sel(h)} onTap={sel(h)}>
+                          <Group key={h.id} name={h.id} x={cx} y={cy} onClick={sel(h)} onTap={sel(h)}>
                             <Rect x={-m * MODW / 2 + 0.8} y={-5} width={m * MODW - 1.6} height={10} cornerRadius={h.type === 'socket' ? 1.5 : 1} fill="#fff" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.5)} />
                             {h.type === 'switch' && (h.switchKind === 'tipkalo' || !h.switchKind || h.switchKind === 'obicni') && <Circle radius={1.2} fill={hs ? '#1e88e5' : '#1f2430'} />}
                             {h.type === 'switch' && h.switchKind === 'izmjenicni' && <Line points={[-2.2, 2.2, 2.2, -2.2]} stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.2)} lineCap="round" />}
@@ -455,7 +458,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
                             {h.type === 'socket' && !isData(h) && <Circle radius={2.2} fill="none" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1)} />}
                             {isData(h) && h.socketKind !== 'tv' && <Rect x={-2} y={-2.6} width={4} height={5.2} cornerRadius={0.6} fill="none" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1)} />}
                             {h.socketKind === 'tv' && <Line points={[-2.4, -3.2, 0, -0.6, 2.4, -3.2, 0, -0.6, 0, 3.2]} stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.1)} lineCap="round" lineJoin="round" />}
-                            <Text text={h.label} y={6} offsetX={30} width={60} align="center" fontSize={px(8)} fill={hs ? '#1e88e5' : '#1f2430'} />
+                            <Text text={h.label} y={rows > 1 && row === 0 ? -15 : 6} offsetX={30} width={60} align="center" fontSize={px(8)} fill={hs ? '#1e88e5' : '#1f2430'} />
                           </Group>
                         )
                       })}
@@ -469,11 +472,11 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
                           </Group>
                         )
                       })}
-                      {relays.length > 0 && <Text text={relays.map((h) => h.label).join(' · ')} x={0} y={(el.type === 'modbox' ? 14 : el.type === 'ledpsu' ? 10 : 16) + px(13)} offsetX={60} width={120} align="center" fontSize={px(9)} fill="#5b6472" />}
+                      {relays.length > 0 && <Text text={relays.map((h) => h.label).join(' · ')} x={0} y={(el.type === 'modbox' ? 8 + 6 * frameRows(el.modules ?? 3) : el.type === 'ledpsu' ? 10 : 16) + px(13)} offsetX={60} width={120} align="center" fontSize={px(9)} fill="#5b6472" />}
                     </>
                   )
                 })()}
-                <Text text={el.label} x={0} y={el.type === 'modbox' ? 14 : el.type === 'ledpsu' ? 10 : 16} offsetX={60} width={120} align="center" fontSize={px(11)} fontStyle="bold" fill="#1f2430" />
+                <Text text={el.label} x={0} y={el.type === 'modbox' ? 8 + 6 * frameRows(el.modules ?? 3) : el.type === 'ledpsu' ? 10 : 16} offsetX={60} width={120} align="center" fontSize={px(11)} fontStyle="bold" fill="#1f2430" />
               </Group>
             )
           })}
@@ -521,8 +524,8 @@ function Symbol({ type, selected, px, modules, swKind, data, tv, appKind }: { ty
   const halo = selected ? <Circle radius={13} fill="rgba(30,136,229,0.18)" /> : null
   switch (type) {
     case 'modbox': { // frame as wide as its modules (≈22 mm each at the wall scale)
-      const w = (modules ?? 3) * MODW
-      return <>{halo}<Rect x={-w / 2} y={-6} width={w} height={12} cornerRadius={1.5} fill="#fff" stroke={stroke} strokeWidth={sw} />{Array.from({ length: (modules ?? 3) - 1 }, (_, i) => <Line key={i} points={[-w / 2 + (i + 1) * MODW, -6, -w / 2 + (i + 1) * MODW, 6]} stroke={stroke} strokeWidth={px(1)} />)}</>
+      const cols = frameCols(modules ?? 3), rows = frameRows(modules ?? 3), w = cols * MODW, h = 6 * rows
+      return <>{halo}<Rect x={-w / 2} y={-h} width={w} height={2 * h} cornerRadius={1.5} fill="#fff" stroke={stroke} strokeWidth={sw} />{Array.from({ length: cols - 1 }, (_, i) => <Line key={i} points={[-w / 2 + (i + 1) * MODW, -h, -w / 2 + (i + 1) * MODW, h]} stroke={stroke} strokeWidth={px(1)} />)}{rows > 1 && <Line points={[-w / 2, 0, w / 2, 0]} stroke={stroke} strokeWidth={px(1)} />}</>
     }
     case 'relay':
       return <>{halo}<Rect x={-7} y={-5} width={14} height={10} cornerRadius={2} fill="#2563eb" stroke={stroke} strokeWidth={sw} /></>

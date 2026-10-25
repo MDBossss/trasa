@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '../store'
 import { cableEnds, cableNeeds, terminalMeta, wirePlan, type Junction } from '../junction'
-import { ELEMENT_META, WIRE_LABEL, isPlace } from '../types'
+import { ELEMENT_META, WIRE_LABEL, isPlace, frameName } from '../types'
 import { coreColors } from '../types'
 import { Hud } from './Hud'
 import { JunctionCanvas, junctionAnchors, junctionViewBox } from './JunctionCanvas'
@@ -188,7 +188,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
     if (d && !d.moved && d.box) onOpen(d.box)
   }
 
-  const sizeLabel = (j: Junction) => j.box.type === 'modbox' ? `doza ${j.box.modules ?? 3}M` : j.box.type === 'box' ? `kutija ${j.size.W / 10 + 1} × ${j.size.H / 10 + 1}` : ELEMENT_META[j.box.type].label.toLowerCase()
+  const sizeLabel = (j: Junction) => j.box.type === 'modbox' ? `doza ${frameName(j.box.modules ?? 3)}` : j.box.type === 'box' ? `kutija ${j.size.W / 10 + 1} × ${j.size.H / 10 + 1}` : ELEMENT_META[j.box.type].label.toLowerCase()
   const tubed = useMemo(() => new Set(links.flatMap((l) => l.cableIds)), [links])
   // each side of a corner cable is its own segment, so the box gets the id of its own segment
   const hoverFor = (boxId: string) => { const l = hover ? links.find((x) => x.id === hover) : null; const k = l ? l.boxes.indexOf(boxId) : -1; return l && k >= 0 ? `cable:${l.cableIds[k]}` : null }

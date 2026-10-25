@@ -1,6 +1,6 @@
 import { polylineLength } from './geometry'
 import { allJunctions, boxSizeLabel } from './junction'
-import { APPLIANCES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, type Project, relayModelOf, hostedFront, modulesOf } from './types'
+import { frameName, APPLIANCES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, type Project, relayModelOf, hostedFront, modulesOf } from './types'
 import { TEM_BLANK, TEM_FRAME, TEM_SOCKET, TEM_SWITCH, temCode } from './tem'
 import { cableLengthM, wallExits } from './walls'
 
@@ -62,14 +62,14 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
       case 'box': add(out, 'Doze i kutije', `Razvodna kutija ${sizes.get(e.id) ?? '10 × 10'}${depth}`, 'kom', 1); break
       case 'modbox': {
         const m = e.modules ?? 3
-        add(out, 'Doze i kutije', `Doza modularna ${m}M${m === 3 ? ' (TEM PM3)' : m === 4 ? ' (TEM PM4)' : m === 7 ? (e.depth === 'duboka' ? ' (TEM PM7-65)' : ' (TEM PM7)') : ''}${depth}`, 'kom', 1)
+        add(out, 'Doze i kutije', `Doza modularna ${frameName(m)}${m === 3 ? ' (TEM PM3)' : m === 4 ? ' (TEM PM4)' : m === 7 ? (e.depth === 'duboka' ? ' (TEM PM7-65)' : ' (TEM PM7)') : ''}${depth}`, 'kom', 1)
         const f = TEM_FRAME[m]
-        if (f) { add(out, 'Dekorativno', `${temCode(f.frame)} · okvir LINE ${m}M`, 'kom', 1); add(out, 'Dekorativno', `${temCode(f.carrier, false)} · ${f.carrierName}`, 'kom', 1) }
+        if (m === 14) { add(out, 'Dekorativno', 'Okvir LINE 2×7M (dvoredni, provjeri šifru)', 'kom', 1); add(out, 'Dekorativno', 'Nosač 2×7M', 'kom', 1) }
+        else if (f) { add(out, 'Dekorativno', `${temCode(f.frame)} · okvir LINE ${m}M`, 'kom', 1); add(out, 'Dekorativno', `${temCode(f.carrier, false)} · ${f.carrierName}`, 'kom', 1) }
         else add(out, 'Dekorativno', `Nosač + okvir ${m}M`, 'kom', 1)
         // empty modules (gaps and the free end) get a blank
         const front = hostedFront(p.elements, e.id)
-        const used = front.reduce((n, x) => n + (x.gapBefore ?? 0) + Math.max(1, modulesOf(x)), 0)
-        const free = Math.max(0, m - used) + front.reduce((n, x) => n + (x.gapBefore ?? 0), 0)
+        const free = Math.max(0, m - front.reduce((n, x) => n + Math.max(1, modulesOf(x)), 0))
         if (free > 0) add(out, 'Dekorativno', `${temCode(TEM_BLANK.code)} · ${TEM_BLANK.name}`, 'kom', free)
         break
       }

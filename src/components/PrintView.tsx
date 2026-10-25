@@ -5,7 +5,7 @@ import { bomFor } from '../bom'
 import { allJunctions, allLeafJunctions, wirePlan, type Junction } from '../junction'
 import { cableColor, cablePath, conduitTouchesRoom, cornerAt, wallExits, type WallInfo } from '../walls'
 import { bounds } from '../geometry'
-import { ELEMENT_META, RELAY_MODELS, WIRE_LABEL, type Project, type Room, type WallElement, relayModelOf } from '../types'
+import { ELEMENT_META, RELAY_MODELS, WIRE_LABEL, type Project, type Room, type WallElement, relayModelOf, frameName } from '../types'
 import { Icon } from './Icons'
 import { JunctionCanvas } from './JunctionCanvas'
 
@@ -148,7 +148,7 @@ function JunctionPage({ j }: { j: Junction }) {
   const plan = wirePlan(j)
   return (
     <section className="page">
-      <h2>{j.room.name} · {j.box.label} <span className="muted">· {ELEMENT_META[j.box.type].label.toLowerCase()}{j.box.type === 'modbox' ? ` ${j.box.modules ?? 3}M` : ''}, zid {j.box.wall + 1}{j.box.depth === 'duboka' ? ', duboka' : ''}</span></h2>
+      <h2>{j.room.name} · {j.box.label} <span className="muted">· {ELEMENT_META[j.box.type].label.toLowerCase()}{j.box.type === 'modbox' ? ` ${frameName(j.box.modules ?? 3)}` : ''}, zid {j.box.wall + 1}{j.box.depth === 'duboka' ? ', duboka' : ''}</span></h2>
       <JunctionCanvas className="print-junction" j={j} plan={plan} mode="all" step={0} hover={null} onHover={() => {}} onPick={() => {}} />
       <table className="print-table">
         <thead><tr><th>Stezaljka</th><th>WAGO</th><th>Žile</th></tr></thead>

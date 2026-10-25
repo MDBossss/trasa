@@ -3,7 +3,7 @@ import { useStore } from '../store'
 import { allJunctions, allLeafJunctions, wirePlan } from '../junction'
 import { conduitTouchesRoom, wallExits } from '../walls'
 import { bounds } from '../geometry'
-import { ELEMENT_META } from '../types'
+import { ELEMENT_META, frameName } from '../types'
 import { Icon } from './Icons'
 import { CAP_COLOR, JunctionCanvas, wireSwatch } from './JunctionCanvas'
 
@@ -42,7 +42,7 @@ export function PrintBoxView({ elementId }: { elementId: string }) {
         <section className="page page-landscape">
           <header className="pb-head">
             <div>
-              <h1>{j.box.label} <span className="muted">· {kind}{j.box.type === 'modbox' ? ` ${j.box.modules ?? 3}M` : ''}{j.box.depth === 'duboka' ? ', duboka' : ''}</span></h1>
+              <h1>{j.box.label} <span className="muted">· {kind}{j.box.type === 'modbox' ? ` ${frameName(j.box.modules ?? 3)}` : ''}{j.box.depth === 'duboka' ? ', duboka' : ''}</span></h1>
               <div className="muted">{project.name} · {room.name}, zid {j.box.wall + 1} · Trasa · {date}</div>
             </div>
             <div className="pb-bom">{j.bom.map((x) => <span key={x.item}>{x.item} × {x.qty}</span>)}</div>
