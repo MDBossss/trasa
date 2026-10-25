@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T19:44:55.488Z",
+ "savedAt": "2026-10-25T19:54:38.762Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -11193,7 +11193,7 @@
    {
     "roomId": "c2b55x6m",
     "wall": 1,
-    "type": "NYM-J 3x1.5",
+    "type": "upravljački 2x0.75",
     "from": {
      "kind": "element",
      "id": "cgjqz3uo"
@@ -11210,7 +11210,7 @@
    {
     "roomId": "c2b55x6m",
     "wall": 1,
-    "type": "NYM-J 3x1.5",
+    "type": "upravljački 2x0.75",
     "from": {
      "kind": "element",
      "id": "cgjqz3uo"
@@ -11227,7 +11227,7 @@
    {
     "roomId": "c2b55x6m",
     "wall": 1,
-    "type": "NYM-J 3x1.5",
+    "type": "upravljački 2x0.75",
     "from": {
      "kind": "element",
      "id": "cgjqz3uo"
@@ -11405,8 +11405,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "9lsb9f44",
-   "wall": 0
+   "roomId": "c2b55x6m",
+   "wall": 1
   }
  }
 }
