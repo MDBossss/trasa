@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T12:04:56.044Z",
+ "savedAt": "2026-10-25T12:12:27.769Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -888,8 +888,8 @@
       "y": 760.8376480899377
      },
      {
-      "x": 1522.3951693211063,
-      "y": 633.0777436822393
+      "x": 1554.2041290626923,
+      "y": 744.7700298917134
      }
     ],
     "from": "",
@@ -897,7 +897,8 @@
     "note": "",
     "categoryId": "rasvjeta",
     "exitZ": {
-     "start": 1.86
+     "start": 1.86,
+     "end": 2.47
     }
    },
    {
@@ -911,8 +912,8 @@
       "y": 758.5747636775235
      },
      {
-      "x": 1246.4102611253688,
-      "y": 489.37757250489676
+      "x": 1234.2243843896824,
+      "y": 471.9691771682018
      }
     ],
     "from": "",
@@ -2314,6 +2315,29 @@
      {
       "x": 1664.2593150118983,
       "y": 962.2343607948029
+     }
+    ],
+    "walls": {}
+   },
+   {
+    "id": "e3pwf5q4",
+    "name": "Vani gore",
+    "points": [
+     {
+      "x": 1308.9864622628663,
+      "y": 477.9770965381606
+     },
+     {
+      "x": 1114.3784027952438,
+      "y": 477.9770965381606
+     },
+     {
+      "x": 1114.3784027952438,
+      "y": 427.06219725884074
+     },
+     {
+      "x": 1308.9864622628666,
+      "y": 427.06219725884074
      }
     ],
     "walls": {}
@@ -5540,7 +5564,10 @@
     "id": "fnovg3tw",
     "label": "P23",
     "slotOrder": 0,
-    "modules": 2
+    "modules": 2,
+    "controls": [
+     "wca98adc"
+    ]
    },
    {
     "roomId": "icogq6ir",
@@ -5548,11 +5575,17 @@
     "type": "switch",
     "xM": 3.27,
     "zM": 1.11,
-    "note": "",
+    "note": "vani gore",
     "host": "wm9b12lo",
+    "switchKind": "tipkalo",
     "id": "lucz6h0o",
     "label": "P24",
-    "slotOrder": 1
+    "slotOrder": 1,
+    "relayId": "cvt4h1cf",
+    "relayInput": 1,
+    "controls": [
+     "4td3ia1f"
+    ]
    },
    {
     "roomId": "icogq6ir",
@@ -5562,9 +5595,15 @@
     "zM": 1.11,
     "note": "",
     "host": "wm9b12lo",
+    "switchKind": "tipkalo",
     "id": "tl6ylbaw",
     "label": "P25",
-    "slotOrder": 2
+    "slotOrder": 2,
+    "controls": [
+     "6smjg1w5"
+    ],
+    "relayId": "79b3bii9",
+    "relayInput": 1
    },
    {
     "roomId": "49c80zwd",
@@ -5574,7 +5613,55 @@
     "zM": 2.36,
     "note": "",
     "id": "6smjg1w5",
-    "label": "S15"
+    "label": "S15",
+    "feedRelayId": "79b3bii9",
+    "feedOutput": 1
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "relay",
+    "xM": 3.27,
+    "zM": 1.11,
+    "note": "",
+    "host": "wm9b12lo",
+    "relayModel": "zbminir2",
+    "id": "79b3bii9",
+    "label": "R10"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "relay",
+    "xM": 3.27,
+    "zM": 1.11,
+    "note": "",
+    "host": "wm9b12lo",
+    "relayModel": "zbminir2",
+    "id": "cvt4h1cf",
+    "label": "R11"
+   },
+   {
+    "roomId": "e3pwf5q4",
+    "wall": 0,
+    "type": "light",
+    "xM": 0.660767977922673,
+    "zM": 2.29,
+    "note": "",
+    "id": "4td3ia1f",
+    "label": "S16",
+    "feedRelayId": "cvt4h1cf",
+    "feedOutput": 1
+   },
+   {
+    "roomId": "ccucgr9f",
+    "wall": 2,
+    "type": "light",
+    "xM": 0.6326982548948739,
+    "zM": 2.23,
+    "note": "",
+    "id": "wca98adc",
+    "label": "S17"
    }
   ],
   "cables": [
@@ -8916,6 +9003,40 @@
     "via": [],
     "note": "",
     "id": "ltdtxb6g"
+   },
+   {
+    "roomId": "e3pwf5q4",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "4td3ia1f"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "b59q1zol",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "ijun1g4p"
+   },
+   {
+    "roomId": "ccucgr9f",
+    "wall": 2,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "sfbo1mkq",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "wca98adc"
+    },
+    "via": [],
+    "note": "",
+    "id": "6sl06qgb"
    }
   ],
   "categories": [
