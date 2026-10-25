@@ -174,7 +174,13 @@ export function pulseChain(motor: WallElement, p: Project): Set<string> {
 }
 
 // Terminal id for the phase that feeds a light (relay output or classic switch return).
+// A LED strip with its own controller (Plus RGBW PM on the 24 V side): the supply stays live, the controller switches.
+const ledController = (led: WallElement, p: Project) => (led.type === 'ledpsu' ? p.elements.find((e) => e.host === led.id && e.type === 'relay' && RELAY_MODELS[relayModelOf(e)].dc) : undefined)
+// a push button on a 24 V controller input is a low-voltage pair, no 230 V in its frame
+const lowVoltSwitch = (sw: WallElement, p: Project) => { const r = sw.relayId ? el(p, sw.relayId) : undefined; return !!r && RELAY_MODELS[relayModelOf(r)].dc }
 function lightTerminal(light: WallElement, p: Project): { id: string; by?: WallElement } {
+  const ctl = ledController(light, p)
+  if (ctl) return { id: 'L', by: ctl }
   if (light.feedRelayId) return { id: `O:${light.feedRelayId}:${light.feedOutput ?? 1}`, by: el(p, light.feedRelayId) }
   const sw = p.elements.filter((e) => e.type === 'switch' && !e.relayId && e.controls?.includes(light.id))
   if (!sw.length) return { id: `SW:?:${light.id}` }
@@ -211,6 +217,7 @@ function switchSignals(sw: WallElement, p: Project, checks: Check[], usable: num
     const r = el(p, sw.relayId)
     if (!r) checks.push({ level: 'err', text: `${sw.label}: relej više ne postoji.` })
     if (kind !== 'tipkalo') checks.push({ level: 'warn', text: `${sw.label} je ${kind} na releju: koristi tipkalo ili postavi relej u "toggle/edge" način.` })
+    if (r && RELAY_MODELS[relayModelOf(r)].dc) { const n = sw.relayInput ?? 1; return [{ terminal: `SI:${sw.relayId}:${n}:1`, note: `na ${r.label} +24 V` }, { terminal: `SI:${sw.relayId}:${n}:2`, note: `na ${r.label} SW${n}` }] }
     if (r && RELAY_MODELS[relayModelOf(r)].swLow) return [{ terminal: `SI:${sw.relayId}:1:1`, note: `na ${r.label} S1` }, { terminal: `SI:${sw.relayId}:1:2`, note: `na ${r.label} S2` }]
     return [{ terminal: 'L', note: 'dovod' }, { terminal: `I:${sw.relayId}:${sw.relayInput ?? 1}`, note: `na ${r?.label ?? 'relej'} SW${sw.relayInput ?? 1}` }]
   }
@@ -288,6 +295,14 @@ function leafWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallElem
     const light = bc.far.element
     const t = light ? lightTerminal(light, p) : { id: 'SW:?' }
     if (light && !t.by) checks.push({ level: 'warn', text: `Svjetlo ${light.label} nitko ne pali. Označi ga na prekidaču ("Pali svjetla") ili mu odaberi relej ("Napaja ga").` })
+    const ctl = light ? ledController(light, p) : undefined
+    if (ctl) {
+      // supply always live; the spare cores carry the low-voltage button pairs from this frame to the controller
+      const sig = devicesIn(box, p).filter((d) => d.el.type === 'switch' && d.el.relayId === ctl.id).flatMap((d) => switchSignals(d.el, p, [], Infinity))
+      const spare: WireColor[] = cores.filter((c) => c !== 'brown' && c !== 'blue' && c !== 'gnye')
+      if (sig.length > spare.length) checks.push({ level: 'err', text: `Kabel do ${light!.label} (${bc.sub}) treba ${sig.length} žile za tipkala na ${ctl.label}, ima ${spare.length} slobodnih: dodaj upravljački 2×0,75 ili UTP.` })
+      return cores.map((c) => { if (c === 'brown') return { color: c, terminal: 'L', note: 'napajanje, stalno' }; const i = spare.indexOf(c); return i >= 0 && i < sig.length ? { color: c, terminal: sig[i].terminal, note: `tipkalo, 24 V (${sig[i].note})` } : lnpe(c) })
+    }
     return cores.map((c) => (c === 'brown' ? { color: c, terminal: t.id, note: 'L svjetla' } : lnpe(c)))
   }
   const sw = bc.far.element
@@ -519,6 +534,7 @@ export function terminalMeta(id: string, p: Project): { label: string; desc: str
   if (id === 'N') return { label: 'N', desc: 'nula' }
   if (id.startsWith('L@') || id.startsWith('N@')) { const name = circuitsOf(p).names.get(id.slice(2)) ?? 'krug'; return { label: id[0], desc: `${id[0] === 'L' ? 'faza' : 'nula'} · ${name}` } }
   if (id === 'PE') return { label: 'PE', desc: 'zaštitni' }
+  if (id.startsWith('SI:') && el(p, id.split(':')[1]) && RELAY_MODELS[relayModelOf(el(p, id.split(':')[1])!)].dc) { const [, rid, n, k] = id.split(':'); return { label: k === '1' ? '+24' : `SW${n}`, desc: `tipkalo → ${el(p, rid)?.label ?? ''} ${k === '1' ? '+24 V' : `SW${n}`}, 24 V` } }
   if (id.startsWith('SI:')) { const [, rid, , k] = id.split(':'); return { label: `S${k}`, desc: `tipkalo → ${el(p, rid)?.label ?? ''} S${k}, niski napon` } }
   if (id.startsWith('JMP:')) return { label: 'L→I', desc: 'premosnica na Shellyju (pali fazom)' }
   if (id.startsWith('IMP:')) { const [, rid, n] = id.split(':'); return { label: `IMP${n}`, desc: `impuls ${el(p, rid)?.label ?? ''}: suhi kontakt, bez napona` } }
@@ -724,7 +740,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   const tagged = (t: string, c: string | undefined) => (multi && c && (t === 'L' || t === 'N') ? `${t}@${c}` : t)
   if (!cables.length) checks.push({ level: 'warn', text: 'U kutiju ne ulazi nijedan kabel.' })
   else if (box.type === 'box' && feeds === 0 && !isFed(box, p)) checks.push({ level: 'err', text: 'Kutija nema dolaza: ni izravno (bužir kategorije Dolaz, ormar, uloga "Dolaz") ni preko druge kutije koja ga ima.' })
-  else if (box.type === 'modbox' && !hasL && devices.some((d) => !isData(d.el))) checks.push({ level: 'err', text: 'Doza nema faze: treba kabel iz razvodne kutije.' })
+  else if (box.type === 'modbox' && !hasL && devices.some((d) => !isData(d.el) && !(d.el.type === 'switch' && lowVoltSwitch(d.el, p)))) checks.push({ level: 'err', text: 'Doza nema faze: treba kabel iz razvodne kutije.' })
   else if (feeds > 1) checks.push({ level: 'warn', text: `${feeds} dolaza u istu kutiju; obično je jedan.` })
 
   const map = new Map<string, TerminalWire[]>()

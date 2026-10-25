@@ -613,6 +613,23 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   assert.ok(two.tie && !two.tieAfter, 'an equidistant branch asks for its circuit; choosing one settles it'); assert.ok(!two.d2, 'a single-circuit frame keeps plain L / N')
   await page.evaluate(({ two }) => { const s = window.__trasa.getState(); const drop = new Set([...two.ids, ...two.cds]); s.patchProject({ cables: s.project.cables.filter((c) => !drop.has(c.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)), conduits: s.project.conduits.filter((c) => !drop.has(c.id)) }) }, { two })
 
+  // a LED strip with a Plus RGBW PM: its supply stays live (plain L N PE), the push button is a 24 V pair over a control cable
+  const led = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
+    const n = s.addElement({ roomId: room, wall: 0, type: 'ledpsu', xM: 3.6, zM: 1.75, note: '', ledM: 2.4 }); s = window.__trasa.getState()
+    const r = s.addElement({ roomId: room, wall: 0, type: 'relay', relayModel: 'rgbw', host: n, xM: 3.6, zM: 1.75, note: '' })
+    const d = s.addElement({ roomId: room, wall: 0, type: 'modbox', xM: 3.9, zM: 1.1, modules: 2, note: '' }); s = window.__trasa.getState()
+    const t = s.addElement({ roomId: room, wall: 0, type: 'switch', switchKind: 'tipkalo', host: d, xM: 3.9, zM: 1.1, note: '', relayId: r, relayInput: 1 }); s = window.__trasa.getState()
+    const cab = (type, f, to) => { const id = s.addCable({ roomId: room, wall: 0, type, from: { kind: 'element', id: f }, to: { kind: 'element', id: to }, via: [], note: '' }); s = window.__trasa.getState(); return id }
+    const cs = [cab('NYM-J 3x1.5', box, n), cab('upravljački 2x0.75', d, n)]
+    const P = window.__trasa.getState().project
+    const jk = E.allJunctions(P).find((j) => j.box.id === box), jd = E.allJunctions(P).find((j) => j.box.id === d)
+    const out = { strip: jk.cables.find((c) => c.cable.id === cs[0]).wires.map((w) => w.terminal), dErr: jd.checks.filter((c) => c.level !== 'ok').map((c) => c.text), dT: jd.terminals.map((x) => x.label).sort() }
+    const drop = new Set([n, r, d, t, ...cs]); s.patchProject({ cables: s.project.cables.filter((x) => !drop.has(x.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) })
+    return out }, { box: ids.box })
+  assert.deepEqual(led.strip, ['L', 'N', 'PE'], 'the LED supply is fed straight, not through a switch')
+  assert.deepEqual(led.dErr, [], 'a frame with only a 24 V push button needs no phase')
+  assert.deepEqual(led.dT, ['+24', 'SW1'], 'the button lands on the controller +24 V and SW1')
+
   // a push button with a control lamp: the lamp hangs on the relay output and N, so the frame cable carries the output too
   const lp = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
     const r = s.addElement({ roomId: room, wall: 0, type: 'relay', xM: 0, zM: 0, note: '', host: box, relayModel: 'gen4pm' })
