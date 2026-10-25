@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-25T14:47:08.110Z",
+ "savedAt": "2026-10-25T14:52:42.656Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -5975,7 +5975,9 @@
     "zM": 2.19,
     "note": "",
     "id": "02tkzv80",
-    "label": "S19"
+    "label": "S19",
+    "feedRelayId": "pkhlt7eu",
+    "feedOutput": 1
    },
    {
     "roomId": "icogq6ir",
@@ -6015,7 +6017,9 @@
     "zM": 1.7,
     "note": "",
     "id": "q3un7yq8",
-    "label": "N3"
+    "label": "N3",
+    "feedRelayId": "4msv6z1y",
+    "feedOutput": 1
    },
    {
     "roomId": "icogq6ir",
@@ -6025,10 +6029,16 @@
     "zM": 1.28,
     "note": "",
     "host": "qo20jebm",
+    "switchKind": "tipkalo",
     "id": "j1hs17dn",
     "label": "P27",
     "slotOrder": 0,
-    "modules": 2
+    "modules": 2,
+    "relayId": "pkhlt7eu",
+    "relayInput": 1,
+    "controls": [
+     "jv8v4d0c"
+    ]
    },
    {
     "roomId": "icogq6ir",
@@ -6038,10 +6048,16 @@
     "zM": 1.28,
     "note": "",
     "host": "qo20jebm",
+    "switchKind": "tipkalo",
     "id": "nmdyqoqt",
     "label": "P28",
     "slotOrder": 1,
-    "modules": 2
+    "modules": 2,
+    "relayId": "4msv6z1y",
+    "relayInput": 1,
+    "controls": [
+     "q3un7yq8"
+    ]
    },
    {
     "roomId": "icogq6ir",
@@ -10093,7 +10109,7 @@
   "view": {
    "kind": "room",
    "roomId": "icogq6ir",
-   "wall": 1
+   "wall": 3
   }
  }
 }
