@@ -816,6 +816,13 @@ await page.locator('.sidebar .list li', { hasText: 'Zid 3' }).getByText('foto').
 {
   const im = await page.evaluate(() => { const i = window.Konva.stages[0].findOne('Image'); return [i.x(), i.width(), i.height()] })
   assert.deepEqual(im.map((n) => Math.round(n)), [55, 390, 260])
+  // "Rastegni na širinu zida" stretches it over the whole 500 cm wall, and unticking restores the ratio
+  await page.locator('.sidebar').getByText('Rastegni na širinu zida').click()
+  await page.waitForFunction(() => Math.round(window.Konva.stages[0].findOne('Image').width()) === 500)
+  const st = await page.evaluate(() => { const i = window.Konva.stages[0].findOne('Image'); return [i.x(), i.width(), i.height()] })
+  assert.deepEqual(st.map((n) => Math.round(n)), [0, 500, 260])
+  await page.locator('.sidebar').getByText('Rastegni na širinu zida').click()
+  await page.waitForFunction(() => Math.round(window.Konva.stages[0].findOne('Image').width()) === 390)
 }
 await page.screenshot({ path: `${SHOTS}/trasa-room.png` })
 

@@ -51,6 +51,8 @@ export function matchCategory(name: string, categories: Category[]): Category | 
 
 export interface Wall {
   photo?: string
+  // stretch the photo to the wall's width and height instead of keeping its own aspect ratio
+  photoStretch?: boolean
 }
 
 export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'motor' | 'kip' | 'boiler' | 'appliance'

@@ -29,7 +29,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
   const nav = !part || part === 'nav', props = !part || part === 'props'
   const project = useStore((s) => s.project)
   const selectedId = useStore((s) => s.selectedId)
-  const { select, setView, setWallPhoto, updateElement, updateCable, removeSelected, setWallTool } = useStore.getState()
+  const { select, setView, setWallPhoto, updateRoom, updateElement, updateCable, removeSelected, setWallTool } = useStore.getState()
   const roomLights = project.elements.filter((e) => (e.type === 'light' || e.type === 'ledpsu') && e.roomId === room.id)
   const relays = project.elements.filter((e) => e.type === 'relay')
   const roomName = (id: string) => project.rooms.find((r) => r.id === id)?.name ?? '?'
@@ -107,6 +107,12 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
             <button onClick={() => galleryRef.current?.click()} title="Odaberi postojeću fotku iz galerije ili mape"><Icon.image /> {room.walls[current.i]?.photo ? 'Zamijeni iz galerije' : 'Iz galerije'}</button>
             {room.walls[current.i]?.photo && <button className="icon-btn danger" title="Ukloni fotku" aria-label="Ukloni fotku" onClick={() => setWallPhoto(room.id, current.i, undefined)}><Icon.trash /></button>}
           </div>
+          {room.walls[current.i]?.photo && (
+            <label className="check-row" title="Fotka se rastegne na punu širinu i visinu zida; omjer slike se mijenja">
+              <input type="checkbox" checked={!!room.walls[current.i]?.photoStretch} onChange={(e) => updateRoom(room.id, { walls: { ...room.walls, [current.i]: { ...room.walls[current.i], photoStretch: e.target.checked || undefined } } })} />
+              <span>Rastegni na širinu zida</span>
+            </label>
+          )}
           <input ref={fileRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => void onPhoto(e.target.files?.[0])} />
           <input ref={galleryRef} type="file" accept="image/*" hidden onChange={(e) => { void onPhoto(e.target.files?.[0]); e.target.value = '' }} />
         </section>

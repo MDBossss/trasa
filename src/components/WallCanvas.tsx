@@ -42,8 +42,10 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
 
   const H = project.ceilingM * 100
   const W = wall.lengthM * 100
-  // the photo keeps its aspect ratio: scaled to the wall height, centred on the wall
-  const photoW = img ? (H * img.width) / img.height : W
+  // the photo keeps its aspect ratio by default: scaled to the wall height, centred on the wall
+  // a too-small photo can be stretched to the wall's full width (aspect ratio is given up)
+  const stretch = !!project.rooms.find((r) => r.id === roomId)?.walls[wall.i]?.photoStretch
+  const photoW = img && !stretch ? (H * img.width) / img.height : W
   const photo0 = (W - photoW) / 2
   const allOnWall = project.elements.filter((e) => e.roomId === roomId && e.wall === wall.i)
   // hosted devices (relays, buttons in a frame) are drawn inside their host, not on their own
