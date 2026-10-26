@@ -365,6 +365,7 @@ code { font: 11px ui-monospace, Menlo, monospace; background: var(--panel2); pad
 .choice-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
 .choice-item.on { border-color: var(--accent); background: var(--accent-soft); }
 .choice-item input { margin: 3px 0 0; }
+.stock { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 4px; }
 .choice-item span { display: flex; flex-direction: column; gap: 3px; }
 .choice-item b { display: flex; align-items: center; gap: 8px; }
 .choice-item small { color: var(--muted); }

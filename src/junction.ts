@@ -1,4 +1,4 @@
-import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isFeedConduit, APPLIANCES, isPlace, isData, dataKindOf, DATA_META, sectionOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, isControlCable, frameSlots, frameName, relayModelOf, hostedFront, type ElementType } from './types'
+import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isFeedConduit, APPLIANCES, isPlace, isData, dataKindOf, DATA_META, sectionOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, isControlCable, bundleSlots, suggestCables, cableStockOf, cableShort, rulesOf, frameSlots, frameName, relayModelOf, hostedFront, type ElementType } from './types'
 import { wallExits } from './walls'
 
 // Everything a box needs: which cables enter it, what each core goes to, which devices sit inside
@@ -475,6 +475,7 @@ function signalCarriers(p: Project): Map<string, Set<string>> {
   const wants = new Map<string, string[]>()
   for (const pl of places) for (const sgn of localSignals(pl, p)) if (!LNPE.includes(sgn)) wants.set(sgn, [...(wants.get(sgn) ?? []), pl.id])
   const out = new Map<string, Set<string>>()
+  const bundleIds = (cable: string) => bundleMembers(cable, p).flatMap((m) => m.ids)
   for (const [sgn, ids] of wants) {
     if (ids.length < 2) continue
     // BFS from the first place; parent links give the path to every other place that wants the signal
@@ -483,7 +484,7 @@ function signalCarriers(p: Project): Map<string, Set<string>> {
     while (queue.length) { const cur = queue.shift()!; for (const e of adj.get(cur) ?? []) if (!parent.has(e.to)) { parent.set(e.to, { from: cur, cable: e.cable }); queue.push(e.to) } }
     for (const id of ids.slice(1)) {
       let cur = id
-      while (parent.get(cur)) { const st = parent.get(cur)!; for (const id of chainOf.get(st.cable) ?? [st.cable]) { if (!out.has(id)) out.set(id, new Set()); out.get(id)!.add(sgn) } cur = st.from }
+      while (parent.get(cur)) { const st = parent.get(cur)!; for (const id of bundleIds(st.cable)) { if (!out.has(id)) out.set(id, new Set()); out.get(id)!.add(sgn) } cur = st.from }
     }
   }
   carriersCache.set(p, out)
@@ -496,36 +497,90 @@ export function crossSignals(a: WallElement, b: WallElement, p: Project, cableId
   return [...LNPE, ...[...(signalCarriers(p).get(cableId) ?? [])].sort()]
 }
 
-export interface CableNeeds { signals: string[]; needed: number; has: number; suggest: string; places: [WallElement, WallElement] }
+// Cables joining the same two places form one bundle (e.g. 5×1,5 + 3×1,5 instead of a 7-core cable).
+// Members are whole physical cables (corner / conduit segments together), the thickest first: it carries L N PE.
+export interface BundleMember { ids: string[]; type: string; first: Cable }
+const bundleCache = new WeakMap<Project, Map<string, BundleMember[]>>()
+export function bundleMembers(cableId: string, p: Project): BundleMember[] {
+  let byCable = bundleCache.get(p)
+  if (!byCable) {
+    byCable = new Map()
+    const groups = new Map<string, BundleMember[]>()
+    const seen = new Set<string>()
+    for (const c of p.cables) {
+      if (seen.has(c.id)) continue
+      const chain = chainCables(c, p)
+      chain.forEach((x) => seen.add(x.id))
+      const pl = cablePlaces(c, p)
+      const m: BundleMember = { ids: chain.map((x) => x.id), type: thinnest(c, p).type, first: c }
+      const key = pl ? [pl[0].id, pl[1].id].sort().join('|') : `solo:${c.id}`
+      groups.set(key, [...(groups.get(key) ?? []), m])
+    }
+    for (const ms of groups.values()) {
+      ms.sort((a, b) => sectionOf(b.type) - sectionOf(a.type) || coreColors(b.type).length - coreColors(a.type).length || p.cables.indexOf(a.first) - p.cables.indexOf(b.first))
+      for (const m of ms) for (const id of m.ids) byCable.set(id, ms)
+    }
+    bundleCache.set(p, byCable)
+  }
+  return byCable.get(cableId) ?? []
+}
+
+// Which signal each core of a cable carries, spread over its bundle: the first member takes L N PE and its spares,
+// a further member keeps PE on green-yellow, leaves blue unused and carries signals on every other core.
+export interface CableLoad { signals: string[]; core: Map<WireColor, string | null>; missing: string[]; members: string[] }
+const loadCache = new WeakMap<Project, Map<string, CableLoad>>()
+export function cableLoad(cableId: string, a: WallElement, b: WallElement, p: Project): CableLoad {
+  let cache = loadCache.get(p)
+  if (!cache) { cache = new Map(); loadCache.set(p, cache) }
+  const hit = cache.get(cableId)
+  if (hit) return hit
+  const members = bundleMembers(cableId, p)
+  const signals = crossSignals(a, b, p, cableId)
+  const extras = signals.filter((x) => !LNPE.includes(x))
+  let k = 0
+  const loads = members.map((m, i) => {
+    const core = new Map<WireColor, string | null>()
+    for (const c of coreColors(m.type)) {
+      if (c === 'gnye') core.set(c, 'PE')
+      else if (c === 'blue') core.set(c, i === 0 ? 'N' : null)
+      else if (c === 'brown' && i === 0) core.set(c, 'L')
+      else core.set(c, extras[k++] ?? null)
+    }
+    return core
+  })
+  const missing = extras.slice(k)
+  members.forEach((m, i) => { const l: CableLoad = { signals, core: loads[i], missing, members: members.map((x) => x.type) }; for (const id of m.ids) cache!.set(id, l) })
+  return cache.get(cableId) ?? { signals, core: new Map(), missing, members: [] }
+}
+
+export interface CableNeeds { signals: string[]; needed: number; has: number; suggest: string; fix: string[] | null; rows: { color: WireColor; sig: string | null }[]; missing: string[]; members: string[]; places: [WallElement, WallElement] }
 export function cableNeeds(c: Cable, p: Project): CableNeeds | null {
   const places = cablePlaces(c, p)
   if (!places) return null
-  const signals = crossSignals(places[0], places[1], p, c.id)
-  const has = coreColors(thinnest(c, p).type).length
-  const needed = signals.length
-  const suggest = needed <= 3 ? '3×1,5' : needed <= 5 ? '5×1,5' : needed <= 7 ? '7×1,5' : `${needed} žila (dva kabela)`
-  return { signals, needed, has, suggest, places: [places[0], places[1]] }
+  const load = cableLoad(c.id, places[0], places[1], p)
+  const needed = load.signals.length
+  const has = bundleSlots(load.members)
+  const fix = suggestCables(needed, Math.max(minSectionFor(c, p), sectionOf(load.members[0] ?? c.type)), cableStockOf(p))
+  const suggest = fix ? fix.map(cableShort).join(' + ') : `${needed} žila`
+  const rows = coreColors(thinnest(c, p).type).map((color) => ({ color, sig: load.core.get(color) ?? null }))
+  return { signals: load.signals, needed, has, suggest, fix, rows, missing: load.missing, members: load.members, places: [places[0], places[1]] }
 }
 
 function crossWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallElement, p: Project, checks: Check[]): Wire[] {
   const far = bc.far.place!
-  const signals = crossSignals(box, far, p, bc.cable.id)
-  const cores = bc.cores
-  const extras = signals.filter((s) => !LNPE.includes(s))
-  const spare = cores.filter((c) => !['brown', 'blue', 'gnye'].includes(c))
-  if (extras.length > spare.length) checks.push({ level: 'err', text: `Kabel ${bc.label} treba ${signals.length} žila (${signals.map((s) => terminalMeta(s, p).label).join(', ')}), ima ${cores.length}. Zamijeni s ${signals.length <= 5 ? '5×1,5' : '7×1,5'}.` })
-  else {
-    // the segment at this box may be fine while a continuation past a corner is thinner
+  const load = cableLoad(bc.cable.id, box, far, p)
+  // a bundle reports once, from its first cable
+  if (load.missing.length && bundleMembers(bc.cable.id, p)[0]?.ids.includes(bc.cable.id) !== false) {
+    const need = cableNeeds(bc.cable, p)
+    const what = load.members.length > 1 ? `Kabeli ${bc.label} (${load.members.map(cableShort).join(' + ')})` : `Kabel ${bc.label}`
     const thin = thinnest(bc.cable, p)
-    if (thin.id !== bc.cable.id && coreColors(thin.type).length < signals.length) checks.push({ level: 'err', text: `Kabel ${bc.label} je ${bc.cable.type}, ali njegov nastavak na zidu ${thin.wall + 1} je ${thin.type}: tamo nema žile za ${extras.map((s) => terminalMeta(s, p).label).join(', ')}. Zamijeni nastavak s ${signals.length <= 5 ? '5×1,5' : '7×1,5'}.` })
+    const where = thin.id !== bc.cable.id ? ` Nastavak na zidu ${thin.wall + 1} je ${thin.type}.` : ''
+    checks.push({ level: 'err', text: `${what} treba${load.members.length > 1 ? 'ju' : ''} ${load.signals.length} žila (${load.signals.map((s) => terminalMeta(s, p).label).join(', ')}), nema mjesta za ${load.missing.map((s) => terminalMeta(s, p).label).join(', ')}.${where} Rješenje: ${need?.suggest ?? 'deblji kabel'}.` })
   }
-  let k = 0
-  return cores.map((c) => {
-    if (c === 'brown') return { color: c, terminal: 'L' }
-    if (c === 'blue') return { color: c, terminal: 'N' }
-    if (c === 'gnye') return { color: c, terminal: 'PE' }
-    const s = extras[k++]
-    return s ? { color: c, terminal: s, note: terminalMeta(s, p).desc } : { color: c, terminal: 'PARK', note: 'rezerva' }
+  return bc.cores.map((c) => {
+    const s = load.core.get(c)
+    if (s === 'L' || s === 'N' || s === 'PE') return { color: c, terminal: s }
+    return s ? { color: c, terminal: s, note: terminalMeta(s, p).desc } : { color: c, terminal: 'PARK', note: load.members.length > 1 && c === 'blue' ? 'drugi kabel: plava se ne koristi' : 'rezerva' }
   })
 }
 
@@ -632,7 +687,7 @@ function isFed(place: WallElement, p: Project, seen = new Set<string>()): boolea
 // Which supply each cable's L and N belong to. Every feed cable starts a circuit; a cable gets the circuit
 // whose feed is nearest over the box graph (ties are reported); a cable's own "circuit" setting wins.
 export interface CircuitInfo { id: string; name: string; tie: boolean }
-const circuitCache = new WeakMap<Project, { byCable: Map<string, CircuitInfo>; names: Map<string, string> }>()
+const circuitCache = new WeakMap<Project, { byCable: Map<string, CircuitInfo>; names: Map<string, string>; dist: Map<string, Map<string, number>>; feedCables: Set<string>; withSockets: Set<string> }>()
 export function circuitsOf(p: Project) {
   const hit = circuitCache.get(p)
   if (hit) return hit
@@ -689,11 +744,59 @@ export function circuitsOf(p: Project) {
       if (others.size === 1) { const id = [...others][0]; for (const x of chainCables(c, p)) byCable.set(x.id, { id, name: names.get(id)!, tie: false }); break }
     }
   }
-  const out = { byCable, names }
+  // circuits that feed a socket: on B16 every cable of such a circuit has to be 2,5 mm²
+  const withSockets = new Set<string>()
+  for (const e of p.elements) {
+    if (e.type !== 'socket' || isData(e)) continue
+    const place = e.host ? el(p, e.host) : e
+    if (!place) continue
+    for (const c of p.cables) if (isAtBox(c, place)) { const k = byCable.get(c.id)?.id; if (k) withSockets.add(k) }
+  }
+  const out = { byCable, names, dist, feedCables: new Set(feedOf.keys()), withSockets }
   circuitCache.set(p, out)
   return out
 }
+// The thinnest section a cable may have under the project rules (feeds and socket circuits 2,5 mm²).
+export function minSectionFor(c: Cable, p: Project): number {
+  const r = rulesOf(p), circ = circuitsOf(p)
+  if (isControlCable(c.type) || coreColors(c.type).length === 0 || /^pe\b/i.test(c.type)) return 0
+  if (r.feed25 && circ.feedCables.has(c.id)) return 2.5
+  const k = circ.byCable.get(c.id)?.id
+  if (r.socket25 && k && circ.withSockets.has(k)) return 2.5
+  return 1.5
+}
 const baseId = (id: string) => id.split('@')[0]
+
+// Project rules on the cables of one box: feeds and socket circuits at 2,5 mm², sections never growing from the feed
+// towards the load, and only cables from the project's list.
+function sectionChecks(box: WallElement, cables: BoxCable[], p: Project, checks: Check[]) {
+  const rules = rulesOf(p), circ = circuitsOf(p), stock = p.cableStock
+  const power = (bc: BoxCable) => coreColors(bc.cable.type).length > 0 && !isControlCable(bc.cable.type) && !/^pe\b/i.test(bc.cable.type) && bc.role !== 'lowv' && bc.role !== 'earth'
+  const thinType = (bc: BoxCable) => thinnest(bc.cable, p).type
+  const sec = (bc: BoxCable) => sectionOf(thinType(bc))
+  for (const bc of cables.filter(power)) {
+    const min = minSectionFor(bc.cable, p)
+    if (sec(bc) < min) {
+      const k = circ.byCable.get(bc.cable.id)?.id
+      checks.push({ level: 'err', text: circ.feedCables.has(bc.cable.id) ? `Dolaz ${bc.label} je ${cableShort(thinType(bc))}: dolazi moraju biti 2,5 mm² (3×2,5).` : `Krug ${k ? circ.names.get(k) : ''} ima utičnice (B16): kabel ${bc.label} je ${cableShort(thinType(bc))}, mora biti 2,5 mm².` })
+    }
+    if (stock && /^NYM/.test(bc.cable.type) && !stock.includes(bc.cable.type)) checks.push({ level: 'warn', text: `Kabel ${bc.label}: ${cableShort(bc.cable.type)} nije na popisu kabela koje koristiš (Postavke projekta).` })
+  }
+  if (!rules.flow) return
+  for (const k of new Set(cables.filter(power).map((bc) => circ.byCable.get(bc.cable.id)?.id).filter((x): x is string => !!x))) {
+    const d = circ.dist.get(k), here = d?.get(box.id)
+    if (!d || here === undefined) continue
+    const mine = cables.filter((bc) => power(bc) && circ.byCable.get(bc.cable.id)?.id === k)
+    const incoming = mine.filter((bc) => circ.feedCables.has(bc.cable.id) || (bc.far.place && (d.get(bc.far.place.id) ?? Infinity) < here))
+    if (!incoming.length) continue
+    const inMin = Math.min(...incoming.map(sec))
+    const thin = incoming.find((bc) => sec(bc) === inMin)!
+    for (const bc of mine) {
+      if (incoming.includes(bc) || (bc.far.place && (d.get(bc.far.place.id) ?? Infinity) <= here)) continue
+      if (sec(bc) > inMin) checks.push({ level: 'warn', text: `Kabel ${bc.label} je ${cableShort(thinType(bc))}, a dolazi mu ${cableShort(thinType(thin))} (${thin.label}). Presjek se od dolaza prema trošilu ne povećava: osigurač štiti tanji kabel, pa deblji nastavak ne daje ništa.` })
+    }
+  }
+}
 
 export function junctionFor(box: WallElement, p: Project): Junction {
   const room = p.rooms.find((r) => r.id === box.roomId)!
@@ -717,6 +820,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   const here = new Map<string, string>()
   for (const bc of cables) { const c = circOf(bc); if (c) here.set(c.id, c.name) }
   const multi = here.size > 1
+  sectionChecks(box, cables, p, checks)
   const devCirc = new Map<string, string>()
   if (multi) {
     for (const bc of cables) { const c = circOf(bc); if (c?.tie) checks.push({ level: 'err', text: `Kabel ${bc.label}: ne zna se na kojem je strujnom krugu (${[...here.values()].join(' ili ')}). Odaberi krug u svojstvima kabela.` }) }

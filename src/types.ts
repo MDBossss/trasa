@@ -270,6 +270,25 @@ export interface Room {
 export type SpareCores = 'wago' | 'cap'
 export const spareCoresOf = (p: { spareCores?: SpareCores }): SpareCores => p.spareCores ?? 'wago'
 
+// The power cables the electrician actually buys; suggestions and checks stay inside this list.
+export const POWER_TYPES = CABLE_TYPES.filter((t) => /^NYM/.test(t))
+export const cableStockOf = (p: { cableStock?: string[] }) => p.cableStock ?? POWER_TYPES
+export interface CableRules { feed25: boolean; socket25: boolean; flow: boolean }
+export const rulesOf = (p: { rules?: Partial<CableRules> }): CableRules => ({ feed25: true, socket25: true, flow: true, ...p.rules })
+const coresOf = (t: string) => coreColors(t).length
+// Usable signal slots of a bundle: the first cable carries L N PE and its spares, a second one adds every core but N and PE.
+export const bundleSlots = (types: string[]) => types.reduce((n, t, i) => n + (i === 0 ? coresOf(t) : Math.max(0, coresOf(t) - (t.toLowerCase().includes('nym-o') ? 0 : 2))), 0)
+// Cheapest stock answer for `needed` cores at `minMm2`: one cable, else two side by side (fewest cores first).
+export function suggestCables(needed: number, minMm2: number, stock: string[]): string[] | null {
+  const ok = stock.filter((t) => /^NYM-J/.test(t) && sectionOf(t) >= minMm2).sort((a, b) => coresOf(a) - coresOf(b) || sectionOf(a) - sectionOf(b))
+  const one = ok.find((t) => coresOf(t) >= needed)
+  if (one) return [one]
+  let best: string[] | null = null
+  for (const a of ok) for (const b of ok) if (coresOf(a) >= coresOf(b) && bundleSlots([a, b]) >= needed && (!best || coresOf(a) + coresOf(b) < coresOf(best[0]) + coresOf(best[1]))) best = [a, b]
+  return best
+}
+export const cableShort = (t: string) => t.replace(/^NYM-[JO] /, '').replace('x', '×').replace('.', ',')
+
 export interface Project {
   version: 1
   name: string
@@ -284,6 +303,9 @@ export interface Project {
   ceilingM: number
   // unused cores in a box: each in its own WAGO (the old default) or folded back and insulated with a cap / tape
   spareCores?: SpareCores
+  // cable types in use (unset = all) and the section rules; both live with the project
+  cableStock?: string[]
+  rules?: Partial<CableRules>
   conduits: Conduit[]
   rooms: Room[]
   elements: WallElement[]

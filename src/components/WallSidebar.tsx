@@ -2,19 +2,12 @@ import { Fragment, useRef } from 'react'
 import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
-import { frameSlots, frameName, CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, coreColors, WIRE_LABEL, APPLIANCES, type ApplianceKind, type BoxDepth, type CableRole, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
-import { cableNeeds, circuitsOf, resolveCable, roleLabel, terminalMeta } from '../junction'
+import { cableStockOf, cableShort, frameSlots, frameName, CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, WIRE_LABEL, APPLIANCES, type ApplianceKind, type BoxDepth, type CableRole, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
+import { cableNeeds, chainCables, circuitsOf, resolveCable, roleLabel, terminalMeta } from '../junction'
 import { Icon } from './Icons'
 import { wireSwatch } from './JunctionCanvas'
 
 // smallest NYM-J of the same cross-section that has enough cores
-const upgradeType = (type: string, needed: number) => {
-  const sect = /2[.,]5/.test(type) ? '2.5' : '1.5'
-  const n = [3, 5, 7].find((x) => x >= needed)
-  if (!n) return null
-  const t = `NYM-J ${n}x${sect}`
-  return CABLE_TYPES.includes(t) ? t : `NYM-J ${n}x1.5`
-}
 
 const SWITCH_KINDS: { id: SwitchKind; label: string; wires: string }[] = [
   { id: 'obicni', label: 'Obični', wires: 'L + povratna' },
@@ -29,7 +22,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
   const nav = !part || part === 'nav', props = !part || part === 'props'
   const project = useStore((s) => s.project)
   const selectedId = useStore((s) => s.selectedId)
-  const { select, setView, setWallPhoto, updateRoom, updateElement, updateCable, removeSelected, setWallTool } = useStore.getState()
+  const { select, setView, setWallPhoto, updateRoom, updateElement, updateCable, addCable, removeSelected, setWallTool } = useStore.getState()
   const allLights = project.elements.filter((e) => e.type === 'light' || e.type === 'ledpsu')
   const roomLights = allLights.filter((e) => e.roomId === room.id)
   const relays = project.elements.filter((e) => e.type === 'relay')
@@ -305,7 +298,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
           <label>
             Tip
             <select value={cable.type} onChange={(e) => updateCable(cable.id, { type: e.target.value })}>
-              {CABLE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+              {(() => { const stock = cableStockOf(project); const mine = CABLE_TYPES.filter((t) => stock.includes(t) || !/^NYM/.test(t)), rest = CABLE_TYPES.filter((t) => !mine.includes(t)); return <>{mine.map((t) => <option key={t} value={t}>{t}</option>)}{rest.length > 0 && <optgroup label="Nije na mom popisu">{rest.map((t) => <option key={t} value={t}>{t}</option>)}</optgroup>}</> })()}
             </select>
           </label>
           <div className="stat"><span>Od</span><b>{endLabel(cable.from, project)}</b></div>
@@ -332,24 +325,26 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
             const needs = cableNeeds(cable, project)
             if (needs) {
               // core schedule (žilni raspored): which core carries what, same assignment as the junction drawing
-              const cores = coreColors(cable.type)
-              const extras = needs.signals.filter((x) => !['L', 'N', 'PE'].includes(x))
-              let k = 0
-              const rows = cores.map((c) => {
-                const sig = c === 'brown' ? 'L' : c === 'blue' ? 'N' : c === 'gnye' ? 'PE' : extras[k++]
-                return { c, sig }
-              })
-              const missing = extras.slice(k)
-              const ok = missing.length === 0 && needs.has >= needs.needed
+              const rows = needs.rows.map((r) => ({ c: r.color, sig: r.sig }))
+              const missing = needs.missing
+              const ok = missing.length === 0
               const spare = rows.filter((r) => !r.sig).length
-              const fix = upgradeType(cable.type, needs.needed)
+              const chain = chainCables(cable, project)
+              const setType = (t: string) => chain.forEach((x) => updateCable(x.id, { type: t }))
+              // a second cable along the same run: every segment copied (corners and conduits pair by type and order)
+              const addParallel = (t: string) => chain.forEach((x) => { const { id: _id, ...rest } = x; addCable({ ...rest, type: t, circuit: undefined }) })
+              const fix = needs.fix
+              const bundle = needs.members.length > 1
               return (
                 <div className="cores">
+                  {bundle && <div className="stat"><span>Paralelno</span><b>{needs.members.map(cableShort).join(' + ')}</b><span className="muted">žile se dijele: prvi kabel nosi L N PE</span></div>}
                   <div className={`check ${ok ? '' : 'err'}`}>
                     <span>{ok ? '✓' : '✕'}</span>
                     <span>
-                      {ok ? <>Dovoljno žila: {needs.needed} od {needs.has}{spare ? `, ${spare} rezervna` : ''}</> : <>Treba {needs.needed} žila, kabel ima {needs.has}</>}
-                      {!ok && fix && <button className="mini fix" onClick={() => updateCable(cable.id, { type: fix })}>Zamijeni s {fix.replace('NYM-J ', '')}</button>}
+                      {ok ? <>Dovoljno žila: {needs.needed} od {needs.has}{spare ? `, ${spare} rezervna u ovom kabelu` : ''}</> : <>Treba {needs.needed} žila, {bundle ? 'kabeli imaju' : 'kabel ima'} {needs.has}</>}
+                      {!ok && fix && !bundle && fix.length === 1 && <button className="mini fix" onClick={() => setType(fix[0])}>Zamijeni s {cableShort(fix[0])}</button>}
+                      {!ok && fix && !bundle && fix.length === 2 && <button className="mini fix" onClick={() => { if (fix[0] !== cable.type) setType(fix[0]); addParallel(fix[1]) }}>{fix[0] !== cable.type ? `Zamijeni s ${cableShort(fix[0])} i dodaj ${cableShort(fix[1])}` : `Dodaj paralelno ${cableShort(fix[1])}`}</button>}
+                      {!ok && bundle && fix && <span className="muted"> Treba: {fix.map(cableShort).join(' + ')}</span>}
                     </span>
                   </div>
                   <table className="core-table">

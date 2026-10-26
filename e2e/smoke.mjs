@@ -173,6 +173,8 @@ await clickImg(105, 107)
 st = await state()
 assert.ok(Math.abs(st.gridOrigin.x - 105) < 1.5 && Math.abs(st.gridOrigin.y - 107) < 1.5, `origin ${JSON.stringify(st.gridOrigin)}`)
 await page.evaluate(() => window.__trasa.getState().patchProject({ gridOrigin: { x: 105, y: 107 } }))
+// the walkthrough below draws 3×1,5 everywhere; the section rules get their own step
+await page.evaluate(() => window.__trasa.getState().patchProject({ rules: { feed25: false, socket25: false, flow: false }, cableStock: ['NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-O 3x1.5', 'NYM-J 5x1.5', 'NYM-J 5x2.5', 'NYM-J 7x1.5'] }))
 await page.keyboard.press('b')
 await clickImg(153, 120); await clickImg(153, 300); await page.keyboard.press('Enter')
 st = await state()
@@ -469,7 +471,7 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   }, ids)
   await page.getByRole('button', { name: 'Spojevi' }).click()
   await page.locator('.junctions-list .list li', { hasText: 'D1' }).click()
-  await page.locator('.junctions-list .checks').getByText(/Kabel D1 modularna doza treba 4 žila \(L, N, PE, S1\), ima 3/).waitFor()
+  await page.locator('.junctions-list .checks').getByText(/Kabel D1 modularna doza treba 4 žila \(L, N, PE, S1\), nema mjesta za S1\. Rješenje: 5×1,5/).waitFor()
   await page.evaluate(({ c }) => window.__trasa.getState().updateCable(c, { type: 'NYM-J 5x1.5' }), ids2)
   await page.locator('.junctions-list .list li', { hasText: 'D1' }).locator('.dot.ok').waitFor()
   await page.locator('.junctions-list .list li', { hasText: 'K1' }).locator('.dot.ok').waitFor()
@@ -682,6 +684,37 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     return out }, { box: ids.box })
   assert.deepEqual(psu, { vplus: 4, vminus: 4, wago: 415 }, 'three strips and the supply output share one 5-way WAGO per pole')
 
+  // section rules and cable bundles, on a small project of their own: feeds and socket circuits need 2,5 mm²,
+  // a thicker cable after a thinner one is flagged, and two cables between the same boxes share the cores
+  const rules = await page.evaluate(() => { const E = window.__trasaEngine
+    const room = { id: 'rr', name: 'R', points: [{ x: 0, y: 0 }, { x: 600, y: 0 }, { x: 600, y: 400 }, { x: 0, y: 400 }], walls: {} }
+    const e = (o) => ({ roomId: 'rr', wall: 0, note: '', ...o })
+    const cab = (id, type, f, t) => ({ id, roomId: 'rr', wall: 0, type, from: f, to: t, via: [], note: '' })
+    const el = (id) => ({ kind: 'element', id })
+    const base = (feed, link, sock) => ({ ...window.__trasa.getState().project, rules: undefined, cableStock: ['NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-J 5x1.5'], rooms: [room],
+      conduits: [{ id: 'fd', name: 'DOLAZ', points: [{ x: 200, y: -50 }, { x: 200, y: 0 }], categoryId: 'dolaz', color: '#000' }],
+      elements: [e({ id: 'k', label: 'K1', type: 'box', xM: 2, zM: 2.3 }), e({ id: 'k2', label: 'K2', type: 'box', xM: 4, zM: 2.3 }), e({ id: 'u', label: 'U1', type: 'socket', xM: 4.5, zM: 0.3 })],
+      cables: [cab('f', feed, { kind: 'exit', conduitId: 'fd', end: 'end' }, el('k')), cab('l', link, el('k'), el('k2')), cab('s', sock, el('k2'), el('u'))] })
+    const errs = (p) => E.allJunctions(p).flatMap((j) => j.checks.filter((c) => c.level !== 'ok').map((c) => c.text))
+    const thin = errs(base('NYM-J 3x1.5', 'NYM-J 3x1.5', 'NYM-J 3x1.5'))
+    const good = errs(base('NYM-J 3x2.5', 'NYM-J 3x2.5', 'NYM-J 3x2.5'))
+    const p3 = base('NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-J 3x2.5'); p3.rules = { feed25: false, socket25: false }
+    const grow = errs(p3)
+    // bundle: four switches in D1 lighting four lamps off K1 need L N PE + 4 returns = 7 cores
+    const b = base('NYM-J 3x2.5', 'NYM-J 3x2.5', 'NYM-J 3x2.5'); b.rules = { socket25: false }
+    b.elements.push(e({ id: 'd', label: 'D1', type: 'modbox', xM: 1, zM: 1.1, modules: 7 }))
+    for (let i = 0; i < 4; i++) { b.elements.push(e({ id: 'l' + i, label: 'S' + i, type: 'light', xM: 3 + i * 0.3, zM: 2.6 }), e({ id: 'p' + i, label: 'P' + i, type: 'switch', host: 'd', xM: 1, zM: 1.1, controls: ['l' + i] })); b.cables.push(cab('c' + i, 'NYM-J 3x1.5', el('k'), el('l' + i))) }
+    b.cables.push(cab('b0', 'NYM-J 5x1.5', el('k'), el('d')), cab('b1', 'NYM-J 3x1.5', el('k'), el('d')))
+    const short = E.cableNeeds(b.cables.find((c) => c.id === 'b0'), b)
+    const b2 = { ...b, cables: b.cables.map((c) => (c.id === 'b1' ? { ...c, type: 'NYM-J 5x1.5' } : c)) }
+    const fixed = errs(b2).filter((t) => /žila/.test(t))
+    const second = E.cableNeeds(b2.cables.find((c) => c.id === 'b1'), b2).rows.map((r) => r.sig ? r.sig.split(':')[0] : '-')
+    return { thin: thin.filter((t) => /2,5/.test(t)).length, good: good.length, grow: grow.some((t) => /ne povećava/.test(t)), suggest: short.suggest, has: short.has, fixed: fixed.length, fixedT: fixed, second } })
+  assert.ok(rules.thin >= 2, 'a 3×1,5 feed and a 3×1,5 socket circuit are both flagged'); assert.equal(rules.good, 0, 'all 2,5 passes')
+  assert.ok(rules.grow, '2,5 after a 1,5 feed is flagged')
+  assert.equal(rules.suggest, '5×1,5 + 5×1,5', 'no 7-core cable in stock: two 5-core cables'); assert.equal(rules.has, 6)
+  assert.equal(rules.fixed, 0, '5×1,5 + 5×1,5 carries all seven: ' + rules.fixedT.join(' ;; ')); assert.deepEqual(rules.second, ['SW', 'SW', '-', '-', 'PE'], 'the second cable: brown and black carry returns, blue unused, PE on green-yellow')
+
   // a push button with a control lamp: the lamp hangs on the relay output and N, so the frame cable carries the output too
   const lp = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
     const r = s.addElement({ roomId: room, wall: 0, type: 'relay', xM: 0, zM: 0, note: '', host: box, relayModel: 'gen4pm' })
@@ -767,7 +800,7 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   await page.evaluate(({ c }) => window.__trasa.getState().updateCable(c, { type: 'NYM-J 3x1.5' }), ids2)
   await page.locator('.props .cores .check.err', { hasText: 'Treba 4 žila, kabel ima 3' }).waitFor()
   await page.locator('.props .core-table tr.missing').first().waitFor()
-  await page.getByRole('button', { name: 'Zamijeni s 5x1.5' }).click()
+  await page.getByRole('button', { name: 'Zamijeni s 5×1,5' }).click()
   await page.locator('.props .cores .check', { hasText: 'Dovoljno žila: 4 od 5' }).waitFor()
   // phase 3: material for the house and the print preview
   await page.getByRole('button', { name: 'Materijal' }).click()
