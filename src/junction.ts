@@ -526,7 +526,8 @@ export function bundleMembers(cableId: string, p: Project): BundleMember[] {
 }
 
 // Which signal each core of a cable carries, spread over its bundle: the first member takes L N PE and its spares,
-// a further member keeps PE on green-yellow, leaves blue unused and carries signals on every other core.
+// a further member keeps PE on green-yellow, leaves blue unused and carries signals on every other core — unless
+// the rules let blue (and green-yellow) carry a return too.
 export interface CableLoad { signals: string[]; core: Map<WireColor, string | null>; missing: string[]; members: string[] }
 const loadCache = new WeakMap<Project, Map<string, CableLoad>>()
 export function cableLoad(cableId: string, a: WallElement, b: WallElement, p: Project): CableLoad {
@@ -538,11 +539,12 @@ export function cableLoad(cableId: string, a: WallElement, b: WallElement, p: Pr
   const signals = crossSignals(a, b, p, cableId)
   const extras = signals.filter((x) => !LNPE.includes(x))
   const blueOk = rulesOf(p).blueReturn
+  const gnyeOk = rulesOf(p).gnyeReturn
   let k = 0
   const loads = members.map((m, i) => {
     const core = new Map<WireColor, string | null>()
     for (const c of coreColors(m.type)) {
-      if (c === 'gnye') core.set(c, 'PE')
+      if (c === 'gnye' && (i === 0 || !gnyeOk)) core.set(c, 'PE')
       else if (c === 'blue' && (i === 0 || !blueOk)) core.set(c, i === 0 ? 'N' : null)
       else if (c === 'brown' && i === 0) core.set(c, 'L')
       else core.set(c, extras[k++] ?? null)
@@ -561,9 +563,10 @@ export function cableNeeds(c: Cable, p: Project): CableNeeds | null {
   const load = cableLoad(c.id, places[0], places[1], p)
   const needed = load.signals.length
   const blue = rulesOf(p).blueReturn
-  const has = bundleSlots(load.members, blue)
+  const gnye = rulesOf(p).gnyeReturn
+  const has = bundleSlots(load.members, blue, gnye)
   const first = bundleMembers(c.id, p)[0]?.first ?? c
-  const fix = suggestCables(needed, Math.max(minSectionFor(first, p), sectionOf(load.members[0] ?? c.type)), cableStockOf(p), 1.5, blue)
+  const fix = suggestCables(needed, Math.max(minSectionFor(first, p), sectionOf(load.members[0] ?? c.type)), cableStockOf(p), 1.5, blue, gnye)
   const suggest = fix ? fix.map(cableShort).join(' + ') : `${needed} žila`
   const rows = coreColors(thinnest(c, p).type).map((color) => ({ color, sig: load.core.get(color) ?? null }))
   return { signals: load.signals, needed, has, suggest, fix, rows, missing: load.missing, members: load.members, places: [places[0], places[1]] }
@@ -584,6 +587,7 @@ function crossWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallEle
     const s = load.core.get(c)
     if (s === 'L' || s === 'N' || s === 'PE') return { color: c, terminal: s }
     if (s && c === 'blue') return { color: c, terminal: s, note: `${terminalMeta(s, p).desc} · plava kao povratna: označi smeđom ili crnom trakom na oba kraja` }
+    if (s && c === 'gnye') return { color: c, terminal: s, note: `${terminalMeta(s, p).desc} · žuto-zelena kao povratna: označi smeđom ili crnom trakom na oba kraja` }
     return s ? { color: c, terminal: s, note: terminalMeta(s, p).desc } : { color: c, terminal: 'PARK', note: load.members.length > 1 && c === 'blue' ? 'drugi kabel: plava se ne koristi' : 'rezerva' }
   })
 }

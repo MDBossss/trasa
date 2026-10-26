@@ -276,15 +276,16 @@ export const spareCoresOf = (p: { spareCores?: SpareCores }): SpareCores => p.sp
 // The power cables the electrician actually buys; suggestions and checks stay inside this list.
 export const POWER_TYPES = CABLE_TYPES.filter((t) => /^NYM/.test(t))
 export const cableStockOf = (p: { cableStock?: string[] }) => p.cableStock ?? POWER_TYPES
-export interface CableRules { feed25: boolean; socket25: boolean; flow: boolean; blueReturn: boolean }
-export const rulesOf = (p: { rules?: Partial<CableRules> }): CableRules => ({ feed25: true, socket25: true, flow: true, blueReturn: true, ...p.rules })
+export interface CableRules { feed25: boolean; socket25: boolean; flow: boolean; blueReturn: boolean; gnyeReturn: boolean }
+export const rulesOf = (p: { rules?: Partial<CableRules> }): CableRules => ({ feed25: true, socket25: true, flow: true, blueReturn: true, gnyeReturn: false, ...p.rules })
 const coresOf = (t: string) => coreColors(t).length
 // Usable signal slots of a bundle: the first cable carries L N PE and its spares; a further cable has no neutral of
-// its own, so every core but green-yellow carries returns (blue too when allowed, marked at both ends).
-export const bundleSlots = (types: string[], blue = true) => types.reduce((n, t, i) => n + (i === 0 ? coresOf(t) : Math.max(0, coresOf(t) - (t.toLowerCase().includes('nym-o') ? 0 : blue ? 1 : 2))), 0)
+// its own, so every core but green-yellow carries returns (blue and green-yellow too when allowed,
+// each marked at both ends).
+export const bundleSlots = (types: string[], blue = true, gnye = false) => types.reduce((n, t, i) => n + (i === 0 ? coresOf(t) : Math.max(0, coresOf(t) - (t.toLowerCase().includes('nym-o') ? 0 : 2 - (blue ? 1 : 0) - (gnye ? 1 : 0)))), 0)
 // Cheapest stock answer for `needed` cores at `minMm2`: one cable, else two side by side (fewest cores first).
 // The first cable carries L N PE and must meet `minMm2`; a second one only carries returns, so 1,5 will do.
-export function suggestCables(needed: number, minMm2: number, stock: string[], minRest = 1.5, blue = true): string[] | null {
+export function suggestCables(needed: number, minMm2: number, stock: string[], minRest = 1.5, blue = true, gnye = false): string[] | null {
   const by = (min: number) => stock.filter((t) => /^NYM-J/.test(t) && sectionOf(t) >= min).sort((a, b) => coresOf(a) - coresOf(b) || sectionOf(a) - sectionOf(b))
   const firsts = by(minMm2), rests = by(Math.min(minRest, minMm2))
   const one = firsts.find((t) => coresOf(t) >= needed)
@@ -292,7 +293,7 @@ export function suggestCables(needed: number, minMm2: number, stock: string[], m
   let best: string[] | null = null
   // fewest cores, then thinnest; on a tie the bigger cable goes first (it keeps L N PE and its own spares)
   const cost = (x: string[]) => coresOf(x[0]) + coresOf(x[1]) + (sectionOf(x[0]) + sectionOf(x[1])) / 10 - coresOf(x[0]) / 100
-  for (const a of firsts) for (const b of rests) if (bundleSlots([a, b], blue) >= needed && (!best || cost([a, b]) < cost(best))) best = [a, b]
+  for (const a of firsts) for (const b of rests) if (bundleSlots([a, b], blue, gnye) >= needed && (!best || cost([a, b]) < cost(best))) best = [a, b]
   return best
 }
 export const cableShort = (t: string) => t.replace(/^NYM-[JO] /, '').replace('x', '×').replace('.', ',')
