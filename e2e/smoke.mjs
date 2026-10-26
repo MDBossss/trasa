@@ -698,6 +698,8 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const errs = (p) => E.allJunctions(p).flatMap((j) => j.checks.filter((c) => c.level !== 'ok').map((c) => c.text))
     const thin = errs(base('NYM-J 3x1.5', 'NYM-J 3x1.5', 'NYM-J 3x1.5'))
     const good = errs(base('NYM-J 3x2.5', 'NYM-J 3x2.5', 'NYM-J 3x2.5'))
+    const bed = base('NYM-J 3x2.5', 'NYM-J 3x1.5', 'NYM-J 3x1.5'); bed.rooms = [{ ...room, name: 'Spavaća soba' }]
+    const bedroom = errs(bed).filter((t) => /utičnice/.test(t)).length
     const p3 = base('NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-J 3x2.5'); p3.rules = { feed25: false, socket25: false }
     const grow = errs(p3)
     // bundle: four switches in D1 lighting four lamps off K1 need L N PE + 4 returns = 7 cores
@@ -709,8 +711,8 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const b2 = { ...b, cables: b.cables.map((c) => (c.id === 'b1' ? { ...c, type: 'NYM-J 5x1.5' } : c)) }
     const fixed = errs(b2).filter((t) => /žila/.test(t))
     const second = E.cableNeeds(b2.cables.find((c) => c.id === 'b1'), b2).rows.map((r) => r.sig ? r.sig.split(':')[0] : '-')
-    return { thin: thin.filter((t) => /2,5/.test(t)).length, good: good.length, grow: grow.some((t) => /ne povećava/.test(t)), suggest: short.suggest, has: short.has, fixed: fixed.length, fixedT: fixed, second } })
-  assert.ok(rules.thin >= 2, 'a 3×1,5 feed and a 3×1,5 socket circuit are both flagged'); assert.equal(rules.good, 0, 'all 2,5 passes')
+    return { thin: thin.filter((t) => /2,5/.test(t)).length, good: good.length, bedroom, grow: grow.some((t) => /ne povećava/.test(t)), suggest: short.suggest, has: short.has, fixed: fixed.length, fixedT: fixed, second } })
+  assert.ok(rules.thin >= 2, 'a 3×1,5 feed and a 3×1,5 socket circuit are both flagged'); assert.equal(rules.good, 0, 'all 2,5 passes'); assert.equal(rules.bedroom, 0, 'bedroom sockets may stay on 3×1,5')
   assert.ok(rules.grow, '2,5 after a 1,5 feed is flagged')
   assert.equal(rules.suggest, '5×1,5 + 5×1,5', 'no 7-core cable in stock: two 5-core cables'); assert.equal(rules.has, 6)
   assert.equal(rules.fixed, 0, '5×1,5 + 5×1,5 carries all seven: ' + rules.fixedT.join(' ;; ')); assert.deepEqual(rules.second, ['SW', 'SW', '-', '-', 'PE'], 'the second cable: brown and black carry returns, blue unused, PE on green-yellow')

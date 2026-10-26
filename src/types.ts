@@ -265,7 +265,10 @@ export interface Room {
   name: string
   points: Pt[]
   walls: Record<number, Wall>
+  // sockets here may stay on 1,5 mm² (bedrooms: chargers and lamps); unset = guessed from the name
+  socket15?: boolean
 }
+export const socket15Of = (r: Room) => r.socket15 ?? /spava|^soba\b/i.test(r.name)
 
 export type SpareCores = 'wago' | 'cap'
 export const spareCoresOf = (p: { spareCores?: SpareCores }): SpareCores => p.spareCores ?? 'wago'

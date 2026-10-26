@@ -1,4 +1,4 @@
-import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isFeedConduit, APPLIANCES, isPlace, isData, dataKindOf, DATA_META, sectionOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, isControlCable, bundleSlots, suggestCables, cableStockOf, cableShort, rulesOf, frameSlots, frameName, relayModelOf, hostedFront, type ElementType } from './types'
+import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isFeedConduit, APPLIANCES, isPlace, isData, dataKindOf, DATA_META, sectionOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, socket15Of, isControlCable, bundleSlots, suggestCables, cableStockOf, cableShort, rulesOf, frameSlots, frameName, relayModelOf, hostedFront, type ElementType } from './types'
 import { wallExits } from './walls'
 
 // Everything a box needs: which cables enter it, what each core goes to, which devices sit inside
@@ -749,7 +749,8 @@ export function circuitsOf(p: Project) {
   for (const e of p.elements) {
     if (e.type !== 'socket' || isData(e)) continue
     const place = e.host ? el(p, e.host) : e
-    if (!place) continue
+    const room = p.rooms.find((r) => r.id === e.roomId)
+    if (!place || (room && socket15Of(room))) continue
     for (const c of p.cables) if (isAtBox(c, place)) { const k = byCable.get(c.id)?.id; if (k) withSockets.add(k) }
   }
   const out = { byCable, names, dist, feedCables: new Set(feedOf.keys()), withSockets }
