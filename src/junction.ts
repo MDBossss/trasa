@@ -537,12 +537,13 @@ export function cableLoad(cableId: string, a: WallElement, b: WallElement, p: Pr
   const members = bundleMembers(cableId, p)
   const signals = crossSignals(a, b, p, cableId)
   const extras = signals.filter((x) => !LNPE.includes(x))
+  const blueOk = rulesOf(p).blueReturn
   let k = 0
   const loads = members.map((m, i) => {
     const core = new Map<WireColor, string | null>()
     for (const c of coreColors(m.type)) {
       if (c === 'gnye') core.set(c, 'PE')
-      else if (c === 'blue') core.set(c, i === 0 ? 'N' : null)
+      else if (c === 'blue' && (i === 0 || !blueOk)) core.set(c, i === 0 ? 'N' : null)
       else if (c === 'brown' && i === 0) core.set(c, 'L')
       else core.set(c, extras[k++] ?? null)
     }
@@ -559,9 +560,10 @@ export function cableNeeds(c: Cable, p: Project): CableNeeds | null {
   if (!places) return null
   const load = cableLoad(c.id, places[0], places[1], p)
   const needed = load.signals.length
-  const has = bundleSlots(load.members)
+  const blue = rulesOf(p).blueReturn
+  const has = bundleSlots(load.members, blue)
   const first = bundleMembers(c.id, p)[0]?.first ?? c
-  const fix = suggestCables(needed, Math.max(minSectionFor(first, p), sectionOf(load.members[0] ?? c.type)), cableStockOf(p))
+  const fix = suggestCables(needed, Math.max(minSectionFor(first, p), sectionOf(load.members[0] ?? c.type)), cableStockOf(p), 1.5, blue)
   const suggest = fix ? fix.map(cableShort).join(' + ') : `${needed} žila`
   const rows = coreColors(thinnest(c, p).type).map((color) => ({ color, sig: load.core.get(color) ?? null }))
   return { signals: load.signals, needed, has, suggest, fix, rows, missing: load.missing, members: load.members, places: [places[0], places[1]] }
@@ -581,6 +583,7 @@ function crossWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallEle
   return bc.cores.map((c) => {
     const s = load.core.get(c)
     if (s === 'L' || s === 'N' || s === 'PE') return { color: c, terminal: s }
+    if (s && c === 'blue') return { color: c, terminal: s, note: `${terminalMeta(s, p).desc} · plava kao povratna: označi smeđom ili crnom trakom na oba kraja` }
     return s ? { color: c, terminal: s, note: terminalMeta(s, p).desc } : { color: c, terminal: 'PARK', note: load.members.length > 1 && c === 'blue' ? 'drugi kabel: plava se ne koristi' : 'rezerva' }
   })
 }
