@@ -727,10 +727,12 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const gnyeHas = E.cableNeeds(g5.cables.find((c) => c.id === 'b0'), g5).has
     const gnyeSecond = E.cableNeeds(g5.cables.find((c) => c.id === 'b1'), g5).rows.map((r) => r.sig ? r.sig.split(':')[0] : '-')
     const gnyeErr = errs(g5).filter((t) => /žila/.test(t)).length
+    // one light fewer: the second green-yellow is not needed and must stay PE
+    const gnyeSpare = E.cableNeeds(b.cables.find((c) => c.id === 'b1'), { ...b, rules: { socket25: false, gnyeReturn: true } }).rows.map((r) => r.sig ? r.sig.split(':')[0] : '-')
     const b2 = { ...b, cables: b.cables.map((c) => (c.id === 'b1' ? { ...c, type: 'NYM-J 5x1.5' } : c)) }
     const fixed = errs(b2).filter((t) => /žila/.test(t))
     const second = E.cableNeeds(b2.cables.find((c) => c.id === 'b1'), b2).rows.map((r) => r.sig ? r.sig.split(':')[0] : '-')
-    return { thin: thin.filter((t) => /2,5/.test(t)).length, good: good.length, bedroom, branch, mixFix, mixErr, strict, gnyeHas, gnyeSecond, gnyeErr, grow: grow.some((t) => /ne povećava/.test(t)), suggest: short.suggest, has: short.has, fixed: fixed.length, fixedT: fixed, second } })
+    return { thin: thin.filter((t) => /2,5/.test(t)).length, good: good.length, bedroom, branch, mixFix, mixErr, strict, gnyeHas, gnyeSecond, gnyeErr, gnyeSpare, grow: grow.some((t) => /ne povećava/.test(t)), suggest: short.suggest, has: short.has, fixed: fixed.length, fixedT: fixed, second } })
   assert.ok(rules.thin >= 2, 'a 3×1,5 feed and a 3×1,5 socket circuit are both flagged'); assert.equal(rules.good, 0, 'all 2,5 passes'); assert.equal(rules.bedroom, 0, 'bedroom sockets may stay on 3×1,5'); assert.equal(rules.branch, 0, 'light and switch branches on a socket circuit may stay 1,5')
   assert.equal(rules.mixFix, '3×2,5 + 3×1,5', 'power on 3×2,5, the two returns on a second 3×1,5 (brown + blue)'); assert.equal(rules.mixErr, 0, '3×2,5 + 5×1,5 satisfies cores and sections')
   assert.ok(rules.grow, '2,5 after a 1,5 feed is flagged')
@@ -741,7 +743,7 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     return E.cableIssues(p).get('f')?.level === 'err' }), 'a 3×1,5 feed carries an error mark')
   assert.equal(rules.suggest, '5×1,5 + 3×1,5', 'no 7-core cable: 5×1,5 + 3×1,5, the second one using blue as a return'); assert.equal(rules.has, 7)
   assert.equal(rules.strict, '5×1,5 + 5×1,5', 'with blue kept free the second cable must be a 5-core')
-  assert.equal(rules.gnyeHas, 8, 'žuto-zelena kao povratna: drugi 3×1,5 daje sve tri žile'); assert.deepEqual(rules.gnyeSecond, ['SW', 'SW', 'SW'], 'pet povratnih: žuto-zelena nosi zadnju'); assert.equal(rules.gnyeErr, 0, '5×1,5 + 3×1,5 nosi osam žila kad i žuto-zelena radi')
+  assert.equal(rules.gnyeHas, 8, 'žuto-zelena kao povratna: drugi 3×1,5 daje sve tri žile'); assert.deepEqual(rules.gnyeSecond, ['SW', 'SW', 'SW'], 'pet povratnih: žuto-zelena nosi zadnju'); assert.equal(rules.gnyeErr, 0, '5×1,5 + 3×1,5 nosi osam žila kad i žuto-zelena radi'); assert.deepEqual(rules.gnyeSpare, ['SW', 'SW', 'PE'], 'nepotrebna žuto-zelena u drugom kabelu ostaje PE')
   assert.equal(rules.fixed, 0, '5×1,5 + 5×1,5 carries all seven: ' + rules.fixedT.join(' ;; ')); assert.deepEqual(rules.second, ['SW', 'SW', '-', '-', 'PE'], 'the second cable: brown and black carry returns, blue unused, PE on green-yellow')
 
   // a push button with a control lamp: the lamp hangs on the relay output and N, so the frame cable carries the output too

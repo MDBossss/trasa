@@ -544,7 +544,7 @@ export function cableLoad(cableId: string, a: WallElement, b: WallElement, p: Pr
   const loads = members.map((m, i) => {
     const core = new Map<WireColor, string | null>()
     for (const c of coreColors(m.type)) {
-      if (c === 'gnye' && (i === 0 || !gnyeOk)) core.set(c, 'PE')
+      if (c === 'gnye' && (i === 0 || !gnyeOk || k >= extras.length)) core.set(c, 'PE')
       else if (c === 'blue' && (i === 0 || !blueOk)) core.set(c, i === 0 ? 'N' : null)
       else if (c === 'brown' && i === 0) core.set(c, 'L')
       else core.set(c, extras[k++] ?? null)
