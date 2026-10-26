@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-26T15:46:21.285Z",
+ "savedAt": "2026-10-26T15:51:36.259Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -7378,7 +7378,7 @@
    {
     "roomId": "c2b55x6m",
     "wall": 1,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 3x2.5",
     "from": {
      "kind": "exit",
      "conduitId": "mticy06y",
@@ -11324,7 +11324,12 @@
     ]
    }
   ],
-  "spareCores": "cap"
+  "spareCores": "cap",
+  "cableStock": [
+   "NYM-J 3x1.5",
+   "NYM-J 3x2.5",
+   "NYM-J 5x1.5"
+  ]
  },
  "ui": {
   "view": {
