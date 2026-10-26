@@ -699,7 +699,11 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const thin = errs(base('NYM-J 3x1.5', 'NYM-J 3x1.5', 'NYM-J 3x1.5'))
     const good = errs(base('NYM-J 3x2.5', 'NYM-J 3x2.5', 'NYM-J 3x2.5'))
     const bed = base('NYM-J 3x2.5', 'NYM-J 3x1.5', 'NYM-J 3x1.5'); bed.rooms = [{ ...room, name: 'Spavaća soba' }]
-    const bedroom = errs(bed).filter((t) => /utičnice/.test(t)).length
+    const bedroom = errs(bed).filter((t) => /utičnica/.test(t)).length
+    // a light hanging off the socket box on 1,5 is fine: it never carries socket current
+    const lit = base('NYM-J 3x2.5', 'NYM-J 3x2.5', 'NYM-J 3x2.5'); lit.elements.push(e({ id: 'sl', label: 'S9', type: 'light', xM: 5, zM: 2.6 }), e({ id: 'sp', label: 'P9', type: 'switch', xM: 5, zM: 1.1, controls: ['sl'] }))
+    lit.cables.push(cab('ll', 'NYM-J 3x1.5', el('k2'), el('sl')), cab('lp', 'NYM-O 3x1.5', el('k2'), el('sp')))
+    const branch = errs(lit).filter((t) => /utičnica/.test(t)).length
     const p3 = base('NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-J 3x2.5'); p3.rules = { feed25: false, socket25: false }
     const grow = errs(p3)
     // bundle: four switches in D1 lighting four lamps off K1 need L N PE + 4 returns = 7 cores
@@ -711,8 +715,8 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const b2 = { ...b, cables: b.cables.map((c) => (c.id === 'b1' ? { ...c, type: 'NYM-J 5x1.5' } : c)) }
     const fixed = errs(b2).filter((t) => /žila/.test(t))
     const second = E.cableNeeds(b2.cables.find((c) => c.id === 'b1'), b2).rows.map((r) => r.sig ? r.sig.split(':')[0] : '-')
-    return { thin: thin.filter((t) => /2,5/.test(t)).length, good: good.length, bedroom, grow: grow.some((t) => /ne povećava/.test(t)), suggest: short.suggest, has: short.has, fixed: fixed.length, fixedT: fixed, second } })
-  assert.ok(rules.thin >= 2, 'a 3×1,5 feed and a 3×1,5 socket circuit are both flagged'); assert.equal(rules.good, 0, 'all 2,5 passes'); assert.equal(rules.bedroom, 0, 'bedroom sockets may stay on 3×1,5')
+    return { thin: thin.filter((t) => /2,5/.test(t)).length, good: good.length, bedroom, branch, grow: grow.some((t) => /ne povećava/.test(t)), suggest: short.suggest, has: short.has, fixed: fixed.length, fixedT: fixed, second } })
+  assert.ok(rules.thin >= 2, 'a 3×1,5 feed and a 3×1,5 socket circuit are both flagged'); assert.equal(rules.good, 0, 'all 2,5 passes'); assert.equal(rules.bedroom, 0, 'bedroom sockets may stay on 3×1,5'); assert.equal(rules.branch, 0, 'light and switch branches on a socket circuit may stay 1,5')
   assert.ok(rules.grow, '2,5 after a 1,5 feed is flagged')
   // problems are tied to the cable itself, so the wall can mark it without opening the box
   assert.ok(await page.evaluate(() => { const E = window.__trasaEngine; const room = { id: 'ri', name: 'R', points: [{ x: 0, y: 0 }, { x: 600, y: 0 }, { x: 600, y: 400 }, { x: 0, y: 400 }], walls: {} }

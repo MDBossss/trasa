@@ -687,7 +687,7 @@ function isFed(place: WallElement, p: Project, seen = new Set<string>()): boolea
 // Which supply each cable's L and N belong to. Every feed cable starts a circuit; a cable gets the circuit
 // whose feed is nearest over the box graph (ties are reported); a cable's own "circuit" setting wins.
 export interface CircuitInfo { id: string; name: string; tie: boolean }
-const circuitCache = new WeakMap<Project, { byCable: Map<string, CircuitInfo>; names: Map<string, string>; dist: Map<string, Map<string, number>>; feedCables: Set<string>; withSockets: Set<string> }>()
+const circuitCache = new WeakMap<Project, { byCable: Map<string, CircuitInfo>; names: Map<string, string>; dist: Map<string, Map<string, number>>; feedCables: Set<string>; withSockets: Set<string>; socketPath: Set<string> }>()
 export function circuitsOf(p: Project) {
   const hit = circuitCache.get(p)
   if (hit) return hit
@@ -744,16 +744,40 @@ export function circuitsOf(p: Project) {
       if (others.size === 1) { const id = [...others][0]; for (const x of chainCables(c, p)) byCable.set(x.id, { id, name: names.get(id)!, tie: false }); break }
     }
   }
-  // circuits that feed a socket: on B16 every cable of such a circuit has to be 2,5 mm²
-  const withSockets = new Set<string>()
+  // cables that carry socket current: from every socket (bedrooms excepted) back to its feed along the shortest
+  // path. On B16 those need 2,5 mm²; branches that only reach lights and switches may stay 1,5 (HD 60364-4-43).
+  const withSockets = new Set<string>(), socketPath = new Set<string>()
+  const markChain = (c: Cable) => chainCables(c, p).forEach((x) => socketPath.add(x.id))
+  const placeOf = (id: string) => p.elements.find((e) => e.id === id)
   for (const e of p.elements) {
     if (e.type !== 'socket' || isData(e)) continue
-    const place = e.host ? el(p, e.host) : e
     const room = p.rooms.find((r) => r.id === e.roomId)
-    if (!place || (room && socket15Of(room))) continue
-    for (const c of p.cables) if (isAtBox(c, place)) { const k = byCable.get(c.id)?.id; if (k) withSockets.add(k) }
+    if (room && socket15Of(room)) continue
+    // a socket on its own hangs off a box by a cable; that cable and the box are the start
+    const starts: { place: WallElement; via?: Cable }[] = []
+    if (e.host) { const h = placeOf(e.host); if (h) starts.push({ place: h }) }
+    else for (const c of p.cables) if (isAtBox(c, e)) { const pl = cableEnds(c, p).find((x): x is WallElement => !!x && isPlace(x)); if (pl) starts.push({ place: pl, via: c }) }
+    for (const st of starts) {
+      const k = st.via ? byCable.get(st.via.id)?.id : p.cables.filter((c) => isAtBox(c, st.place)).map((c) => byCable.get(c.id)?.id).find(Boolean)
+      if (!k) continue
+      withSockets.add(k)
+      if (st.via) markChain(st.via)
+      const d = dist.get(k)
+      const walk = [st.place.id], seenP = new Set(walk)
+      while (walk.length) {
+        const at = walk.shift()!, here = d?.get(at)
+        if (here === undefined) continue
+        for (const c of p.cables) {
+          if (!isAtBox(c, placeOf(at)!) || byCable.get(c.id)?.id !== k) continue
+          if (feedOf.get(c.id) === k) { markChain(c); continue }
+          const pl = cablePlaces(c, p)
+          const other = pl ? (pl[0].id === at ? pl[1] : pl[0]) : null
+          if (other && (d!.get(other.id) ?? Infinity) === here - 1) { markChain(c); if (!seenP.has(other.id)) { seenP.add(other.id); walk.push(other.id) } }
+        }
+      }
+    }
   }
-  const out = { byCable, names, dist, feedCables: new Set(feedOf.keys()), withSockets }
+  const out = { byCable, names, dist, feedCables: new Set(feedOf.keys()), withSockets, socketPath }
   circuitCache.set(p, out)
   return out
 }
@@ -762,8 +786,7 @@ export function minSectionFor(c: Cable, p: Project): number {
   const r = rulesOf(p), circ = circuitsOf(p)
   if (isControlCable(c.type) || coreColors(c.type).length === 0 || /^pe\b/i.test(c.type)) return 0
   if (r.feed25 && circ.feedCables.has(c.id)) return 2.5
-  const k = circ.byCable.get(c.id)?.id
-  if (r.socket25 && k && circ.withSockets.has(k)) return 2.5
+  if (r.socket25 && circ.socketPath.has(c.id)) return 2.5
   return 1.5
 }
 const baseId = (id: string) => id.split('@')[0]
@@ -779,7 +802,7 @@ function sectionChecks(box: WallElement, cables: BoxCable[], p: Project, checks:
     const min = minSectionFor(bc.cable, p)
     if (sec(bc) < min) {
       const k = circ.byCable.get(bc.cable.id)?.id
-      checks.push({ cableId: bc.cable.id, level: 'err', text: circ.feedCables.has(bc.cable.id) ? `Dolaz ${bc.label} je ${cableShort(thinType(bc))}: dolazi moraju biti 2,5 mm² (3×2,5).` : `Krug ${k ? circ.names.get(k) : ''} ima utičnice (B16): kabel ${bc.label} je ${cableShort(thinType(bc))}, mora biti 2,5 mm².` })
+      checks.push({ cableId: bc.cable.id, level: 'err', text: circ.feedCables.has(bc.cable.id) ? `Dolaz ${bc.label} je ${cableShort(thinType(bc))}: dolazi moraju biti 2,5 mm² (3×2,5).` : `Kabel ${bc.label} nosi struju utičnica (krug ${k ? circ.names.get(k) : ''}, B16): ${cableShort(thinType(bc))} je pretanak, mora biti 2,5 mm².` })
     }
     if (stock && /^NYM/.test(bc.cable.type) && !stock.includes(bc.cable.type)) checks.push({ cableId: bc.cable.id, level: 'warn', text: `Kabel ${bc.label}: ${cableShort(bc.cable.type)} nije na popisu kabela koje koristiš (Postavke projekta).` })
   }

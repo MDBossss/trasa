@@ -4,7 +4,7 @@ import { POWER_TYPES, cableShort, cableStockOf, rulesOf, spareCoresOf, type Cabl
 // Project settings travel with the save file, so the electrician's sheets come out the same on every machine.
 const RULES: { id: keyof CableRules; label: string; desc: string }[] = [
   { id: 'feed25', label: 'Dolazi 2,5 mm²', desc: 'Svaki kabel koji dolazi iz ormara (bužir kategorije Dolaz) mora biti 3×2,5.' },
-  { id: 'socket25', label: 'Krug s utičnicama 2,5 mm²', desc: 'Utičnice su na B16, pa svaki kabel tog kruga mora biti 2,5 mm², i grane prema svjetlima. Iznimka su spavaće sobe (kvačica na sobi): tamo utičnice smiju na 3×1,5.' },
+  { id: 'socket25', label: 'Krug s utičnicama 2,5 mm²', desc: 'Utičnice su na B16, pa kabeli kroz koje teče struja do utičnica moraju biti 2,5 mm² (od dolaza do svake utičnice). Grane samo prema svjetlima i prekidačima smiju ostati 1,5. Iznimka su spavaće sobe (kvačica na sobi).' },
   { id: 'flow', label: 'Presjek ne raste prema trošilu', desc: 'Javlja kad iza tanjeg kabela ide deblji, npr. 2,5 nakon 1,5: osigurač štiti tanji, deblji ne daje ništa.' },
 ]
 
