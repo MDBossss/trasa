@@ -282,12 +282,15 @@ const coresOf = (t: string) => coreColors(t).length
 // Usable signal slots of a bundle: the first cable carries L N PE and its spares, a second one adds every core but N and PE.
 export const bundleSlots = (types: string[]) => types.reduce((n, t, i) => n + (i === 0 ? coresOf(t) : Math.max(0, coresOf(t) - (t.toLowerCase().includes('nym-o') ? 0 : 2))), 0)
 // Cheapest stock answer for `needed` cores at `minMm2`: one cable, else two side by side (fewest cores first).
-export function suggestCables(needed: number, minMm2: number, stock: string[]): string[] | null {
-  const ok = stock.filter((t) => /^NYM-J/.test(t) && sectionOf(t) >= minMm2).sort((a, b) => coresOf(a) - coresOf(b) || sectionOf(a) - sectionOf(b))
-  const one = ok.find((t) => coresOf(t) >= needed)
+// The first cable carries L N PE and must meet `minMm2`; a second one only carries returns, so 1,5 will do.
+export function suggestCables(needed: number, minMm2: number, stock: string[], minRest = 1.5): string[] | null {
+  const by = (min: number) => stock.filter((t) => /^NYM-J/.test(t) && sectionOf(t) >= min).sort((a, b) => coresOf(a) - coresOf(b) || sectionOf(a) - sectionOf(b))
+  const firsts = by(minMm2), rests = by(Math.min(minRest, minMm2))
+  const one = firsts.find((t) => coresOf(t) >= needed)
   if (one) return [one]
   let best: string[] | null = null
-  for (const a of ok) for (const b of ok) if (coresOf(a) >= coresOf(b) && bundleSlots([a, b]) >= needed && (!best || coresOf(a) + coresOf(b) < coresOf(best[0]) + coresOf(best[1]))) best = [a, b]
+  const cost = (x: string[]) => coresOf(x[0]) + coresOf(x[1]) + (sectionOf(x[0]) + sectionOf(x[1])) / 10
+  for (const a of firsts) for (const b of rests) if (bundleSlots([a, b]) >= needed && (!best || cost([a, b]) < cost(best))) best = [a, b]
   return best
 }
 export const cableShort = (t: string) => t.replace(/^NYM-[JO] /, '').replace('x', '×').replace('.', ',')

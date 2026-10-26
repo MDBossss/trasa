@@ -560,7 +560,8 @@ export function cableNeeds(c: Cable, p: Project): CableNeeds | null {
   const load = cableLoad(c.id, places[0], places[1], p)
   const needed = load.signals.length
   const has = bundleSlots(load.members)
-  const fix = suggestCables(needed, Math.max(minSectionFor(c, p), sectionOf(load.members[0] ?? c.type)), cableStockOf(p))
+  const first = bundleMembers(c.id, p)[0]?.first ?? c
+  const fix = suggestCables(needed, Math.max(minSectionFor(first, p), sectionOf(load.members[0] ?? c.type)), cableStockOf(p))
   const suggest = fix ? fix.map(cableShort).join(' + ') : `${needed} žila`
   const rows = coreColors(thinnest(c, p).type).map((color) => ({ color, sig: load.core.get(color) ?? null }))
   return { signals: load.signals, needed, has, suggest, fix, rows, missing: load.missing, members: load.members, places: [places[0], places[1]] }
@@ -785,6 +786,9 @@ export function circuitsOf(p: Project) {
 export function minSectionFor(c: Cable, p: Project): number {
   const r = rulesOf(p), circ = circuitsOf(p)
   if (isControlCable(c.type) || coreColors(c.type).length === 0 || /^pe\b/i.test(c.type)) return 0
+  // a further cable of a bundle carries only returns (lights, switches), never the circuit's L
+  const ms = bundleMembers(c.id, p)
+  if (ms.length > 1 && !ms[0].ids.includes(c.id)) return 1.5
   if (r.feed25 && circ.feedCables.has(c.id)) return 2.5
   if (r.socket25 && circ.socketPath.has(c.id)) return 2.5
   return 1.5
