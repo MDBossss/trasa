@@ -28,7 +28,7 @@ export type TerminalWire =
   | { kind: 'core'; cableId: string; cableLabel: string; color: WireColor; note?: string }
   | { kind: 'port'; deviceId: string; deviceLabel: string; port: string; color: WireColor; note?: string }
 export interface Terminal { id: string; label: string; desc: string; wago: 0 | 412 | 413 | 415; chained: number; wires: TerminalWire[]; cap?: boolean }
-export interface Check { level: Level; text: string }
+export interface Check { level: Level; text: string; cableId?: string }
 export interface Junction { box: WallElement; room: Room; cables: BoxCable[]; devices: Device[]; terminals: Terminal[]; checks: Check[]; bom: { item: string; qty: number }[]; level: Level; size: { W: number; H: number; overflow: boolean; stacked: boolean } }
 
 const LNPE = ['L', 'N', 'PE']
@@ -269,12 +269,12 @@ function leafWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallElem
       const i = p.cables.filter((c) => isAtBox(c, box) && dataKindOf(c.type) === dk).findIndex((c) => c.id === bc.cable.id)
       const k = keystones[i]
       if (k) return [{ color: 'other', terminal: `DATA:${k.id}`, note: meta.wire }]
-      if (box.type === 'modbox') checks.push({ level: 'warn', text: `${bc.label}: ${meta.port} kabel u dozi bez slobodnog modula; dodaj utičnicu vrste ${SOCKET_KINDS[dk].label}.` })
+      if (box.type === 'modbox') checks.push({ cableId: bc.cable.id, level: 'warn', text: `${bc.label}: ${meta.port} kabel u dozi bez slobodnog modula; dodaj utičnicu vrste ${SOCKET_KINDS[dk].label}.` })
       return [{ color: 'other', terminal: null, note: `${meta.port}, prolazi` }]
     }
     return cores.map((c) => ({ color: c, terminal: null, note: 'slaba struja, prolazi' }))
   }
-  if (role === 'unknown') { checks.push({ level: 'warn', text: `${bc.label}: ne znam što je na drugom kraju kabela ${bc.sub}, žile parkirane.` }); return cores.map((c) => park(c, 'nepoznato')) }
+  if (role === 'unknown') { checks.push({ cableId: bc.cable.id, level: 'warn', text: `${bc.label}: ne znam što je na drugom kraju kabela ${bc.sub}, žile parkirane.` }); return cores.map((c) => park(c, 'nepoznato')) }
   if (role === 'feed' || role === 'socket' || role === 'pass' || role === 'earth') return cores.map(lnpe)
   if (role === 'motor') {
     // L N PE feed the control unit; the next two cores are the pulse loop from the relay's I and O
@@ -283,7 +283,7 @@ function leafWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallElem
     if (m && !relay) checks.push({ level: 'warn', text: `Vrata ${m.label}: nitko ih ne pali. Odaberi relej (Shelly Plus 1) pod "Pali ga relej".` })
     const spare = cores.filter((c) => c !== 'brown' && c !== 'blue' && c !== 'gnye')
     const pulse = m ? pulseChain(m, p) : new Set<string>()
-    if (m && relay && !pulse.size) checks.push({ level: 'err', text: `Kabel do ${m.label} (${bc.sub}) nema 2 slobodne žile za impuls: uzmi 5×1,5 ili dodaj upravljački 2×0,75.` })
+    if (m && relay && !pulse.size) checks.push({ cableId: bc.cable.id, level: 'err', text: `Kabel do ${m.label} (${bc.sub}) nema 2 slobodne žile za impuls: uzmi 5×1,5 ili dodaj upravljački 2×0,75.` })
     const carries = pulse.has(bc.cable.id)
     return cores.map((c) => {
       if (c === 'brown' || c === 'blue' || c === 'gnye') return lnpe(c)
@@ -300,7 +300,7 @@ function leafWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallElem
       // supply always live; the spare cores carry the low-voltage button pairs from this frame to the controller
       const sig = devicesIn(box, p).filter((d) => d.el.type === 'switch' && d.el.relayId === ctl.id).flatMap((d) => switchSignals(d.el, p, [], Infinity))
       const spare: WireColor[] = cores.filter((c) => c !== 'brown' && c !== 'blue' && c !== 'gnye')
-      if (sig.length > spare.length) checks.push({ level: 'err', text: `Kabel do ${light!.label} (${bc.sub}) treba ${sig.length} žile za tipkala na ${ctl.label}, ima ${spare.length} slobodnih: dodaj upravljački 2×0,75 ili UTP.` })
+      if (sig.length > spare.length) checks.push({ cableId: bc.cable.id, level: 'err', text: `Kabel do ${light!.label} (${bc.sub}) treba ${sig.length} žile za tipkala na ${ctl.label}, ima ${spare.length} slobodnih: dodaj upravljački 2×0,75 ili UTP.` })
       return cores.map((c) => { if (c === 'brown') return { color: c, terminal: 'L', note: 'napajanje, stalno' }; const i = spare.indexOf(c); return i >= 0 && i < sig.length ? { color: c, terminal: sig[i].terminal, note: `tipkalo, 24 V (${sig[i].note})` } : lnpe(c) })
     }
     return cores.map((c) => (c === 'brown' ? { color: c, terminal: t.id, note: 'L svjetla' } : lnpe(c)))
@@ -310,7 +310,7 @@ function leafWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallElem
   const lamp = lampOf(sw, p, checks)
   const usable = cores.filter((c) => c !== 'gnye' && !(lamp && c === 'blue'))
   const sig = [...switchSignals(sw, p, checks, usable.length), ...(lamp ? [{ terminal: lamp, note: 'kontrolna lampica' }] : [])]
-  if (lamp && !cores.includes('blue')) checks.push({ level: 'err', text: `${sw.label}: kontrolna lampica treba nulu, a kabel ${bc.sub} nema plavu žilu.` })
+  if (lamp && !cores.includes('blue')) checks.push({ cableId: bc.cable.id, level: 'err', text: `${sw.label}: kontrolna lampica treba nulu, a kabel ${bc.sub} nema plavu žilu.` })
   if (lamp && usable.length < sig.length) checks.push({ level: 'err', text: `${sw.label}: s kontrolnom lampicom kabel treba ${sig.length + 2} žile (${sig.length} + N + PE), ima ${cores.length}. Uzmi ${sig.length + 2 <= 5 ? '5×1,5' : '7×1,5'}.` })
   if (!sig.length) return cores.map((c) => ({ color: c, terminal: null, note: 'prolazi do drugog prekidača' }))
   return cores.map((c) => {
@@ -575,7 +575,7 @@ function crossWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallEle
     const what = load.members.length > 1 ? `Kabeli ${bc.label} (${load.members.map(cableShort).join(' + ')})` : `Kabel ${bc.label}`
     const thin = thinnest(bc.cable, p)
     const where = thin.id !== bc.cable.id ? ` Nastavak na zidu ${thin.wall + 1} je ${thin.type}.` : ''
-    checks.push({ level: 'err', text: `${what} treba${load.members.length > 1 ? 'ju' : ''} ${load.signals.length} žila (${load.signals.map((s) => terminalMeta(s, p).label).join(', ')}), nema mjesta za ${load.missing.map((s) => terminalMeta(s, p).label).join(', ')}.${where} Rješenje: ${need?.suggest ?? 'deblji kabel'}.` })
+    checks.push({ cableId: bc.cable.id, level: 'err', text: `${what} treba${load.members.length > 1 ? 'ju' : ''} ${load.signals.length} žila (${load.signals.map((s) => terminalMeta(s, p).label).join(', ')}), nema mjesta za ${load.missing.map((s) => terminalMeta(s, p).label).join(', ')}.${where} Rješenje: ${need?.suggest ?? 'deblji kabel'}.` })
   }
   return bc.cores.map((c) => {
     const s = load.core.get(c)
@@ -779,9 +779,9 @@ function sectionChecks(box: WallElement, cables: BoxCable[], p: Project, checks:
     const min = minSectionFor(bc.cable, p)
     if (sec(bc) < min) {
       const k = circ.byCable.get(bc.cable.id)?.id
-      checks.push({ level: 'err', text: circ.feedCables.has(bc.cable.id) ? `Dolaz ${bc.label} je ${cableShort(thinType(bc))}: dolazi moraju biti 2,5 mm² (3×2,5).` : `Krug ${k ? circ.names.get(k) : ''} ima utičnice (B16): kabel ${bc.label} je ${cableShort(thinType(bc))}, mora biti 2,5 mm².` })
+      checks.push({ cableId: bc.cable.id, level: 'err', text: circ.feedCables.has(bc.cable.id) ? `Dolaz ${bc.label} je ${cableShort(thinType(bc))}: dolazi moraju biti 2,5 mm² (3×2,5).` : `Krug ${k ? circ.names.get(k) : ''} ima utičnice (B16): kabel ${bc.label} je ${cableShort(thinType(bc))}, mora biti 2,5 mm².` })
     }
-    if (stock && /^NYM/.test(bc.cable.type) && !stock.includes(bc.cable.type)) checks.push({ level: 'warn', text: `Kabel ${bc.label}: ${cableShort(bc.cable.type)} nije na popisu kabela koje koristiš (Postavke projekta).` })
+    if (stock && /^NYM/.test(bc.cable.type) && !stock.includes(bc.cable.type)) checks.push({ cableId: bc.cable.id, level: 'warn', text: `Kabel ${bc.label}: ${cableShort(bc.cable.type)} nije na popisu kabela koje koristiš (Postavke projekta).` })
   }
   if (!rules.flow) return
   for (const k of new Set(cables.filter(power).map((bc) => circ.byCable.get(bc.cable.id)?.id).filter((x): x is string => !!x))) {
@@ -794,7 +794,7 @@ function sectionChecks(box: WallElement, cables: BoxCable[], p: Project, checks:
     const thin = incoming.find((bc) => sec(bc) === inMin)!
     for (const bc of mine) {
       if (incoming.includes(bc) || (bc.far.place && (d.get(bc.far.place.id) ?? Infinity) <= here)) continue
-      if (sec(bc) > inMin) checks.push({ level: 'warn', text: `Kabel ${bc.label} je ${cableShort(thinType(bc))}, a dolazi mu ${cableShort(thinType(thin))} (${thin.label}). Presjek se od dolaza prema trošilu ne povećava: osigurač štiti tanji kabel, pa deblji nastavak ne daje ništa.` })
+      if (sec(bc) > inMin) checks.push({ cableId: bc.cable.id, level: 'warn', text: `Kabel ${bc.label} je ${cableShort(thinType(bc))}, a dolazi mu ${cableShort(thinType(thin))} (${thin.label}). Presjek se od dolaza prema trošilu ne povećava: osigurač štiti tanji kabel, pa deblji nastavak ne daje ništa.` })
     }
   }
 }
@@ -824,7 +824,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   sectionChecks(box, cables, p, checks)
   const devCirc = new Map<string, string>()
   if (multi) {
-    for (const bc of cables) { const c = circOf(bc); if (c?.tie) checks.push({ level: 'err', text: `Kabel ${bc.label}: ne zna se na kojem je strujnom krugu (${[...here.values()].join(' ili ')}). Odaberi krug u svojstvima kabela.` }) }
+    for (const bc of cables) { const c = circOf(bc); if (c?.tie) checks.push({ cableId: bc.cable.id, level: 'err', text: `Kabel ${bc.label}: ne zna se na kojem je strujnom krugu (${[...here.values()].join(' ili ')}). Odaberi krug u svojstvima kabela.` }) }
     // a device belongs to the circuit of the cable that carries its signals (a switch's return, a relay's output)
     const ports = new Map(devices.map((d) => [d.el.id, devicePorts(d, p, []).map((m) => m.terminal).filter((t) => !LNPE.includes(t))]))
     for (let round = 0; round < 3; round++) for (const d of devices) {
@@ -900,7 +900,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   // a light or socket whose only neutral is its own cable: nothing brings N into this box
   for (const t of terminals) if (baseId(t.id) === 'N' && t.wires.length === 1 && t.wires[0].kind === 'core') {
     const w = t.wires[0], bc = cables.find((c) => c.cable.id === (w as { cableId: string }).cableId)
-    if (bc && ['light', 'socket', 'motor'].includes(bc.role)) checks.push({ level: 'err', text: `${bc.label}: nema nule. U ${box.label} ne dolazi nijedan kabel s plavom žilom (NYM-O nema nulu); dovedi N, npr. kabel NYM-J.` })
+    if (bc && ['light', 'socket', 'motor'].includes(bc.role)) checks.push({ cableId: bc.cable.id, level: 'err', text: `${bc.label}: nema nule. U ${box.label} ne dolazi nijedan kabel s plavom žilom (NYM-O nema nulu); dovedi N, npr. kabel NYM-J.` })
   }
   const bom = new Map<string, number>()
   for (const t of terminals) if (t.wago) bom.set(`WAGO 221-${t.wago}`, (bom.get(`WAGO 221-${t.wago}`) ?? 0) + t.chained)
@@ -972,7 +972,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
     // the thinnest segment of the run decides (a 3×1,5 stub before a corner limits the whole cable)
     const thin = thinnest(c.cable, p).type, sect = sectionOf(thin), cores = coreColors(thin).length
     const kind = el.appliance ?? 'hob'
-    if (sect < ap.minMm2) checks.push({ level: 'err', text: `${el.label}: ${ap.label.toLowerCase()} treba barem ${String(ap.minMm2).replace('.', ',')} mm², kabel je ${thin}${thin !== c.cable.type ? ' na dijelu trase' : ''}.` })
+    if (sect < ap.minMm2) checks.push({ cableId: c.cable.id, level: 'err', text: `${el.label}: ${ap.label.toLowerCase()} treba barem ${String(ap.minMm2).replace('.', ',')} mm², kabel je ${thin}${thin !== c.cable.type ? ' na dijelu trase' : ''}.` })
     else if (kind === 'hob' && cores < 5 && sect < 6) checks.push({ level: 'warn', text: `${el.label}: jednofazno na ${thin} ploča radi samo uz ograničenje snage (~3,7 kW, B16). Za punu snagu 5×2,5 trofazno ili 3×6 na B32.` })
     if (kind !== 'hood' && c.far.place) checks.push({ level: 'warn', text: `${el.label}: ${ap.label.toLowerCase()} se napaja preko kutije ${c.far.place.label}. Uobičajeno je vlastiti krug ravno iz ormara.` })
   }
@@ -988,7 +988,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   }
   if (el.type === 'boiler') for (const c of cables) {
     // a water heater (~2 kW, hours at a time) gets its own circuit: 2,5 mm² on B16, straight from the board
-    if (sectionOf(thinnest(c.cable, p).type) < 2.5) checks.push({ level: 'warn', text: `${el.label}: bojler vuče ~2 kW satima, kabel ${thinnest(c.cable, p).type} je pretanak. Uzmi 3×2,5 na osigurač B16.` })
+    if (sectionOf(thinnest(c.cable, p).type) < 2.5) checks.push({ cableId: c.cable.id, level: 'warn', text: `${el.label}: bojler vuče ~2 kW satima, kabel ${thinnest(c.cable, p).type} je pretanak. Uzmi 3×2,5 na osigurač B16.` })
     if (c.far.place && !el.feedRelayId) checks.push({ level: 'warn', text: `${el.label}: bojler se napaja preko kutije ${c.far.place.label}. Uobičajeno je vlastiti krug ravno iz ormara (bužir kategorije Dolaz ili kabel do ormara).` })
   }
   // a door unit may take power and pulse over two cables (L N PE + a control pair)
@@ -1042,6 +1042,26 @@ function kipJunctionFor(el: WallElement, p: Project): Junction {
   const level: Level = checks.some((c) => c.level === 'err') ? 'err' : checks.some((c) => c.level === 'warn') ? 'warn' : 'ok'
   checks.push({ level: 'ok', text: 'Traka FeZn 25×4 iz temelja na sabirnicu: vijak M10 s mjedenom podloškom (Cu na Zn korodira); izlaz iz betona omotati antikorozivnom trakom 30 cm gore i dolje.' })
   return { box: el, room, cables, devices: [device], terminals, checks, bom: [], level, size: { W: lay.W, H: lay.H, overflow: false, stacked: false } }
+}
+// Problems tied to a cable, gathered from every box and device it touches, for marking the cable itself.
+export interface CableIssue { level: 'err' | 'warn'; texts: string[] }
+const issueCache = new WeakMap<Project, Map<string, CableIssue>>()
+export function cableIssues(p: Project): Map<string, CableIssue> {
+  const hit = issueCache.get(p)
+  if (hit) return hit
+  const out = new Map<string, CableIssue>()
+  for (const j of [...allJunctions(p), ...allLeafJunctions(p)]) for (const ch of j.checks) {
+    if (!ch.cableId || ch.level === 'ok') continue
+    const cable = p.cables.find((c) => c.id === ch.cableId)
+    for (const c of cable ? chainCables(cable, p) : []) {
+      const cur = out.get(c.id) ?? { level: 'warn' as const, texts: [] }
+      if (ch.level === 'err') cur.level = 'err'
+      if (!cur.texts.includes(ch.text)) cur.texts.push(ch.text)
+      out.set(c.id, cur)
+    }
+  }
+  issueCache.set(p, out)
+  return out
 }
 export function allLeafJunctions(p: Project): Junction[] {
   return p.elements.filter((e) => isLeaf(e) && p.rooms.some((r) => r.id === e.roomId)).map((e) => leafJunctionFor(e, p))

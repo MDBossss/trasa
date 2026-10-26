@@ -3,7 +3,7 @@ import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
 import { socket15Of, cableStockOf, cableShort, frameSlots, frameName, CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, WIRE_LABEL, APPLIANCES, type ApplianceKind, type BoxDepth, type CableRole, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
-import { cableNeeds, chainCables, circuitsOf, resolveCable, roleLabel, terminalMeta } from '../junction'
+import { cableIssues, cableNeeds, chainCables, circuitsOf, resolveCable, roleLabel, terminalMeta } from '../junction'
 import { Icon } from './Icons'
 import { wireSwatch } from './JunctionCanvas'
 
@@ -305,6 +305,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
               {(() => { const stock = cableStockOf(project); const mine = CABLE_TYPES.filter((t) => stock.includes(t) || !/^NYM/.test(t)), rest = CABLE_TYPES.filter((t) => !mine.includes(t)); return <>{mine.map((t) => <option key={t} value={t}>{t}</option>)}{rest.length > 0 && <optgroup label="Nije na mom popisu">{rest.map((t) => <option key={t} value={t}>{t}</option>)}</optgroup>}</> })()}
             </select>
           </label>
+          {(() => { const is = cableIssues(project).get(cable.id); return is ? <div className="checks">{is.texts.map((t, i) => <div key={i} className={`check ${is.level}`}><span>{is.level === 'err' ? '✕' : '⚠'}</span><span>{t}</span></div>)}</div> : null })()}
           <div className="stat"><span>Od</span><b>{endLabel(cable.from, project)}</b></div>
           <div className="stat"><span>Do</span><b>{endLabel(cable.to, project)}</b></div>
           {(() => {

@@ -714,6 +714,11 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     return { thin: thin.filter((t) => /2,5/.test(t)).length, good: good.length, bedroom, grow: grow.some((t) => /ne povećava/.test(t)), suggest: short.suggest, has: short.has, fixed: fixed.length, fixedT: fixed, second } })
   assert.ok(rules.thin >= 2, 'a 3×1,5 feed and a 3×1,5 socket circuit are both flagged'); assert.equal(rules.good, 0, 'all 2,5 passes'); assert.equal(rules.bedroom, 0, 'bedroom sockets may stay on 3×1,5')
   assert.ok(rules.grow, '2,5 after a 1,5 feed is flagged')
+  // problems are tied to the cable itself, so the wall can mark it without opening the box
+  assert.ok(await page.evaluate(() => { const E = window.__trasaEngine; const room = { id: 'ri', name: 'R', points: [{ x: 0, y: 0 }, { x: 600, y: 0 }, { x: 600, y: 400 }, { x: 0, y: 400 }], walls: {} }
+    const p = { ...window.__trasa.getState().project, rules: undefined, rooms: [room], conduits: [{ id: 'fd', name: 'DOLAZ', points: [{ x: 200, y: -50 }, { x: 200, y: 0 }], categoryId: 'dolaz', color: '#000' }],
+      elements: [{ id: 'k', label: 'K1', type: 'box', roomId: 'ri', wall: 0, xM: 2, zM: 2.3, note: '' }], cables: [{ id: 'f', roomId: 'ri', wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'exit', conduitId: 'fd', end: 'end' }, to: { kind: 'element', id: 'k' }, via: [], note: '' }] }
+    return E.cableIssues(p).get('f')?.level === 'err' }), 'a 3×1,5 feed carries an error mark')
   assert.equal(rules.suggest, '5×1,5 + 5×1,5', 'no 7-core cable in stock: two 5-core cables'); assert.equal(rules.has, 6)
   assert.equal(rules.fixed, 0, '5×1,5 + 5×1,5 carries all seven: ' + rules.fixedT.join(' ;; ')); assert.deepEqual(rules.second, ['SW', 'SW', '-', '-', 'PE'], 'the second cable: brown and black carry returns, blue unused, PE on green-yellow')
 

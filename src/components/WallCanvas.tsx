@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Stage, Layer, Image as KImage, Line, Circle, Rect, Shape, Text, Group, Arc } from 'react-konva'
 import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import useImage from 'use-image'
 import { useStore } from '../store'
-import { cornerPartner } from '../junction'
+import { cableIssues, cornerPartner } from '../junction'
 import { CABLE_COLOR, cableColor, cablePath, cornerAt, endPos, neighbourWall, type Exit, type WallCtx, type WallInfo } from '../walls'
 import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement, RELAY_LOOK, relayBrand, relayModelOf, hostedFront , isData, APPLIANCES, frameCols, frameRows, frameSlots } from '../types'
 import { Hud } from './Hud'
@@ -14,6 +14,15 @@ import { middlePan, pinch, useMobile, wheelNav, type Camera } from '../mobile'
 type P = { xM: number; zM: number }
 // one TEM module on the wall symbol: half as wide as tall, like the real 22.5 × 45 mm (2M is a square)
 const MODW = 6
+const ISSUE = { err: '#e53935', warn: '#fb8c00' }
+// halfway along a flat [x0, y0, x1, y1, …] polyline, where a cable's problem badge sits
+function midpoint(f: number[]) {
+  const seg: number[] = []
+  for (let i = 2; i < f.length; i += 2) seg.push(Math.hypot(f[i] - f[i - 2], f[i + 1] - f[i - 1]))
+  let left = seg.reduce((a, b) => a + b, 0) / 2
+  for (let i = 0; i < seg.length; i++) { if (left <= seg[i] && seg[i] > 0) { const t = left / seg[i]; return { x: f[2 * i] + (f[2 * i + 2] - f[2 * i]) * t, y: f[2 * i + 1] + (f[2 * i + 3] - f[2 * i + 1]) * t } } left -= seg[i] }
+  return { x: f[0], y: f[1] }
+}
 
 // Canvas units are centimetres: x from the left end of the wall, y from the ceiling down.
 export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string; wall: WallInfo; photo?: string; onMoveExit: (e: Exit, posM: number, zM: number) => void }) {
@@ -30,6 +39,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
   const mobile = useMobile()
 
   const project = useStore((s) => s.project)
+  const issues = useMemo(() => cableIssues(project), [project])
   const tool = useStore((s) => s.wallTool)
   const elementType = useStore((s) => s.elementType)
   const placeKind = useStore((s) => s.placeSwitchKind)
@@ -361,6 +371,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
         <Layer listening={tool === 'select'}>
           {cables.map((c, ci) => {
             const path = cablePath(c, liveCtx)
+            const issue = issues.get(c.id)
             if (!path) return null
             const color = cableColor(c, project)
             const isSel = c.id === selectedId
@@ -370,8 +381,10 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
             const dup = cables.slice(0, ci).filter((x) => key(x) === key(c) && JSON.stringify(x.via) === JSON.stringify(c.via)).length
             return (
               <Group key={c.id} x={dup * px(7)} y={dup * px(7)}>
+                {issue && <Line points={flat} stroke={issue.level === 'err' ? ISSUE.err : ISSUE.warn} strokeWidth={px(14)} opacity={0.35} lineJoin="round" lineCap="round" listening={false} />}
                 <Line points={flat} stroke="#fff" strokeWidth={px(isSel ? 9 : 6)} opacity={isSel ? 1 : 0.85} lineJoin="round" lineCap="round" />
                 <Line name={c.id} points={flat} stroke={color} strokeWidth={px(3.5)} hitStrokeWidth={px(14)} lineJoin="round" lineCap="round" dash={isSel ? [px(10), px(6)] : undefined} />
+                {issue && (() => { const m = midpoint(flat); return <Group name={c.id} x={m.x} y={m.y}><Circle radius={px(8)} fill={issue.level === 'err' ? ISSUE.err : ISSUE.warn} stroke="#fff" strokeWidth={px(1.5)} /><Text text="!" x={-px(8)} y={-px(6)} width={px(16)} align="center" fontSize={px(12)} fontStyle="bold" fill="#fff" listening={false} /></Group> })()}
               </Group>
             )
           })}
