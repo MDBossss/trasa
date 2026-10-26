@@ -821,7 +821,8 @@ function sectionChecks(box: WallElement, cables: BoxCable[], p: Project, checks:
   for (const k of new Set(cables.filter(power).map((bc) => circ.byCable.get(bc.cable.id)?.id).filter((x): x is string => !!x))) {
     const d = circ.dist.get(k), here = d?.get(box.id)
     if (!d || here === undefined) continue
-    const mine = cables.filter((bc) => power(bc) && circ.byCable.get(bc.cable.id)?.id === k)
+    // a further cable in a bundle carries only returns, so it says nothing about the section feeding the load
+    const mine = cables.filter((bc) => power(bc) && circ.byCable.get(bc.cable.id)?.id === k && (bundleMembers(bc.cable.id, p)[0]?.ids.includes(bc.cable.id) ?? true))
     const incoming = mine.filter((bc) => circ.feedCables.has(bc.cable.id) || (bc.far.place && (d.get(bc.far.place.id) ?? Infinity) < here))
     if (!incoming.length) continue
     const inMin = Math.min(...incoming.map(sec))
