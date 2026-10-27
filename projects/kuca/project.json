@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-27T11:38:32.690Z",
+ "savedAt": "2026-10-27T11:42:57.895Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -8465,7 +8465,7 @@
    {
     "roomId": "mmcst90r",
     "wall": 0,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 3x2.5",
     "from": {
      "kind": "exit",
      "conduitId": "vx1mkoex",
@@ -8558,7 +8558,7 @@
    {
     "roomId": "mmcst90r",
     "wall": 1,
-    "type": "NYM-J 7x1.5",
+    "type": "NYM-J 5x1.5",
     "from": {
      "kind": "element",
      "id": "ym95itv2"
@@ -8606,7 +8606,7 @@
    {
     "roomId": "mmcst90r",
     "wall": 1,
-    "type": "NYM-J 7x1.5",
+    "type": "NYM-J 3x1.5",
     "from": {
      "kind": "element",
      "id": "kgp7x3ag"
@@ -8627,7 +8627,7 @@
    {
     "roomId": "mmcst90r",
     "wall": 1,
-    "type": "NYM-J 7x1.5",
+    "type": "NYM-J 3x1.5",
     "from": {
      "kind": "element",
      "id": "ym95itv2"
@@ -8660,7 +8660,7 @@
    {
     "roomId": "mmcst90r",
     "wall": 0,
-    "type": "NYM-J 7x1.5",
+    "type": "NYM-J 3x1.5",
     "from": {
      "kind": "element",
      "id": "08dog5e8"
@@ -11279,6 +11279,77 @@
     ],
     "note": "",
     "id": "wx2xemra"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "08dog5e8"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "szzrhwbv",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "lscowvp9"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "ym95itv2"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "szzrhwbv",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "xlfxm3y8"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "ym95itv2"
+    },
+    "to": {
+     "kind": "element",
+     "id": "9q36pcg1"
+    },
+    "via": [],
+    "note": "",
+    "id": "yd5op0e4"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "kgp7x3ag"
+    },
+    "to": {
+     "kind": "element",
+     "id": "ym95itv2"
+    },
+    "via": [
+     {
+      "xM": 2.17,
+      "zM": 1.85
+     }
+    ],
+    "note": "",
+    "id": "wh1ulgr6"
    }
   ],
   "categories": [
@@ -11399,8 +11470,9 @@
  },
  "ui": {
   "view": {
-   "kind": "junctions",
-   "elementId": "09rpvzkl"
+   "kind": "room",
+   "roomId": "mmcst90r",
+   "wall": 2
   }
  }
 }
