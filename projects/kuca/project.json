@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-27T17:08:29.873Z",
+ "savedAt": "2026-10-27T17:17:25.131Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -3285,27 +3285,6 @@
     "id": "9x2d5zn4",
     "label": "U8",
     "slotOrder": 1
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "box",
-    "xM": 3.12,
-    "zM": 1.89,
-    "note": "",
-    "id": "h9b34x63",
-    "label": "K4"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "box",
-    "xM": 0.81,
-    "zM": 1.78,
-    "note": "",
-    "id": "k5aw2h5a",
-    "label": "K6",
-    "depth": "plitka"
    },
    {
     "roomId": "c2b55x6m",
@@ -7213,7 +7192,7 @@
    {
     "roomId": "c2b55x6m",
     "wall": 1,
-    "type": "NYM-J 5x1.5",
+    "type": "NYM-J 3x2.5",
     "from": {
      "kind": "element",
      "id": "zda0udtf"
@@ -7281,115 +7260,6 @@
     "via": [],
     "note": "",
     "id": "7uph78yk"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "element",
-     "id": "ve09jahx"
-    },
-    "to": {
-     "kind": "element",
-     "id": "h9b34x63"
-    },
-    "via": [],
-    "note": "",
-    "id": "n51ieyx1"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "element",
-     "id": "91pjtv3y"
-    },
-    "to": {
-     "kind": "element",
-     "id": "h9b34x63"
-    },
-    "via": [],
-    "note": "",
-    "id": "xkg28mzt"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "NYM-J 5x1.5",
-    "from": {
-     "kind": "element",
-     "id": "h9b34x63"
-    },
-    "to": {
-     "kind": "corner",
-     "corner": 2,
-     "zM": 1.91
-    },
-    "via": [],
-    "note": "",
-    "id": "l7qks7ej"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "exit",
-     "conduitId": "mticy06y",
-     "end": "start"
-    },
-    "to": {
-     "kind": "element",
-     "id": "k5aw2h5a"
-    },
-    "via": [
-     {
-      "xM": 0.81,
-      "zM": 1.95
-     }
-    ],
-    "note": "",
-    "id": "8upzj1ex"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "exit",
-     "conduitId": "g5az26vl",
-     "end": "start"
-    },
-    "to": {
-     "kind": "element",
-     "id": "k5aw2h5a"
-    },
-    "via": [
-     {
-      "xM": 0.82,
-      "zM": 1.89
-     }
-    ],
-    "note": "",
-    "id": "o1wdgxb9"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "element",
-     "id": "k5aw2h5a"
-    },
-    "to": {
-     "kind": "element",
-     "id": "91pjtv3y"
-    },
-    "via": [],
-    "note": "",
-    "id": "if0mt5cu"
    },
    {
     "roomId": "24uhwdfi",
@@ -10855,38 +10725,6 @@
     "id": "0tnxqxus"
    },
    {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "element",
-     "id": "91pjtv3y"
-    },
-    "to": {
-     "kind": "element",
-     "id": "h9b34x63"
-    },
-    "via": [],
-    "note": "",
-    "id": "q7lasofl"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "element",
-     "id": "k5aw2h5a"
-    },
-    "to": {
-     "kind": "element",
-     "id": "91pjtv3y"
-    },
-    "via": [],
-    "note": "",
-    "id": "xjzghyw1"
-   },
-   {
     "roomId": "mmcst90r",
     "wall": 0,
     "type": "NYM-J 3x1.5",
@@ -11317,84 +11155,6 @@
    },
    {
     "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "element",
-     "id": "k5aw2h5a"
-    },
-    "to": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 0.77
-    },
-    "via": [
-     {
-      "xM": 0.81,
-      "zM": 0.75
-     }
-    ],
-    "note": "",
-    "id": "p0qgfo4k"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 0,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 0.77
-    },
-    "to": {
-     "kind": "element",
-     "id": "69004nya"
-    },
-    "via": [],
-    "note": "",
-    "id": "twvoipl7"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "element",
-     "id": "k5aw2h5a"
-    },
-    "to": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 0.77
-    },
-    "via": [
-     {
-      "xM": 0.81,
-      "zM": 0.75
-     }
-    ],
-    "note": "",
-    "id": "ow2unnz0"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 0,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 0.77
-    },
-    "to": {
-     "kind": "element",
-     "id": "69004nya"
-    },
-    "via": [],
-    "note": "",
-    "id": "qqu71dkf"
-   },
-   {
-    "roomId": "c2b55x6m",
     "wall": 0,
     "type": "NYM-J 3x1.5",
     "from": {
@@ -11559,6 +11319,180 @@
     "via": [],
     "note": "",
     "id": "jq1fadzr"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "mticy06y",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "91pjtv3y"
+    },
+    "via": [],
+    "note": "",
+    "id": "npxgrrke"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "g5az26vl",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "91pjtv3y"
+    },
+    "via": [],
+    "note": "",
+    "id": "okb80iq5"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "91pjtv3y"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 0.74
+    },
+    "via": [
+     {
+      "xM": 0.98,
+      "zM": 1.81
+     },
+     {
+      "xM": 0.98,
+      "zM": 0.75
+     }
+    ],
+    "note": "",
+    "id": "3esl2hrl"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 0,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 0.74
+    },
+    "to": {
+     "kind": "element",
+     "id": "69004nya"
+    },
+    "via": [],
+    "note": "",
+    "id": "rg4nt813"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "91pjtv3y"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 0.74
+    },
+    "via": [
+     {
+      "xM": 0.98,
+      "zM": 1.81
+     },
+     {
+      "xM": 0.98,
+      "zM": 0.75
+     }
+    ],
+    "note": "",
+    "id": "49njitkw"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 0.74
+    },
+    "to": {
+     "kind": "element",
+     "id": "69004nya"
+    },
+    "via": [],
+    "note": "",
+    "id": "kvvquwmb"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "zda0udtf"
+    },
+    "to": {
+     "kind": "element",
+     "id": "ve09jahx"
+    },
+    "via": [
+     {
+      "xM": 1.83,
+      "zM": 0.72
+     }
+    ],
+    "note": "",
+    "id": "45wksrwt"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "zda0udtf"
+    },
+    "to": {
+     "kind": "element",
+     "id": "91pjtv3y"
+    },
+    "via": [],
+    "note": "",
+    "id": "qbz6e993"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "NYM-J 5x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 2,
+     "zM": 1.91
+    },
+    "to": {
+     "kind": "element",
+     "id": "91pjtv3y"
+    },
+    "via": [],
+    "note": "",
+    "id": "f8nxhja5"
    }
   ],
   "categories": [
@@ -11680,7 +11614,7 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "mmcst90r",
+   "roomId": "c2b55x6m",
    "wall": 1
   }
  }
