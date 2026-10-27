@@ -929,6 +929,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   const tagged = (t: string, c: string | undefined) => (multi && c && (t === 'L' || t === 'N') ? `${t}@${c}` : t)
   if (!cables.length) checks.push({ level: 'warn', text: 'U kutiju ne ulazi nijedan kabel.' })
   else if (box.type === 'box' && feeds === 0 && !isFed(box, p)) checks.push({ level: 'err', text: 'Kutija nema dolaza: ni izravno (bužir kategorije Dolaz, ormar, uloga "Dolaz") ni preko druge kutije koja ga ima.' })
+  else if (box.type === 'modbox' && hasL && feeds === 0 && !isFed(box, p)) checks.push({ level: 'err', text: 'Doza nema dolaza: njeni kabeli ne vode do ormara ni do kutije koja ima dolaz, pa ni krug ni presjek ne mogu biti provjereni.' })
   else if (box.type === 'modbox' && !hasL && devices.some((d) => !isData(d.el) && !(d.el.type === 'switch' && lowVoltSwitch(d.el, p)))) checks.push({ level: 'err', text: 'Doza nema faze: treba kabel iz razvodne kutije.' })
   else if (feeds > 1) checks.push({ level: 'warn', text: `${feeds} dolaza u istu kutiju; obično je jedan.` })
 

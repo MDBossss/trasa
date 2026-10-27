@@ -761,6 +761,13 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const p = { ...s, cableStock: undefined, cables: [cab('a', 0, 'NYM-J 3x2.5', { kind: 'free', xM: 0.5, zM: 2 }, { kind: 'corner', corner: 1, zM: 2 }), cab('b', 1, 'NYM-J 5x1.5', { kind: 'corner', corner: 1, zM: 2 }, { kind: 'free', xM: 0.5, zM: 0.3 })] }
     return { chain: E.chainCables(p.cables[0], p).length, warn: ['a', 'b'].map((id) => /različite tipove/.test(E.cableIssues(p).get(id)?.texts.join(' ') ?? '')) } })
   assert.deepEqual(mixedChain, { chain: 2, warn: [true, true] }, 'one cable round a corner with two types is flagged on both parts')
+  // two frames joined only to each other: a socket there has no feed, so no circuit rule could check it
+  const unfed = await page.evaluate(() => { const E = window.__trasaEngine; const s = window.__trasa.getState().project; const room = s.rooms[0].id
+    const e = (o) => ({ roomId: room, wall: 0, note: '', ...o })
+    const p = { ...s, elements: [e({ id: 'fa', label: 'D1', type: 'modbox', xM: 0.5, zM: 0.3, modules: 2 }), e({ id: 'fu', label: 'U1', type: 'socket', host: 'fa', xM: 0.5, zM: 0.3 }), e({ id: 'fb', label: 'D2', type: 'modbox', xM: 1.5, zM: 0.3, modules: 2 }), e({ id: 'fv', label: 'U2', type: 'socket', host: 'fb', xM: 1.5, zM: 0.3 })],
+      cables: [{ id: 'fc', roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'element', id: 'fa' }, to: { kind: 'element', id: 'fb' }, via: [], note: '' }] }
+    return E.allJunctions(p).map((j) => j.checks.some((c) => c.level === 'err' && /nema dolaza/.test(c.text))) })
+  assert.deepEqual(unfed, [true, true], 'frames with no way to a feed are an error')
   assert.equal(rules.suggest, '5×1,5 + 3×1,5', 'no 7-core cable: 5×1,5 + 3×1,5, the second one using blue as a return'); assert.equal(rules.has, 7)
   assert.equal(rules.strict, '5×1,5 + 5×1,5', 'with blue kept free the second cable must be a 5-core')
   assert.equal(rules.boiler.sug, '3×2,5 + 3×2,5', 'the relay output to a boiler is never on a 1,5 second cable'); assert.ok(rules.boiler.err >= 1, 'a 5×1,5 carrying the boiler current is an error')
