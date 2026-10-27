@@ -494,7 +494,40 @@ function signalCarriers(p: Project): Map<string, Set<string>> {
 // Signals a place-to-place cable must carry: L N PE plus the extra signals routed over it.
 export function crossSignals(a: WallElement, b: WallElement, p: Project, cableId?: string): string[] {
   if (!cableId) { const sa = localSignals(a, p), sb = localSignals(b, p); return [...LNPE, ...[...sa].filter((s) => sb.has(s) && !LNPE.includes(s)).sort()] }
-  return [...LNPE, ...[...(signalCarriers(p).get(cableId) ?? [])].sort()]
+  return [...LNPE.filter((s) => s !== 'N' || !noNeutral(p).has(cableId)), ...[...(signalCarriers(p).get(cableId) ?? [])].sort()]
+}
+
+// Cables that need no N: everything on one side of the cable (reached without it) wants no neutral, e.g. a drop
+// to a frame of plain switches. Such a cable carries L PE and returns, and blue may be one of them.
+const noNCache = new WeakMap<Project, Set<string>>()
+export function noNeutral(p: Project): Set<string> {
+  const hit = noNCache.get(p)
+  if (hit) return hit
+  const adj = new Map<string, { to: string; bundle: string }[]>()
+  const bundles = new Map<string, string[]>()
+  for (const c of p.cables) {
+    const pl = cablePlaces(c, p)
+    const ids = bundleMembers(c.id, p).flatMap((m) => m.ids)
+    if (!pl || !ids.length || bundles.has(ids[0])) continue
+    bundles.set(ids[0], ids)
+    adj.set(pl[0].id, [...(adj.get(pl[0].id) ?? []), { to: pl[1].id, bundle: ids[0] }])
+    adj.set(pl[1].id, [...(adj.get(pl[1].id) ?? []), { to: pl[0].id, bundle: ids[0] }])
+  }
+  const wantsN = new Map<string, boolean>()
+  const wants = (id: string) => { if (!wantsN.has(id)) { const e = p.elements.find((x) => x.id === id); wantsN.set(id, !!e && localSignals(e, p).has('N')) } return wantsN.get(id)! }
+  const out = new Set<string>()
+  for (const [key, ids] of bundles) {
+    const pl = cablePlaces(p.cables.find((c) => c.id === ids[0])!, p)!
+    // flood each side without crossing this bundle; a side that loops back to the other end is not a dead end
+    const side = (start: string, other: string) => {
+      const seen = new Set([start]), queue = [start]
+      while (queue.length) { const cur = queue.shift()!; if (cur === other || wants(cur)) return true; for (const e of adj.get(cur) ?? []) if (e.bundle !== key && !seen.has(e.to)) { seen.add(e.to); queue.push(e.to) } }
+      return false
+    }
+    if (!side(pl[0].id, pl[1].id) || !side(pl[1].id, pl[0].id)) for (const id of ids) out.add(id)
+  }
+  noNCache.set(p, out)
+  return out
 }
 
 // Cables joining the same two places form one bundle (e.g. 5×1,5 + 3×1,5 instead of a 7-core cable).
@@ -545,7 +578,8 @@ export function cableLoad(cableId: string, a: WallElement, b: WallElement, p: Pr
     const core = new Map<WireColor, string | null>()
     for (const c of coreColors(m.type)) {
       if (c === 'gnye' && (i === 0 || !gnyeOk || k >= extras.length)) core.set(c, 'PE')
-      else if (c === 'blue' && (i === 0 || !blueOk)) core.set(c, i === 0 ? 'N' : null)
+      else if (c === 'blue' && i === 0 && signals.includes('N')) core.set(c, 'N')
+      else if (c === 'blue' && !blueOk) core.set(c, null)
       else if (c === 'brown' && i === 0) core.set(c, 'L')
       else core.set(c, extras[k++] ?? null)
     }
@@ -564,9 +598,10 @@ export function cableNeeds(c: Cable, p: Project): CableNeeds | null {
   const needed = load.signals.length
   const blue = rulesOf(p).blueReturn
   const gnye = rulesOf(p).gnyeReturn
-  const has = bundleSlots(load.members, blue, gnye)
+  const noN = !load.signals.includes('N')
+  const has = bundleSlots(load.members, blue, gnye, noN)
   const first = bundleMembers(c.id, p)[0]?.first ?? c
-  const fix = suggestCables(needed, Math.max(minSectionFor(first, p), sectionOf(load.members[0] ?? c.type)), cableStockOf(p), 1.5, blue, gnye)
+  const fix = suggestCables(needed, Math.max(minSectionFor(first, p), sectionOf(load.members[0] ?? c.type)), cableStockOf(p), 1.5, blue, gnye, noN)
   const suggest = fix ? fix.map(cableShort).join(' + ') : `${needed} žila`
   const rows = coreColors(thinnest(c, p).type).map((color) => ({ color, sig: load.core.get(color) ?? null }))
   return { signals: load.signals, needed, has, suggest, fix, rows, missing: load.missing, members: load.members, places: [places[0], places[1]] }

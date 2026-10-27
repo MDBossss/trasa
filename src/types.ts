@@ -284,18 +284,19 @@ const coresOf = (t: string) => coreColors(t).length
 // Usable signal slots of a bundle: the first cable carries L N PE and its spares; a further cable has no neutral of
 // its own, so every core but green-yellow carries returns (blue and green-yellow too when allowed,
 // each marked at both ends).
-export const bundleSlots = (types: string[], blue = true, gnye = false) => types.reduce((n, t, i) => n + (i === 0 ? coresOf(t) : Math.max(0, coresOf(t) - (t.toLowerCase().includes('nym-o') ? 0 : 2 - (blue ? 1 : 0) - (gnye ? 1 : 0)))), 0)
+// noN: the bundle carries no neutral (a plain switch drop), so the first cable's blue is a return only when the rule allows it
+export const bundleSlots = (types: string[], blue = true, gnye = false, noN = false) => types.reduce((n, t, i) => n + (i === 0 ? coresOf(t) - (noN && !blue && !t.toLowerCase().includes('nym-o') ? 1 : 0) : Math.max(0, coresOf(t) - (t.toLowerCase().includes('nym-o') ? 0 : 2 - (blue ? 1 : 0) - (gnye ? 1 : 0)))), 0)
 // Cheapest stock answer for `needed` cores at `minMm2`: one cable, else two side by side (fewest cores first).
 // The first cable carries L N PE and must meet `minMm2`; a second one only carries returns, so 1,5 will do.
-export function suggestCables(needed: number, minMm2: number, stock: string[], minRest = 1.5, blue = true, gnye = false): string[] | null {
+export function suggestCables(needed: number, minMm2: number, stock: string[], minRest = 1.5, blue = true, gnye = false, noN = false): string[] | null {
   const by = (min: number) => stock.filter((t) => /^NYM-J/.test(t) && sectionOf(t) >= min).sort((a, b) => coresOf(a) - coresOf(b) || sectionOf(a) - sectionOf(b))
   const firsts = by(minMm2), rests = by(Math.min(minRest, minMm2))
-  const one = firsts.find((t) => coresOf(t) >= needed)
+  const one = firsts.find((t) => bundleSlots([t], blue, gnye, noN) >= needed)
   if (one) return [one]
   let best: string[] | null = null
   // fewest cores, then thinnest; on a tie the bigger cable goes first (it keeps L N PE and its own spares)
   const cost = (x: string[]) => coresOf(x[0]) + coresOf(x[1]) + (sectionOf(x[0]) + sectionOf(x[1])) / 10 - coresOf(x[0]) / 100
-  for (const a of firsts) for (const b of rests) if (bundleSlots([a, b], blue, gnye) >= needed && (!best || cost([a, b]) < cost(best))) best = [a, b]
+  for (const a of firsts) for (const b of rests) if (bundleSlots([a, b], blue, gnye, noN) >= needed && (!best || cost([a, b]) < cost(best))) best = [a, b]
   return best
 }
 export const cableShort = (t: string) => t.replace(/^NYM-[JO] /, '').replace('x', '×').replace('.', ',')
