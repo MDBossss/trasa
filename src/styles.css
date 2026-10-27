@@ -203,6 +203,11 @@ code { font: 11px ui-monospace, Menlo, monospace; background: var(--panel2); pad
 .jc-wire { cursor: pointer; transition: opacity 0.12s; }
 .jc-wire.dim, .jc-cable.dim { opacity: 0.15; }
 .jc-wire.hl { filter: drop-shadow(0 0 3px rgba(30,136,229,0.9)); }
+.jc-wago { transition: opacity 0.12s; }
+.jc-wago.dim { opacity: 0.35; }
+.jc-wago.hl { filter: drop-shadow(0 0 4px rgba(30,136,229,0.9)); }
+.jc-hint { margin: 0; font-size: 12px; }
+.jc-hint kbd { font: inherit; font-size: 11px; padding: 0 5px; border: 1px solid var(--line, #bbb); border-bottom-width: 2px; border-radius: 4px; }
 .stepbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; width: 100%; max-width: 900px; }
 .stepbar p { flex-basis: 100%; margin: 0; }
 .legend { display: flex; flex-wrap: wrap; gap: 10px 14px; font-size: 12px; color: var(--muted); }

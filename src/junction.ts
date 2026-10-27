@@ -944,7 +944,8 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   for (const t of terminals) if (t.wago) bom.set(`WAGO 221-${t.wago}`, (bom.get(`WAGO 221-${t.wago}`) ?? 0) + t.chained)
   for (const d of devices) if (d.kind === 'relay') { const k = RELAY_MODELS[relayModelOf(d.el)].label; bom.set(k, (bom.get(k) ?? 0) + 1) }
   // how big the box has to be, and when to split instead of growing
-  const boxSizes = boxSizesOf(p)
+  const fixed = BOX_CATALOG.find((b) => b.label === box.boxSize)
+  const boxSizes: [number, number][] = fixed ? [[fixed.w, fixed.h]] : boxSizesOf(p)
   const lay = boxLayout({ box, terminals, devices, boxSizes })
   const size = { W: lay.W, H: lay.H, overflow: lay.overflow, stacked: lay.stacked }
   if (box.type === 'box') {
@@ -953,7 +954,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
     const smallest = boxSizes[0], largest = boxSizes[boxSizes.length - 1]
     const tooBig = lay.W >= largest[0] && lay.H >= largest[1] && lay.placed.length === 0
     if (cables.length > entries) checks.push({ level: 'err', text: `${cables.length} kabela u jednoj kutiji: kutija ${boxSizeLabel(lay.W, lay.H)} ima ${entries} uvodnica. Podijeli na dvije kutije (npr. svjetla / utičnice / vrata).` })
-    else if (tooBig) checks.push({ level: 'err', text: `Ne stane ni u ${boxSizeLabel(largest[0], largest[1])}: podijeli na dvije kutije po namjeni (svjetla / utičnice / vrata).` })
+    else if (tooBig) checks.push({ level: 'err', text: fixed ? `Ne stane u odabranu ${fixed.label}: odaberi veću ili Automatski, ili podijeli kutiju.` : `Ne stane ni u ${boxSizeLabel(largest[0], largest[1])}: podijeli na dvije kutije po namjeni (svjetla / utičnice / vrata).` })
     else if (lay.overflow) { const cat = BOX_CATALOG.find((b) => b.w === lay.W && b.h === lay.H); checks.push({ level: 'warn', text: `U ${boxSizeLabel(smallest[0], smallest[1])} ne stane: uzmi kutiju ${boxSizeLabel(lay.W, lay.H)}${cat?.note ? ` (${cat.note})` : ''}${relays ? ', duboku (relej)' : ''}.` }) }
   }
   const level: Level = checks.some((c) => c.level === 'err') ? 'err' : checks.some((c) => c.level === 'warn') ? 'warn' : 'ok'

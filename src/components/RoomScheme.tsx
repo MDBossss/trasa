@@ -20,6 +20,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
   const [size, setSize] = useState({ w: 0, h: 0 })
   const [cam, setCam] = useState({ x: 0, y: 0, scale: 1 })
   const [hover, setHover] = useState<string | null>(null)
+  const [wago, setWago] = useState<{ box: string; key: string } | null>(null)
 
   // boxes in walking order around the room: wall by wall, left to right on each wall
   const js = useMemo(() => junctions.filter((j) => j.room.id === roomId).sort((a, b) => a.box.wall - b.box.wall || a.box.xM - b.box.xM), [junctions, roomId])
@@ -194,7 +195,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
   const hoverFor = (boxId: string) => { const l = hover ? links.find((x) => x.id === hover) : null; const k = l ? l.boxes.indexOf(boxId) : -1; return l && k >= 0 ? `cable:${l.cableIds[k]}` : null }
   return (
     <div ref={wrap} className="scheme" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
-      <Hud scale={cam.scale} onZoomIn={() => zoomAt(1.2, size.w / 2, size.h / 2)} onZoomOut={() => zoomAt(1 / 1.2, size.w / 2, size.h / 2)} onFit={fit} toggles={[]} hint={<><b>Cijela soba</b> · kutije redom kako stoje u sobi · pređi mišem preko kabela · klik na kutiju otvara njen spoj</>} />
+      <Hud scale={cam.scale} onZoomIn={() => zoomAt(1.2, size.w / 2, size.h / 2)} onZoomOut={() => zoomAt(1 / 1.2, size.w / 2, size.h / 2)} onFit={fit} toggles={[]} hint={<><b>Cijela soba</b> · kutije redom kako stoje u sobi · pređi mišem preko kabela · <kbd>Shift</kbd> + miš na WAGO: sve njegove žice · klik na kutiju otvara njen spoj</>} />
       {!js.length && <div className="empty"><div>U ovoj sobi nema kutija ni doza</div></div>}
       <div className="scheme-layer" style={{ transform: `translate(${cam.x}px, ${cam.y + extent.offY * cam.scale}px) scale(${cam.scale})`, width: boardW, height: boardH }}>
         <svg className="scheme-links" width={boardW} height={boardH}>
@@ -217,7 +218,7 @@ export function RoomScheme({ junctions, roomId, onOpen }: { junctions: Junction[
         {boxes.map(({ j, tx, ty, plan, vb }) => (
           <div key={j.box.id} className="sbox" data-box={j.box.id} style={{ left: tx, top: ty, width: vb.w, height: vb.h, transform: `scale(${BOX_SCALE})` }} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') onOpen(j.box.id) }}>
             <div className="sbox-head"><span className={`dot ${j.level}`} /><b>{j.box.label}</b><span className="muted">{sizeLabel(j)}{isPlace(j.box) && j.box.depth === 'duboka' ? ', duboka' : ''} · zid {j.box.wall + 1}</span></div>
-            <JunctionCanvas className="sbox-svg" j={j} plan={plan} mode="all" step={0} hover={hoverFor(j.box.id)} onHover={() => {}} onPick={() => onOpen(j.box.id)} labels={(c) => !tubed.has(c.cable.id)} />
+            <JunctionCanvas className="sbox-svg" j={j} plan={plan} mode="all" step={0} hover={wago?.box === j.box.id ? wago.key : hoverFor(j.box.id)} onHover={(key) => setWago(key ? { box: j.box.id, key } : null)} onPick={() => onOpen(j.box.id)} labels={(c) => !tubed.has(c.cable.id)} />
           </div>
         ))}
       </div>

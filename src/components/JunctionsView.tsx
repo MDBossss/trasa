@@ -60,7 +60,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
                     {t.wires.map((w, i) => {
                       const key = `${t.id}#${i}`
                       const n = plan.findIndex((p) => p.key === key)
-                      const cls = mode === 'steps' ? (n === step ? 'cur' : n < step ? 'done' : '') : hover === key ? 'cur' : ''
+                      const cls = mode === 'steps' ? (n === step ? 'cur' : n < step ? 'done' : '') : hover === key || hover === `term:${t.id}` ? 'cur' : ''
                       return (
                         <li key={key} className={cls} onMouseEnter={() => setHover(key)} onMouseLeave={() => setHover(null)} onClick={() => { setMode('steps'); setStep(n) }}>
                           <span className="n">{n + 1}</span>
@@ -201,6 +201,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
         ) : j ? (
           <div className="junction-stage">
             <JunctionCanvas j={j} plan={plan} mode={mode} step={step} hover={hover} onHover={setHover} onPick={(i) => { setMode('steps'); setStep(i) }} />
+            {mode === 'all' && <p className="muted jc-hint">Drži <kbd>Shift</kbd> i prijeđi mišem preko WAGO-a ili žice: istaknu se sve žice spojene na taj WAGO.</p>}
             {mode === 'steps' && cur && (
               <div className="stepbar">
                 <button onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}><Icon.prev /> Natrag</button>

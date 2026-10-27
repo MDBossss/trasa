@@ -814,6 +814,15 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   // with only 10 × 10 and 30 × 20 in Postavke the box jumps straight to the big one
   const big = await page.evaluate(({ box }) => { const s = window.__trasa.getState(), E = window.__trasaEngine; const j = (p) => E.allJunctions(p).find((x) => x.box.id === box); return [j({ ...s.project, boxStock: ['10 × 10', '30 × 20'] }), j(s.project)].map((x) => E.boxSizeLabel(x.size.W, x.size.H)) }, ids)
   assert.equal(big[0], '30 × 20'); assert.notEqual(big[1], '30 × 20')
+  // a size picked by hand wins over the list, and a box that does not fit it says so
+  const pick = await page.evaluate(({ box }) => { const s = window.__trasa.getState(), E = window.__trasaEngine; const at = (size) => { const q = { ...s.project, elements: s.project.elements.map((e) => (e.id === box ? { ...e, boxSize: size } : e)) }; return E.allJunctions(q).find((x) => x.box.id === box) }; const a = at('23 × 18'), b = at('10 × 10'); return [E.boxSizeLabel(a.size.W, a.size.H), b.checks.some((c) => c.level === 'err' && /odabranu 10 × 10/.test(c.text))] }, ids)
+  assert.deepEqual(pick, ['23 × 18', true])
+  // Shift + hover on a WAGO lights up every wire on it
+  const wg = page.locator('.junction-svg .jc-wago').first()
+  await page.keyboard.down('Shift'); await wg.locator('rect').nth(1).hover({ force: true })
+  await page.locator('.junction-svg .jc-wago.hl').waitFor()
+  assert.ok(await page.locator('.junction-svg .jc-wire.hl').count() >= 2, 'Shift-hover highlights the WAGO wires')
+  await page.keyboard.up('Shift'); await page.mouse.move(2, 2)
   const more = await page.evaluate(({ box }) => { const s = window.__trasa.getState(); const room = s.project.rooms[0].id; const ids = []; for (let i = 0; i < 14; i++) { const u = s.addElement({ roomId: room, wall: 0, type: 'socket', xM: 2 + i * 0.2, zM: 0.3, note: '' }); ids.push(u, s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: u }, via: [], note: '' })) } return ids }, ids)
   await page.getByRole('button', { name: 'Podijeli na dvije', exact: true }).click()
   const split = await page.evaluate(() => { const s = window.__trasa.getState(); const nb = s.project.elements.filter((e) => e.type === 'box').at(-1); return { id: nb.id, label: nb.label, link: s.project.cables.at(-1) } })

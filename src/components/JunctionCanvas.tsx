@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { WIRE_HEX, WIRE_LABEL, type WireColor, RELAY_LOOK, relayBrand, relayModelOf } from '../types'
 import { CAP_H, CAP_W, DEPTH, GAP, WAGO, boxLayout, boxSizeLabel, wagoSlot, type BoxCable, type Junction, type Placed, type PlanWire, type Side, type Terminal } from '../junction'
 
@@ -72,10 +72,21 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
   const vbH = OY + mm(H) + (sides.bottom.length || j.box.type === 'kip' ? 200 : 60)
   const [bx, by] = px(0, 0)
   const idx = (k: string) => plan.findIndex((w) => w.key === k)
+  // with Shift held, hovering a WAGO or one of its wires lights up every wire on that WAGO
+  const shift = useRef(false), last = useRef<string | null>(null)
+  const termOf = (k: string) => (k.startsWith('term:') ? k : plan.find((w) => w.key === k) ? `term:${plan.find((w) => w.key === k)!.terminal.id}` : k)
+  const show = (k: string) => onHover(shift.current ? termOf(k) : k.startsWith('term:') ? null : k)
+  const enter = (k: string, e: { shiftKey: boolean }) => { last.current = k; shift.current = e.shiftKey; show(k) }
+  const leave = () => { last.current = null; onHover(null) }
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => { if (e.key !== 'Shift' || shift.current === (e.type === 'keydown')) return; shift.current = e.type === 'keydown'; if (last.current) show(last.current) }
+    window.addEventListener('keydown', key); window.addEventListener('keyup', key)
+    return () => { window.removeEventListener('keydown', key); window.removeEventListener('keyup', key) }
+  })
   const wireState = (k: string) => {
     const i = idx(k)
     if (mode === 'steps') return i > step ? 'dim' : i === step ? 'hl' : ''
-    if (hover) { if (hover === k) return 'hl'; if (hover.startsWith('cable:')) return plan[i].cable?.cable.id === hover.slice(6) ? 'hl' : 'dim'; return 'dim' }
+    if (hover) { if (hover === k) return 'hl'; if (hover.startsWith('term:')) return plan[i].terminal.id === hover.slice(5) ? 'hl' : 'dim'; if (hover.startsWith('cable:')) return plan[i].cable?.cable.id === hover.slice(6) ? 'hl' : 'dim'; return 'dim' }
     return ''
   }
   // where a plan wire starts: the cable's sheath end or the device port
@@ -118,7 +129,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
         const [lx, ly] = px(e.p[0] - e.n[0] * off, e.p[1] - e.n[1] * off)
         const anchor = c.side === 'left' ? 'start' : c.side === 'right' ? 'end' : 'middle'
         const dy = c.side === 'top' ? -6 : c.side === 'bottom' ? 14 : -(mm(od) / 2 + 18)
-        const dim = mode === 'all' && hover && hover !== `cable:${c.cable.id}` && !plan.some((w) => w.key === hover && w.cable?.cable.id === c.cable.id)
+        const dim = mode === 'all' && hover && hover !== `cable:${c.cable.id}` && !plan.some((w) => (w.key === hover || `term:${w.terminal.id}` === hover) && w.cable?.cable.id === c.cable.id)
         return (
           <g key={c.cable.id} className={`jc-cable ${dim ? 'dim' : ''}`} onMouseEnter={() => onHover(`cable:${c.cable.id}`)} onMouseLeave={() => onHover(null)}>
             <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#9a978f" strokeWidth={mm(od) + 2} strokeLinecap="round" />
@@ -140,7 +151,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
           const [ex, ey] = px(b.x - b.n[0] * 11, b.y - b.n[1] * 11)
           const [sx, sy] = px(a.x - a.n[0] * 7, a.y - a.n[1] * 7)
           return (
-            <g key={w.key} className={`jc-wire ${wireState(w.key)}`} data-tip={`${w.cable ? w.cable.label : w.device?.label}: ${WIRE_LABEL[w.color]} → ${w.terminal.label}${w.note ? ` (${w.note})` : ''}`} onMouseEnter={() => onHover(w.key)} onMouseLeave={() => onHover(null)} onClick={() => onPick(idx(w.key))}>
+            <g key={w.key} className={`jc-wire ${wireState(w.key)}`} data-tip={`${w.cable ? w.cable.label : w.device?.label}: ${WIRE_LABEL[w.color]} → ${w.terminal.label}${w.note ? ` (${w.note})` : ''}`} onMouseEnter={(e) => enter(w.key, e)} onMouseLeave={leave} onClick={() => onPick(idx(w.key))}>
               <path d={d} fill="none" stroke="rgba(0,0,0,.25)" strokeWidth={sw + 2} strokeLinecap="round" />
               <path d={d} fill="none" stroke={WIRE_HEX[w.color]} strokeWidth={sw} strokeLinecap="round" />
               {w.color === 'gnye' && <path d={d} fill="none" stroke="#f2d31b" strokeWidth={sw} strokeDasharray="7 9" />}
@@ -183,7 +194,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
           for (let u = 0; u < k - 1; u++) { usedPorts.add(`${u}:${n - 1}`); usedPorts.add(`${u + 1}:0`) }
           const bridgeColor = pl.t.id.startsWith('L') && /^L(@|$)/.test(pl.t.id) ? WIRE_HEX.brown : /^N(@|$)/.test(pl.t.id) ? WIRE_HEX.blue : pl.t.id === 'PE' ? WIRE_HEX.gnye : WIRE_HEX.black
           return (
-            <g key={pl.t.id}>
+            <g key={pl.t.id} className={`jc-wago ${hover?.startsWith('term:') ? (hover === `term:${pl.t.id}` ? 'hl' : 'dim') : ''}`} data-tip={`${pl.t.label} · ${pl.t.desc} · drži Shift za sve žice na ovom WAGO-u`} onMouseEnter={(e) => enter(`term:${pl.t.id}`, e)} onMouseLeave={leave}>
               {Array.from({ length: k }, (_, u) => {
                 const ux = x + mm(u * (uw + GAP))
                 return (

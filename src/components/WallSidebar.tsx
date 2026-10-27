@@ -3,7 +3,7 @@ import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
 import { socket15Of, cableStockOf, cableShort, frameSlots, frameName, CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, WIRE_LABEL, APPLIANCES, type ApplianceKind, type BoxDepth, type CableRole, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
-import { cableIssues, cableNeeds, chainCables, circuitsOf, resolveCable, roleLabel, terminalMeta } from '../junction'
+import { BOX_CATALOG, cableIssues, cableNeeds, chainCables, circuitsOf, resolveCable, roleLabel, terminalMeta } from '../junction'
 import { Icon } from './Icons'
 import { wireSwatch } from './JunctionCanvas'
 
@@ -279,6 +279,15 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
               Doza
               <select value={el.depth ?? 'plitka'} onChange={(e) => updateElement(el.id, { depth: e.target.value as BoxDepth })}>
                 {DEPTHS.map((d) => <option key={d.id} value={d.id}>{d.label}</option>)}
+              </select>
+            </label>
+          )}
+          {el.type === 'box' && (
+            <label>
+              Veličina kutije
+              <select value={el.boxSize ?? ''} onChange={(e) => updateElement(el.id, { boxSize: e.target.value || undefined })}>
+                <option value="">Automatski (najmanja s popisa koja stane)</option>
+                {BOX_CATALOG.map((b) => <option key={b.label} value={b.label}>{b.label}</option>)}
               </select>
             </label>
           )}
