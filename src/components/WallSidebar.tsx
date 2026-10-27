@@ -310,7 +310,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
           </div>
           <label>
             Tip
-            <select value={cable.type} onChange={(e) => updateCable(cable.id, { type: e.target.value })}>
+            <select value={cable.type} onChange={(e) => { const t = e.target.value; chainCables(cable, project).forEach((x) => updateCable(x.id, { type: t })) }}>
               {(() => { const stock = cableStockOf(project); const mine = CABLE_TYPES.filter((t) => stock.includes(t) || !/^NYM/.test(t)), rest = CABLE_TYPES.filter((t) => !mine.includes(t)); return <>{mine.map((t) => <option key={t} value={t}>{t}</option>)}{rest.length > 0 && <optgroup label="Nije na mom popisu">{rest.map((t) => <option key={t} value={t}>{t}</option>)}</optgroup>}</> })()}
             </select>
           </label>

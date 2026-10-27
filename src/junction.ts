@@ -1145,6 +1145,17 @@ export function cableIssues(p: Project): Map<string, CableIssue> {
       out.set(c.id, cur)
     }
   }
+  // one physical cable (corner / conduit segments) drawn with different types on its parts
+  const seen = new Set<string>()
+  for (const c of p.cables) {
+    if (seen.has(c.id)) continue
+    const chain = chainCables(c, p)
+    chain.forEach((x) => seen.add(x.id))
+    const types = [...new Set(chain.map((x) => x.type))]
+    if (types.length < 2) continue
+    const text = `Isti kabel ima različite tipove po dijelovima (${types.map(cableShort).join(', ')}): odaberi tip na jednom dijelu, primijeni se na cijeli kabel.`
+    for (const x of chain) { const cur = out.get(x.id) ?? { level: 'warn' as const, texts: [] }; cur.texts.push(text); out.set(x.id, cur) }
+  }
   // a cable off the list is marked wherever it is, also on a segment no box sees (round a corner, to an appliance)
   const stock = p.cableStock
   if (stock) for (const c of p.cables) if (/^NYM/.test(c.type) && !stock.includes(c.type)) {

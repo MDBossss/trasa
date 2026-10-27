@@ -756,6 +756,11 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   assert.ok(await page.evaluate(() => { const E = window.__trasaEngine; const s = window.__trasa.getState().project
     const p = { ...s, cableStock: ['NYM-J 3x1.5'], cables: [{ id: 'x', roomId: s.rooms[0].id, wall: 0, type: 'NYM-J 5x2.5', from: { kind: 'corner', corner: 1, zM: 2 }, to: { kind: 'free', xM: 0.5, zM: 0.3 }, via: [], note: '' }] }
     return /nije na popisu/.test(E.cableIssues(p).get('x')?.texts.join(' ') ?? '') }), 'an off-list cable is marked even where no box sees it')
+  const mixedChain = await page.evaluate(() => { const E = window.__trasaEngine; const s = window.__trasa.getState().project; const room = s.rooms[0].id
+    const cab = (id, wall, type, from, to) => ({ id, roomId: room, wall, type, from, to, via: [], note: '' })
+    const p = { ...s, cableStock: undefined, cables: [cab('a', 0, 'NYM-J 3x2.5', { kind: 'free', xM: 0.5, zM: 2 }, { kind: 'corner', corner: 1, zM: 2 }), cab('b', 1, 'NYM-J 5x1.5', { kind: 'corner', corner: 1, zM: 2 }, { kind: 'free', xM: 0.5, zM: 0.3 })] }
+    return { chain: E.chainCables(p.cables[0], p).length, warn: ['a', 'b'].map((id) => /različite tipove/.test(E.cableIssues(p).get(id)?.texts.join(' ') ?? '')) } })
+  assert.deepEqual(mixedChain, { chain: 2, warn: [true, true] }, 'one cable round a corner with two types is flagged on both parts')
   assert.equal(rules.suggest, '5×1,5 + 3×1,5', 'no 7-core cable: 5×1,5 + 3×1,5, the second one using blue as a return'); assert.equal(rules.has, 7)
   assert.equal(rules.strict, '5×1,5 + 5×1,5', 'with blue kept free the second cable must be a 5-core')
   assert.equal(rules.boiler.sug, '3×2,5 + 3×2,5', 'the relay output to a boiler is never on a 1,5 second cable'); assert.ok(rules.boiler.err >= 1, 'a 5×1,5 carrying the boiler current is an error')
