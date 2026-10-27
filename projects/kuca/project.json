@@ -11403,7 +11403,11 @@
   ],
   "rules": {
    "gnyeReturn": true
-  }
+  },
+  "boxStock": [
+   "10 × 10",
+   "30 × 20"
+  ]
  },
  "ui": {
   "view": {

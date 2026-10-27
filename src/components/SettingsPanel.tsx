@@ -1,4 +1,5 @@
 import { useStore } from '../store'
+import { BOX_CATALOG } from '../junction'
 import { POWER_TYPES, cableShort, cableStockOf, rulesOf, spareCoresOf, type CableRules, type SpareCores } from '../types'
 
 // Project settings travel with the save file, so the electrician's sheets come out the same on every machine.
@@ -20,6 +21,8 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
   const { patchProject } = useStore.getState()
   const spare = spareCoresOf(project)
   const stock = cableStockOf(project), rules = rulesOf(project)
+  const boxStock = project.boxStock?.length ? project.boxStock : BOX_CATALOG.map((b) => b.label)
+  const toggleBox = (l: string) => patchProject({ boxStock: BOX_CATALOG.map((b) => b.label).filter((x) => (x === l ? !boxStock.includes(l) : boxStock.includes(x))) })
   const toggleStock = (t: string) => patchProject({ cableStock: stock.includes(t) ? stock.filter((x) => x !== t) : POWER_TYPES.filter((x) => x === t || stock.includes(x)) })
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -43,6 +46,13 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
         <div className="stock" role="group" aria-label="Kabeli koje koristim">
           {POWER_TYPES.map((t) => (
             <label key={t} className="inline"><input type="checkbox" checked={stock.includes(t)} onChange={() => toggleStock(t)} />{t.startsWith('NYM-O') ? 'NYM-O ' : ''}{cableShort(t)}</label>
+          ))}
+        </div>
+        <h4>Kutije koje koristim</h4>
+        <p className="muted">Razvodna kutija raste samo po ovim veličinama: kad ne stane u manju, uzima se sljedeća s popisa.</p>
+        <div className="stock" role="group" aria-label="Kutije koje koristim">
+          {BOX_CATALOG.map((b) => (
+            <label key={b.label} className="inline"><input type="checkbox" checked={boxStock.includes(b.label)} onChange={() => toggleBox(b.label)} />{b.label}</label>
           ))}
         </div>
         <h4>Pravila za presjek</h4>

@@ -315,6 +315,8 @@ export interface Project {
   // cable types in use (unset = all) and the section rules; both live with the project
   cableStock?: string[]
   rules?: Partial<CableRules>
+  // junction box sizes in use, by catalog label (unset = all)
+  boxStock?: string[]
   conduits: Conduit[]
   rooms: Room[]
   elements: WallElement[]
