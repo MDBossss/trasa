@@ -72,10 +72,10 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
   const vbH = OY + mm(H) + (sides.bottom.length || j.box.type === 'kip' ? 200 : 60)
   const [bx, by] = px(0, 0)
   const idx = (k: string) => plan.findIndex((w) => w.key === k)
-  // with Shift held, hovering a WAGO or one of its wires lights up every wire on that WAGO
+  // with Shift held, hovering a WAGO, a device or one of their wires lights up every wire on it
   const shift = useRef(false), last = useRef<string | null>(null)
   const termOf = (k: string) => (k.startsWith('term:') ? k : plan.find((w) => w.key === k) ? `term:${plan.find((w) => w.key === k)!.terminal.id}` : k)
-  const show = (k: string) => onHover(shift.current ? termOf(k) : k.startsWith('term:') ? null : k)
+  const show = (k: string) => onHover(shift.current ? termOf(k) : k.startsWith('term:') || k.startsWith('dev:') ? null : k)
   const enter = (k: string, e: { shiftKey: boolean }) => { last.current = k; shift.current = e.shiftKey; show(k) }
   const leave = () => { last.current = null; onHover(null) }
   useEffect(() => {
@@ -86,7 +86,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
   const wireState = (k: string) => {
     const i = idx(k)
     if (mode === 'steps') return i > step ? 'dim' : i === step ? 'hl' : ''
-    if (hover) { if (hover === k) return 'hl'; if (hover.startsWith('term:')) return plan[i].terminal.id === hover.slice(5) ? 'hl' : 'dim'; if (hover.startsWith('cable:')) return plan[i].cable?.cable.id === hover.slice(6) ? 'hl' : 'dim'; return 'dim' }
+    if (hover) { if (hover === k) return 'hl'; if (hover.startsWith('term:')) return plan[i].terminal.id === hover.slice(5) ? 'hl' : 'dim'; if (hover.startsWith('dev:')) return touchesDevice(plan[i].terminal, plan[i].port, hover.slice(4)) ? 'hl' : 'dim'; if (hover.startsWith('cable:')) return plan[i].cable?.cable.id === hover.slice(6) ? 'hl' : 'dim'; return 'dim' }
     return ''
   }
   // where a plan wire starts: the cable's sheath end or the device port
@@ -129,7 +129,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
         const [lx, ly] = px(e.p[0] - e.n[0] * off, e.p[1] - e.n[1] * off)
         const anchor = c.side === 'left' ? 'start' : c.side === 'right' ? 'end' : 'middle'
         const dy = c.side === 'top' ? -6 : c.side === 'bottom' ? 14 : -(mm(od) / 2 + 18)
-        const dim = mode === 'all' && hover && hover !== `cable:${c.cable.id}` && !plan.some((w) => (w.key === hover || `term:${w.terminal.id}` === hover) && w.cable?.cable.id === c.cable.id)
+        const dim = mode === 'all' && hover && hover !== `cable:${c.cable.id}` && !plan.some((w) => (w.key === hover || `term:${w.terminal.id}` === hover || (hover.startsWith('dev:') && touchesDevice(w.terminal, w.port, hover.slice(4)))) && w.cable?.cable.id === c.cable.id)
         return (
           <g key={c.cable.id} className={`jc-cable ${dim ? 'dim' : ''}`} onMouseEnter={() => onHover(`cable:${c.cable.id}`)} onMouseLeave={() => onHover(null)}>
             <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#9a978f" strokeWidth={mm(od) + 2} strokeLinecap="round" />
@@ -194,7 +194,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
           for (let u = 0; u < k - 1; u++) { usedPorts.add(`${u}:${n - 1}`); usedPorts.add(`${u + 1}:0`) }
           const bridgeColor = pl.t.id.startsWith('L') && /^L(@|$)/.test(pl.t.id) ? WIRE_HEX.brown : /^N(@|$)/.test(pl.t.id) ? WIRE_HEX.blue : pl.t.id === 'PE' ? WIRE_HEX.gnye : WIRE_HEX.black
           return (
-            <g key={pl.t.id} className={`jc-wago ${hover?.startsWith('term:') ? (hover === `term:${pl.t.id}` ? 'hl' : 'dim') : ''}`} data-tip={`${pl.t.label} · ${pl.t.desc} · drži Shift za sve žice na ovom WAGO-u`} onMouseEnter={(e) => enter(`term:${pl.t.id}`, e)} onMouseLeave={leave}>
+            <g key={pl.t.id} className={`jc-wago ${hover?.startsWith('term:') || hover?.startsWith('dev:') ? (hover === `term:${pl.t.id}` || (hover.startsWith('dev:') && pl.t.wires.some((_, i) => touchesDevice(pl.t, i, hover.slice(4)))) ? 'hl' : 'dim') : ''}`} data-tip={`${pl.t.label} · ${pl.t.desc} · drži Shift za sve žice na ovom WAGO-u`} onMouseEnter={(e) => enter(`term:${pl.t.id}`, e)} onMouseLeave={leave}>
               {Array.from({ length: k }, (_, u) => {
                 const ux = x + mm(u * (uw + GAP))
                 return (
@@ -244,8 +244,9 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
         const isBtn = d.kind !== 'relay'
         const look = isBtn ? { fill: '#fafaf7', stroke: '#555', text: '#333' } : RELAY_LOOK[relayBrand(relayModelOf(d.el))]
         const pitch = pl.w / d.ports.length
+        const what = ({ relay: 'releju', socket: 'utičnici', button: 'prekidaču', terminal: 'stezaljci' } as const)[d.kind]
         return (
-          <g key={d.el.id}>
+          <g key={d.el.id} className={`jc-wago ${hover?.startsWith('term:') || hover?.startsWith('dev:') ? (hover === `dev:${d.el.id}` ? 'hl' : 'dim') : ''}`} data-tip={`${d.el.label} · ${d.label} · drži Shift za sve žice na ${what}`} onMouseEnter={(e) => enter(`dev:${d.el.id}`, e)} onMouseLeave={leave}>
             <rect x={x + 2} y={y + 3} width={mm(pl.w)} height={mm(pl.h)} rx={4} fill="rgba(0,0,0,.18)" />
             <rect x={x} y={y} width={mm(pl.w)} height={mm(pl.h)} rx={4} fill={look.fill} stroke={look.stroke} strokeWidth={1.2} />
             {d.ports.map((p, i) => {
@@ -270,6 +271,12 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
       <text x={bx + (j.box.type === 'kip' ? mm(40) : 0) + mm(20) + 6} y={by + mm(H + 8) + 10} fontSize={10} fill="var(--muted)">20 mm · {j.box.type === 'box' ? `kutija ${boxSizeLabel(W, H)}` : `${W} × ${H} mm`}{lay.overflow ? (j.box.type === 'box' ? ` (${boxSizeLabel(...(j.boxSizes ?? [[90, 90]])[0])} je premala)` : ' (standardna je premala)') : ''}</text>
     </svg>
   )
+}
+
+// A wire belongs to a device when it lands on one of its ports, or on a direct (no WAGO) join with one.
+export function touchesDevice(t: Terminal, i: number, id: string) {
+  const w = t.wires[i]
+  return (w?.kind === 'port' && w.deviceId === id) || (!t.wago && !t.cap && t.wires.some((x) => x.kind === 'port' && x.deviceId === id))
 }
 
 function roleShort(c: BoxCable) {
