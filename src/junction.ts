@@ -1145,6 +1145,14 @@ export function cableIssues(p: Project): Map<string, CableIssue> {
       out.set(c.id, cur)
     }
   }
+  // a cable off the list is marked wherever it is, also on a segment no box sees (round a corner, to an appliance)
+  const stock = p.cableStock
+  if (stock) for (const c of p.cables) if (/^NYM/.test(c.type) && !stock.includes(c.type)) {
+    const cur = out.get(c.id) ?? { level: 'warn' as const, texts: [] }
+    const text = `${cableShort(c.type)} nije na popisu kabela koje koristiš (Postavke projekta).`
+    if (!cur.texts.some((t) => t.includes('nije na popisu'))) cur.texts.push(text)
+    out.set(c.id, cur)
+  }
   issueCache.set(p, out)
   return out
 }
