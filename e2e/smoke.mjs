@@ -575,8 +575,7 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const need = (id) => { const n = E.cableNeeds(P.cables.find((c) => c.id === id), P); return n.signals.map((t) => E.terminalMeta(t, P).label).join(',') }
     const mid = E.allJunctions(P).find((j) => j.box.id === fr[1])
     return { feeds: feed.map(need), direct: need(direct), midPorts: mid.devices[0].ports.length, bad: E.allJunctions(P).filter((j) => fr.includes(j.box.id) || j.box.id === box).flatMap((j) => j.checks.filter((c) => c.level === 'err').map((c) => c.text)), ids: [light, lc, ...fr, ...sws, ...feed, direct] } }, ids)
-  // the first frame holds only a switch and wants no N
-  assert.deepEqual(cx.feeds, ['L,PE,p1,p2', 'L,N,PE,p1,p2', 'L,N,PE,S'.replace('S', cx.feeds[2].split(',')[3])], 'first two frames get the first traveller pair, the last one only the return')
+  assert.deepEqual(cx.feeds, ['L,N,PE,p1,p2', 'L,N,PE,p1,p2', 'L,N,PE,S'.replace('S', cx.feeds[2].split(',')[3])], 'first two frames get the first traveller pair, the last one only the return')
   assert.equal(cx.direct, 'L,N,PE,p1′,p2′', 'the direct cable carries the second traveller pair')
   assert.equal(cx.midPorts, 4, 'a cross switch has four terminals'); assert.deepEqual(cx.bad, [], 'no errors in the chain')
   await page.evaluate(({ cx }) => { const s = window.__trasa.getState(); const drop = new Set(cx.ids); s.patchProject({ cables: s.project.cables.filter((c) => !drop.has(c.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) }) }, { cx })
@@ -734,12 +733,12 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const b2 = { ...b, cables: b.cables.map((c) => (c.id === 'b1' ? { ...c, type: 'NYM-J 5x1.5' } : c)) }
     const fixed = errs(b2).filter((t) => /žila/.test(t))
     const second = E.cableNeeds(b2.cables.find((c) => c.id === 'b1'), b2).rows.map((r) => r.sig ? r.sig.split(':')[0] : '-')
-    // a frame with one plain switch wants no neutral: 3×1,5 with blue as the return
-    const dr = base('NYM-J 3x2.5', 'NYM-J 3x2.5', 'NYM-J 3x2.5'); dr.rules = { socket25: false }
+    // by default every frame gets N (room for a smart switch later); with that rule off a plain switch drop is 3×1,5, blue the return
+    const dr = base('NYM-J 3x2.5', 'NYM-J 3x2.5', 'NYM-J 3x2.5'); dr.rules = { socket25: false, neutralEverywhere: false }
     dr.elements.push(e({ id: 'dd', label: 'D8', type: 'modbox', xM: 1, zM: 1.1, modules: 2 }), e({ id: 'dl', label: 'S8', type: 'light', xM: 3, zM: 2.6 }), e({ id: 'dp', label: 'P8', type: 'switch', host: 'dd', xM: 1, zM: 1.1, controls: ['dl'] }))
     dr.cables.push(cab('dlc', 'NYM-J 3x1.5', el('k'), el('dl')), cab('dc', 'NYM-J 3x1.5', el('k'), el('dd')))
     const dn = E.cableNeeds(dr.cables.find((c) => c.id === 'dc'), dr)
-    const drop = { needed: dn.needed, rows: dn.rows.map((r) => r.sig ? r.sig.split(':')[0] : '-'), err: errs(dr).filter((t) => /žila|nule/.test(t)).length, strict: E.cableNeeds(dr.cables.find((c) => c.id === 'dc'), { ...dr, rules: { socket25: false, blueReturn: false } }).suggest }
+    const drop = { needed: dn.needed, rows: dn.rows.map((r) => r.sig ? r.sig.split(':')[0] : '-'), err: errs(dr).filter((t) => /žila|nule/.test(t)).length, strict: E.cableNeeds(dr.cables.find((c) => c.id === 'dc'), { ...dr, rules: { socket25: false, neutralEverywhere: false, blueReturn: false } }).suggest, dflt: E.cableNeeds(dr.cables.find((c) => c.id === 'dc'), { ...dr, rules: { socket25: false } }).needed }
     return { drop, thin: thin.filter((t) => /2,5/.test(t)).length, good: good.length, bedroom, branch, mixFix, mixErr, strict, gnyeHas, gnyeSecond, gnyeErr, gnyeSpare, grow: grow.some((t) => /ne povećava/.test(t)), suggest: short.suggest, has: short.has, fixed: fixed.length, fixedT: fixed, second } })
   assert.ok(rules.thin >= 2, 'a 3×1,5 feed and a 3×1,5 socket circuit are both flagged'); assert.equal(rules.good, 0, 'all 2,5 passes'); assert.equal(rules.bedroom, 0, 'bedroom sockets may stay on 3×1,5'); assert.equal(rules.branch, 0, 'light and switch branches on a socket circuit may stay 1,5')
   assert.equal(rules.mixFix, '3×2,5 + 3×1,5', 'power on 3×2,5, the two returns on a second 3×1,5 (brown + blue)'); assert.equal(rules.mixErr, 0, '3×2,5 + 5×1,5 satisfies cores and sections')
@@ -751,7 +750,7 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     return E.cableIssues(p).get('f')?.level === 'err' }), 'a 3×1,5 feed carries an error mark')
   assert.equal(rules.suggest, '5×1,5 + 3×1,5', 'no 7-core cable: 5×1,5 + 3×1,5, the second one using blue as a return'); assert.equal(rules.has, 7)
   assert.equal(rules.strict, '5×1,5 + 5×1,5', 'with blue kept free the second cable must be a 5-core')
-  assert.deepEqual(rules.drop, { needed: 3, rows: ['L', 'SW', 'PE'], err: 0, strict: '5×1,5' }, 'a plain switch drop needs no N: 3×1,5, blue is the return')
+  assert.deepEqual(rules.drop, { needed: 3, rows: ['L', 'SW', 'PE'], err: 0, strict: '5×1,5', dflt: 4 }, 'a plain switch drop needs no N: 3×1,5, blue is the return')
   assert.equal(rules.gnyeHas, 8, 'žuto-zelena kao povratna: drugi 3×1,5 daje sve tri žile'); assert.deepEqual(rules.gnyeSecond, ['SW', 'SW', 'SW'], 'pet povratnih: žuto-zelena nosi zadnju'); assert.equal(rules.gnyeErr, 0, '5×1,5 + 3×1,5 nosi osam žila kad i žuto-zelena radi'); assert.deepEqual(rules.gnyeSpare, ['SW', 'SW', 'PE'], 'nepotrebna žuto-zelena u drugom kabelu ostaje PE')
   assert.equal(rules.fixed, 0, '5×1,5 + 5×1,5 carries all seven: ' + rules.fixedT.join(' ;; ')); assert.deepEqual(rules.second, ['SW', 'SW', '-', '-', 'PE'], 'the second cable: brown and black carry returns, blue unused, PE on green-yellow')
 

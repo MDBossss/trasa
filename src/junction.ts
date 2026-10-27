@@ -497,12 +497,13 @@ export function crossSignals(a: WallElement, b: WallElement, p: Project, cableId
   return [...LNPE.filter((s) => s !== 'N' || !noNeutral(p).has(cableId)), ...[...(signalCarriers(p).get(cableId) ?? [])].sort()]
 }
 
-// Cables that need no N: everything on one side of the cable (reached without it) wants no neutral, e.g. a drop
+// Cables that need no N (only with the neutralEverywhere rule off): everything on one side of the cable (reached without it) wants no neutral, e.g. a drop
 // to a frame of plain switches. Such a cable carries L PE and returns, and blue may be one of them.
 const noNCache = new WeakMap<Project, Set<string>>()
 export function noNeutral(p: Project): Set<string> {
   const hit = noNCache.get(p)
   if (hit) return hit
+  if (rulesOf(p).neutralEverywhere) { const none = new Set<string>(); noNCache.set(p, none); return none }
   const adj = new Map<string, { to: string; bundle: string }[]>()
   const bundles = new Map<string, string[]>()
   for (const c of p.cables) {
