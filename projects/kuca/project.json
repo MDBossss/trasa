@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-27T17:17:25.131Z",
+ "savedAt": "2026-10-27T17:24:39.059Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2317,6 +2317,34 @@
      "start": 1.94,
      "end": 1.35
     }
+   },
+   {
+    "id": "z5koebp2",
+    "name": "DOLAZ DESNA ST GARAZE",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 873.1277241940763,
+      "y": 1320.8512313647323
+     },
+     {
+      "x": 914.1131322965855,
+      "y": 1253.0150077900298
+     },
+     {
+      "x": 914.1131322965855,
+      "y": 1113.8476164265555
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "todo",
+    "feed": true,
+    "exitZ": {
+     "start": 1.97
+    }
    }
   ],
   "rooms": [
@@ -3167,7 +3195,6 @@
     "note": "",
     "id": "ewqjx5w7",
     "label": "S2",
-    "feedRelayId": "8qsx0who",
     "feedOutput": 1
    },
    {
@@ -3182,7 +3209,6 @@
     "id": "ldj5swi6",
     "label": "P4",
     "slotOrder": 0,
-    "relayId": "8qsx0who",
     "relayInput": 1,
     "controls": [
      "ewqjx5w7",
@@ -3199,20 +3225,7 @@
     "note": "",
     "id": "327e9lo5",
     "label": "S3",
-    "feedRelayId": "8qsx0who",
     "feedOutput": 1
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "relay",
-    "xM": 1.83,
-    "zM": 1.25,
-    "note": "",
-    "host": "zda0udtf",
-    "relayModel": "zbminir2",
-    "id": "8qsx0who",
-    "label": "R4"
    },
    {
     "roomId": "c2b55x6m",
@@ -3379,19 +3392,6 @@
     "id": "tx8pp867",
     "label": "U15",
     "slotOrder": 2
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 0,
-    "type": "socket",
-    "xM": 2.41,
-    "zM": 1.29,
-    "note": "",
-    "host": "xt9mmh05",
-    "id": "5x7vsf26",
-    "label": "U16",
-    "slotOrder": 3,
-    "socketKind": "euro"
    },
    {
     "roomId": "c2b55x6m",
@@ -5458,21 +5458,6 @@
     "relayInput": 1
    },
    {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "switch",
-    "xM": 1.83,
-    "zM": 1.25,
-    "note": "",
-    "host": "zda0udtf",
-    "id": "ev4je3r6",
-    "label": "P19",
-    "slotOrder": 1,
-    "controls": [
-     "2jyaql5v"
-    ]
-   },
-   {
     "roomId": "irxyujn8",
     "wall": 1,
     "type": "box",
@@ -6889,6 +6874,21 @@
     "feedRelayId": "j9h358in",
     "feedOutput": 1,
     "ledWpm": 6
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 0,
+    "type": "switch",
+    "xM": 2.41,
+    "zM": 1.29,
+    "note": "",
+    "host": "xt9mmh05",
+    "id": "k8nzctgh",
+    "label": "P36",
+    "slotOrder": 3,
+    "controls": [
+     "2jyaql5v"
+    ]
    }
   ],
   "cables": [
@@ -11117,27 +11117,6 @@
     "type": "NYM-J 3x2.5",
     "from": {
      "kind": "element",
-     "id": "69004nya"
-    },
-    "to": {
-     "kind": "element",
-     "id": "xt9mmh05"
-    },
-    "via": [
-     {
-      "xM": 2.43,
-      "zM": 0.76
-     }
-    ],
-    "note": "",
-    "id": "m8cdawob"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 0,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "element",
      "id": "mvlk35ir"
     },
     "to": {
@@ -11152,27 +11131,6 @@
     ],
     "note": "",
     "id": "nrzaxczz"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 0,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "element",
-     "id": "69004nya"
-    },
-    "to": {
-     "kind": "element",
-     "id": "xt9mmh05"
-    },
-    "via": [
-     {
-      "xM": 2.43,
-      "zM": 0.76
-     }
-    ],
-    "note": "",
-    "id": "t2dl4p2v"
    },
    {
     "roomId": "24uhwdfi",
@@ -11360,92 +11318,6 @@
     "type": "NYM-J 3x2.5",
     "from": {
      "kind": "element",
-     "id": "91pjtv3y"
-    },
-    "to": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 0.74
-    },
-    "via": [
-     {
-      "xM": 0.98,
-      "zM": 1.81
-     },
-     {
-      "xM": 0.98,
-      "zM": 0.75
-     }
-    ],
-    "note": "",
-    "id": "3esl2hrl"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 0,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 0.74
-    },
-    "to": {
-     "kind": "element",
-     "id": "69004nya"
-    },
-    "via": [],
-    "note": "",
-    "id": "rg4nt813"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "element",
-     "id": "91pjtv3y"
-    },
-    "to": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 0.74
-    },
-    "via": [
-     {
-      "xM": 0.98,
-      "zM": 1.81
-     },
-     {
-      "xM": 0.98,
-      "zM": 0.75
-     }
-    ],
-    "note": "",
-    "id": "49njitkw"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 0,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 0.74
-    },
-    "to": {
-     "kind": "element",
-     "id": "69004nya"
-    },
-    "via": [],
-    "note": "",
-    "id": "kvvquwmb"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "element",
      "id": "zda0udtf"
     },
     "to": {
@@ -11493,6 +11365,67 @@
     "via": [],
     "note": "",
     "id": "f8nxhja5"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "z5koebp2",
+     "end": "start"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 0.85
+    },
+    "via": [
+     {
+      "xM": 0.8900000000000016,
+      "zM": 0.85
+     }
+    ],
+    "note": "",
+    "id": "rt7hidzf"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "69004nya"
+    },
+    "to": {
+     "kind": "element",
+     "id": "xt9mmh05"
+    },
+    "via": [
+     {
+      "xM": 2.42,
+      "zM": 0.76
+     }
+    ],
+    "note": "",
+    "id": "c0xvj16w"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 0,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 0.85
+    },
+    "to": {
+     "kind": "element",
+     "id": "69004nya"
+    },
+    "via": [],
+    "note": "",
+    "id": "g4h7j3ym"
    }
   ],
   "categories": [
@@ -11615,7 +11548,7 @@
   "view": {
    "kind": "room",
    "roomId": "c2b55x6m",
-   "wall": 1
+   "wall": 0
   }
  }
 }
