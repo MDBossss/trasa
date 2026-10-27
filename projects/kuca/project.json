@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-27T11:01:33.334Z",
+ "savedAt": "2026-10-27T11:09:17.153Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -3025,7 +3025,6 @@
     "note": "",
     "id": "719oqxqh",
     "label": "S1",
-    "feedRelayId": "g49do0fh",
     "feedOutput": 1
    },
    {
@@ -3070,27 +3069,14 @@
     "zM": 1.39,
     "note": "",
     "host": "9vncvf4h",
-    "switchKind": "tipkalo",
+    "switchKind": "obicni",
     "id": "cpiy40cn",
     "label": "P1",
     "modules": 2,
     "controls": [
      "719oqxqh"
     ],
-    "relayId": "g49do0fh",
     "relayInput": 1
-   },
-   {
-    "roomId": "hznuei6t",
-    "wall": 1,
-    "type": "relay",
-    "xM": 1.1419066770711388,
-    "zM": 1.39,
-    "note": "",
-    "host": "9vncvf4h",
-    "relayModel": "zbminir2",
-    "id": "g49do0fh",
-    "label": "R1"
    },
    {
     "roomId": "c2b55x6m",
@@ -6960,7 +6946,7 @@
    {
     "roomId": "hznuei6t",
     "wall": 3,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 3x2.5",
     "from": {
      "kind": "exit",
      "conduitId": "jumeuvh9",
@@ -6994,7 +6980,7 @@
    {
     "roomId": "hznuei6t",
     "wall": 3,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 3x2.5",
     "from": {
      "kind": "element",
      "id": "09rpvzkl"
@@ -7032,7 +7018,7 @@
    {
     "roomId": "hznuei6t",
     "wall": 1,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 3x2.5",
     "from": {
      "kind": "element",
      "id": "lkt84tqp"
@@ -7054,7 +7040,7 @@
    {
     "roomId": "hznuei6t",
     "wall": 0,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 3x2.5",
     "from": {
      "kind": "corner",
      "corner": 1,
@@ -7072,7 +7058,7 @@
    {
     "roomId": "hznuei6t",
     "wall": 3,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 3x2.5",
     "from": {
      "kind": "corner",
      "corner": 0,
@@ -11412,8 +11398,9 @@
  },
  "ui": {
   "view": {
-   "kind": "junctions",
-   "elementId": "91pjtv3y"
+   "kind": "room",
+   "roomId": "hznuei6t",
+   "wall": 1
   }
  }
 }
