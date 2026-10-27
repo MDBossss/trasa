@@ -739,7 +739,12 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     dr.cables.push(cab('dlc', 'NYM-J 3x1.5', el('k'), el('dl')), cab('dc', 'NYM-J 3x1.5', el('k'), el('dd')))
     const dn = E.cableNeeds(dr.cables.find((c) => c.id === 'dc'), dr)
     const drop = { needed: dn.needed, rows: dn.rows.map((r) => r.sig ? r.sig.split(':')[0] : '-'), err: errs(dr).filter((t) => /žila|nule/.test(t)).length, strict: E.cableNeeds(dr.cables.find((c) => c.id === 'dc'), { ...dr, rules: { socket25: false, neutralEverywhere: false, blueReturn: false } }).suggest, dflt: E.cableNeeds(dr.cables.find((c) => c.id === 'dc'), { ...dr, rules: { socket25: false } }).needed }
-    return { drop, thin: thin.filter((t) => /2,5/.test(t)).length, good: good.length, bedroom, branch, mixFix, mixErr, strict, gnyeHas, gnyeSecond, gnyeErr, gnyeSpare, grow: grow.some((t) => /ne povećava/.test(t)), suggest: short.suggest, has: short.has, fixed: fixed.length, fixedT: fixed, second } })
+    // a boiler on a relay in a frame: the cable to the frame carries the boiler current out and back, so 2,5 on every core in use
+    const bo = base('NYM-J 3x2.5', 'NYM-J 3x2.5', 'NYM-J 3x2.5'); bo.rules = { socket25: false }
+    bo.elements.push(e({ id: 'bd', label: 'D6', type: 'modbox', xM: 1, zM: 1.1, modules: 2, depth: 'duboka' }), e({ id: 'br', label: 'R6', type: 'relay', host: 'bd', relayModel: 'gen4pm', xM: 1, zM: 1.1 }), e({ id: 'bb', label: 'BO1', type: 'boiler', xM: 5, zM: 2, feedRelayId: 'br' }))
+    bo.cables.push(cab('bl', 'NYM-J 5x1.5', el('k'), el('bd')), cab('bc', 'NYM-J 3x2.5', el('k'), el('bb')))
+    const boiler = { sug: E.cableNeeds(bo.cables.find((c) => c.id === 'bl'), bo).suggest, err: errs(bo).filter((t) => /bojlera/.test(t)).length }
+    return { boiler, drop, thin: thin.filter((t) => /2,5/.test(t)).length, good: good.length, bedroom, branch, mixFix, mixErr, strict, gnyeHas, gnyeSecond, gnyeErr, gnyeSpare, grow: grow.some((t) => /ne povećava/.test(t)), suggest: short.suggest, has: short.has, fixed: fixed.length, fixedT: fixed, second } })
   assert.ok(rules.thin >= 2, 'a 3×1,5 feed and a 3×1,5 socket circuit are both flagged'); assert.equal(rules.good, 0, 'all 2,5 passes'); assert.equal(rules.bedroom, 0, 'bedroom sockets may stay on 3×1,5'); assert.equal(rules.branch, 0, 'light and switch branches on a socket circuit may stay 1,5')
   assert.equal(rules.mixFix, '3×2,5 + 3×1,5', 'power on 3×2,5, the two returns on a second 3×1,5 (brown + blue)'); assert.equal(rules.mixErr, 0, '3×2,5 + 5×1,5 satisfies cores and sections')
   assert.ok(rules.grow, '2,5 after a 1,5 feed is flagged')
@@ -750,6 +755,7 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     return E.cableIssues(p).get('f')?.level === 'err' }), 'a 3×1,5 feed carries an error mark')
   assert.equal(rules.suggest, '5×1,5 + 3×1,5', 'no 7-core cable: 5×1,5 + 3×1,5, the second one using blue as a return'); assert.equal(rules.has, 7)
   assert.equal(rules.strict, '5×1,5 + 5×1,5', 'with blue kept free the second cable must be a 5-core')
+  assert.equal(rules.boiler.sug, '3×2,5 + 3×2,5', 'the relay output to a boiler is never on a 1,5 second cable'); assert.ok(rules.boiler.err >= 1, 'a 5×1,5 carrying the boiler current is an error')
   assert.deepEqual(rules.drop, { needed: 3, rows: ['L', 'SW', 'PE'], err: 0, strict: '5×1,5', dflt: 4 }, 'a plain switch drop needs no N: 3×1,5, blue is the return')
   assert.equal(rules.gnyeHas, 8, 'žuto-zelena kao povratna: drugi 3×1,5 daje sve tri žile'); assert.deepEqual(rules.gnyeSecond, ['SW', 'SW', 'SW'], 'pet povratnih: žuto-zelena nosi zadnju'); assert.equal(rules.gnyeErr, 0, '5×1,5 + 3×1,5 nosi osam žila kad i žuto-zelena radi'); assert.deepEqual(rules.gnyeSpare, ['SW', 'SW', 'PE'], 'nepotrebna žuto-zelena u drugom kabelu ostaje PE')
   assert.equal(rules.fixed, 0, '5×1,5 + 5×1,5 carries all seven: ' + rules.fixedT.join(' ;; ')); assert.deepEqual(rules.second, ['SW', 'SW', '-', '-', 'PE'], 'the second cable: brown and black carry returns, blue unused, PE on green-yellow')

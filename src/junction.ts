@@ -602,7 +602,8 @@ export function cableNeeds(c: Cable, p: Project): CableNeeds | null {
   const noN = !load.signals.includes('N')
   const has = bundleSlots(load.members, blue, gnye, noN)
   const first = bundleMembers(c.id, p)[0]?.first ?? c
-  const fix = suggestCables(needed, Math.max(minSectionFor(first, p), sectionOf(load.members[0] ?? c.type)), cableStockOf(p), 1.5, blue, gnye, noN)
+  const heavy = load.signals.some((s) => heavyOutput(s, p))
+  const fix = suggestCables(needed, Math.max(minSectionFor(first, p), sectionOf(load.members[0] ?? c.type)), cableStockOf(p), heavy ? 2.5 : 1.5, blue, gnye, noN)
   const suggest = fix ? fix.map(cableShort).join(' + ') : `${needed} žila`
   const rows = coreColors(thinnest(c, p).type).map((color) => ({ color, sig: load.core.get(color) ?? null }))
   return { signals: load.signals, needed, has, suggest, fix, rows, missing: load.missing, members: load.members, places: [places[0], places[1]] }
@@ -829,11 +830,19 @@ export function circuitsOf(p: Project) {
   return out
 }
 // The thinnest section a cable may have under the project rules (feeds and socket circuits 2,5 mm²).
+const heavyOutput = (s: string, p: Project) => { const [k, r, n] = s.split(':'); return k === 'O' && p.elements.some((e) => (e.type === 'boiler' || e.type === 'appliance') && e.feedRelayId === r && (e.feedOutput ?? 1) === +n) }
 export function minSectionFor(c: Cable, p: Project): number {
   const r = rulesOf(p), circ = circuitsOf(p)
   if (isControlCable(c.type) || coreColors(c.type).length === 0 || /^pe\b/i.test(c.type)) return 0
-  // a further cable of a bundle carries only returns (lights, switches), never the circuit's L
+  // a relay output to a boiler or appliance carries its full current, and so does the L feeding that relay
   const ms = bundleMembers(c.id, p)
+  const pl = cablePlaces(c, p)
+  if (pl) {
+    const load = cableLoad(c.id, pl[0], pl[1], p)
+    const mine = [...load.core.values()]
+    if (mine.some((s) => s && heavyOutput(s, p)) || (mine.includes('L') && load.signals.some((s) => heavyOutput(s, p)))) return 2.5
+  }
+  // otherwise a further cable of a bundle carries only returns (lights, switches), never the circuit's L
   if (ms.length > 1 && !ms[0].ids.includes(c.id)) return 1.5
   if (r.feed25 && circ.feedCables.has(c.id)) return 2.5
   if (r.socket25 && circ.socketPath.has(c.id)) return 2.5
@@ -852,7 +861,7 @@ function sectionChecks(box: WallElement, cables: BoxCable[], p: Project, checks:
     const min = minSectionFor(bc.cable, p)
     if (sec(bc) < min) {
       const k = circ.byCable.get(bc.cable.id)?.id
-      checks.push({ cableId: bc.cable.id, level: 'err', text: circ.feedCables.has(bc.cable.id) ? `Dolaz ${bc.label} je ${cableShort(thinType(bc))}: dolazi moraju biti 2,5 mm² (3×2,5).` : `Kabel ${bc.label} nosi struju utičnica (krug ${k ? circ.names.get(k) : ''}, B16): ${cableShort(thinType(bc))} je pretanak, mora biti 2,5 mm².` })
+      checks.push({ cableId: bc.cable.id, level: 'err', text: circ.feedCables.has(bc.cable.id) ? `Dolaz ${bc.label} je ${cableShort(thinType(bc))}: dolazi moraju biti 2,5 mm² (3×2,5).` : !circ.socketPath.has(bc.cable.id) ? `Kabel ${bc.label} nosi struju bojlera ili trošila preko releja: ${cableShort(thinType(bc))} je pretanak, mora biti 2,5 mm².` : `Kabel ${bc.label} nosi struju utičnica (krug ${k ? circ.names.get(k) : ''}, B16): ${cableShort(thinType(bc))} je pretanak, mora biti 2,5 mm².` })
     }
     if (stock && /^NYM/.test(bc.cable.type) && !stock.includes(bc.cable.type)) checks.push({ cableId: bc.cable.id, level: 'warn', text: `Kabel ${bc.label}: ${cableShort(bc.cable.type)} nije na popisu kabela koje koristiš (Postavke projekta).` })
   }
