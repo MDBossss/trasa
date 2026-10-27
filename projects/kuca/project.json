@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-27T13:00:50.844Z",
+ "savedAt": "2026-10-27T17:04:36.875Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -3298,17 +3298,6 @@
    },
    {
     "roomId": "c2b55x6m",
-    "wall": 0,
-    "type": "box",
-    "xM": 3.28,
-    "zM": 1.87,
-    "note": "",
-    "id": "6xxku054",
-    "label": "K5",
-    "depth": "plitka"
-   },
-   {
-    "roomId": "c2b55x6m",
     "wall": 1,
     "type": "box",
     "xM": 0.81,
@@ -5430,8 +5419,8 @@
     "roomId": "c2b55x6m",
     "wall": 0,
     "type": "light",
-    "xM": 2.06,
-    "zM": 1.48,
+    "xM": 2.41,
+    "zM": 1.6,
     "note": "",
     "id": "2jyaql5v",
     "label": "S12"
@@ -7425,77 +7414,6 @@
     "id": "if0mt5cu"
    },
    {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "element",
-     "id": "k5aw2h5a"
-    },
-    "to": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 1.8
-    },
-    "via": [],
-    "note": "",
-    "id": "4hzaaule"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 0,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 1.8
-    },
-    "to": {
-     "kind": "element",
-     "id": "6xxku054"
-    },
-    "via": [
-     {
-      "xM": 3.62,
-      "zM": 1.91
-     }
-    ],
-    "note": "",
-    "id": "r4eo1m7v"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 0,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "element",
-     "id": "69004nya"
-    },
-    "to": {
-     "kind": "element",
-     "id": "6xxku054"
-    },
-    "via": [],
-    "note": "",
-    "id": "d5pemwav"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 0,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "element",
-     "id": "xt9mmh05"
-    },
-    "to": {
-     "kind": "element",
-     "id": "6xxku054"
-    },
-    "via": [],
-    "note": "",
-    "id": "gbx6368q"
-   },
-   {
     "roomId": "24uhwdfi",
     "wall": 3,
     "type": "NYM-J 3x2.5",
@@ -9363,22 +9281,6 @@
     "id": "erzas2er"
    },
    {
-    "roomId": "c2b55x6m",
-    "wall": 0,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "element",
-     "id": "2jyaql5v"
-    },
-    "to": {
-     "kind": "element",
-     "id": "6xxku054"
-    },
-    "via": [],
-    "note": "",
-    "id": "d47th21y"
-   },
-   {
     "roomId": "z6exkgda",
     "wall": 2,
     "type": "NYM-J 5x1.5",
@@ -11018,22 +10920,6 @@
     "id": "rbcqwljs"
    },
    {
-    "roomId": "c2b55x6m",
-    "wall": 0,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "element",
-     "id": "69004nya"
-    },
-    "to": {
-     "kind": "element",
-     "id": "mvlk35ir"
-    },
-    "via": [],
-    "note": "",
-    "id": "przpoc13"
-   },
-   {
     "roomId": "akuvhdws",
     "wall": 7,
     "type": "NYM-J 3x1.5",
@@ -11204,45 +11090,6 @@
     "via": [],
     "note": "",
     "id": "xjzghyw1"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "element",
-     "id": "k5aw2h5a"
-    },
-    "to": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 1.8
-    },
-    "via": [],
-    "note": "",
-    "id": "xydy3v3v"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 0,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 1.8
-    },
-    "to": {
-     "kind": "element",
-     "id": "6xxku054"
-    },
-    "via": [
-     {
-      "xM": 3.62,
-      "zM": 1.91
-     }
-    ],
-    "note": "",
-    "id": "wx2xemra"
    },
    {
     "roomId": "mmcst90r",
@@ -11614,6 +11461,163 @@
     "via": [],
     "note": "",
     "id": "v7j17abk"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "xt9mmh05"
+    },
+    "to": {
+     "kind": "element",
+     "id": "2jyaql5v"
+    },
+    "via": [],
+    "note": "",
+    "id": "ifp70wt8"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 0,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "69004nya"
+    },
+    "to": {
+     "kind": "element",
+     "id": "xt9mmh05"
+    },
+    "via": [
+     {
+      "xM": 2.43,
+      "zM": 0.76
+     }
+    ],
+    "note": "",
+    "id": "m8cdawob"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 0,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "mvlk35ir"
+    },
+    "to": {
+     "kind": "element",
+     "id": "xt9mmh05"
+    },
+    "via": [
+     {
+      "xM": 2.36,
+      "zM": 0.76
+     }
+    ],
+    "note": "",
+    "id": "nrzaxczz"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "k5aw2h5a"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 0.77
+    },
+    "via": [
+     {
+      "xM": 0.81,
+      "zM": 0.75
+     }
+    ],
+    "note": "",
+    "id": "p0qgfo4k"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 0,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 0.77
+    },
+    "to": {
+     "kind": "element",
+     "id": "69004nya"
+    },
+    "via": [],
+    "note": "",
+    "id": "twvoipl7"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "k5aw2h5a"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 0.77
+    },
+    "via": [
+     {
+      "xM": 0.81,
+      "zM": 0.75
+     }
+    ],
+    "note": "",
+    "id": "ow2unnz0"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 0.77
+    },
+    "to": {
+     "kind": "element",
+     "id": "69004nya"
+    },
+    "via": [],
+    "note": "",
+    "id": "qqu71dkf"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "69004nya"
+    },
+    "to": {
+     "kind": "element",
+     "id": "xt9mmh05"
+    },
+    "via": [
+     {
+      "xM": 2.43,
+      "zM": 0.76
+     }
+    ],
+    "note": "",
+    "id": "t2dl4p2v"
    }
   ],
   "categories": [
@@ -11735,8 +11739,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "akuvhdws",
-   "wall": 6
+   "roomId": "c2b55x6m",
+   "wall": 1
   }
  }
 }
