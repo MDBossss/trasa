@@ -150,12 +150,15 @@ export function resolveCable(c: Cable, box: WallElement, p: Project): Omit<BoxCa
   else {
     const f = follow(p, c, end)
     const e = f.end.kind === 'element' ? el(p, f.end.id) : undefined
+    const fe = f.end
+    const fcd = fe.kind === 'exit' ? p.conduits.find((x) => x.id === fe.conduitId) : undefined
     if (e) {
       classify(e, cd0)
       if (!cd0 && f.via.length) label = `${f.via.join(' · ')} → ${e.label}`
-    } else if (f.via.length) label = cores.length === 0 ? f.via.join(' · ') : `${f.via.join(' · ')} → ?`
+    } else if (fcd && isFeedConduit(fcd)) { role = 'feed'; label = `${[...f.via, fcd.name].join(' · ')} ← dolaz`; far = { conduit: fcd } }
+    else if (f.via.length) label = cores.length === 0 ? f.via.join(' · ') : `${f.via.join(' · ')} → ?`
     else if (end.kind === 'corner') label = `kut ${end.corner + 1} → ?`
-    far = { ...far, conduit: cd0 }
+    far = { ...far, conduit: cd0 ?? far.conduit }
   }
   if (cores.length === 0) role = 'lowv'
   if (c.role && c.role !== 'auto') role = c.role

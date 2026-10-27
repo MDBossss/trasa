@@ -761,6 +761,13 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const p = { ...s, cableStock: undefined, cables: [cab('a', 0, 'NYM-J 3x2.5', { kind: 'free', xM: 0.5, zM: 2 }, { kind: 'corner', corner: 1, zM: 2 }), cab('b', 1, 'NYM-J 5x1.5', { kind: 'corner', corner: 1, zM: 2 }, { kind: 'free', xM: 0.5, zM: 0.3 })] }
     return { chain: E.chainCables(p.cables[0], p).length, warn: ['a', 'b'].map((id) => /različite tipove/.test(E.cableIssues(p).get(id)?.texts.join(' ') ?? '')) } })
   assert.deepEqual(mixedChain, { chain: 2, warn: [true, true] }, 'one cable round a corner with two types is flagged on both parts')
+  // a feed conduit reached round a corner is still the feed, not an unknown end with parked cores
+  const cornerFeed = await page.evaluate(() => { const E = window.__trasaEngine; const room = { id: 'ri', name: 'R', points: [{ x: 0, y: 0 }, { x: 600, y: 0 }, { x: 600, y: 400 }, { x: 0, y: 400 }], walls: {} }
+    const p = { ...window.__trasa.getState().project, rules: undefined, rooms: [room], conduits: [{ id: 'fd', name: 'DOLAZ', points: [{ x: 700, y: 200 }, { x: 600, y: 200 }], categoryId: 'todo', feed: true, color: '#000' }],
+      elements: [{ id: 'k', label: 'K1', type: 'box', roomId: 'ri', wall: 0, xM: 2, zM: 2.3, note: '' }],
+      cables: [{ id: 'a', roomId: 'ri', wall: 1, type: 'NYM-J 3x2.5', from: { kind: 'exit', conduitId: 'fd', end: 'end' }, to: { kind: 'corner', corner: 1, zM: 2.3 }, via: [], note: '' }, { id: 'b', roomId: 'ri', wall: 0, type: 'NYM-J 3x2.5', from: { kind: 'corner', corner: 1, zM: 2.3 }, to: { kind: 'element', id: 'k' }, via: [], note: '' }] }
+    const bc = E.allJunctions(p)[0].cables[0]; return { role: bc.role, label: bc.label } })
+  assert.deepEqual(cornerFeed, { role: 'feed', label: 'kut 2 · DOLAZ ← dolaz' }, 'a feed round a corner is recognised')
   // two frames joined only to each other: a socket there has no feed, so no circuit rule could check it
   const unfed = await page.evaluate(() => { const E = window.__trasaEngine; const s = window.__trasa.getState().project; const room = s.rooms[0].id
     const e = (o) => ({ roomId: room, wall: 0, note: '', ...o })
