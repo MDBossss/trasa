@@ -93,6 +93,7 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
       case 'panel': add(out, 'Ostalo', ELEMENT_META.panel.label, 'kom', 1); break
       case 'boiler': add(out, 'Ostalo', 'Priključna kutija za bojler (izvod kabela, IP44)', 'kom', 1); break
       case 'appliance': add(out, 'Ostalo', `Priključna kutija s izvodom kabela (${APPLIANCES[e.appliance ?? 'hob'].label.toLowerCase()})`, 'kom', 1); break
+      case 'rack': add(out, 'Ostalo', `Zidni rack ormar 19" ${e.rackU ?? 9}U, 600 × 600 mm`, 'kom', 1); break
       case 'kip':
         add(out, 'Ostalo', 'KIP kutija za izjednačenje potencijala sa sabirnicom', 'kom', 1)
         add(out, 'Ostalo', 'Križna spojnica FeZn/Cu + vijak M10 s mjedenom podloškom', 'kom', 1)

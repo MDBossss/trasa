@@ -55,7 +55,7 @@ export interface Wall {
   photoStretch?: boolean
 }
 
-export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'motor' | 'kip' | 'boiler' | 'appliance'
+export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'motor' | 'kip' | 'boiler' | 'appliance' | 'rack'
 
 // Smart relays that sit in a box: inputs are SW terminals, outputs are O terminals.
 export type RelayModel = 'gen4' | 'gen4pm' | 'zbminir2' | 'rgbw'
@@ -168,6 +168,7 @@ export interface WallElement {
   relayId?: string
   relayInput?: number
   appliance?: ApplianceKind
+  rackU?: number
   // switch / push button with a control lamp (LED insert, e.g. TEM IA20): lit while its load is on
   lamp?: boolean
   // light / LED supply powered by a relay output (1-based) instead of a classic switch
@@ -248,7 +249,12 @@ export const ELEMENT_META: Record<ElementType, { label: string; key: string; pre
   boiler: { label: 'Bojler', key: 'B', prefix: 'BO', zM: 1.8 },
   // an appliance on a fixed connection (indukcija, pećnica, napa, klima), via a flush outlet box with a cable gland
   appliance: { label: 'Uređaj (fiksni priključak)', key: 'F', prefix: 'UR', zM: 0.6 },
+  // 19" wall cabinet for the network: drawn at its real size, UTP conduits end in it; power from a socket beside it
+  rack: { label: 'Rack (mreža)', key: 'A', prefix: 'RK', zM: 1.75 },
 }
+// 19" wall cabinet heights in cm by rack units (outer, typical); all are 60 cm wide
+export const RACK_HEIGHTS: Record<number, number> = { 6: 37, 9: 50, 12: 64, 15: 77 }
+export const RACK_W = 60
 export type ApplianceKind = 'hob' | 'oven' | 'hood' | 'ac'
 export const APPLIANCES: Record<ApplianceKind, { label: string; cable: string; zM: number; minMm2: number; note: string }> = {
   hob: { label: 'Indukcijska ploča', cable: 'NYM-J 5x2.5', zM: 0.6, minMm2: 2.5, note: 'Trofazno 5×2,5 (3× B16) daje punu snagu. Jednofazno: 3×6 na B32, ili 3×2,5 na B16 uz ograničenje snage u ploči (~3,7 kW). Priključna kutija ~60 cm od poda iza elementa ispod ploče.' },

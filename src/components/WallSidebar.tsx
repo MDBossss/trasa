@@ -2,7 +2,7 @@ import { Fragment, useRef } from 'react'
 import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
-import { socket15Of, cableStockOf, cableShort, frameSlots, frameName, CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, WIRE_LABEL, APPLIANCES, type ApplianceKind, type BoxDepth, type CableRole, type Project, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
+import { socket15Of, cableStockOf, cableShort, frameSlots, frameName, CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, WIRE_LABEL, APPLIANCES, RACK_HEIGHTS, type ApplianceKind, type BoxDepth, type CableRole, type Project, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
 import { BOX_CATALOG, cableIssues, cableNeeds, chainCables, circuitsOf, resolveCable, roleLabel, terminalMeta } from '../junction'
 import { Icon } from './Icons'
 import { wireSwatch } from './JunctionCanvas'
@@ -209,6 +209,17 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
                 </select>
               </label>
               <p className="muted">{APPLIANCES[el.appliance ?? 'hob'].note}</p>
+            </>
+          )}
+          {el.type === 'rack' && (
+            <>
+              <label>
+                Veličina
+                <select value={el.rackU ?? 9} onChange={(e) => updateElement(el.id, { rackU: +e.target.value })}>
+                  {Object.entries(RACK_HEIGHTS).map(([u, h]) => <option key={u} value={u}>{u}U · 60 × {h} cm</option>)}
+                </select>
+              </label>
+              <p className="muted">Visina je sredina racka: s 9U na 1,75 m donji rub je na 1,50 m, gornji na 2,00 m. Struju mu daj dvostrukom utičnicom pored njega (10–15 cm od ruba, da ne smeta vratima), na vlastitom krugu 3×2,5 / B16. UTP bužiri ulaze odozgo.</p>
             </>
           )}
           {el.type === 'boiler' && (

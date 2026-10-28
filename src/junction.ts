@@ -127,6 +127,7 @@ function roleOfElement(e: WallElement): Role {
     case 'switch': return 'switch'
     case 'box': case 'modbox': return 'pass'
     case 'panel': return 'feed'
+    case 'rack': return 'socket'
     default: return 'unknown'
   }
 }

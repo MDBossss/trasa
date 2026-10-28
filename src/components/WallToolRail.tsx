@@ -20,12 +20,13 @@ export const WALL_TOOLS: WallToolDef[] = [
   { id: 'element', type: 'motor', label: ELEMENT_META.motor.label, key: 'D', icon: 'motor', hint: 'Klik postavi upravljačku jedinicu vrata (rolo / sekcijska): L N PE + impuls sa Shellyja' },
   { id: 'element', type: 'boiler', label: ELEMENT_META.boiler.label, key: 'B', icon: 'boiler', hint: 'Klik postavi bojler: fiksni priključak L N PE, kabel 3×2,5 na vlastiti krug' },
   { id: 'element', type: 'appliance', label: 'Uređaj (indukcija, pećnica, napa, klima)', key: 'F', icon: 'appliance', hint: 'Klik postavi fiksni priključak uređaja; vrstu biraš desno (indukcija, pećnica, napa, klima)' },
+  { id: 'element', type: 'rack', label: ELEMENT_META.rack.label, key: 'A', icon: 'rack', hint: 'Klik postavi zidni rack 19" (stvarna veličina, 9U = 60 × 50 cm); struju mu daj utičnicom pored njega' },
   { id: 'element', type: 'kip', label: ELEMENT_META.kip.label, key: 'Z', icon: 'earth', hint: 'Klik postavi KIP (glavno uzemljenje): traka iz temelja, Cu 16 do ormara, Cu 6 izjednačenje' },
 ]
 
 // grouped by name, not position, so a new tool can never fall out of the rail
 const key = (t: WallToolDef) => (t.id === 'element' ? `${t.type}${t.switchKind ? `:${t.switchKind}` : ''}` : t.id)
-const GROUP_KEYS = [['select', 'pan', 'cable'], ['box', 'modbox', 'socket', 'switch', 'switch:tipkalo', 'light'], ['relay', 'ledpsu', 'motor', 'boiler', 'appliance'], ['panel', 'kip']]
+const GROUP_KEYS = [['select', 'pan', 'cable'], ['box', 'modbox', 'socket', 'switch', 'switch:tipkalo', 'light'], ['relay', 'ledpsu', 'motor', 'boiler', 'appliance'], ['panel', 'rack', 'kip']]
 const GROUPS: number[][] = GROUP_KEYS.map((g) => g.map((k) => WALL_TOOLS.findIndex((t) => key(t) === k)).filter((i) => i >= 0))
 const rest = WALL_TOOLS.map((_, i) => i).filter((i) => !GROUPS.flat().includes(i))
 if (rest.length) GROUPS.push(rest)

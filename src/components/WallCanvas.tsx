@@ -6,7 +6,7 @@ import useImage from 'use-image'
 import { useStore } from '../store'
 import { cableIssues, cornerPartner } from '../junction'
 import { CABLE_COLOR, cableColor, cablePath, cornerAt, endPos, neighbourWall, type Exit, type WallCtx, type WallInfo } from '../walls'
-import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement, RELAY_LOOK, relayBrand, relayModelOf, hostedFront , isData, APPLIANCES, frameCols, frameRows, frameSlots } from '../types'
+import { isPlace, modulesOf, type CableEnd, type ElementType, type WallElement, RELAY_LOOK, relayBrand, relayModelOf, hostedFront , isData, APPLIANCES, RACK_HEIGHTS, RACK_W, frameCols, frameRows, frameSlots } from '../types'
 import { Hud } from './Hud'
 import { activeWallTool } from './WallToolRail'
 import { middlePan, pinch, useMobile, wheelNav, type Camera } from '../mobile'
@@ -181,7 +181,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       if (e.key === 'Backspace' && draft) { setDraft({ ...draft, via: draft.via.slice(0, -1) }); return }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) { removeSelected(); return }
       if (e.metaKey || e.ctrlKey) return
-      const map: Record<string, [typeof tool, ElementType?, 'tipkalo'?]> = { v: ['select'], h: ['pan'], k: ['element', 'box'], u: ['element', 'socket'], p: ['element', 'switch'], t: ['element', 'switch', 'tipkalo'], l: ['element', 'light'], o: ['element', 'panel'], m: ['element', 'modbox'], r: ['element', 'relay'], n: ['element', 'ledpsu'], d: ['element', 'motor'], z: ['element', 'kip'], b: ['element', 'boiler'], f: ['element', 'appliance'], c: ['cable'] }
+      const map: Record<string, [typeof tool, ElementType?, 'tipkalo'?]> = { v: ['select'], h: ['pan'], k: ['element', 'box'], u: ['element', 'socket'], p: ['element', 'switch'], t: ['element', 'switch', 'tipkalo'], l: ['element', 'light'], o: ['element', 'panel'], a: ['element', 'rack'], m: ['element', 'modbox'], r: ['element', 'relay'], n: ['element', 'ledpsu'], d: ['element', 'motor'], z: ['element', 'kip'], b: ['element', 'boiler'], f: ['element', 'appliance'], c: ['cable'] }
       if (map[e.key]) setWallTool(...map[e.key])
       if (e.key === 'g') toggle('showGrid')
       if (e.key === '+' || e.key === '=') wallZoomBy(1.2, { x: size.w / 2, y: size.h / 2 })
@@ -441,8 +441,8 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
             return (
               <Group key={el.id} name={el.id} x={toX(p)} y={toY(p)} {...elementDrag(el)}>
                 {/* invisible hit area: symbols are thin strokes with gaps, a click a pixel off would miss them */}
-                {el.type === 'modbox' ? <Rect x={-(frameCols(el.modules ?? 3) * MODW) / 2 - 4} y={-4 - 6 * frameRows(el.modules ?? 3)} width={frameCols(el.modules ?? 3) * MODW + 8} height={8 + 12 * frameRows(el.modules ?? 3)} fill="#000" opacity={0.001} /> : <Circle radius={14} fill="#000" opacity={0.001} />}
-                <Symbol type={el.type} selected={isSel} px={px} modules={el.modules} swKind={el.switchKind} data={isData(el)} tv={el.socketKind === 'tv'} appKind={el.appliance} />
+                {el.type === 'rack' ? <Rect x={-RACK_W / 2} y={-(RACK_HEIGHTS[el.rackU ?? 9] ?? 50) / 2} width={RACK_W} height={RACK_HEIGHTS[el.rackU ?? 9] ?? 50} fill="#000" opacity={0.001} /> : el.type === 'modbox' ? <Rect x={-(frameCols(el.modules ?? 3) * MODW) / 2 - 4} y={-4 - 6 * frameRows(el.modules ?? 3)} width={frameCols(el.modules ?? 3) * MODW + 8} height={8 + 12 * frameRows(el.modules ?? 3)} fill="#000" opacity={0.001} /> : <Circle radius={14} fill="#000" opacity={0.001} />}
+                <Symbol type={el.type} selected={isSel} px={px} modules={el.type === 'rack' ? el.rackU : el.modules} swKind={el.switchKind} data={isData(el)} tv={el.socketKind === 'tv'} appKind={el.appliance} />
                 {(() => {
                   const hosted = hostedOf(el.id)
                   const mods = hostedFront(project.elements, el.id)
@@ -575,6 +575,10 @@ function Symbol({ type, selected, px, modules, swKind, data, tv, appKind }: { ty
       return <>{halo}<Rect x={-9} y={-9} width={18} height={18} cornerRadius={2} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[0, -6, 0, 0]} stroke={stroke} strokeWidth={sw} /><Line points={[-6, 0, 6, 0]} stroke={stroke} strokeWidth={sw} /><Line points={[-4, 2.5, 4, 2.5]} stroke={stroke} strokeWidth={sw} /><Line points={[-2, 5, 2, 5]} stroke={stroke} strokeWidth={sw} /></>
     case 'motor': // control unit box with the motor circle: M in a box
       return <>{halo}<Rect x={-11} y={-7} width={22} height={14} cornerRadius={2} fill="#fff" stroke={stroke} strokeWidth={sw} /><Circle x={-4} radius={3.5} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-6, 1.5, -4, -1.5, -2, 1.5]} stroke={stroke} strokeWidth={px(1.2)} /><Line points={[2, -4, 8, -4, 2, 4, 8, 4]} stroke={stroke} strokeWidth={px(1.2)} /></>
+    case 'rack': { // real size on the wall (1 m = 100): outer cabinet, the 19" rails and one line per rack unit
+      const h = RACK_HEIGHTS[modules ?? 9] ?? 50, u = modules ?? 9, inner = u * 4.445, top = -inner / 2
+      return <><Rect x={-RACK_W / 2} y={-h / 2} width={RACK_W} height={h} cornerRadius={1.5} fill={selected ? 'rgba(30,136,229,0.12)' : '#f4f4f2'} stroke={stroke} strokeWidth={sw} /><Rect x={-24.1} y={top} width={48.2} height={inner} fill="#fff" stroke={stroke} strokeWidth={px(1)} />{Array.from({ length: u - 1 }, (_, i) => <Line key={i} points={[-24.1, top + (i + 1) * 4.445, 24.1, top + (i + 1) * 4.445]} stroke={stroke} strokeWidth={px(0.6)} opacity={0.5} />)}</>
+    }
     case 'panel':
       return <>{halo}<Rect x={-10} y={-15} width={20} height={30} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-6, -7, 6, -7]} stroke={stroke} strokeWidth={sw} /><Line points={[-6, 0, 6, 0]} stroke={stroke} strokeWidth={sw} /><Line points={[-6, 7, 6, 7]} stroke={stroke} strokeWidth={sw} /></>
   }
