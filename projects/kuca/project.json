@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-28T07:19:12.732Z",
+ "savedAt": "2026-10-28T07:24:29.463Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -3856,17 +3856,6 @@
    {
     "roomId": "fqmzanpn",
     "wall": 2,
-    "type": "box",
-    "xM": 0.32,
-    "zM": 1.55,
-    "note": "",
-    "id": "rfve62vl",
-    "label": "K11",
-    "depth": "plitka"
-   },
-   {
-    "roomId": "fqmzanpn",
-    "wall": 2,
     "type": "socket",
     "xM": 0.46,
     "zM": 1.14,
@@ -7354,117 +7343,6 @@
     "via": [],
     "note": "",
     "id": "24dxbb7r"
-   },
-   {
-    "roomId": "fqmzanpn",
-    "wall": 3,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "element",
-     "id": "jxseisrz"
-    },
-    "to": {
-     "kind": "corner",
-     "corner": 0,
-     "zM": 2.04
-    },
-    "via": [],
-    "note": "",
-    "id": "yu12f6x0"
-   },
-   {
-    "roomId": "fqmzanpn",
-    "wall": 0,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "corner",
-     "corner": 0,
-     "zM": 2.04
-    },
-    "to": {
-     "kind": "element",
-     "id": "yp1fbo9f"
-    },
-    "via": [
-     {
-      "xM": 0.26,
-      "zM": 1.69
-     }
-    ],
-    "note": "",
-    "id": "jb6xrhwf"
-   },
-   {
-    "roomId": "fqmzanpn",
-    "wall": 2,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "exit",
-     "conduitId": "qlavsdzl",
-     "end": "start"
-    },
-    "to": {
-     "kind": "element",
-     "id": "rfve62vl"
-    },
-    "via": [],
-    "note": "",
-    "id": "8k5hfbv8"
-   },
-   {
-    "roomId": "fqmzanpn",
-    "wall": 2,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "element",
-     "id": "rfve62vl"
-    },
-    "to": {
-     "kind": "element",
-     "id": "h1truay6"
-    },
-    "via": [],
-    "note": "",
-    "id": "3t1tu2dx"
-   },
-   {
-    "roomId": "fqmzanpn",
-    "wall": 2,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "element",
-     "id": "rfve62vl"
-    },
-    "to": {
-     "kind": "corner",
-     "corner": 2,
-     "zM": 1.55
-    },
-    "via": [],
-    "note": "",
-    "id": "wapfkard"
-   },
-   {
-    "roomId": "fqmzanpn",
-    "wall": 1,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "corner",
-     "corner": 2,
-     "zM": 1.55
-    },
-    "to": {
-     "kind": "element",
-     "id": "8rthdxcn"
-    },
-    "via": [
-     {
-      "xM": 1.63,
-      "zM": 1.55
-     }
-    ],
-    "note": "",
-    "id": "c2pjoymb"
    },
    {
     "roomId": "j5g1ml5l",
@@ -11332,6 +11210,91 @@
     "via": [],
     "note": "",
     "id": "vp8hwsja"
+   },
+   {
+    "roomId": "fqmzanpn",
+    "wall": 3,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "fnmnpf60"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 0,
+     "zM": 1.2
+    },
+    "via": [],
+    "note": "",
+    "id": "nj5q1u60"
+   },
+   {
+    "roomId": "fqmzanpn",
+    "wall": 0,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "corner",
+     "corner": 0,
+     "zM": 1.2
+    },
+    "to": {
+     "kind": "element",
+     "id": "yp1fbo9f"
+    },
+    "via": [],
+    "note": "",
+    "id": "4yzbmmza"
+   },
+   {
+    "roomId": "fqmzanpn",
+    "wall": 2,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "qlavsdzl",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "h1truay6"
+    },
+    "via": [],
+    "note": "",
+    "id": "45ue3nyi"
+   },
+   {
+    "roomId": "fqmzanpn",
+    "wall": 2,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "h1truay6"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 2,
+     "zM": 1.13
+    },
+    "via": [],
+    "note": "",
+    "id": "133n1gdl"
+   },
+   {
+    "roomId": "fqmzanpn",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 2,
+     "zM": 1.13
+    },
+    "to": {
+     "kind": "element",
+     "id": "8rthdxcn"
+    },
+    "via": [],
+    "note": "",
+    "id": "vwhotwkn"
    }
   ],
   "categories": [
@@ -11453,7 +11416,7 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "j5g1ml5l",
+   "roomId": "fqmzanpn",
    "wall": 1
   }
  }
