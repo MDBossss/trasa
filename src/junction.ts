@@ -436,7 +436,8 @@ export function chainCables(c: Cable, p: Project): Cable[] {
     if (hops > 8) return
     let t: { cable: Cable; end: CableEnd } | null = null
     if (end.kind === 'corner') t = throughCorner(p, x, end)
-    else if (end.kind === 'exit') { const cd = p.conduits.find((k) => k.id === end.conduitId); if (cd && !isFeedConduit(cd)) t = throughConduit(p, x, cd.id, end.end) }
+    // feed conduits too: a feed drawn through another room is still one cable
+    else if (end.kind === 'exit') t = throughConduit(p, x, end.conduitId, end.end)
     if (!t || seen.has(t.cable.id)) return
     seen.set(t.cable.id, t.cable); walk(t.cable, t.end, hops + 1)
   }
