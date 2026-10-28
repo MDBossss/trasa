@@ -2,7 +2,7 @@ import { Fragment, useRef } from 'react'
 import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
-import { socket15Of, cableStockOf, cableShort, frameSlots, frameName, CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, WIRE_LABEL, APPLIANCES, type ApplianceKind, type BoxDepth, type CableRole, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
+import { socket15Of, cableStockOf, cableShort, frameSlots, frameName, CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, WIRE_LABEL, APPLIANCES, type ApplianceKind, type BoxDepth, type CableRole, type Project, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
 import { BOX_CATALOG, cableIssues, cableNeeds, chainCables, circuitsOf, resolveCable, roleLabel, terminalMeta } from '../junction'
 import { Icon } from './Icons'
 import { wireSwatch } from './JunctionCanvas'
@@ -329,7 +329,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
                 Strujni krug
                 <select value={cable.circuit ?? ''} onChange={(e) => updateCable(cable.id, { circuit: e.target.value || undefined })}>
                   <option value="">{cur ? `izvedeno: ${cur.name}${cur.tie ? ' (nejasno)' : ''}` : 'izvedeno'}</option>
-                  {[...circ.names].map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+                  {circuitGroups(project, circ, cable.roomId).map((g) => <optgroup key={g.label} label={g.label}>{g.ids.map((id) => <option key={id} value={id}>{circ.names.get(id)}</option>)}</optgroup>)}
                 </select>
               </label>
             )
@@ -469,4 +469,29 @@ function SlotRow({ el }: { el: WallElement }) {
       <label>Praznih lijevo <input type="number" min={0} max={6} value={el.gapBefore ?? 0} onChange={(e) => updateElement(el.id, { gapBefore: Math.max(0, +e.target.value || 0) || undefined })} /></label>
     </div>
   )
+}
+
+// Circuits in this room first, then the rest under the room most of their cables run in.
+function circuitGroups(p: Project, circ: ReturnType<typeof circuitsOf>, roomId: string) {
+  const count = new Map<string, Map<string, number>>()
+  for (const c of p.cables) {
+    const k = circ.byCable.get(c.id)?.id
+    if (!k) continue
+    const m = count.get(k) ?? new Map<string, number>()
+    m.set(c.roomId, (m.get(c.roomId) ?? 0) + 1); count.set(k, m)
+  }
+  const byName = (a: string, b: string) => (circ.names.get(a) ?? '').localeCompare(circ.names.get(b) ?? '', 'hr')
+  const here = [...circ.names.keys()].filter((k) => count.get(k)?.has(roomId)).sort(byName)
+  const rest = new Map<string, string[]>()
+  for (const k of circ.names.keys()) {
+    if (here.includes(k)) continue
+    const main = [...(count.get(k) ?? [])].sort((a, b) => b[1] - a[1])[0]?.[0]
+    const name = p.rooms.find((r) => r.id === main)?.name ?? 'Bez kabela'
+    rest.set(name, [...(rest.get(name) ?? []), k])
+  }
+  const room = p.rooms.find((r) => r.id === roomId)?.name ?? 'ova soba'
+  return [
+    ...(here.length ? [{ label: `U ovoj sobi (${room})`, ids: here }] : []),
+    ...[...rest].sort((a, b) => a[0].localeCompare(b[0], 'hr')).map(([label, ids]) => ({ label, ids: ids.sort(byName) })),
+  ]
 }
