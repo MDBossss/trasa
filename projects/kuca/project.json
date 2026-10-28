@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-28T13:16:23.290Z",
+ "savedAt": "2026-10-28T14:27:14.057Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2344,6 +2344,33 @@
     "feed": true,
     "exitZ": {
      "start": 1.97
+    }
+   },
+   {
+    "id": "rdr65h7l",
+    "name": "DOLAZ RACK",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 917.5074589152068,
+      "y": 1112.7161742203484
+     },
+     {
+      "x": 917.5074589152068,
+      "y": 1254.146449996237
+     },
+     {
+      "x": 871.9774526119456,
+      "y": 1315.758752765976
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "todo",
+    "exitZ": {
+     "end": 1.96
     }
    }
   ],
@@ -6817,6 +6844,41 @@
     "controls": [
      "2jyaql5v"
     ]
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 0,
+    "type": "modbox",
+    "xM": 3.04,
+    "zM": 1.54,
+    "note": "",
+    "id": "nl9bxvav",
+    "label": "D74",
+    "modules": 4
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 0,
+    "type": "socket",
+    "xM": 3.04,
+    "zM": 1.6,
+    "note": "",
+    "host": "nl9bxvav",
+    "id": "3ck6txy8",
+    "label": "U137",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 0,
+    "type": "socket",
+    "xM": 3.04,
+    "zM": 1.6,
+    "note": "",
+    "host": "nl9bxvav",
+    "id": "ztpb9nab",
+    "label": "U138",
+    "slotOrder": 1
    }
   ],
   "cables": [
@@ -11340,8 +11402,9 @@
  },
  "ui": {
   "view": {
-   "kind": "junctions",
-   "elementId": "uagf2fvr"
+   "kind": "room",
+   "roomId": "c2b55x6m",
+   "wall": 0
   }
  }
 }
