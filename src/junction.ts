@@ -991,14 +991,21 @@ export function junctionFor(box: WallElement, p: Project): Junction {
 
   const typeOf = (w: TerminalWire) => (w.kind === 'core' ? cables.find((c) => c.cable.id === w.cableId)?.cable.type : undefined)
   const sameType = (a: TerminalWire, b: TerminalWire) => a.kind === 'core' && b.kind === 'core' && a.cableId !== b.cableId && !!typeOf(a) && typeOf(a) === typeOf(b)
-  // a cable running through keeps its PE whole too, unless that would leave a single PE behind unjoined
+  // a cable running through keeps its PE whole too, as long as what stays on the PE WAGO still has its own way to
+  // the board: a core whose far end is nearer the feed (e.g. a switch drop's PE, earthed in the box it came from)
+  const earthedFar = (w: TerminalWire) => {
+    if (w.kind !== 'core') return false
+    const bc = cables.find((c) => c.cable.id === w.cableId), d = circ.dist.get(circ.byCable.get(w.cableId)?.id ?? '')
+    const far = bc?.far.place ? d?.get(bc.far.place.id) : undefined, here = d?.get(box.id)
+    return !!bc && (circ.feedCables.has(w.cableId) || (far !== undefined && here !== undefined && far < here))
+  }
   const runKey = (ws: TerminalWire[]) => ws.map((w) => (w as { cableId: string }).cableId).sort().join('|')
   const runs = new Set([...map].filter(([id, ws]) => id !== 'PE' && !id.startsWith('PARK') && ws.length === 2 && ws[0].color === ws[1].color && sameType(ws[0], ws[1])).map(([, ws]) => runKey(ws)))
   for (const k of runs) {
     const pe = map.get('PE') ?? []
     const mine = pe.filter((w) => w.kind === 'core' && k.split('|').includes(w.cableId))
     const rest = pe.filter((w) => !mine.includes(w))
-    if (mine.length !== 2 || rest.length === 1) continue
+    if (mine.length !== 2 || (rest.length && !rest.some(earthedFar))) continue
     if (rest.length) map.set('PE', rest); else map.delete('PE')
     map.set(`PE@run:${k}`, mine)
   }
