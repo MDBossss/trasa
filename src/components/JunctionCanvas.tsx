@@ -120,76 +120,13 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
     if (!runs.has(k)) runs.set(k, { a: w.cable, b, wires: [] })
     runs.get(k)!.wires.push(w)
   }
-  // neighbouring caps in one row share one caption, over the first: how many follow it (0 = not the first)
-  const capRow = (a: Placed, b: Placed) => a.kind === 'cap' && b.kind === 'cap' && a.flip === b.flip && Math.abs(a.y - b.y) < 1
-  const capGroup = (pi: number) => {
-    if (pi > 0 && capRow(lay.placed[pi - 1], lay.placed[pi])) return 0
-    let n = 1
-    while (pi + n < lay.placed.length && capRow(lay.placed[pi + n - 1], lay.placed[pi + n])) n++
-    return n
-  }
   const tubeOd = (c: BoxCable) => (c.cores.length >= 5 ? 11 : /2[.,]5/.test(c.sub) ? 10 : 8.5)
-  const runBand = (r: { a: BoxCable; b: BoxCable; wires: PlanWire[] }) => {
-    const whole = r.wires.length === r.a.cores.length && r.a.cores.length === r.b.cores.length
-    const cw = /2[.,]5/.test(r.a.sub) ? 3.4 : 2.8
-    return { whole, cw, band: whole ? tubeOd(r.a) : r.wires.length * cw + 1.5 }
-  }
 
   return (
     <svg className={className ?? 'junction-svg'} viewBox={`0 0 ${vbW} ${vbH}`} role="img" aria-label={`Otvorena kutija ${j.box.label}`}>
       <rect x={bx - mm(6)} y={by - mm(6)} width={mm(W + 12)} height={mm(H + 12)} rx={10} fill="#e4e1d8" stroke="#b9b5aa" />
       <rect x={bx} y={by} width={mm(W)} height={mm(H)} rx={6} fill="#f3f1ea" stroke="#8e8a80" strokeWidth={2} />
       {[[4, 4], [W - 4, 4], [4, H - 4], [W - 4, H - 4]].map(([cx, cy], i) => { const [x, y] = px(cx, cy); return <circle key={i} cx={x} cy={y} r={5} fill="#cfcbc0" stroke="#9a968c" /> })}
-
-      {[...runs.entries()].map(([key, r], ri) => {
-        // a cable kept whole runs along the inside of the box wall, the short way round, under everything else;
-        // its cores are concentric lanes, so they never cross each other, and each further run takes the next lane in
-        const ea = entry(r.a), eb = entry(r.b)
-        const { whole, cw, band } = runBand(r)
-        const d = [...runs.values()].slice(0, ri).reduce((n, x) => n + runBand(x).band + 1, 1) + band / 2
-        const side = (e: { n: number[] }) => (e.n[1] === 1 ? 0 : e.n[0] === -1 ? 1 : e.n[1] === -1 ? 2 : 3) // top right bottom left
-        const CW = [[1, 0], [0, 1], [-1, 0], [0, -1]]
-        const onRim = (sd: number, pt: number[], q: number) => [[pt[0], q], [W - q, pt[1]], [pt[0], H - q], [q, pt[1]]][sd]
-        const along = (sd: number, pt: number[], q: number) => { const wc = W - 2 * q, hc = H - 2 * q; return [pt[0] - q, wc + pt[1] - q, wc + hc + W - q - pt[0], 2 * wc + hc + H - q - pt[1]][sd] }
-        const sA = side(ea), sB = side(eb)
-        const per = 2 * (W - 2 * d) + 2 * (H - 2 * d)
-        const fwd = (along(sB, onRim(sB, eb.p, d), d) - along(sA, onRim(sA, ea.p, d), d) + per) % per
-        const dir = fwd <= per / 2 ? 1 : -1
-        const lane = (o: number) => {
-          const q = d + o, tA = CW[sA].map((v) => v * dir), tB = CW[sB].map((v) => v * dir)
-          const A = [ea.p[0] - tA[0] * o, ea.p[1] - tA[1] * o], B = [eb.p[0] + tB[0] * o, eb.p[1] + tB[1] * o]
-          const A1 = onRim(sA, A, q), B1 = onRim(sB, B, q)
-          const wc = W - 2 * q, hc = H - 2 * q, P = 2 * wc + 2 * hc
-          const corners: [number, number[]][] = [[0, [q, q]], [wc, [W - q, q]], [wc + hc, [W - q, H - q]], [2 * wc + hc, [q, H - q]]]
-          const s0 = along(sA, A1, q), len = ((dir * (along(sB, B1, q) - s0)) % P + P) % P
-          const mid = corners.map(([c, pt]) => ({ t: ((dir * (c - s0)) % P + P) % P, pt })).filter((c) => c.t > 0 && c.t < len).sort((x, y) => x.t - y.t).map((c) => c.pt)
-          const pts = [A, A1, ...mid, B1, B].map(([x, y]) => px(x, y))
-          let out = `M${pts[0][0]},${pts[0][1]}`
-          for (let i = 1; i < pts.length - 1; i++) {
-            const [p0, p1, p2] = [pts[i - 1], pts[i], pts[i + 1]]
-            const l1 = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]) || 1, l2 = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) || 1, rr = Math.min(mm(6), l1 / 2, l2 / 2)
-            out += ` L${p1[0] + ((p0[0] - p1[0]) / l1) * rr},${p1[1] + ((p0[1] - p1[1]) / l1) * rr} Q${p1[0]},${p1[1]} ${p1[0] + ((p2[0] - p1[0]) / l2) * rr},${p1[1] + ((p2[1] - p1[1]) / l2) * rr}`
-          }
-          return out + ` L${pts[pts.length - 1][0]},${pts[pts.length - 1][1]}`
-        }
-        const c0 = lane(0)
-        const state = mode === 'steps' ? (r.wires.some((w) => idx(w.key) === step) ? 'hl' : r.wires.every((w) => idx(w.key) > step) ? 'dim' : '') : hover ? (r.wires.some((w) => wireState(w.key) === 'hl') ? 'hl' : 'dim') : ''
-        return (
-          <g key={key} className={`jc-wire jc-run ${state}`} data-tip={`${r.a.label} → ${r.b.label}: ${whole ? 'kabel samo prolazi, ništa ne reži' : `provučeno, ne reži: ${r.wires.map((w) => WIRE_LABEL[w.color]).join(', ')}`}`} onMouseEnter={(e) => enter(r.wires[0].key, e)} onMouseLeave={leave} onClick={() => onPick(idx(r.wires[0].key))}>
-            <path d={c0} fill="none" stroke="#9a978f" strokeWidth={mm(band) + 1} strokeLinejoin="round" opacity={whole ? 1 : 0.35} />
-            <path d={c0} fill="none" stroke="#d9d7cf" strokeWidth={mm(band)} strokeLinejoin="round" opacity={whole ? 1 : 0.5} />
-            {!whole && r.wires.map((w, i) => {
-              const c = lane((i - (r.wires.length - 1) / 2) * cw)
-              return (
-                <g key={w.key}>
-                  <path d={c} fill="none" stroke={WIRE_HEX[w.color]} strokeWidth={mm(cw) - 1} strokeLinejoin="round" />
-                  {w.color === 'gnye' && <path d={c} fill="none" stroke="#f2d31b" strokeWidth={mm(cw) - 1} strokeDasharray="7 9" />}
-                </g>
-              )
-            })}
-          </g>
-        )
-      })}
 
       {j.cables.map((c) => {
         const e = entry(c)
@@ -241,6 +178,38 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
         })}
       </g>
 
+      {[...runs.entries()].map(([key, r]) => {
+        // a parallel offset of one bezier from sheath A to sheath B: left of the travel direction at each end
+        const ea = entry(r.a), eb = entry(r.b), k = 30
+        const dA = ea.n, dB = [-eb.n[0], -eb.n[1]], lA = [-dA[1], dA[0]], lB = [-dB[1], dB[0]]
+        const S0 = [ea.p[0] + dA[0] * 9, ea.p[1] + dA[1] * 9], E0 = [eb.p[0] + eb.n[0] * 9, eb.p[1] + eb.n[1] * 9]
+        const curve = (o: number) => {
+          const p0 = [S0[0] + lA[0] * o, S0[1] + lA[1] * o], c1 = [p0[0] + dA[0] * k, p0[1] + dA[1] * k]
+          const p3 = [E0[0] + lB[0] * o, E0[1] + lB[1] * o], c2 = [p3[0] + eb.n[0] * k, p3[1] + eb.n[1] * k]
+          const [x1, y1] = px(p0[0], p0[1]), [a1, b1] = px(c1[0], c1[1]), [a2, b2] = px(c2[0], c2[1]), [x2, y2] = px(p3[0], p3[1])
+          return { d: `M${x1},${y1} C${a1},${b1} ${a2},${b2} ${x2},${y2}` }
+        }
+        const whole = r.wires.length === r.a.cores.length && r.a.cores.length === r.b.cores.length
+        const cw = /2[.,]5/.test(r.a.sub) ? 3.4 : 2.8
+        const band = whole ? tubeOd(r.a) : r.wires.length * cw + 1.5
+        const c0 = curve(0)
+        const state = mode === 'steps' ? (r.wires.some((w) => idx(w.key) === step) ? 'hl' : r.wires.every((w) => idx(w.key) > step) ? 'dim' : '') : hover ? (r.wires.some((w) => wireState(w.key) === 'hl') ? 'hl' : 'dim') : ''
+        return (
+          <g key={key} className={`jc-wire jc-run ${state}`} data-tip={`${r.a.label} → ${r.b.label}: ${whole ? 'kabel samo prolazi, ništa ne reži' : `provučeno, ne reži: ${r.wires.map((w) => WIRE_LABEL[w.color]).join(', ')}`}`} onMouseEnter={(e) => enter(r.wires[0].key, e)} onMouseLeave={leave} onClick={() => onPick(idx(r.wires[0].key))}>
+            <path d={c0.d} fill="none" stroke="#9a978f" strokeWidth={mm(band) + 1} strokeLinecap="round" opacity={whole ? 1 : 0.35} />
+            <path d={c0.d} fill="none" stroke="#d9d7cf" strokeWidth={mm(band)} strokeLinecap="round" opacity={whole ? 1 : 0.5} />
+            {!whole && r.wires.map((w, i) => {
+              const c = curve((i - (r.wires.length - 1) / 2) * cw)
+              return (
+                <g key={w.key}>
+                  <path d={c.d} fill="none" stroke={WIRE_HEX[w.color]} strokeWidth={mm(cw) - 1} strokeLinecap="round" />
+                  {w.color === 'gnye' && <path d={c.d} fill="none" stroke="#f2d31b" strokeWidth={mm(cw) - 1} strokeDasharray="7 9" />}
+                </g>
+              )
+            })}
+          </g>
+        )
+      })}
 
 
       {j.box.type === 'kip' && (() => {
@@ -315,7 +284,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
               {[0.3, 0.55, 0.8].map((f) => <line key={f} x1={x + 1} y1={y + ch * f} x2={x + cw - 1} y2={y + ch * f} stroke="rgba(255,255,255,.35)" strokeWidth={0.8} />)}
               {inner
                 ? <text x={x + cw + 4} y={y + ch / 2 + 3} textAnchor="start" fontSize={8.5} fill="var(--muted)">izoliraj</text>
-                : capGroup(pi) > 0 && <text x={x + (capGroup(pi) * (cw + mm(4)) - mm(4)) / 2} y={pl.flip ? y + ch + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">izoliraj</text>}
+                : <text x={x + cw / 2} y={pl.flip ? y + ch + 12 + capDy : y - 5 - capDy} textAnchor="middle" fontSize={9.5} fill="var(--muted)">{pl.t.id.startsWith('PARK') ? 'izoliraj' : `${pl.t.label} · izoliraj`}</text>}
             </g>
           )
         }
