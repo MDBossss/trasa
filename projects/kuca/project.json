@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-31T09:27:58.509Z",
+ "savedAt": "2026-10-31T09:39:36.141Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -1515,38 +1515,14 @@
     "feed": true
    },
    {
-    "id": "smrgpimc",
-    "name": "UZEMLJENJE",
-    "color": "#06b6b4",
-    "diameter": 20,
-    "points": [
-     {
-      "x": 911.943400618682,
-      "y": 1599.204878085176
-     },
-     {
-      "x": 877.9723260859475,
-      "y": 1566.3980880984584
-     }
-    ],
-    "from": "",
-    "to": "",
-    "note": "",
-    "categoryId": "todo",
-    "exitZ": {
-     "start": 2.18,
-     "end": 2
-    }
-   },
-   {
     "id": "o1kxxk1i",
     "name": "UZEMLJENJE ORMAR",
     "color": "#06b6b4",
     "diameter": 20,
     "points": [
      {
-      "x": 876.8358893383959,
-      "y": 1552.815608490971
+      "x": 911.2505127865987,
+      "y": 1536.9809320844395
      },
      {
       "x": 907.9133826954123,
@@ -1558,7 +1534,7 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "start": 2
+     "start": 2.44
     }
    },
    {
@@ -2236,8 +2212,8 @@
       "y": 1791.5814979446136
      },
      {
-      "x": 877.0663085598468,
-      "y": 1620.7038301890889
+      "x": 915.9060591759344,
+      "y": 1714.5930902340708
      }
     ],
     "from": "",
@@ -2245,7 +2221,7 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "end": 1.4
+     "end": 1.14
     }
    },
    {
@@ -2255,12 +2231,12 @@
     "diameter": 20,
     "points": [
      {
-      "x": 877.8870283974628,
-      "y": 1616.181656419351
+      "x": 919.2742593736378,
+      "y": 1714.5757283773817
      },
      {
-      "x": 931.53781954935,
-      "y": 1794.9859059463818
+      "x": 931.5577728498453,
+      "y": 1795.0122055095424
      }
     ],
     "from": "",
@@ -2268,7 +2244,7 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "start": 1.48
+     "start": 0.38
     }
    },
    {
@@ -2278,8 +2254,8 @@
     "diameter": 20,
     "points": [
      {
-      "x": 880.1698661103723,
-      "y": 1606.0249761266477
+      "x": 912.4857865081899,
+      "y": 1714.610720505554
      },
      {
       "x": 925.0740220745729,
@@ -2291,7 +2267,7 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "start": 1.54
+     "start": 0.77
     }
    },
    {
@@ -2301,8 +2277,8 @@
     "diameter": 20,
     "points": [
      {
-      "x": 872.2497706669225,
-      "y": 1466.8575847631732
+      "x": 908.6440795611763,
+      "y": 1542.4153347501565
      },
      {
       "x": 915.6109550305215,
@@ -6847,20 +6823,6 @@
    },
    {
     "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "ledpsu",
-    "xM": 3.4101438525170775,
-    "zM": 1.25,
-    "note": "\"24 V, H05RN-F 2×0,75, ostaviti 50 cm kabela na kraju\".",
-    "id": "15xsh387",
-    "label": "N5",
-    "ledM": 6,
-    "feedRelayId": "j9h358in",
-    "feedOutput": 1,
-    "ledWpm": 6
-   },
-   {
-    "roomId": "c2b55x6m",
     "wall": 0,
     "type": "switch",
     "xM": 2.41,
@@ -6906,6 +6868,16 @@
     "note": "",
     "id": "2xtr3zgo",
     "label": "RK1"
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 3,
+    "type": "ledpsu",
+    "xM": 0.79,
+    "zM": 0.77,
+    "note": "",
+    "id": "n5ldvcbo",
+    "label": "N4"
    }
   ],
   "cables": [
@@ -7776,30 +7748,13 @@
     "id": "ncwdtkp0"
    },
    {
-    "roomId": "xyw3llcm",
-    "wall": 3,
-    "type": "PE Cu 16 mm²",
-    "from": {
-     "kind": "element",
-     "id": "9nas1akx"
-    },
-    "to": {
-     "kind": "exit",
-     "conduitId": "smrgpimc",
-     "end": "start"
-    },
-    "via": [],
-    "note": "",
-    "id": "9n6tas77"
-   },
-   {
     "roomId": "c2b55x6m",
     "wall": 1,
     "type": "PE Cu 16 mm²",
     "from": {
-     "kind": "exit",
-     "conduitId": "smrgpimc",
-     "end": "end"
+     "kind": "free",
+     "xM": 0,
+     "zM": 2.6
     },
     "to": {
      "kind": "exit",
@@ -10072,32 +10027,11 @@
    {
     "roomId": "c2b55x6m",
     "wall": 1,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "exit",
-     "conduitId": "ckksywc5",
-     "end": "start"
-    },
-    "to": {
-     "kind": "element",
-     "id": "15xsh387"
-    },
-    "via": [
-     {
-      "xM": 3.36,
-      "zM": 1.94
-     }
-    ],
-    "note": "",
-    "id": "vhavjb4k"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
     "type": "upravljački 2x0.75",
     "from": {
-     "kind": "element",
-     "id": "15xsh387"
+     "kind": "free",
+     "xM": 3.4101438525170775,
+     "zM": 1.25
     },
     "to": {
      "kind": "exit",
@@ -10113,8 +10047,9 @@
     "wall": 1,
     "type": "upravljački 2x0.75",
     "from": {
-     "kind": "element",
-     "id": "15xsh387"
+     "kind": "free",
+     "xM": 3.4101438525170775,
+     "zM": 1.25
     },
     "to": {
      "kind": "exit",
@@ -10135,8 +10070,9 @@
      "end": "end"
     },
     "to": {
-     "kind": "element",
-     "id": "15xsh387"
+     "kind": "free",
+     "xM": 3.4101438525170775,
+     "zM": 1.25
     },
     "via": [],
     "note": "",
@@ -11417,6 +11353,79 @@
     ],
     "note": "",
     "id": "9reumxsy"
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 3,
+    "type": "PE Cu 6 mm²",
+    "from": {
+     "kind": "element",
+     "id": "9nas1akx"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "o1kxxk1i",
+     "end": "start"
+    },
+    "via": [
+     {
+      "xM": 1.2,
+      "zM": 2.44
+     }
+    ],
+    "note": "",
+    "id": "grnn2zs3"
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 3,
+    "type": "upravljački 2x0.75",
+    "from": {
+     "kind": "element",
+     "id": "n5ldvcbo"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "xjt16odh",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "5dtyyp1o"
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 3,
+    "type": "upravljački 2x0.75",
+    "from": {
+     "kind": "element",
+     "id": "n5ldvcbo"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "7o1ft6lk",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "lcmnfokk"
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 3,
+    "type": "upravljački 2x0.75",
+    "from": {
+     "kind": "element",
+     "id": "n5ldvcbo"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "f2b1ltp1",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "d7gwb34k"
    }
   ],
   "categories": [
@@ -11537,8 +11546,9 @@
  },
  "ui": {
   "view": {
-   "kind": "junctions",
-   "elementId": "wdkwpzx7"
+   "kind": "room",
+   "roomId": "xyw3llcm",
+   "wall": 3
   }
  }
 }
