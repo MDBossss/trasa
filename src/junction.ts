@@ -634,6 +634,12 @@ function crossWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallEle
     const where = thin.id !== bc.cable.id ? ` Nastavak na zidu ${thin.wall + 1} je ${thin.type}.` : ''
     checks.push({ cableId: bc.cable.id, level: 'err', text: `${what} treba${load.members.length > 1 ? 'ju' : ''} ${load.signals.length} žila (${load.signals.map((s) => terminalMeta(s, p).label).join(', ')}), nema mjesta za ${load.missing.map((s) => terminalMeta(s, p).label).join(', ')}.${where} Rješenje: ${need?.suggest ?? 'deblji kabel'}.` })
   }
+  // more cores than the job needs: say which stock cable would do (once per bundle, power cables only)
+  if (rulesOf(p).oversize && load.heads.filter(Boolean).length === 1 && /^NYM/.test(bc.cable.type) && bundleMembers(bc.cable.id, p)[0]?.ids.includes(bc.cable.id) !== false) {
+    const need = cableNeeds(bc.cable, p)
+    const cores = (ts: string[]) => ts.reduce((n, t) => n + coreColors(t).length, 0)
+    if (need?.fix && !load.missing.length && cores(need.fix) < cores(load.members)) checks.push({ cableId: bc.cable.id, level: 'warn', text: `${load.members.length > 1 ? `Kabeli ${bc.label} (${load.members.map(cableShort).join(' + ')})` : `Kabel ${bc.label} (${cableShort(bc.cable.type)})`}: treba ${need.needed} žila, dovoljan je ${need.suggest}.` })
+  }
   return bc.cores.map((c) => {
     const s = load.core.get(c)
     if (s === 'L' || s === 'N' || s === 'PE') return { color: c, terminal: s }
@@ -947,6 +953,13 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   else if (box.type === 'modbox' && !hasL && devices.some((d) => !isData(d.el) && !(d.el.type === 'switch' && lowVoltSwitch(d.el, p)))) checks.push({ level: 'err', text: 'Doza nema faze: treba kabel iz razvodne kutije.' })
   else if (feeds > 1) checks.push({ level: 'warn', text: `${feeds} dolaza u istu kutiju; obično je jedan.` })
 
+  // a cable to a light, socket or motor with spare cores: a smaller cable from the list would do
+  if (rulesOf(p).oversize) for (const bc of cables) {
+    if (bc.far.place || bc.role === 'unknown' || !/^NYM/.test(bc.cable.type)) continue
+    const used = bc.wires.filter((w) => w.terminal && w.terminal !== 'PARK').length
+    const fit = cableStockOf(p).filter((t) => /^NYM-J/.test(t) && sectionOf(t) >= sectionOf(bc.cable.type) && coreColors(t).length >= used).sort((a, b) => coreColors(a).length - coreColors(b).length || sectionOf(a) - sectionOf(b))[0]
+    if (fit && coreColors(fit).length < bc.cores.length) checks.push({ cableId: bc.cable.id, level: 'warn', text: `Kabel ${bc.label} (${cableShort(bc.cable.type)}): treba ${used} žila, dovoljan je ${cableShort(fit)}.` })
+  }
   const map = new Map<string, TerminalWire[]>()
   const add = (id: string, w: TerminalWire) => { if (!map.has(id)) map.set(id, []); map.get(id)!.push(w) }
   for (const bc of cables) for (const w of bc.wires) {

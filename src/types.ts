@@ -284,8 +284,8 @@ export const spareCoresOf = (p: { spareCores?: SpareCores }): SpareCores => p.sp
 // The power cables the electrician actually buys; suggestions and checks stay inside this list.
 export const POWER_TYPES = CABLE_TYPES.filter((t) => /^NYM/.test(t))
 export const cableStockOf = (p: { cableStock?: string[] }) => p.cableStock ?? POWER_TYPES
-export interface CableRules { feed25: boolean; socket25: boolean; flow: boolean; blueReturn: boolean; gnyeReturn: boolean; neutralEverywhere: boolean }
-export const rulesOf = (p: { rules?: Partial<CableRules> }): CableRules => ({ feed25: true, socket25: true, flow: true, blueReturn: true, gnyeReturn: false, neutralEverywhere: true, ...p.rules })
+export interface CableRules { feed25: boolean; socket25: boolean; flow: boolean; blueReturn: boolean; gnyeReturn: boolean; neutralEverywhere: boolean; oversize: boolean }
+export const rulesOf = (p: { rules?: Partial<CableRules> }): CableRules => ({ feed25: true, socket25: true, flow: true, blueReturn: true, gnyeReturn: false, neutralEverywhere: true, oversize: true, ...p.rules })
 const coresOf = (t: string) => coreColors(t).length
 // Usable signal slots of a bundle: the first cable carries L N PE and its spares; a further cable has no neutral of
 // its own, so every core but green-yellow carries returns (blue and green-yellow too when allowed,

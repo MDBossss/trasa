@@ -710,7 +710,7 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     mix.cables.push(cab('mx', 'NYM-J 5x1.5', el('k'), el('dm')))
     const mixFix = E.cableNeeds(mix.cables.find((c) => c.id === 'mx'), mix).suggest
     const mix2 = { ...mix, cables: [...mix.cables.map((c) => (c.id === 'mx' ? { ...c, type: 'NYM-J 3x2.5' } : c)), cab('my', 'NYM-J 5x1.5', el('k'), el('dm'))] }
-    const mixErr = errs(mix2).filter((t) => /žila|utičnica/.test(t)).length
+    const mixErr = errs(mix2).filter((t) => /žila|utičnica/.test(t) && !/dovoljan je/.test(t)).length
     const p3 = base('NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-J 3x2.5'); p3.rules = { feed25: false, socket25: false }
     const grow = errs(p3)
     // bundle: four switches in D1 lighting four lamps off K1 need L N PE + 4 returns = 7 cores
@@ -731,7 +731,7 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     // one light fewer: the second green-yellow is not needed and must stay PE
     const gnyeSpare = E.cableNeeds(b.cables.find((c) => c.id === 'b1'), { ...b, rules: { socket25: false, gnyeReturn: true } }).rows.map((r) => r.sig ? r.sig.split(':')[0] : '-')
     const b2 = { ...b, cables: b.cables.map((c) => (c.id === 'b1' ? { ...c, type: 'NYM-J 5x1.5' } : c)) }
-    const fixed = errs(b2).filter((t) => /žila/.test(t))
+    const fixed = errs(b2).filter((t) => /žila/.test(t) && !/dovoljan je/.test(t))
     const second = E.cableNeeds(b2.cables.find((c) => c.id === 'b1'), b2).rows.map((r) => r.sig ? r.sig.split(':')[0] : '-')
     // by default every frame gets N (room for a smart switch later); with that rule off a plain switch drop is 3×1,5, blue the return
     const dr = base('NYM-J 3x2.5', 'NYM-J 3x2.5', 'NYM-J 3x2.5'); dr.rules = { socket25: false, neutralEverywhere: false }
@@ -789,6 +789,15 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const j = E.allJunctions(p).find((x) => x.box.id === 'd')
     return { through: j.terminals.filter((t) => t.through).length, wagos: j.terminals.filter((t) => ['L', 'N', 'PE'].includes(t.id) && t.wago).length, hint: j.checks.some((c) => /samo prolazi kroz kutiju/.test(c.text)) } })
   assert.deepEqual(thru, { through: 3, wagos: 0, hint: true }, 'L N PE only pass a data frame: one cable runs through, nothing cut')
+  // more cores than needed: a 5×1,5 carrying only L N PE is flagged with the smaller cable, unless the rule is off
+  const over = await page.evaluate(() => { const E = window.__trasaEngine; const room = { id: 'ri', name: 'R', points: [{ x: 0, y: 0 }, { x: 600, y: 0 }, { x: 600, y: 400 }, { x: 0, y: 400 }], walls: {} }
+    const cab = (id, type, from, to) => ({ id, roomId: 'ri', wall: 0, type, from, to, via: [], note: '' })
+    const base = { ...window.__trasa.getState().project, rooms: [room], conduits: [{ id: 'fd', name: 'DOLAZ', points: [{ x: 300, y: -100 }, { x: 300, y: 0 }], categoryId: 'todo', feed: true, color: '#000' }],
+      elements: [{ id: 'k', label: 'K1', type: 'box', roomId: 'ri', wall: 0, xM: 3, zM: 2.3, note: '' }, { id: 'l', label: 'S1', type: 'light', roomId: 'ri', wall: 0, xM: 3, zM: 2.6, note: '' }, { id: 'e', label: 'K2', type: 'box', roomId: 'ri', wall: 0, xM: 5, zM: 2.3, note: '' }],
+      cables: [cab('a', 'NYM-J 3x2.5', { kind: 'exit', conduitId: 'fd', end: 'end' }, { kind: 'element', id: 'k' }), cab('b', 'NYM-J 5x1.5', { kind: 'element', id: 'k' }, { kind: 'element', id: 'e' }), cab('c', 'NYM-J 5x1.5', { kind: 'element', id: 'k' }, { kind: 'element', id: 'l' })] }
+    const hits = (p) => E.allJunctions(p).find((x) => x.box.id === 'k').checks.filter((c) => /dovoljan je 3×1,5/.test(c.text)).map((c) => c.cableId).sort()
+    return { on: hits({ ...base, rules: undefined }), off: hits({ ...base, rules: { oversize: false } }) } })
+  assert.deepEqual(over, { on: ['b', 'c'], off: [] }, 'an oversized cable to a box and to a light says 3×1,5 is enough')
   // two frames joined only to each other: a socket there has no feed, so no circuit rule could check it
   const unfed = await page.evaluate(() => { const E = window.__trasaEngine; const s = window.__trasa.getState().project; const room = s.rooms[0].id
     const e = (o) => ({ roomId: room, wall: 0, note: '', ...o })

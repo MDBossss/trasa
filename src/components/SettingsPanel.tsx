@@ -9,6 +9,7 @@ const RULES: { id: keyof CableRules; label: string; desc: string }[] = [
   { id: 'neutralEverywhere', label: 'Nula u svaku dozu', desc: 'I doza sa samo običnim prekidačima dobiva N, da kasnije u nju stane pametni prekidač ili relej (Sonoff, Shelly). Isključeno: takva doza dobiva samo L, PE i povratne, pa je često dosta 3×1,5.' },
   { id: 'blueReturn', label: 'Plava kao povratna kad kabel ne nosi nulu', desc: 'Drugi kabel u paru, ili kabel do doze sa samo običnim prekidačima, nema nulu, pa plava smije nositi povratnu (HD 60364-5-51, 514.3.1), označena smeđom ili crnom trakom na oba kraja.' },
   { id: 'gnyeReturn', label: 'Žuto-zelena u drugom kabelu kao povratna', desc: 'Kad ni plava nije dosta, i žuto-zelena u drugom kabelu nosi povratnu, označena trakom na oba kraja; PE i dalje dolazi prvim kabelom. Nije po standardu — samo kao nužno rješenje.' },
+  { id: 'oversize', label: 'Javi prevelik kabel', desc: 'Javlja kad kabel ima više žila nego treba, npr. 5×1,5 gdje je dosta 3×1,5. Isključi ako namjerno ostavljaš rezervne žile.' },
   { id: 'flow', label: 'Presjek ne raste prema trošilu', desc: 'Javlja kad iza tanjeg kabela ide deblji, npr. 2,5 nakon 1,5: osigurač štiti tanji, deblji ne daje ništa.' },
 ]
 
