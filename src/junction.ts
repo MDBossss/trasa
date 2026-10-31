@@ -563,11 +563,18 @@ export function bundleMembers(cableId: string, p: Project): BundleMember[] {
   }
   return byCable.get(cableId) ?? []
 }
+// Members carrying their own L N PE: the first, and the first of every further circuit sharing the route
+// (a second circuit's cable between the same boxes is never just returns for the first one).
+export function bundleHeads(ms: BundleMember[], p: Project): boolean[] {
+  const circ = circuitsOf(p).byCable, seen = new Set<string>()
+  return ms.map((m, i) => { const k = circ.get(m.first.id)?.id ?? ''; const head = i === 0 || !seen.has(k); seen.add(k); return head })
+}
+export const isBundleHead = (cableId: string, p: Project) => { const ms = bundleMembers(cableId, p); const i = ms.findIndex((m) => m.ids.includes(cableId)); return i < 0 || bundleHeads(ms, p)[i] }
 
 // Which signal each core of a cable carries, spread over its bundle: the first member takes L N PE and its spares,
 // a further member keeps PE on green-yellow, leaves blue unused and carries signals on every other core — unless
 // the rules let blue (and green-yellow) carry a return too.
-export interface CableLoad { signals: string[]; core: Map<WireColor, string | null>; missing: string[]; members: string[] }
+export interface CableLoad { signals: string[]; core: Map<WireColor, string | null>; missing: string[]; members: string[]; heads: boolean[] }
 const loadCache = new WeakMap<Project, Map<string, CableLoad>>()
 export function cableLoad(cableId: string, a: WallElement, b: WallElement, p: Project): CableLoad {
   let cache = loadCache.get(p)
@@ -575,6 +582,7 @@ export function cableLoad(cableId: string, a: WallElement, b: WallElement, p: Pr
   const hit = cache.get(cableId)
   if (hit) return hit
   const members = bundleMembers(cableId, p)
+  const heads = bundleHeads(members, p)
   const signals = crossSignals(a, b, p, cableId)
   const extras = signals.filter((x) => !LNPE.includes(x))
   const blueOk = rulesOf(p).blueReturn
@@ -583,17 +591,17 @@ export function cableLoad(cableId: string, a: WallElement, b: WallElement, p: Pr
   const loads = members.map((m, i) => {
     const core = new Map<WireColor, string | null>()
     for (const c of coreColors(m.type)) {
-      if (c === 'gnye' && (i === 0 || !gnyeOk || k >= extras.length)) core.set(c, 'PE')
-      else if (c === 'blue' && i === 0 && signals.includes('N')) core.set(c, 'N')
+      if (c === 'gnye' && (heads[i] || !gnyeOk || k >= extras.length)) core.set(c, 'PE')
+      else if (c === 'blue' && heads[i] && signals.includes('N')) core.set(c, 'N')
       else if (c === 'blue' && !blueOk) core.set(c, null)
-      else if (c === 'brown' && i === 0) core.set(c, 'L')
+      else if (c === 'brown' && heads[i]) core.set(c, 'L')
       else core.set(c, extras[k++] ?? null)
     }
     return core
   })
   const missing = extras.slice(k)
-  members.forEach((m, i) => { const l: CableLoad = { signals, core: loads[i], missing, members: members.map((x) => x.type) }; for (const id of m.ids) cache!.set(id, l) })
-  return cache.get(cableId) ?? { signals, core: new Map(), missing, members: [] }
+  members.forEach((m, i) => { const l: CableLoad = { signals, core: loads[i], missing, members: members.map((x) => x.type), heads }; for (const id of m.ids) cache!.set(id, l) })
+  return cache.get(cableId) ?? { signals, core: new Map(), missing, members: [], heads: [] }
 }
 
 export interface CableNeeds { signals: string[]; needed: number; has: number; suggest: string; fix: string[] | null; rows: { color: WireColor; sig: string | null }[]; missing: string[]; members: string[]; places: [WallElement, WallElement] }
@@ -601,11 +609,12 @@ export function cableNeeds(c: Cable, p: Project): CableNeeds | null {
   const places = cablePlaces(c, p)
   if (!places) return null
   const load = cableLoad(c.id, places[0], places[1], p)
-  const needed = load.signals.length
   const blue = rulesOf(p).blueReturn
   const gnye = rulesOf(p).gnyeReturn
   const noN = !load.signals.includes('N')
-  const has = bundleSlots(load.members, blue, gnye, noN)
+  // every further circuit in the bundle brings its own L N PE
+  const needed = load.signals.length + (load.heads.filter(Boolean).length - 1) * (noN ? 2 : 3)
+  const has = bundleSlots(load.members, blue, gnye, noN, load.heads)
   const first = bundleMembers(c.id, p)[0]?.first ?? c
   const heavy = load.signals.some((s) => heavyOutput(s, p))
   const fix = suggestCables(needed, Math.max(minSectionFor(first, p), sectionOf(load.members[0] ?? c.type)), cableStockOf(p), heavy ? 2.5 : 1.5, blue, gnye, noN)
@@ -848,7 +857,7 @@ export function minSectionFor(c: Cable, p: Project): number {
     if (mine.some((s) => s && heavyOutput(s, p)) || (mine.includes('L') && load.signals.some((s) => heavyOutput(s, p)))) return 2.5
   }
   // otherwise a further cable of a bundle carries only returns (lights, switches), never the circuit's L
-  if (ms.length > 1 && !ms[0].ids.includes(c.id)) return 1.5
+  if (ms.length > 1 && !isBundleHead(c.id, p)) return 1.5
   if (r.feed25 && circ.feedCables.has(c.id)) return 2.5
   if (r.socket25 && circ.socketPath.has(c.id)) return 2.5
   return 1.5
@@ -875,7 +884,7 @@ function sectionChecks(box: WallElement, cables: BoxCable[], p: Project, checks:
     const d = circ.dist.get(k), here = d?.get(box.id)
     if (!d || here === undefined) continue
     // a further cable in a bundle carries only returns, so it says nothing about the section feeding the load
-    const mine = cables.filter((bc) => power(bc) && circ.byCable.get(bc.cable.id)?.id === k && (bundleMembers(bc.cable.id, p)[0]?.ids.includes(bc.cable.id) ?? true))
+    const mine = cables.filter((bc) => power(bc) && circ.byCable.get(bc.cable.id)?.id === k && isBundleHead(bc.cable.id, p))
     const incoming = mine.filter((bc) => circ.feedCables.has(bc.cable.id) || (bc.far.place && (d.get(bc.far.place.id) ?? Infinity) < here))
     if (!incoming.length) continue
     const inMin = Math.min(...incoming.map(sec))

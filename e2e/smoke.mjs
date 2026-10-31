@@ -768,6 +768,17 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
       cables: [{ id: 'a', roomId: 'ri', wall: 1, type: 'NYM-J 3x2.5', from: { kind: 'exit', conduitId: 'fd', end: 'end' }, to: { kind: 'corner', corner: 1, zM: 2.3 }, via: [], note: '' }, { id: 'b', roomId: 'ri', wall: 0, type: 'NYM-J 3x2.5', from: { kind: 'corner', corner: 1, zM: 2.3 }, to: { kind: 'element', id: 'k' }, via: [], note: '' }] }
     const bc = E.allJunctions(p)[0].cables[0]; return { role: bc.role, label: bc.label } })
   assert.deepEqual(cornerFeed, { role: 'feed', label: 'kut 2 · DOLAZ ← dolaz' }, 'a feed round a corner is recognised')
+  // two circuits from one box to the next: each cable carries its own L N PE, the second is not just returns
+  const twoCirc = await page.evaluate(() => { const E = window.__trasaEngine; const room = { id: 'ri', name: 'R', points: [{ x: 0, y: 0 }, { x: 600, y: 0 }, { x: 600, y: 400 }, { x: 0, y: 400 }], walls: {} }
+    const fd = (id, y) => ({ id, name: id.toUpperCase(), points: [{ x: 300, y: -100 + y }, { x: 300 + y, y: 0 }], categoryId: 'todo', feed: true, color: '#000' })
+    const cab = (id, type, from, to, circuit) => ({ id, roomId: 'ri', wall: 0, type, from, to, via: [], note: '', circuit })
+    const p = { ...window.__trasa.getState().project, rules: undefined, rooms: [room], conduits: [fd('ga', 0), fd('vr', 20)],
+      elements: [{ id: 'k', label: 'K1', type: 'box', roomId: 'ri', wall: 0, xM: 3, zM: 2.3, note: '' }, { id: 'd', label: 'D1', type: 'modbox', roomId: 'ri', wall: 0, xM: 1, zM: 1.1, modules: 2, note: '' }],
+      cables: [cab('a', 'NYM-J 3x2.5', { kind: 'exit', conduitId: 'ga', end: 'end' }, { kind: 'element', id: 'k' }), cab('b', 'NYM-J 3x2.5', { kind: 'exit', conduitId: 'vr', end: 'end' }, { kind: 'element', id: 'k' }),
+        cab('c', 'NYM-J 3x2.5', { kind: 'element', id: 'k' }, { kind: 'element', id: 'd' }, 'vr'), cab('e', 'NYM-J 5x1.5', { kind: 'element', id: 'k' }, { kind: 'element', id: 'd' }, 'ga')] }
+    const j = E.allJunctions(p).find((x) => x.box.id === 'd')
+    return { rows: ['c', 'e'].map((id) => E.cableNeeds(p.cables.find((x) => x.id === id), p).rows.slice(0, 1).map((r) => r.sig).join()), L: j.terminals.filter((t) => t.label === 'L').map((t) => t.wires.length) } })
+  assert.deepEqual(twoCirc, { rows: ['L', 'L'], L: [1, 1] }, 'two circuits between the same boxes each bring their own phase')
   // two frames joined only to each other: a socket there has no feed, so no circuit rule could check it
   const unfed = await page.evaluate(() => { const E = window.__trasaEngine; const s = window.__trasa.getState().project; const room = s.rooms[0].id
     const e = (o) => ({ roomId: room, wall: 0, note: '', ...o })

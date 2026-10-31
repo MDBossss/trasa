@@ -291,7 +291,8 @@ const coresOf = (t: string) => coreColors(t).length
 // its own, so every core but green-yellow carries returns (blue and green-yellow too when allowed,
 // each marked at both ends).
 // noN: the bundle carries no neutral (a plain switch drop), so the first cable's blue is a return only when the rule allows it
-export const bundleSlots = (types: string[], blue = true, gnye = false, noN = false) => types.reduce((n, t, i) => n + (i === 0 ? coresOf(t) - (noN && !blue && !t.toLowerCase().includes('nym-o') ? 1 : 0) : Math.max(0, coresOf(t) - (t.toLowerCase().includes('nym-o') ? 0 : 2 - (blue ? 1 : 0) - (gnye ? 1 : 0)))), 0)
+// `heads` marks the members that carry their own L N PE (the first, and one per further circuit in the bundle)
+export const bundleSlots = (types: string[], blue = true, gnye = false, noN = false, heads?: boolean[]) => types.reduce((n, t, i) => n + ((heads ? heads[i] : i === 0) ? coresOf(t) - (noN && !blue && !t.toLowerCase().includes('nym-o') ? 1 : 0) : Math.max(0, coresOf(t) - (t.toLowerCase().includes('nym-o') ? 0 : 2 - (blue ? 1 : 0) - (gnye ? 1 : 0)))), 0)
 // Cheapest stock answer for `needed` cores at `minMm2`: one cable, else two side by side (fewest cores first).
 // The first cable carries L N PE and must meet `minMm2`; a second one only carries returns, so 1,5 will do.
 export function suggestCables(needed: number, minMm2: number, stock: string[], minRest = 1.5, blue = true, gnye = false, noN = false): string[] | null {
