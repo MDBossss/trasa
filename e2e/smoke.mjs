@@ -804,6 +804,16 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const p = { ...window.__trasa.getState().project, rooms: [room], conduits: [], cables: [], elements: [{ id: 'd', label: 'D1', type: 'modbox', roomId: 'ri', wall: 0, xM: 1, zM: 1.1, modules: 4, note: '' }, sw('a', 'obicni'), sw('b', 'izmjenicni'), sw('c', 'krizni')] }
     return E.allJunctions(p)[0].devices.map((d) => d.ports.join(' ')) })
   assert.deepEqual(marks, ['L 1', 'L 1 2', '1 2 L1 L2'], 'switch ports use the TEM Modul marks')
+  // "Nula u svaku dozu" stays on, but a frame marked "bez nule" gets only L, PE and its return
+  const noN = await page.evaluate(() => { const E = window.__trasaEngine; const room = { id: 'ri', name: 'R', points: [{ x: 0, y: 0 }, { x: 600, y: 0 }, { x: 600, y: 400 }, { x: 0, y: 400 }], walls: {} }
+    const cab = (id, type, from, to) => ({ id, roomId: 'ri', wall: 0, type, from, to, via: [], note: '' })
+    const p = (flag) => ({ ...window.__trasa.getState().project, rules: undefined, rooms: [room], conduits: [{ id: 'fd', name: 'DOLAZ', points: [{ x: 300, y: -100 }, { x: 300, y: 0 }], categoryId: 'todo', feed: true, color: '#000' }],
+      elements: [{ id: 'k', label: 'K1', type: 'box', roomId: 'ri', wall: 0, xM: 3, zM: 2.3, note: '' }, { id: 'l', label: 'S1', type: 'light', roomId: 'ri', wall: 0, xM: 3, zM: 2.6, note: '' },
+        { id: 'd', label: 'D1', type: 'modbox', roomId: 'ri', wall: 0, xM: 1, zM: 1.1, modules: 2, note: '', noNeutral: flag }, { id: 's', label: 'P1', type: 'switch', host: 'd', controls: ['l'], roomId: 'ri', wall: 0, xM: 1, zM: 1.1, note: '' }],
+      cables: [cab('a', 'NYM-J 3x2.5', { kind: 'exit', conduitId: 'fd', end: 'end' }, { kind: 'element', id: 'k' }), cab('b', 'NYM-J 3x1.5', { kind: 'element', id: 'k' }, { kind: 'element', id: 'l' }), cab('c', 'NYM-J 3x1.5', { kind: 'element', id: 'k' }, { kind: 'element', id: 'd' })] })
+    const need = (q) => E.cableNeeds(q.cables.find((c) => c.id === 'c'), q).signals.map((x) => x.split(':')[0]).join(' ')
+    return [need(p(undefined)), need(p(true))] })
+  assert.deepEqual(noN, ['L N PE SW', 'L PE SW'], 'a frame marked "bez nule" drops N even with the rule on')
   // two frames joined only to each other: a socket there has no feed, so no circuit rule could check it
   const unfed = await page.evaluate(() => { const E = window.__trasaEngine; const s = window.__trasa.getState().project; const room = s.rooms[0].id
     const e = (o) => ({ roomId: room, wall: 0, note: '', ...o })

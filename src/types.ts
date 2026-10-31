@@ -152,6 +152,8 @@ export interface WallElement {
   switchKind?: SwitchKind
   // flush box depth as seen on the photo; unset means the standard ('plitka'), a relay needs 'duboka'
   depth?: BoxDepth
+  // frame with plain switches only: no N brought in even with the "neutral in every frame" rule
+  noNeutral?: boolean
   // junction box size picked by hand (catalog label); unset = the smallest from the project's list that fits
   boxSize?: string
   // for switches: ids of the lights this switch controls

@@ -2,7 +2,7 @@ import { Fragment, useRef } from 'react'
 import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
-import { socket15Of, cableStockOf, cableShort, frameSlots, frameName, CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, WIRE_LABEL, APPLIANCES, RACK_HEIGHTS, type ApplianceKind, type BoxDepth, type CableRole, type Project, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
+import { socket15Of, rulesOf, cableStockOf, cableShort, frameSlots, frameName, CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, WIRE_LABEL, APPLIANCES, RACK_HEIGHTS, type ApplianceKind, type BoxDepth, type CableRole, type Project, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
 import { BOX_CATALOG, cableIssues, cableNeeds, chainCables, circuitsOf, resolveCable, roleLabel, terminalMeta } from '../junction'
 import { Icon } from './Icons'
 import { wireSwatch } from './JunctionCanvas'
@@ -291,6 +291,12 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
               <select value={el.depth ?? 'plitka'} onChange={(e) => updateElement(el.id, { depth: e.target.value as BoxDepth })}>
                 {DEPTHS.map((d) => <option key={d.id} value={d.id}>{d.label}</option>)}
               </select>
+            </label>
+          )}
+          {el.type === 'modbox' && rulesOf(project).neutralEverywhere && (
+            <label className="check-row" title="Postavka Nula u svaku dozu ne vrijedi za ovu dozu: dolaze samo L, PE i povratne / putne">
+              <input type="checkbox" checked={!!el.noNeutral} onChange={(e) => updateElement(el.id, { noNeutral: e.target.checked || undefined })} />
+              <span>Bez nule <span className="muted">(samo klasični prekidači, kasnije ovdje nema pametnog)</span></span>
             </label>
           )}
           {el.type === 'box' && (

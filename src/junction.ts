@@ -506,13 +506,14 @@ export function crossSignals(a: WallElement, b: WallElement, p: Project, cableId
   return [...LNPE.filter((s) => s !== 'N' || !noNeutral(p).has(cableId)), ...[...(signalCarriers(p).get(cableId) ?? [])].sort()]
 }
 
-// Cables that need no N (only with the neutralEverywhere rule off): everything on one side of the cable (reached without it) wants no neutral, e.g. a drop
+// Cables that need no N (rule off, or frames marked noNeutral): everything on one side of the cable (reached without it) wants no neutral, e.g. a drop
 // to a frame of plain switches. Such a cable carries L PE and returns, and blue may be one of them.
 const noNCache = new WeakMap<Project, Set<string>>()
 export function noNeutral(p: Project): Set<string> {
   const hit = noNCache.get(p)
   if (hit) return hit
-  if (rulesOf(p).neutralEverywhere) { const none = new Set<string>(); noNCache.set(p, none); return none }
+  const everywhere = rulesOf(p).neutralEverywhere
+  if (everywhere && !p.elements.some((e) => e.noNeutral)) { const none = new Set<string>(); noNCache.set(p, none); return none }
   const adj = new Map<string, { to: string; bundle: string }[]>()
   const bundles = new Map<string, string[]>()
   for (const c of p.cables) {
@@ -524,7 +525,8 @@ export function noNeutral(p: Project): Set<string> {
     adj.set(pl[1].id, [...(adj.get(pl[1].id) ?? []), { to: pl[0].id, bundle: ids[0] }])
   }
   const wantsN = new Map<string, boolean>()
-  const wants = (id: string) => { if (!wantsN.has(id)) { const e = p.elements.find((x) => x.id === id); wantsN.set(id, !!e && localSignals(e, p).has('N')) } return wantsN.get(id)! }
+  // with the rule on, every place wants N for later except a frame marked "bez nule"
+  const wants = (id: string) => { if (!wantsN.has(id)) { const e = p.elements.find((x) => x.id === id); wantsN.set(id, !!e && (localSignals(e, p).has('N') || (everywhere && !e.noNeutral))) } return wantsN.get(id)! }
   const out = new Set<string>()
   for (const [key, ids] of bundles) {
     const pl = cablePlaces(p.cables.find((c) => c.id === ids[0])!, p)!
