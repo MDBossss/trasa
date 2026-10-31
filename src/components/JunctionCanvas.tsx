@@ -106,12 +106,21 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
     const other = w.terminal.wires[1 - w.port]
     if (!other || w.port === 1) return null
     if (other.kind === 'port') { const pd = placedDev(other.deviceId); return pd ? devPort(pd, other.port) : null }
-    // a core run through the box: one uncut wire from one cable's sheath to the other's
-    const oc = j.cables.find((c) => c.cable.id === other.cableId)
-    if (!oc) return null
-    const e = entry(oc)
-    return { x: e.p[0] + e.n[0] * 9, y: e.p[1] + e.n[1] * 9, n: e.n, cap: true }
+    return null
   }
+
+  // cores a cable keeps whole through the box, grouped by the pair of cables (one physical cable)
+  const runs = new Map<string, { a: BoxCable; b: BoxCable; wires: PlanWire[] }>()
+  for (const w of plan) {
+    const o = w.terminal.wires[1]
+    if (!w.terminal.through || w.port !== 0 || !w.cable || o?.kind !== 'core') continue
+    const b = j.cables.find((c) => c.cable.id === o.cableId)
+    if (!b) continue
+    const k = [w.cable.cable.id, b.cable.id].sort().join('|')
+    if (!runs.has(k)) runs.set(k, { a: w.cable, b, wires: [] })
+    runs.get(k)!.wires.push(w)
+  }
+  const tubeOd = (c: BoxCable) => (c.cores.length >= 5 ? 11 : /2[.,]5/.test(c.sub) ? 10 : 8.5)
 
   return (
     <svg className={className ?? 'junction-svg'} viewBox={`0 0 ${vbW} ${vbH}`} role="img" aria-label={`Otvorena kutija ${j.box.label}`}>
@@ -146,6 +155,7 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
 
       <g>
         {plan.map((w) => {
+          if (w.terminal.through) return null
           const a = startOf(w), b = endOf(w)
           if (!a || !b) return null
           const k = 22
@@ -167,6 +177,41 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
           )
         })}
       </g>
+
+      {[...runs.entries()].map(([key, r]) => {
+        // a parallel offset of one bezier from sheath A to sheath B: left of the travel direction at each end
+        const ea = entry(r.a), eb = entry(r.b), k = 30
+        const dA = ea.n, dB = [-eb.n[0], -eb.n[1]], lA = [-dA[1], dA[0]], lB = [-dB[1], dB[0]]
+        const S0 = [ea.p[0] + dA[0] * 9, ea.p[1] + dA[1] * 9], E0 = [eb.p[0] + eb.n[0] * 9, eb.p[1] + eb.n[1] * 9]
+        const curve = (o: number) => {
+          const p0 = [S0[0] + lA[0] * o, S0[1] + lA[1] * o], c1 = [p0[0] + dA[0] * k, p0[1] + dA[1] * k]
+          const p3 = [E0[0] + lB[0] * o, E0[1] + lB[1] * o], c2 = [p3[0] + eb.n[0] * k, p3[1] + eb.n[1] * k]
+          const [x1, y1] = px(p0[0], p0[1]), [a1, b1] = px(c1[0], c1[1]), [a2, b2] = px(c2[0], c2[1]), [x2, y2] = px(p3[0], p3[1])
+          return { d: `M${x1},${y1} C${a1},${b1} ${a2},${b2} ${x2},${y2}`, mid: [(x1 + 3 * a1 + 3 * a2 + x2) / 8, (y1 + 3 * b1 + 3 * b2 + y2) / 8] }
+        }
+        const whole = r.wires.length === r.a.cores.length && r.a.cores.length === r.b.cores.length
+        const cw = /2[.,]5/.test(r.a.sub) ? 3.4 : 2.8
+        const band = whole ? tubeOd(r.a) : r.wires.length * cw + 3
+        const c0 = curve(0)
+        const state = mode === 'steps' ? (r.wires.some((w) => idx(w.key) === step) ? 'hl' : r.wires.every((w) => idx(w.key) > step) ? 'dim' : '') : hover ? (r.wires.some((w) => wireState(w.key) === 'hl') ? 'hl' : 'dim') : ''
+        return (
+          <g key={key} className={`jc-wire jc-run ${state}`} data-tip={`${r.a.label} → ${r.b.label}: ${whole ? 'kabel samo prolazi, ništa ne reži' : `provučeno, ne reži: ${r.wires.map((w) => WIRE_LABEL[w.color]).join(', ')}`}`} onMouseEnter={(e) => enter(r.wires[0].key, e)} onMouseLeave={leave} onClick={() => onPick(idx(r.wires[0].key))}>
+            <path d={c0.d} fill="none" stroke="#9a978f" strokeWidth={mm(band) + 2} strokeLinecap="round" />
+            <path d={c0.d} fill="none" stroke="#d9d7cf" strokeWidth={mm(band)} strokeLinecap="round" />
+            {!whole && r.wires.map((w, i) => {
+              const c = curve((i - (r.wires.length - 1) / 2) * cw)
+              return (
+                <g key={w.key}>
+                  <path d={c.d} fill="none" stroke={WIRE_HEX[w.color]} strokeWidth={mm(cw) - 1} strokeLinecap="round" />
+                  {w.color === 'gnye' && <path d={c.d} fill="none" stroke="#f2d31b" strokeWidth={mm(cw) - 1} strokeDasharray="7 9" />}
+                </g>
+              )
+            })}
+            <text x={c0.mid[0]} y={c0.mid[1] - mm(band) / 2 - 6} textAnchor="middle" fontSize={12} fontWeight={700} fill="#333" style={{ paintOrder: 'stroke', stroke: '#fff', strokeWidth: 5 }}>{whole ? 'prolazi, ne reži' : 'ne reži'}</text>
+          </g>
+        )
+      })}
+
 
       {j.box.type === 'kip' && (() => {
         const pd = placedDev(j.box.id)
