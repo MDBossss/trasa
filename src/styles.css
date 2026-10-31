@@ -202,7 +202,7 @@ code { font: 11px ui-monospace, Menlo, monospace; background: var(--panel2); pad
 .junction-svg { max-width: 100%; max-height: calc(100vh - 220px); width: 100%; height: auto; }
 .jc-wire { cursor: pointer; transition: opacity 0.12s; }
 .jc-wire.dim, .jc-cable.dim { opacity: 0.15; }
-.jc-wire.hl { filter: drop-shadow(0 0 3px rgba(30,136,229,0.9)); }
+.jc-wire.hl, .jc-cable.hl { filter: drop-shadow(0 0 3px rgba(30,136,229,0.9)); }
 .jc-wago { transition: opacity 0.12s; }
 .jc-wago.dim { opacity: 0.35; }
 .jc-wago.hl { filter: drop-shadow(0 0 4px rgba(30,136,229,0.9)); }

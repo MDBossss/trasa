@@ -142,13 +142,49 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
         const [lx, ly] = px(e.p[0] - e.n[0] * off, e.p[1] - e.n[1] * off)
         const anchor = c.side === 'left' ? 'start' : c.side === 'right' ? 'end' : 'middle'
         const dy = c.side === 'top' ? -6 : c.side === 'bottom' ? 14 : -(mm(od) / 2 + 18)
-        const dim = mode === 'all' && hover && hover !== `cable:${c.cable.id}` && !plan.some((w) => (w.key === hover || `term:${w.terminal.id}` === hover || (hover.startsWith('dev:') && touchesDevice(w.terminal, w.port, hover.slice(4)))) && w.cable?.cable.id === c.cable.id)
+        const ofCable = (w: PlanWire) => w.cable?.cable.id === c.cable.id || (!!w.terminal.through && w.terminal.wires.some((x) => x.kind === 'core' && x.cableId === c.cable.id))
+        const touched = mode === 'all' && !!hover && (hover === `cable:${c.cable.id}` || plan.some((w) => (w.key === hover || `term:${w.terminal.id}` === hover || (hover.startsWith('dev:') && touchesDevice(w.terminal, w.port, hover.slice(4)))) && ofCable(w)))
+        const dim = mode === 'all' && hover && !touched
         return (
-          <g key={c.cable.id} className={`jc-cable ${dim ? 'dim' : ''}`} onMouseEnter={() => onHover(`cable:${c.cable.id}`)} onMouseLeave={() => onHover(null)}>
+          <g key={c.cable.id} className={`jc-cable ${dim ? 'dim' : touched ? 'hl' : ''}`} onMouseEnter={() => onHover(`cable:${c.cable.id}`)} onMouseLeave={() => onHover(null)}>
             <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#9a978f" strokeWidth={mm(od) + 2} strokeLinecap="round" />
             <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#d9d7cf" strokeWidth={mm(od)} strokeLinecap="round" />
             {(typeof labels === 'function' ? labels(c) : labels) && <text x={lx} y={ly + dy} textAnchor={anchor} fontSize={11} fontWeight={600} fill="currentColor">{c.label}</text>}
             {(typeof labels === 'function' ? labels(c) : labels) && <text x={lx} y={ly + dy + 13} textAnchor={anchor} fontSize={10} fill="var(--muted)">{c.sub} · {roleShort(c)}</text>}
+          </g>
+        )
+      })}
+
+      {[...runs.entries()].map(([key, r]) => {
+        // a parallel offset of one bezier from sheath A to sheath B: left of the travel direction at each end
+        const ea = entry(r.a), eb = entry(r.b), k = 30
+        const dA = ea.n, dB = [-eb.n[0], -eb.n[1]], lA = [-dA[1], dA[0]], lB = [-dB[1], dB[0]]
+        const S0 = [ea.p[0] + dA[0] * 9, ea.p[1] + dA[1] * 9], E0 = [eb.p[0] + eb.n[0] * 9, eb.p[1] + eb.n[1] * 9]
+        const curve = (o: number) => {
+          const p0 = [S0[0] + lA[0] * o, S0[1] + lA[1] * o], c1 = [p0[0] + dA[0] * k, p0[1] + dA[1] * k]
+          const p3 = [E0[0] + lB[0] * o, E0[1] + lB[1] * o], c2 = [p3[0] + eb.n[0] * k, p3[1] + eb.n[1] * k]
+          const [x1, y1] = px(p0[0], p0[1]), [a1, b1] = px(c1[0], c1[1]), [a2, b2] = px(c2[0], c2[1]), [x2, y2] = px(p3[0], p3[1])
+          return { d: `M${x1},${y1} C${a1},${b1} ${a2},${b2} ${x2},${y2}` }
+        }
+        const whole = r.wires.length === r.a.cores.length && r.a.cores.length === r.b.cores.length
+        const cw = /2[.,]5/.test(r.a.sub) ? 3.4 : 2.8
+        const band = whole ? tubeOd(r.a) : r.wires.length * cw + 1.5
+        const c0 = curve(0)
+        const mine = hover && (r.wires.some((w) => wireState(w.key) === 'hl') || hover === `cable:${r.a.cable.id}` || hover === `cable:${r.b.cable.id}`)
+        const state = mode === 'steps' ? (r.wires.some((w) => idx(w.key) === step) ? 'hl' : r.wires.every((w) => idx(w.key) > step) ? 'dim' : '') : hover ? (mine ? 'hl' : 'dim') : ''
+        return (
+          <g key={key} className={`jc-wire jc-run ${state}`} data-tip={`${r.a.label} → ${r.b.label}: ${whole ? 'kabel samo prolazi, ništa ne reži' : `provučeno, ne reži: ${r.wires.map((w) => WIRE_LABEL[w.color]).join(', ')}`}`} onMouseEnter={(e) => enter(r.wires[0].key, e)} onMouseLeave={leave} onClick={() => onPick(idx(r.wires[0].key))}>
+            <path d={c0.d} fill="none" stroke="#9a978f" strokeWidth={mm(band) + 1} strokeLinecap="round" opacity={whole ? 1 : 0.35} />
+            <path d={c0.d} fill="none" stroke="#d9d7cf" strokeWidth={mm(band)} strokeLinecap="round" opacity={whole ? 1 : 0.5} />
+            {!whole && r.wires.map((w, i) => {
+              const c = curve((i - (r.wires.length - 1) / 2) * cw)
+              return (
+                <g key={w.key}>
+                  <path d={c.d} fill="none" stroke={WIRE_HEX[w.color]} strokeWidth={mm(cw) - 1} strokeLinecap="round" />
+                  {w.color === 'gnye' && <path d={c.d} fill="none" stroke="#f2d31b" strokeWidth={mm(cw) - 1} strokeDasharray="7 9" />}
+                </g>
+              )
+            })}
           </g>
         )
       })}
@@ -178,38 +214,6 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
         })}
       </g>
 
-      {[...runs.entries()].map(([key, r]) => {
-        // a parallel offset of one bezier from sheath A to sheath B: left of the travel direction at each end
-        const ea = entry(r.a), eb = entry(r.b), k = 30
-        const dA = ea.n, dB = [-eb.n[0], -eb.n[1]], lA = [-dA[1], dA[0]], lB = [-dB[1], dB[0]]
-        const S0 = [ea.p[0] + dA[0] * 9, ea.p[1] + dA[1] * 9], E0 = [eb.p[0] + eb.n[0] * 9, eb.p[1] + eb.n[1] * 9]
-        const curve = (o: number) => {
-          const p0 = [S0[0] + lA[0] * o, S0[1] + lA[1] * o], c1 = [p0[0] + dA[0] * k, p0[1] + dA[1] * k]
-          const p3 = [E0[0] + lB[0] * o, E0[1] + lB[1] * o], c2 = [p3[0] + eb.n[0] * k, p3[1] + eb.n[1] * k]
-          const [x1, y1] = px(p0[0], p0[1]), [a1, b1] = px(c1[0], c1[1]), [a2, b2] = px(c2[0], c2[1]), [x2, y2] = px(p3[0], p3[1])
-          return { d: `M${x1},${y1} C${a1},${b1} ${a2},${b2} ${x2},${y2}` }
-        }
-        const whole = r.wires.length === r.a.cores.length && r.a.cores.length === r.b.cores.length
-        const cw = /2[.,]5/.test(r.a.sub) ? 3.4 : 2.8
-        const band = whole ? tubeOd(r.a) : r.wires.length * cw + 1.5
-        const c0 = curve(0)
-        const state = mode === 'steps' ? (r.wires.some((w) => idx(w.key) === step) ? 'hl' : r.wires.every((w) => idx(w.key) > step) ? 'dim' : '') : hover ? (r.wires.some((w) => wireState(w.key) === 'hl') ? 'hl' : 'dim') : ''
-        return (
-          <g key={key} className={`jc-wire jc-run ${state}`} data-tip={`${r.a.label} → ${r.b.label}: ${whole ? 'kabel samo prolazi, ništa ne reži' : `provučeno, ne reži: ${r.wires.map((w) => WIRE_LABEL[w.color]).join(', ')}`}`} onMouseEnter={(e) => enter(r.wires[0].key, e)} onMouseLeave={leave} onClick={() => onPick(idx(r.wires[0].key))}>
-            <path d={c0.d} fill="none" stroke="#9a978f" strokeWidth={mm(band) + 1} strokeLinecap="round" opacity={whole ? 1 : 0.35} />
-            <path d={c0.d} fill="none" stroke="#d9d7cf" strokeWidth={mm(band)} strokeLinecap="round" opacity={whole ? 1 : 0.5} />
-            {!whole && r.wires.map((w, i) => {
-              const c = curve((i - (r.wires.length - 1) / 2) * cw)
-              return (
-                <g key={w.key}>
-                  <path d={c.d} fill="none" stroke={WIRE_HEX[w.color]} strokeWidth={mm(cw) - 1} strokeLinecap="round" />
-                  {w.color === 'gnye' && <path d={c.d} fill="none" stroke="#f2d31b" strokeWidth={mm(cw) - 1} strokeDasharray="7 9" />}
-                </g>
-              )
-            })}
-          </g>
-        )
-      })}
 
 
       {j.box.type === 'kip' && (() => {
