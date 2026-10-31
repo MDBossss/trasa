@@ -824,8 +824,10 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
       elements: [{ id: 'k', label: 'K1', type: 'box', roomId: 'ri', wall: 0, xM: 3, zM: 2.3, note: '' }, { id: 'l', label: 'S1', type: 'light', roomId: 'ri', wall: 0, xM: 3, zM: 2.6, note: '' }, fr('d1', 2), fr('d2', 5), sw('p1', 'd1'), sw('p2', 'd2')],
       cables: [cab('a', 'NYM-J 3x2.5', { kind: 'exit', conduitId: 'fd', end: 'end' }, el('k')), cab('b', 'NYM-J 3x1.5', el('k'), el('l')), cab('c', 'NYM-J 5x1.5', el('k'), el('d1')), cab('d', 'NYM-J 5x1.5', el('d1'), el('d2')), cab('x', 'NYM-J 3x1.5', el('k'), el('k'))] }
     const need = (id) => E.cableNeeds(p.cables.find((c) => c.id === id), p).signals.map((t) => t.split(':')[0]).join(' ')
-    return { near: need('c'), far: need('d'), self: E.allJunctions(p).find((j) => j.box.id === 'k').checks.some((c) => c.cableId === 'x' && c.level === 'err') } })
-  assert.deepEqual(way, { near: 'L PE SW', far: 'L PE PUT1 PUT2', self: true }, 'P1 next to the light returns the phase; the far frame takes L; a self-loop cable is flagged')
+    const q = { ...p, elements: p.elements.map((e) => e.id === 'p2' ? { ...e, returnEnd: true } : e) }
+    const needQ = (id) => E.cableNeeds(q.cables.find((c) => c.id === id), q).signals.map((t) => t.split(':')[0]).join(' ')
+    return { near: need('c'), far: need('d'), self: E.allJunctions(p).find((j) => j.box.id === 'k').checks.some((c) => c.cableId === 'x' && c.level === 'err'), picked: needQ('d') } })
+  assert.deepEqual(way, { near: 'L PE SW', far: 'L PE PUT1 PUT2', self: true, picked: 'L PE PUT1 PUT2 SW' }, 'P1 next to the light returns the phase unless P2 is picked by hand; a self-loop cable is flagged')
   // two frames joined only to each other: a socket there has no feed, so no circuit rule could check it
   const unfed = await page.evaluate(() => { const E = window.__trasaEngine; const s = window.__trasa.getState().project; const room = s.rooms[0].id
     const e = (o) => ({ roomId: room, wall: 0, note: '', ...o })

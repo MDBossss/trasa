@@ -152,6 +152,12 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
                   </select>
                 </label>
               )}
+              {el.switchKind === 'izmjenicni' && !el.relayId && (
+                <label className="check-row" title="Inače povratnu vraća izmjenični najbliži svjetlu; kad su oba jednako daleko, ovdje biraš koji, ovisno o tome gdje treba manje žila">
+                  <input type="checkbox" checked={!!el.returnEnd} onChange={(e) => updateElement(el.id, { returnEnd: e.target.checked || undefined })} />
+                  <span>Vraća povratnu svjetlu <span className="muted">(inače onaj bliži svjetlu)</span></span>
+                </label>
+              )}
               <label className="check-row" title="LED u tipki svijetli dok je trošilo upaljeno; spaja se na izlaz (releja ili prekidača) i nulu">
                 <input type="checkbox" checked={!!el.lamp} onChange={(e) => updateElement(el.id, { lamp: e.target.checked || undefined })} />
                 <span>S kontrolnom lampicom <span className="muted">(svijetli kad je upaljeno)</span></span>

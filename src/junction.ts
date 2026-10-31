@@ -271,7 +271,7 @@ function switchSignals(sw: WallElement, p: Project, checks: Check[], usable: num
     const hops = light ? lightHops(light, p) : null
     const far = (e: WallElement) => hops?.get(e.host ?? e.id) ?? Infinity
     const byDist = (x: WallElement, y: WallElement) => (far(x) === far(y) ? byLabel(x, y) : far(y) - far(x))
-    const ends = members.filter((e) => e.switchKind === 'izmjenicni').sort(byDist)
+    const ends = members.filter((e) => e.switchKind === 'izmjenicni').sort((x, y) => Number(!!x.returnEnd) - Number(!!y.returnEnd) || byDist(x, y))
     const mids = members.filter((e) => e.switchKind === 'krizni').sort(byDist)
     const chain = [ends[0], ...mids, ...ends.slice(1)].filter((e): e is WallElement => !!e)
     const idx = chain.findIndex((e) => e.id === sw.id)

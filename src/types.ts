@@ -175,6 +175,8 @@ export interface WallElement {
   rackU?: number
   // switch / push button with a control lamp (LED insert, e.g. TEM IA20): lit while its load is on
   lamp?: boolean
+  // a two-way switch picked by hand to return the phase to the light (otherwise the end nearest the light)
+  returnEnd?: boolean
   // light / LED supply powered by a relay output (1-based) instead of a classic switch
   feedRelayId?: string
   feedOutput?: number
