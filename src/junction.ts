@@ -219,6 +219,27 @@ function lampOf(sw: WallElement, p: Project, checks: Check[]): string | null {
 // SM61 tipkalo), in the order switchSignals returns its signals; a cross switch's pairs are 1 2 and L1 L2.
 const SWITCH_PORTS: Record<string, string[]> = { obicni: ['L', '1'], tipkalo: ['L', '1'], serijski: ['L', '1', '2'], izmjenicni: ['L', '1', '2'], krizni: ['1', '2', 'L1', 'L2'] }
 const switchPorts = (e: WallElement) => SWITCH_PORTS[e.switchKind ?? 'obicni'] ?? SWITCH_PORTS.obicni
+// Hops from the places a light hangs on (by its own cable) to every place, over place-to-place cables.
+const hopsCache = new WeakMap<Project, Map<string, Map<string, number>>>()
+function lightHops(light: WallElement, p: Project): Map<string, number> {
+  let byLight = hopsCache.get(p)
+  if (!byLight) { byLight = new Map(); hopsCache.set(p, byLight) }
+  const hit = byLight.get(light.id)
+  if (hit) return hit
+  const adj = new Map<string, string[]>()
+  const start: string[] = []
+  for (const c of p.cables) {
+    const pl = cablePlaces(c, p)
+    if (pl) { adj.set(pl[0].id, [...(adj.get(pl[0].id) ?? []), pl[1].id]); adj.set(pl[1].id, [...(adj.get(pl[1].id) ?? []), pl[0].id]); continue }
+    const ends = cableEnds(c, p)
+    if (ends.some((e) => e?.id === light.id)) for (const e of ends) if (e && isPlace(e)) start.push(e.id)
+  }
+  const dist = new Map(start.map((id) => [id, 0]))
+  const queue = [...start]
+  while (queue.length) { const cur = queue.shift()!; for (const nb of adj.get(cur) ?? []) if (!dist.has(nb)) { dist.set(nb, dist.get(cur)! + 1); queue.push(nb) } }
+  byLight.set(light.id, dist)
+  return dist
+}
 function switchSignals(sw: WallElement, p: Project, checks: Check[], usable: number): { terminal: string; note: string }[] {
   const kind = sw.switchKind ?? 'obicni'
   if (sw.relayId) {
@@ -245,8 +266,13 @@ function switchSignals(sw: WallElement, p: Project, checks: Check[], usable: num
     const key = light?.id ?? sw.id
     const byLabel = (x: WallElement, y: WallElement) => x.label.localeCompare(y.label)
     const members = light ? p.elements.filter((e) => e.type === 'switch' && !e.relayId && (e.switchKind === 'izmjenicni' || e.switchKind === 'krizni') && e.controls?.includes(light.id)) : [sw]
-    const ends = members.filter((e) => e.switchKind === 'izmjenicni').sort(byLabel)
-    const mids = members.filter((e) => e.switchKind === 'krizni').sort(byLabel)
+    // the end nearest the light returns the phase to it, so the return core travels the shortest way;
+    // the far end takes L, and cross switches sit in between by distance (ties fall back to the label)
+    const hops = light ? lightHops(light, p) : null
+    const far = (e: WallElement) => hops?.get(e.host ?? e.id) ?? Infinity
+    const byDist = (x: WallElement, y: WallElement) => (far(x) === far(y) ? byLabel(x, y) : far(y) - far(x))
+    const ends = members.filter((e) => e.switchKind === 'izmjenicni').sort(byDist)
+    const mids = members.filter((e) => e.switchKind === 'krizni').sort(byDist)
     const chain = [ends[0], ...mids, ...ends.slice(1)].filter((e): e is WallElement => !!e)
     const idx = chain.findIndex((e) => e.id === sw.id)
     const put = (n: 1 | 2, seg: number, note: string) => ({ terminal: `PUT${n}:${key}:${seg}`, note })
@@ -919,6 +945,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
       return { ...r, ...sideOf(r, box, p), wires: cross ? crossWires(r, box, p, checks) : leafWires(r, box, p, checks) }
     })
     .sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role) || SIDE_ORDER.indexOf(a.side) - SIDE_ORDER.indexOf(b.side) || a.order - b.order)
+  for (const c of p.cables) if (isAtBox(c, box) && cableEnds(c, p).every((e) => e?.id === box.id)) checks.push({ cableId: c.id, level: 'err', text: `Kabel ${cableShort(c.type)} počinje i završava u ${box.label}: ništa ne spaja, obriši ga.` })
   const devices = devicesIn(box, p)
   for (const d of devices) if (d.kind === 'relay' && !RELAY_MODELS[relayModelOf(d.el)].dry && pulseTarget(d.el, p)) checks.push({ level: 'err', text: `${d.el.label}: suhi kontakt za vrata ima samo Shelly 1 Gen4; ${RELAY_MODELS[relayModelOf(d.el)].label} pali fazom.` })
   const feeds = cables.filter((c) => c.role === 'feed').length
