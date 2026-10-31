@@ -787,7 +787,7 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
         { id: 'e', label: 'D2', type: 'modbox', roomId: 'ri', wall: 0, xM: 5, zM: 0.3, modules: 2, note: '' }, { id: 'v', label: 'U2', type: 'socket', host: 'e', roomId: 'ri', wall: 0, xM: 5, zM: 0.3, note: '' }],
       cables: [cab('a', 'NYM-J 3x2.5', { kind: 'exit', conduitId: 'fd', end: 'end' }, { kind: 'element', id: 'd' }), cab('b', 'NYM-J 3x2.5', { kind: 'element', id: 'd' }, { kind: 'element', id: 'e' })] }
     const j = E.allJunctions(p).find((x) => x.box.id === 'd')
-    return { through: j.terminals.filter((t) => t.through).length, wagos: j.terminals.filter((t) => ['L', 'N', 'PE'].includes(t.id) && t.wago).length, hint: j.checks.some((c) => /provučen kroz kutiju/.test(c.text)) } })
+    return { through: j.terminals.filter((t) => t.through).length, wagos: j.terminals.filter((t) => ['L', 'N', 'PE'].includes(t.id) && t.wago).length, hint: j.checks.some((c) => /samo prolazi kroz kutiju/.test(c.text)) } })
   assert.deepEqual(thru, { through: 3, wagos: 0, hint: true }, 'L N PE only pass a data frame: one cable runs through, nothing cut')
   // two frames joined only to each other: a socket there has no feed, so no circuit rule could check it
   const unfed = await page.evaluate(() => { const E = window.__trasaEngine; const s = window.__trasa.getState().project; const room = s.rooms[0].id

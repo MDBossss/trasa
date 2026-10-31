@@ -647,7 +647,7 @@ export function terminalMeta(id: string, p: Project): { label: string; desc: str
   if (id === 'L') return { label: 'L', desc: 'faza' }
   if (id === 'N') return { label: 'N', desc: 'nula' }
   if (id.startsWith('L@') || id.startsWith('N@')) { const name = circuitsOf(p).names.get(id.slice(2)) ?? 'krug'; return { label: id[0], desc: `${id[0] === 'L' ? 'faza' : 'nula'} · ${name}` } }
-  if (id === 'PE') return { label: 'PE', desc: 'zaštitni' }
+  if (id === 'PE' || id.startsWith('PE@')) return { label: 'PE', desc: 'zaštitni' }
   if (id === 'V+' || id === 'V-') return { label: id === 'V+' ? 'V+' : 'V−', desc: `24 V iz napajanja → trake (${id === 'V+' ? 'plus' : 'minus'})` }
   if (id.startsWith('SI:') && el(p, id.split(':')[1]) && RELAY_MODELS[relayModelOf(el(p, id.split(':')[1])!)].dc) { const [, rid, n, k] = id.split(':'); return { label: k === '1' ? '+24' : `SW${n}`, desc: `tipkalo → ${el(p, rid)?.label ?? ''} ${k === '1' ? '+24 V' : `SW${n}`}, 24 V` } }
   if (id.startsWith('SI:')) { const [, rid, , k] = id.split(':'); return { label: `S${k}`, desc: `tipkalo → ${el(p, rid)?.label ?? ''} S${k}, niski napon` } }
@@ -673,7 +673,7 @@ const ROLE_ORDER: Role[] = ['feed', 'pass', 'socket', 'light', 'motor', 'switch'
 const SIDE_ORDER: Side[] = ['top', 'right', 'bottom', 'left']
 // loop-through terminals follow the socket order in the frame, L N PE per socket
 const chainPos = (id: string, p: Project) => (id.startsWith('CH:') ? p.elements.findIndex((e) => e.id === id.split(':')[2]) * 3 + ['L', 'N', 'PE'].indexOf(id.split(':')[1]) : 0)
-const ORDER = (id: string) => (id.startsWith('DATA:') ? 9 : baseId(id) === 'L' ? 0 : baseId(id) === 'N' ? 1 : id === 'PE' ? 2 : id.startsWith('O:') ? 3 : id.startsWith('SW') ? 4 : id.startsWith('I:') ? 5 : id.startsWith('PUT') ? 6 : id.startsWith('CH:') ? 7 : 8)
+const ORDER = (id: string) => (id.startsWith('DATA:') ? 9 : baseId(id) === 'L' ? 0 : baseId(id) === 'N' ? 1 : baseId(id) === 'PE' ? 2 : id.startsWith('O:') ? 3 : id.startsWith('SW') ? 4 : id.startsWith('I:') ? 5 : id.startsWith('PUT') ? 6 : id.startsWith('CH:') ? 7 : 8)
 
 // Flush junction boxes sold in Croatia (Knauf/Terma, Vimar at Ellabo, Legrand at Gromel), smallest first: inner size in mm,
 // retail label (outer size) and number of cable entries. The box grows along this ladder before a split is suggested.
@@ -978,6 +978,17 @@ export function junctionFor(box: WallElement, p: Project): Junction {
 
   const typeOf = (w: TerminalWire) => (w.kind === 'core' ? cables.find((c) => c.cable.id === w.cableId)?.cable.type : undefined)
   const sameType = (a: TerminalWire, b: TerminalWire) => a.kind === 'core' && b.kind === 'core' && a.cableId !== b.cableId && !!typeOf(a) && typeOf(a) === typeOf(b)
+  // a cable running through keeps its PE whole too, unless that would leave a single PE behind unjoined
+  const runKey = (ws: TerminalWire[]) => ws.map((w) => (w as { cableId: string }).cableId).sort().join('|')
+  const runs = new Set([...map].filter(([id, ws]) => id !== 'PE' && !id.startsWith('PARK') && ws.length === 2 && ws[0].color === ws[1].color && sameType(ws[0], ws[1])).map(([, ws]) => runKey(ws)))
+  for (const k of runs) {
+    const pe = map.get('PE') ?? []
+    const mine = pe.filter((w) => w.kind === 'core' && k.split('|').includes(w.cableId))
+    const rest = pe.filter((w) => !mine.includes(w))
+    if (mine.length !== 2 || rest.length === 1) continue
+    if (rest.length) map.set('PE', rest); else map.delete('PE')
+    map.set(`PE@run:${k}`, mine)
+  }
   const terminals: Terminal[] = [...map.entries()]
     .sort((a, b) => ORDER(a[0]) - ORDER(b[0]) || chainPos(a[0], p) - chainPos(b[0], p) || a[0].localeCompare(b[0]))
     .map(([id, wires]) => {
@@ -1005,8 +1016,8 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   for (const [k, ts] of pairs) {
     const [a, b] = k.split('|').map((id) => cables.find((c) => c.cable.id === id)!)
     const whole = ts.map((t) => WIRE_LABEL[t.wires[0].color]).join(', ')
-    const cut = a.cores.length > ts.length ? ', ostale žile reži i spoji na stezaljke' : ''
-    checks.push({ level: 'ok', text: `${a.label} i ${b.label} (${cableShort(a.cable.type)}) mogu biti jedan kabel provučen kroz kutiju: skini samo plašt, ${whole} ne reži${cut}.` })
+    if (ts.length === a.cores.length && a.cores.length === b.cores.length) { checks.push({ level: 'ok', text: `${a.label} i ${b.label} (${cableShort(a.cable.type)}) su jedan kabel koji samo prolazi kroz kutiju: ne skidaj plašt, ništa ne reži.` }); continue }
+    checks.push({ level: 'ok', text: `${a.label} i ${b.label} (${cableShort(a.cable.type)}) mogu biti jedan kabel provučen kroz kutiju: skini samo plašt, ${whole} ne reži, ostale žile reži i spoji na stezaljke.` })
   }
   // a light or socket whose only neutral is its own cable: nothing brings N into this box
   for (const t of terminals) if (baseId(t.id) === 'N' && t.wires.length === 1 && t.wires[0].kind === 'core') {
