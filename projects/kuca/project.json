@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-31T21:21:22.724Z",
+ "savedAt": "2026-10-31T21:26:29.054Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -4678,8 +4678,7 @@
     "switchKind": "krizni",
     "id": "k54s5l57",
     "label": "P13",
-    "slotOrder": 0,
-    "gapBefore": 1,
+    "slotOrder": 1,
     "modules": 2,
     "controls": [
      "6t090yt4"
@@ -6889,7 +6888,7 @@
     "host": "9q36pcg1",
     "id": "m4k4hmxd",
     "label": "U138",
-    "slotOrder": 1,
+    "slotOrder": 0,
     "socketKind": "euro"
    },
    {
@@ -10681,45 +10680,6 @@
     "id": "c109vp5t"
    },
    {
-    "roomId": "mmcst90r",
-    "wall": 3,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "element",
-     "id": "xl40zdmi"
-    },
-    "to": {
-     "kind": "corner",
-     "corner": 3,
-     "zM": 0.45
-    },
-    "via": [
-     {
-      "xM": 1.44,
-      "zM": 0.43
-     }
-    ],
-    "note": "",
-    "id": "g0ix7osp"
-   },
-   {
-    "roomId": "mmcst90r",
-    "wall": 2,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "corner",
-     "corner": 3,
-     "zM": 0.45
-    },
-    "to": {
-     "kind": "element",
-     "id": "ae6m1y2h"
-    },
-    "via": [],
-    "note": "",
-    "id": "lepjt45m"
-   },
-   {
     "roomId": "j5g1ml5l",
     "wall": 3,
     "type": "NYM-J 3x1.5",
@@ -11338,6 +11298,40 @@
     "via": [],
     "note": "",
     "id": "d7gwb34k"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 2,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "ae6m1y2h"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 2,
+     "zM": 0.48
+    },
+    "via": [],
+    "note": "",
+    "id": "9djigrgq"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 2,
+     "zM": 0.48
+    },
+    "to": {
+     "kind": "element",
+     "id": "t3oy54wk"
+    },
+    "via": [],
+    "note": "",
+    "id": "fqupk5x6"
    }
   ],
   "categories": [
@@ -11458,8 +11452,9 @@
  },
  "ui": {
   "view": {
-   "kind": "junctions",
-   "elementId": "9q36pcg1"
+   "kind": "room",
+   "roomId": "mmcst90r",
+   "wall": 0
   }
  }
 }
