@@ -293,12 +293,17 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
               </select>
             </label>
           )}
-          {el.type === 'modbox' && rulesOf(project).neutralEverywhere && (
+          {el.type === 'modbox' && (rulesOf(project).neutralEverywhere ? (
             <label className="check-row" title="Postavka Nula u svaku dozu ne vrijedi za ovu dozu: dolaze samo L, PE i povratne / putne">
               <input type="checkbox" checked={!!el.noNeutral} onChange={(e) => updateElement(el.id, { noNeutral: e.target.checked || undefined })} />
               <span>Bez nule <span className="muted">(samo klasični prekidači, kasnije ovdje nema pametnog)</span></span>
             </label>
-          )}
+          ) : (
+            <label className="check-row" title="Doza sa samo klasičnim prekidačima inače ne dobiva N; ovako dobiva L i N za pametni prekidač kasnije">
+              <input type="checkbox" checked={!!el.withNeutral} onChange={(e) => updateElement(el.id, { withNeutral: e.target.checked || undefined })} />
+              <span>S nulom <span className="muted">(za pametni prekidač ili relej kasnije)</span></span>
+            </label>
+          ))}
           {el.type === 'box' && (
             <label>
               Veličina kutije

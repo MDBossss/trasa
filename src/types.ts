@@ -152,7 +152,9 @@ export interface WallElement {
   switchKind?: SwitchKind
   // flush box depth as seen on the photo; unset means the standard ('plitka'), a relay needs 'duboka'
   depth?: BoxDepth
-  // frame with plain switches only: no N brought in even with the "neutral in every frame" rule
+  // a frame of plain switches gets N only when marked (room for a smart switch later), or with the project rule
+  // on unless marked noNeutral
+  withNeutral?: boolean
   noNeutral?: boolean
   // junction box size picked by hand (catalog label); unset = the smallest from the project's list that fits
   boxSize?: string
@@ -287,7 +289,7 @@ export const spareCoresOf = (p: { spareCores?: SpareCores }): SpareCores => p.sp
 export const POWER_TYPES = CABLE_TYPES.filter((t) => /^NYM/.test(t))
 export const cableStockOf = (p: { cableStock?: string[] }) => p.cableStock ?? POWER_TYPES
 export interface CableRules { feed25: boolean; socket25: boolean; flow: boolean; blueReturn: boolean; gnyeReturn: boolean; neutralEverywhere: boolean; oversize: boolean }
-export const rulesOf = (p: { rules?: Partial<CableRules> }): CableRules => ({ feed25: true, socket25: true, flow: true, blueReturn: true, gnyeReturn: false, neutralEverywhere: true, oversize: true, ...p.rules })
+export const rulesOf = (p: { rules?: Partial<CableRules> }): CableRules => ({ feed25: true, socket25: true, flow: true, blueReturn: true, gnyeReturn: false, neutralEverywhere: false, oversize: true, ...p.rules })
 const coresOf = (t: string) => coreColors(t).length
 // Usable signal slots of a bundle: the first cable carries L N PE and its spares; a further cable has no neutral of
 // its own, so every core but green-yellow carries returns (blue and green-yellow too when allowed,

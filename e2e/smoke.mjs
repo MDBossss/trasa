@@ -174,7 +174,7 @@ st = await state()
 assert.ok(Math.abs(st.gridOrigin.x - 105) < 1.5 && Math.abs(st.gridOrigin.y - 107) < 1.5, `origin ${JSON.stringify(st.gridOrigin)}`)
 await page.evaluate(() => window.__trasa.getState().patchProject({ gridOrigin: { x: 105, y: 107 } }))
 // the walkthrough below draws 3×1,5 everywhere; the section rules get their own step
-await page.evaluate(() => window.__trasa.getState().patchProject({ rules: { feed25: false, socket25: false, flow: false }, cableStock: ['NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-O 3x1.5', 'NYM-J 5x1.5', 'NYM-J 5x2.5', 'NYM-J 7x1.5'] }))
+await page.evaluate(() => window.__trasa.getState().patchProject({ rules: { feed25: false, socket25: false, flow: false, neutralEverywhere: true }, cableStock: ['NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-O 3x1.5', 'NYM-J 5x1.5', 'NYM-J 5x2.5', 'NYM-J 7x1.5'] }))
 await page.keyboard.press('b')
 await clickImg(153, 120); await clickImg(153, 300); await page.keyboard.press('Enter')
 st = await state()
@@ -733,7 +733,7 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const b2 = { ...b, cables: b.cables.map((c) => (c.id === 'b1' ? { ...c, type: 'NYM-J 5x1.5' } : c)) }
     const fixed = errs(b2).filter((t) => /žila/.test(t) && !/dovoljan je/.test(t))
     const second = E.cableNeeds(b2.cables.find((c) => c.id === 'b1'), b2).rows.map((r) => r.sig ? r.sig.split(':')[0] : '-')
-    // by default every frame gets N (room for a smart switch later); with that rule off a plain switch drop is 3×1,5, blue the return
+    // with "Nula u svaku dozu" every frame gets N (room for a smart switch later); off (the default) a plain switch drop is 3×1,5, blue the return
     const dr = base('NYM-J 3x2.5', 'NYM-J 3x2.5', 'NYM-J 3x2.5'); dr.rules = { socket25: false, neutralEverywhere: false }
     dr.elements.push(e({ id: 'dd', label: 'D8', type: 'modbox', xM: 1, zM: 1.1, modules: 2 }), e({ id: 'dl', label: 'S8', type: 'light', xM: 3, zM: 2.6 }), e({ id: 'dp', label: 'P8', type: 'switch', host: 'dd', xM: 1, zM: 1.1, controls: ['dl'] }))
     dr.cables.push(cab('dlc', 'NYM-J 3x1.5', el('k'), el('dl')), cab('dc', 'NYM-J 3x1.5', el('k'), el('dd')))
@@ -804,16 +804,16 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const p = { ...window.__trasa.getState().project, rooms: [room], conduits: [], cables: [], elements: [{ id: 'd', label: 'D1', type: 'modbox', roomId: 'ri', wall: 0, xM: 1, zM: 1.1, modules: 4, note: '' }, sw('a', 'obicni'), sw('b', 'izmjenicni'), sw('c', 'krizni')] }
     return E.allJunctions(p)[0].devices.map((d) => d.ports.join(' ')) })
   assert.deepEqual(marks, ['L 1', 'L 1 2', '1 2 L1 L2'], 'switch ports use the TEM Modul marks')
-  // "Nula u svaku dozu" stays on, but a frame marked "bez nule" gets only L, PE and its return
+  // by default a frame of plain switches gets no N; "s nulom" adds it, and with the rule on "bez nule" drops it
   const noN = await page.evaluate(() => { const E = window.__trasaEngine; const room = { id: 'ri', name: 'R', points: [{ x: 0, y: 0 }, { x: 600, y: 0 }, { x: 600, y: 400 }, { x: 0, y: 400 }], walls: {} }
     const cab = (id, type, from, to) => ({ id, roomId: 'ri', wall: 0, type, from, to, via: [], note: '' })
-    const p = (flag) => ({ ...window.__trasa.getState().project, rules: undefined, rooms: [room], conduits: [{ id: 'fd', name: 'DOLAZ', points: [{ x: 300, y: -100 }, { x: 300, y: 0 }], categoryId: 'todo', feed: true, color: '#000' }],
+    const p = (flag, rules) => ({ ...window.__trasa.getState().project, rules, rooms: [room], conduits: [{ id: 'fd', name: 'DOLAZ', points: [{ x: 300, y: -100 }, { x: 300, y: 0 }], categoryId: 'todo', feed: true, color: '#000' }],
       elements: [{ id: 'k', label: 'K1', type: 'box', roomId: 'ri', wall: 0, xM: 3, zM: 2.3, note: '' }, { id: 'l', label: 'S1', type: 'light', roomId: 'ri', wall: 0, xM: 3, zM: 2.6, note: '' },
-        { id: 'd', label: 'D1', type: 'modbox', roomId: 'ri', wall: 0, xM: 1, zM: 1.1, modules: 2, note: '', noNeutral: flag }, { id: 's', label: 'P1', type: 'switch', host: 'd', controls: ['l'], roomId: 'ri', wall: 0, xM: 1, zM: 1.1, note: '' }],
+        { id: 'd', label: 'D1', type: 'modbox', roomId: 'ri', wall: 0, xM: 1, zM: 1.1, modules: 2, note: '', ...flag }, { id: 's', label: 'P1', type: 'switch', host: 'd', controls: ['l'], roomId: 'ri', wall: 0, xM: 1, zM: 1.1, note: '' }],
       cables: [cab('a', 'NYM-J 3x2.5', { kind: 'exit', conduitId: 'fd', end: 'end' }, { kind: 'element', id: 'k' }), cab('b', 'NYM-J 3x1.5', { kind: 'element', id: 'k' }, { kind: 'element', id: 'l' }), cab('c', 'NYM-J 3x1.5', { kind: 'element', id: 'k' }, { kind: 'element', id: 'd' })] })
     const need = (q) => E.cableNeeds(q.cables.find((c) => c.id === 'c'), q).signals.map((x) => x.split(':')[0]).join(' ')
-    return [need(p(undefined)), need(p(true))] })
-  assert.deepEqual(noN, ['L N PE SW', 'L PE SW'], 'a frame marked "bez nule" drops N even with the rule on')
+    return [need(p({})), need(p({ withNeutral: true })), need(p({}, { neutralEverywhere: true })), need(p({ noNeutral: true }, { neutralEverywhere: true }))] })
+  assert.deepEqual(noN, ['L PE SW', 'L N PE SW', 'L N PE SW', 'L PE SW'], 'N in a switch frame: off by default, "s nulom" per frame, or the rule with "bez nule"')
   // two frames joined only to each other: a socket there has no feed, so no circuit rule could check it
   const unfed = await page.evaluate(() => { const E = window.__trasaEngine; const s = window.__trasa.getState().project; const room = s.rooms[0].id
     const e = (o) => ({ roomId: room, wall: 0, note: '', ...o })
@@ -824,7 +824,7 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   assert.equal(rules.suggest, '5×1,5 + 3×1,5', 'no 7-core cable: 5×1,5 + 3×1,5, the second one using blue as a return'); assert.equal(rules.has, 7)
   assert.equal(rules.strict, '5×1,5 + 5×1,5', 'with blue kept free the second cable must be a 5-core')
   assert.equal(rules.boiler.sug, '3×2,5 + 3×2,5', 'the relay output to a boiler is never on a 1,5 second cable'); assert.ok(rules.boiler.err >= 1, 'a 5×1,5 carrying the boiler current is an error')
-  assert.deepEqual(rules.drop, { needed: 3, rows: ['L', 'SW', 'PE'], err: 0, strict: '5×1,5', dflt: 4 }, 'a plain switch drop needs no N: 3×1,5, blue is the return')
+  assert.deepEqual(rules.drop, { needed: 3, rows: ['L', 'SW', 'PE'], err: 0, strict: '5×1,5', dflt: 3 }, 'a plain switch drop needs no N: 3×1,5, blue is the return (also by default)')
   assert.equal(rules.gnyeHas, 8, 'žuto-zelena kao povratna: drugi 3×1,5 daje sve tri žile'); assert.deepEqual(rules.gnyeSecond, ['SW', 'SW', 'SW'], 'pet povratnih: žuto-zelena nosi zadnju'); assert.equal(rules.gnyeErr, 0, '5×1,5 + 3×1,5 nosi osam žila kad i žuto-zelena radi'); assert.deepEqual(rules.gnyeSpare, ['SW', 'SW', 'PE'], 'nepotrebna žuto-zelena u drugom kabelu ostaje PE')
   assert.equal(rules.fixed, 0, '5×1,5 + 5×1,5 carries all seven: ' + rules.fixedT.join(' ;; ')); assert.deepEqual(rules.second, ['SW', 'SW', '-', '-', 'PE'], 'the second cable: brown and black carry returns, blue unused, PE on green-yellow')
 
