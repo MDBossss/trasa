@@ -543,10 +543,10 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   await page.locator('.junctions-list .list li', { hasText: 'K3' }).click()
   assert.equal(await page.locator('.junction-main .room-head h2', { hasText: 'K3' }).count(), 1)
   assert.equal(await page.locator('.checks').getByText(/nema dolaza/).count(), 0)
-  // a relay in K3 driven by the tipkalo in D1: the signal rides D1 → K1 → K3, K1 passes it through a 412
+  // a relay in K3 driven by the tipkalo in D1: the signal rides D1 → K1 → K3, K1 lets the core run through uncut
   const r3 = await page.evaluate(({ k3, t1 }) => { const s = window.__trasa.getState(); const r3 = s.addElement({ roomId: s.project.rooms[0].id, wall: 0, type: 'relay', xM: 4.6, zM: 2.3, note: '', host: k3, relayModel: 'gen4', label: 'R3' }); s.updateElement(t1, { relayId: r3, relayInput: 1 }); return r3 }, { k3: k3.k3, t1: ids2.t1 })
   await page.locator('.junctions-list .list li', { hasText: 'K1' }).click()
-  await page.locator('.jsteps li.hdr', { hasText: 'SW1 · 221-412 · R3 ulaz 1 ← tipkalo' }).waitFor()
+  await page.locator('.jsteps li.hdr', { hasText: 'SW1 · provučeno, ne reži · R3 ulaz 1 ← tipkalo' }).waitFor()
   await page.locator('.junctions-list .list li', { hasText: 'K3' }).click()
   await page.locator('.jsteps li.hdr', { hasText: 'SW1 · izravno · R3 ulaz 1 ← tipkalo' }).waitFor()
   await page.evaluate(({ t1, r1 }) => window.__trasa.getState().updateElement(t1, { relayId: r1, relayInput: 1 }), ids2)
@@ -779,6 +779,16 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const j = E.allJunctions(p).find((x) => x.box.id === 'd')
     return { rows: ['c', 'e'].map((id) => E.cableNeeds(p.cables.find((x) => x.id === id), p).rows.slice(0, 1).map((r) => r.sig).join()), L: j.terminals.filter((t) => t.label === 'L').map((t) => t.wires.length) } })
   assert.deepEqual(twoCirc, { rows: ['L', 'L'], L: [1, 1] }, 'two circuits between the same boxes each bring their own phase')
+  // a cable continuing through a frame in the same type: cores nothing taps stay whole, no WAGO
+  const thru = await page.evaluate(() => { const E = window.__trasaEngine; const room = { id: 'ri', name: 'R', points: [{ x: 0, y: 0 }, { x: 600, y: 0 }, { x: 600, y: 400 }, { x: 0, y: 400 }], walls: {} }
+    const cab = (id, type, from, to) => ({ id, roomId: 'ri', wall: 0, type, from, to, via: [], note: '' })
+    const p = { ...window.__trasa.getState().project, rules: undefined, rooms: [room], conduits: [{ id: 'fd', name: 'DOLAZ', points: [{ x: 300, y: -100 }, { x: 300, y: 0 }], categoryId: 'todo', feed: true, color: '#000' }],
+      elements: [{ id: 'd', label: 'D1', type: 'modbox', roomId: 'ri', wall: 0, xM: 3, zM: 0.3, modules: 2, note: '' }, { id: 'u', label: 'U1', type: 'socket', socketKind: 'rj45', host: 'd', roomId: 'ri', wall: 0, xM: 3, zM: 0.3, note: '' },
+        { id: 'e', label: 'D2', type: 'modbox', roomId: 'ri', wall: 0, xM: 5, zM: 0.3, modules: 2, note: '' }, { id: 'v', label: 'U2', type: 'socket', host: 'e', roomId: 'ri', wall: 0, xM: 5, zM: 0.3, note: '' }],
+      cables: [cab('a', 'NYM-J 3x2.5', { kind: 'exit', conduitId: 'fd', end: 'end' }, { kind: 'element', id: 'd' }), cab('b', 'NYM-J 3x2.5', { kind: 'element', id: 'd' }, { kind: 'element', id: 'e' })] }
+    const j = E.allJunctions(p).find((x) => x.box.id === 'd')
+    return { through: j.terminals.filter((t) => t.through).length, wagos: j.terminals.filter((t) => ['L', 'N', 'PE'].includes(t.id) && t.wago).length, hint: j.checks.some((c) => /provučen kroz kutiju/.test(c.text)) } })
+  assert.deepEqual(thru, { through: 3, wagos: 0, hint: true }, 'L N PE only pass a data frame: one cable runs through, nothing cut')
   // two frames joined only to each other: a socket there has no feed, so no circuit rule could check it
   const unfed = await page.evaluate(() => { const E = window.__trasaEngine; const s = window.__trasa.getState().project; const room = s.rooms[0].id
     const e = (o) => ({ roomId: room, wall: 0, note: '', ...o })

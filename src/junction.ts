@@ -1,4 +1,4 @@
-import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isFeedConduit, APPLIANCES, isPlace, isData, dataKindOf, DATA_META, sectionOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, socket15Of, isControlCable, bundleSlots, suggestCables, cableStockOf, cableShort, rulesOf, frameSlots, frameName, relayModelOf, hostedFront, type ElementType } from './types'
+import { CABLE_ROLES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, coreColors, isFeedConduit, APPLIANCES, isPlace, isData, dataKindOf, DATA_META, sectionOf, type Cable, type CableEnd, type CableRole, type Conduit, type Project, type Room, type WallElement, type WireColor, spareCoresOf, socket15Of, isControlCable, bundleSlots, suggestCables, cableStockOf, cableShort, rulesOf, frameSlots, WIRE_LABEL, frameName, relayModelOf, hostedFront, type ElementType } from './types'
 import { wallExits } from './walls'
 
 // Everything a box needs: which cables enter it, what each core goes to, which devices sit inside
@@ -27,7 +27,7 @@ export interface Device { el: WallElement; label: string; ports: string[]; wMm: 
 export type TerminalWire =
   | { kind: 'core'; cableId: string; cableLabel: string; color: WireColor; note?: string }
   | { kind: 'port'; deviceId: string; deviceLabel: string; port: string; color: WireColor; note?: string }
-export interface Terminal { id: string; label: string; desc: string; wago: 0 | 412 | 413 | 415; chained: number; wires: TerminalWire[]; cap?: boolean }
+export interface Terminal { id: string; label: string; desc: string; wago: 0 | 412 | 413 | 415; chained: number; wires: TerminalWire[]; cap?: boolean; through?: boolean }
 export interface Check { level: Level; text: string; cableId?: string }
 export interface Junction { box: WallElement; room: Room; cables: BoxCable[]; devices: Device[]; terminals: Terminal[]; checks: Check[]; bom: { item: string; qty: number }[]; level: Level; size: { W: number; H: number; overflow: boolean; stacked: boolean }; boxSizes?: [number, number][] }
 
@@ -976,15 +976,19 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   if (box.type === 'modbox') { const used = frameSlots(hostedFront(p.elements, box.id), box.modules ?? 3).used; if (used > (box.modules ?? 3)) checks.push({ level: 'err', text: `Doza je ${frameName(box.modules ?? 3)}, a unutra treba ${used}M (šuko 2M, tipkalo i euro 1M${(box.modules ?? 3) > 7 ? ', šuko ne prelazi u drugi red' : ''}). Uzmi veću dozu ili makni element.` }) }
   if (devices.filter((d) => d.kind === 'relay').length > 2) checks.push({ level: 'warn', text: `${devices.filter((d) => d.kind === 'relay').length} releja u jednoj dozi: provjeri stane li uz stezaljke.` })
 
+  const typeOf = (w: TerminalWire) => (w.kind === 'core' ? cables.find((c) => c.cable.id === w.cableId)?.cable.type : undefined)
+  const sameType = (a: TerminalWire, b: TerminalWire) => a.kind === 'core' && b.kind === 'core' && a.cableId !== b.cableId && !!typeOf(a) && typeOf(a) === typeOf(b)
   const terminals: Terminal[] = [...map.entries()]
     .sort((a, b) => ORDER(a[0]) - ORDER(b[0]) || chainPos(a[0], p) - chainPos(b[0], p) || a[0].localeCompare(b[0]))
     .map(([id, wires]) => {
       const n = wires.length
       const direct = n === 2 && wires.some((w) => w.kind === 'port') && !id.startsWith('PARK')
+      // the same core of two cables of one type, nothing else on it: one cable runs through, that core is not cut
+      const through = n === 2 && !id.startsWith('PARK') && wires.every((w) => w.kind === 'core') && wires[0].color === wires[1].color && sameType(wires[0], wires[1])
       // a core with nothing to join (spare, or e.g. the only PE in a switch frame) is a spare too
       const lone = n === 1 && wires[0].kind === 'core' && LNPE.includes(baseId(id))
       const cap = (id.startsWith('PARK') || lone) && spareCoresOf(p) === 'cap'
-      const wago: Terminal['wago'] = direct || cap ? 0 : n <= 2 ? 412 : n <= 3 ? 413 : 415
+      const wago: Terminal['wago'] = direct || through || cap ? 0 : n <= 2 ? 412 : n <= 3 ? 413 : 415
       const chained = n <= 5 ? 1 : Math.ceil((n - 2) / 3)
       const meta = terminalMeta(id, p)
       if (cap && lone) meta.desc = `${meta.desc}, sam`
@@ -993,8 +997,17 @@ export function junctionFor(box: WallElement, p: Project): Junction {
         const w = wires[0]
         checks.push({ level: 'warn', text: `Stezaljka ${meta.label} (${meta.desc}): samo ${w.kind === 'core' ? w.cableLabel : `${w.deviceLabel} ${w.port}`}, nedostaje druga strana.` })
       }
-      return { id, ...meta, wago, chained, wires, cap }
+      return { id, ...meta, wago, chained, wires, cap, through }
     })
+  // cables that may be one cable run through the box: say which cores stay whole and which are cut
+  const pairs = new Map<string, Terminal[]>()
+  for (const t of terminals) if (t.through) { const k = t.wires.map((w) => (w as { cableId: string }).cableId).sort().join('|'); pairs.set(k, [...(pairs.get(k) ?? []), t]) }
+  for (const [k, ts] of pairs) {
+    const [a, b] = k.split('|').map((id) => cables.find((c) => c.cable.id === id)!)
+    const whole = ts.map((t) => WIRE_LABEL[t.wires[0].color]).join(', ')
+    const cut = a.cores.length > ts.length ? ', ostale žile reži i spoji na stezaljke' : ''
+    checks.push({ level: 'ok', text: `${a.label} i ${b.label} (${cableShort(a.cable.type)}) mogu biti jedan kabel provučen kroz kutiju: skini samo plašt, ${whole} ne reži${cut}.` })
+  }
   // a light or socket whose only neutral is its own cable: nothing brings N into this box
   for (const t of terminals) if (baseId(t.id) === 'N' && t.wires.length === 1 && t.wires[0].kind === 'core') {
     const w = t.wires[0], bc = cables.find((c) => c.cable.id === (w as { cableId: string }).cableId)

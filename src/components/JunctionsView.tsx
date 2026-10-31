@@ -55,7 +55,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
             <ul className="jsteps">
               {j.terminals.map((t) => (
                 <li key={t.id} className="hdr">
-                  <span>{t.label} · {t.wago ? `221-${t.wago}${t.chained > 1 ? ` ×${t.chained}` : ''}` : t.cap ? 'kapica' : 'izravno'} · {t.desc}</span>
+                  <span>{t.label} · {t.wago ? `221-${t.wago}${t.chained > 1 ? ` ×${t.chained}` : ''}` : t.cap ? 'kapica' : t.through ? 'provučeno, ne reži' : 'izravno'} · {t.desc}</span>
                   <ul>
                     {t.wires.map((w, i) => {
                       const key = `${t.id}#${i}`
@@ -65,7 +65,7 @@ export function JunctionsView({ elementId }: { elementId: string | null }) {
                         <li key={key} className={cls} onMouseEnter={() => setHover(key)} onMouseLeave={() => setHover(null)} onClick={() => { setMode('steps'); setStep(n) }}>
                           <span className="n">{n + 1}</span>
                           <span className="w" style={{ background: wireSwatch(w.color) }} />
-                          <span>{w.kind === 'core' ? w.cableLabel : `${w.deviceLabel} · ${w.port}`}<small>{w.kind === 'core' ? `${WIRE_LABEL[w.color]} žila` : 'kratka žila'} → {t.wago ? wagoSlotLabel(t, i) : t.cap ? 'kapica' : 'izravno'}{w.note ? ` · ${w.note}` : ''}</small></span>
+                          <span>{w.kind === 'core' ? w.cableLabel : `${w.deviceLabel} · ${w.port}`}<small>{w.kind === 'core' ? `${WIRE_LABEL[w.color]} žila` : 'kratka žila'} → {t.wago ? wagoSlotLabel(t, i) : t.cap ? 'kapica' : t.through ? 'provučeno' : 'izravno'}{w.note ? ` · ${w.note}` : ''}</small></span>
                         </li>
                       )
                     })}
@@ -238,6 +238,7 @@ function stepText(w: PlanWire) {
   if (!t.wago) {
     const other = t.wires[1 - w.port] as PlanWire['member'] | undefined
     const o = !other ? '?' : other.kind === 'port' ? `${other.deviceLabel} ${other.port}` : other.cableLabel
+    if (t.through && w.member.kind === 'core') return w.port === 0 ? `${acc(WIRE_LABEL[w.color])} žilu ne reži: kabel ${w.member.cableLabel} provuci kroz kutiju dalje kao ${o}, skini samo plašt (${t.desc}).` : `Ista ${WIRE_LABEL[w.color]} žila, druga strana: ${w.member.cableLabel}.`
     if (w.member.kind === 'core') return `${acc(WIRE_LABEL[w.color])} žilu kabela ${w.member.cableLabel} ogoli i utakni izravno u ${o} (${t.desc}), bez stezaljke.`
     return w.port === 0 ? `Kratkom ${WIRE_LABEL[w.color].replace(/a$/, 'om')} žilom spoji ${w.member.deviceLabel} ${w.member.port} izravno na ${o} (${t.desc}).` : `Druga strana iste žile: ${w.member.deviceLabel} ${w.member.port}.`
   }

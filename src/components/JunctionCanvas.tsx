@@ -106,7 +106,11 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
     const other = w.terminal.wires[1 - w.port]
     if (!other || w.port === 1) return null
     if (other.kind === 'port') { const pd = placedDev(other.deviceId); return pd ? devPort(pd, other.port) : null }
-    return null
+    // a core run through the box: one uncut wire from one cable's sheath to the other's
+    const oc = j.cables.find((c) => c.cable.id === other.cableId)
+    if (!oc) return null
+    const e = entry(oc)
+    return { x: e.p[0] + e.n[0] * 9, y: e.p[1] + e.n[1] * 9, n: e.n, cap: true }
   }
 
   return (

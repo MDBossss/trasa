@@ -156,7 +156,7 @@ function JunctionPage({ j }: { j: Junction }) {
           {j.terminals.map((t) => (
             <tr key={t.id}>
               <td><b>{t.label}</b><br /><span className="muted">{t.desc}</span></td>
-              <td>{t.wago ? `221-${t.wago}${t.chained > 1 ? ` ×${t.chained}` : ''}` : t.cap ? 'kapica' : 'izravno'}</td>
+              <td>{t.wago ? `221-${t.wago}${t.chained > 1 ? ` ×${t.chained}` : ''}` : t.cap ? 'kapica' : t.through ? 'provučeno' : 'izravno'}</td>
               <td>{t.wires.map((w, i) => <div key={i}><span className="sw" style={{ background: w.color === 'gnye' ? 'repeating-linear-gradient(90deg,#2e8b3a 0 3px,#f2d31b 3px 6px)' : WIRE_HEX_PRINT[w.color] }} />{w.kind === 'core' ? `${w.cableLabel}, ${WIRE_LABEL[w.color]}` : `${w.deviceLabel} ${w.port}`}{w.note ? ` (${w.note})` : ''}</div>)}</td>
             </tr>
           ))}
