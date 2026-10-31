@@ -215,6 +215,10 @@ function lampOf(sw: WallElement, p: Project, checks: Check[]): string | null {
 }
 
 // What a switch's conductors carry (cable cores or hosted-button ports): L in, returns out.
+// Terminal marks as printed on TEM Modul mechanisms (SM10 obični, SM40 serijski, SM60 izmjenični, SM70 križni,
+// SM61 tipkalo), in the order switchSignals returns its signals; a cross switch's pairs are 1 2 and L1 L2.
+const SWITCH_PORTS: Record<string, string[]> = { obicni: ['L', '1'], tipkalo: ['L', '1'], serijski: ['L', '1', '2'], izmjenicni: ['L', '1', '2'], krizni: ['1', '2', 'L1', 'L2'] }
+const switchPorts = (e: WallElement) => SWITCH_PORTS[e.switchKind ?? 'obicni'] ?? SWITCH_PORTS.obicni
 function switchSignals(sw: WallElement, p: Project, checks: Check[], usable: number): { terminal: string; note: string }[] {
   const kind = sw.switchKind ?? 'obicni'
   if (sw.relayId) {
@@ -360,7 +364,7 @@ export function devicesIn(place: WallElement, p: Project): Device[] {
       }
       if (isData(e)) { const m = DATA_META[e.socketKind as 'rj45' | 'tv']; return { el: e, label: `${e.label} ${m.name}`, ports: [m.port], wMm: 14, hMm: 18, kind: 'socket' as const } }
       if (e.type === 'socket') { const k = SOCKET_KINDS[e.socketKind ?? 'schuko']; return { el: e, label: `${e.label} ${k.label.toLowerCase()} utičnica`, ports: ['L', 'N', 'PE', 'L′', 'N′', 'PE′'], wMm: Math.max(24, k.modules * 11), hMm: 18, kind: 'socket' as const } }
-      return { el: e, label: `${e.label} ${(e.switchKind ?? 'obicni') === 'tipkalo' ? 'tipkalo' : 'prekidač'}${(e.modules ?? 1) > 1 ? ` ${e.modules}M` : ''}`, ports: [...['1', '2', '3', '4'].slice(0, e.switchKind === 'krizni' ? 4 : (e.switchKind === 'serijski' || e.switchKind === 'izmjenicni') ? 3 : 2), ...(e.lamp ? ['X1', 'X2'] : [])], wMm: Math.max(14, (e.modules ?? 1) * 11), hMm: 18, kind: 'button' as const }
+      return { el: e, label: `${e.label} ${(e.switchKind ?? 'obicni') === 'tipkalo' ? 'tipkalo' : 'prekidač'}${(e.modules ?? 1) > 1 ? ` ${e.modules}M` : ''}`, ports: [...switchPorts(e), ...(e.lamp ? ['X1', 'X2'] : [])], wMm: Math.max(14, (e.modules ?? 1) * 11), hMm: 18, kind: 'button' as const }
     })
 }
 
@@ -409,7 +413,7 @@ function devicePorts(d: Device, p: Project, checks: Check[]): PortMember[] {
   // a hosted switch has no cable of its own: the frame's cables are checked by crossWires, so no core limit here
   const sig = switchSignals(d.el, p, checks, Infinity)
   if (!sig.length) return out
-  const ports: PortMember[] = sig.map((s, i) => ({ port: `${i + 1}`, terminal: s.terminal, color: i === 0 && s.terminal === 'L' ? 'brown' : 'black', note: s.note }))
+  const ports: PortMember[] = sig.map((s, i) => ({ port: switchPorts(d.el)[i] ?? `${i + 1}`, terminal: s.terminal, color: i === 0 && s.terminal === 'L' ? 'brown' : 'black', note: s.note }))
   const lamp = lampOf(d.el, p, checks)
   if (lamp) ports.push({ port: 'X1', terminal: lamp, color: 'black', note: 'kontrolna lampica' }, { port: 'X2', terminal: 'N', color: 'blue', note: 'kontrolna lampica, nula' })
   return ports
@@ -663,7 +667,7 @@ export function terminalMeta(id: string, p: Project): { label: string; desc: str
   if (id.startsWith('PARK')) return spareCoresOf(p) === 'cap' ? { label: '·', desc: 'rezerva' } : { label: '·', desc: 'parkirano' }
   const [kind, a, b] = id.split(':')
   if (kind === 'CH') return { label: a, desc: `provlačenje ${el(p, b)?.label ?? ''} → sljedeća utičnica` }
-  if (kind === 'PUT1' || kind === 'PUT2') { const seg = +(b ?? 0); return { label: `${kind === 'PUT1' ? 'p1' : 'p2'}${"′".repeat(seg)}`, desc: `putna ${kind.slice(-1)}${seg ? ` · dionica ${seg + 1}` : ''} · ${el(p, a)?.label ?? '?'}` } }
+  if (kind === 'PUT1' || kind === 'PUT2') { const seg = +(b ?? 0); return { label: `${kind === 'PUT1' ? 'p1' : 'p2'}${"′".repeat(Math.max(0, seg))}`, desc: `putna ${kind.slice(-1)}${seg ? ` · dionica ${seg + 1}` : ''} · ${el(p, a)?.label ?? '?'}` } }
   if (kind === 'O') { const r = el(p, a); const lights = p.elements.filter((e) => e.feedRelayId === a && (e.feedOutput ?? 1) === +b); return { label: lights.map((l) => l.label).join('+') || `O${b}`, desc: `${r?.label ?? 'relej'} izlaz ${b} → ${lights.some((l) => l.type === 'boiler') ? 'bojler' : lights.some((l) => l.type === 'ledpsu') ? 'LED' : 'svjetlo'}` } }
   if (kind === 'I') { const r = el(p, a); return { label: `SW${b}`, desc: `${r?.label ?? 'relej'} ulaz ${b} ← tipkalo` } }
   if (a === '?') return { label: '?', desc: `${el(p, b)?.label ?? 'svjetlo'} bez prekidača` }

@@ -798,6 +798,12 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const hits = (p) => E.allJunctions(p).find((x) => x.box.id === 'k').checks.filter((c) => /dovoljan je 3×1,5/.test(c.text)).map((c) => c.cableId).sort()
     return { on: hits({ ...base, rules: undefined }), off: hits({ ...base, rules: { oversize: false } }) } })
   assert.deepEqual(over, { on: ['b', 'c'], off: [] }, 'an oversized cable to a box and to a light says 3×1,5 is enough')
+  // switch terminals carry the marks printed on TEM Modul mechanisms
+  const marks = await page.evaluate(() => { const E = window.__trasaEngine; const room = { id: 'ri', name: 'R', points: [{ x: 0, y: 0 }, { x: 600, y: 0 }, { x: 600, y: 400 }, { x: 0, y: 400 }], walls: {} }
+    const sw = (id, kind) => ({ id, label: id.toUpperCase(), type: 'switch', switchKind: kind, host: 'd', roomId: 'ri', wall: 0, xM: 1, zM: 1.1, note: '' })
+    const p = { ...window.__trasa.getState().project, rooms: [room], conduits: [], cables: [], elements: [{ id: 'd', label: 'D1', type: 'modbox', roomId: 'ri', wall: 0, xM: 1, zM: 1.1, modules: 4, note: '' }, sw('a', 'obicni'), sw('b', 'izmjenicni'), sw('c', 'krizni')] }
+    return E.allJunctions(p)[0].devices.map((d) => d.ports.join(' ')) })
+  assert.deepEqual(marks, ['L 1', 'L 1 2', '1 2 L1 L2'], 'switch ports use the TEM Modul marks')
   // two frames joined only to each other: a socket there has no feed, so no circuit rule could check it
   const unfed = await page.evaluate(() => { const E = window.__trasaEngine; const s = window.__trasa.getState().project; const room = s.rooms[0].id
     const e = (o) => ({ roomId: room, wall: 0, note: '', ...o })
