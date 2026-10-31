@@ -839,6 +839,22 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
       cables: [cab('a', 'NYM-J 3x2.5', { kind: 'exit', conduitId: 'fd', end: 'end' }, el('k')), cab('c', 'NYM-J 3x2.5', el('k'), el('b')), cab('x', 'NYM-J 5x1.5', el('k'), el('d'))] }
     return E.allJunctions(p).flatMap((j) => j.checks.filter((c) => c.level === 'err').map((c) => c.text)) })
   assert.deepEqual(lampDrop, [], 'a 5×1,5 to the pilot lamp of a boiler relay in the box is fine')
+  // two circuits in a frame: a light switch takes the phase of its light's circuit even if its return cable was put on the other one
+  const ownCirc = await page.evaluate(() => { const E = window.__trasaEngine; const room = { id: 'ri', name: 'R', points: [{ x: 0, y: 0 }, { x: 600, y: 0 }, { x: 600, y: 400 }, { x: 0, y: 400 }], walls: {} }
+    const cab = (id, type, from, to, circuit) => ({ id, roomId: 'ri', wall: 0, type, from, to, via: [], note: '', circuit })
+    const el = (id) => ({ kind: 'element', id })
+    const fd = (id, x) => ({ id, name: id.toUpperCase(), points: [{ x, y: -100 }, { x, y: 0 }], categoryId: 'todo', feed: true, color: '#000' })
+    const p = { ...window.__trasa.getState().project, rules: undefined, rooms: [room], conduits: [fd('ga', 280), fd('bo', 320)],
+      elements: [{ id: 'k', label: 'K1', type: 'box', roomId: 'ri', wall: 0, xM: 3, zM: 2.3, note: '', boxSize: '10 × 12' }, { id: 'r', label: 'R1', type: 'relay', host: 'k', relayModel: 'gen4pm', roomId: 'ri', wall: 0, xM: 3, zM: 2.3, note: '' },
+        { id: 'b', label: 'BO1', type: 'boiler', feedRelayId: 'r', roomId: 'ri', wall: 0, xM: 5, zM: 1.7, note: '' }, { id: 'l', label: 'S1', type: 'light', roomId: 'ri', wall: 0, xM: 2, zM: 2.6, note: '' },
+        { id: 'd', label: 'D1', type: 'modbox', depth: 'duboka', roomId: 'ri', wall: 0, xM: 3, zM: 1.2, modules: 3, note: '' },
+        { id: 's', label: 'P1', type: 'switch', controls: ['l'], host: 'd', roomId: 'ri', wall: 0, xM: 3, zM: 1.2, note: '' }, { id: 't', label: 'P2', type: 'switch', switchKind: 'tipkalo', relayId: 'r', relayInput: 1, host: 'd', roomId: 'ri', wall: 0, xM: 3, zM: 1.2, note: '' }],
+      cables: [cab('a', 'NYM-J 3x2.5', { kind: 'exit', conduitId: 'ga', end: 'end' }, el('k')), cab('a2', 'NYM-J 3x2.5', { kind: 'exit', conduitId: 'bo', end: 'end' }, el('k')), cab('c', 'NYM-J 3x2.5', el('k'), el('b'), 'bo'), cab('m', 'NYM-J 3x1.5', el('k'), el('l'), 'ga'),
+        cab('x', 'NYM-J 3x2.5', el('k'), el('d'), 'ga'), cab('y', 'NYM-J 5x1.5', el('k'), el('d'), 'bo'), cab('z', 'NYM-J 3x1.5', el('k'), el('d'), 'bo')] }
+    const j = E.allJunctions(p).find((x) => x.box.id === 'd')
+    const onL = (dev) => j.terminals.find((t) => t.id.startsWith('L@') && t.wires.some((w) => w.kind === 'port' && w.deviceId === dev))?.id
+    return [onL('s'), onL('t')] })
+  assert.deepEqual(ownCirc, ['L@ga', 'L@bo'], 'the light switch is on the light circuit, the boiler button on the boiler circuit')
   // two frames joined only to each other: a socket there has no feed, so no circuit rule could check it
   const unfed = await page.evaluate(() => { const E = window.__trasaEngine; const s = window.__trasa.getState().project; const room = s.rooms[0].id
     const e = (o) => ({ roomId: room, wall: 0, note: '', ...o })

@@ -982,7 +982,16 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   const devCirc = new Map<string, string>()
   if (multi) {
     for (const bc of cables) { const c = circOf(bc); if (c?.tie) checks.push({ cableId: bc.cable.id, level: 'err', text: `Kabel ${bc.label}: ne zna se na kojem je strujnom krugu (${[...here.values()].join(' ili ')}). Odaberi krug u svojstvima kabela.` }) }
-    // a device belongs to the circuit of the cable that carries its signals (a switch's return, a relay's output)
+    // a device belongs to the circuit of what it powers: a switch to its light's, a button to its relay's, a relay to its
+    // load's; failing that, to the circuit of the cable that carries its signals (a switch's return, a relay's output)
+    const loadCirc = (id: string) => p.cables.filter((c) => cableEnds(c, p).some((e) => e?.id === id)).map((c) => circ.byCable.get(c.id)?.id).find((k) => k && here.has(k))
+    const own = (e: WallElement): string | undefined => {
+      if (e.type === 'relay') return p.elements.filter((x) => x.feedRelayId === e.id).map((x) => loadCirc(x.id)).find(Boolean)
+      if (e.type === 'switch' && e.relayId) { const r = el(p, e.relayId); return r ? own(r) : undefined }
+      if (e.type === 'switch') return (e.controls ?? []).map(loadCirc).find(Boolean)
+      return undefined
+    }
+    for (const d of devices) { const k = own(d.el); if (k) devCirc.set(d.el.id, k) }
     const ports = new Map(devices.map((d) => [d.el.id, devicePorts(d, p, []).map((m) => m.terminal).filter((t) => !LNPE.includes(t))]))
     for (let round = 0; round < 3; round++) for (const d of devices) {
       if (devCirc.has(d.el.id)) continue
