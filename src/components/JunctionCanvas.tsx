@@ -187,17 +187,17 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
           const p0 = [S0[0] + lA[0] * o, S0[1] + lA[1] * o], c1 = [p0[0] + dA[0] * k, p0[1] + dA[1] * k]
           const p3 = [E0[0] + lB[0] * o, E0[1] + lB[1] * o], c2 = [p3[0] + eb.n[0] * k, p3[1] + eb.n[1] * k]
           const [x1, y1] = px(p0[0], p0[1]), [a1, b1] = px(c1[0], c1[1]), [a2, b2] = px(c2[0], c2[1]), [x2, y2] = px(p3[0], p3[1])
-          return { d: `M${x1},${y1} C${a1},${b1} ${a2},${b2} ${x2},${y2}`, mid: [(x1 + 3 * a1 + 3 * a2 + x2) / 8, (y1 + 3 * b1 + 3 * b2 + y2) / 8] }
+          return { d: `M${x1},${y1} C${a1},${b1} ${a2},${b2} ${x2},${y2}` }
         }
         const whole = r.wires.length === r.a.cores.length && r.a.cores.length === r.b.cores.length
         const cw = /2[.,]5/.test(r.a.sub) ? 3.4 : 2.8
-        const band = whole ? tubeOd(r.a) : r.wires.length * cw + 3
+        const band = whole ? tubeOd(r.a) : r.wires.length * cw + 1.5
         const c0 = curve(0)
         const state = mode === 'steps' ? (r.wires.some((w) => idx(w.key) === step) ? 'hl' : r.wires.every((w) => idx(w.key) > step) ? 'dim' : '') : hover ? (r.wires.some((w) => wireState(w.key) === 'hl') ? 'hl' : 'dim') : ''
         return (
           <g key={key} className={`jc-wire jc-run ${state}`} data-tip={`${r.a.label} → ${r.b.label}: ${whole ? 'kabel samo prolazi, ništa ne reži' : `provučeno, ne reži: ${r.wires.map((w) => WIRE_LABEL[w.color]).join(', ')}`}`} onMouseEnter={(e) => enter(r.wires[0].key, e)} onMouseLeave={leave} onClick={() => onPick(idx(r.wires[0].key))}>
-            <path d={c0.d} fill="none" stroke="#9a978f" strokeWidth={mm(band) + 2} strokeLinecap="round" />
-            <path d={c0.d} fill="none" stroke="#d9d7cf" strokeWidth={mm(band)} strokeLinecap="round" />
+            <path d={c0.d} fill="none" stroke="#9a978f" strokeWidth={mm(band) + 1} strokeLinecap="round" opacity={whole ? 1 : 0.35} />
+            <path d={c0.d} fill="none" stroke="#d9d7cf" strokeWidth={mm(band)} strokeLinecap="round" opacity={whole ? 1 : 0.5} />
             {!whole && r.wires.map((w, i) => {
               const c = curve((i - (r.wires.length - 1) / 2) * cw)
               return (
@@ -207,7 +207,6 @@ export function JunctionCanvas({ j, plan, mode, step, hover, onHover, onPick, cl
                 </g>
               )
             })}
-            <text x={c0.mid[0]} y={c0.mid[1] - mm(band) / 2 - 6} textAnchor="middle" fontSize={12} fontWeight={700} fill="#333" style={{ paintOrder: 'stroke', stroke: '#fff', strokeWidth: 5 }}>{whole ? 'prolazi, ne reži' : 'ne reži'}</text>
           </g>
         )
       })}
