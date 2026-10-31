@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-10-31T21:17:24.237Z",
+ "savedAt": "2026-10-31T21:21:22.724Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -6878,6 +6878,32 @@
     "note": "",
     "id": "n5ldvcbo",
     "label": "N4"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "socket",
+    "xM": 0.66,
+    "zM": 0.97,
+    "note": "",
+    "host": "9q36pcg1",
+    "id": "m4k4hmxd",
+    "label": "U138",
+    "slotOrder": 1,
+    "socketKind": "euro"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "socket",
+    "xM": 2.17,
+    "zM": 1,
+    "note": "",
+    "host": "kgp7x3ag",
+    "id": "hr0r1wwo",
+    "label": "U139",
+    "slotOrder": 1,
+    "socketKind": "euro"
    }
   ],
   "cables": [
@@ -11432,9 +11458,8 @@
  },
  "ui": {
   "view": {
-   "kind": "room",
-   "roomId": "mmcst90r",
-   "wall": 1
+   "kind": "junctions",
+   "elementId": "9q36pcg1"
   }
  }
 }
