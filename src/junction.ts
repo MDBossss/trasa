@@ -1019,7 +1019,11 @@ export function junctionFor(box: WallElement, p: Project): Junction {
       add(tagged(pm.terminal, devCirc.get(d.el.id)), { kind: 'port', deviceId: d.el.id, deviceLabel: d.label, port: pm.port, color: pm.color, note: pm.note })
     }
   }
-  if (box.type === 'modbox') { const used = frameSlots(hostedFront(p.elements, box.id), box.modules ?? 3).used; if (used > (box.modules ?? 3)) checks.push({ level: 'err', text: `Doza je ${frameName(box.modules ?? 3)}, a unutra treba ${used}M (šuko 2M, tipkalo i euro 1M${(box.modules ?? 3) > 7 ? ', šuko ne prelazi u drugi red' : ''}). Uzmi veću dozu ili makni element.` }) }
+  if (box.type === 'modbox') {
+    const front = hostedFront(p.elements, box.id), used = frameSlots(front, box.modules ?? 3).used
+    const gaps = front.filter((e) => e.gapBefore).map((e) => `${e.gapBefore} prazno ispred ${e.label}`)
+    if (used > (box.modules ?? 3)) checks.push({ level: 'err', text: `Doza je ${frameName(box.modules ?? 3)}, a unutra treba ${used}M (šuko 2M, tipkalo i euro 1M${(box.modules ?? 3) > 7 ? ', šuko ne prelazi u drugi red' : ''}${gaps.length ? `; od toga ${gaps.join(', ')}` : ''}). Uzmi veću dozu${gaps.length ? ', makni prazno mjesto (Praznih lijevo = 0)' : ''} ili makni element.` })
+  }
   if (devices.filter((d) => d.kind === 'relay').length > 2) checks.push({ level: 'warn', text: `${devices.filter((d) => d.kind === 'relay').length} releja u jednoj dozi: provjeri stane li uz stezaljke.` })
 
   const typeOf = (w: TerminalWire) => (w.kind === 'core' ? cables.find((c) => c.cable.id === w.cableId)?.cable.type : undefined)
