@@ -648,7 +648,7 @@ export function cableNeeds(c: Cable, p: Project): CableNeeds | null {
   const needed = load.signals.length + (load.heads.filter(Boolean).length - 1) * (noN ? 2 : 3)
   const has = bundleSlots(load.members, blue, gnye, noN, load.heads)
   const first = bundleMembers(c.id, p)[0]?.first ?? c
-  const heavy = load.signals.some((s) => heavyOutput(s, p))
+  const heavy = load.signals.some((s) => heavyOutput(s, p) && loadPast(c, s, p))
   const fix = suggestCables(needed, Math.max(minSectionFor(first, p), sectionOf(load.members[0] ?? c.type)), cableStockOf(p), heavy ? 2.5 : 1.5, blue, gnye, noN)
   const suggest = fix ? fix.map(cableShort).join(' + ') : `${needed} žila`
   const rows = coreColors(thinnest(c, p).type).map((color) => ({ color, sig: load.core.get(color) ?? null }))
@@ -883,6 +883,26 @@ export function circuitsOf(p: Project) {
 }
 // The thinnest section a cable may have under the project rules (feeds and socket circuits 2,5 mm²).
 const heavyOutput = (s: string, p: Project) => { const [k, r, n] = s.split(':'); return k === 'O' && p.elements.some((e) => (e.type === 'boiler' || e.type === 'appliance') && e.feedRelayId === r && (e.feedOutput ?? 1) === +n) }
+// Does the load behind relay output `s` lie past cable `c`, seen from the relay's box? A pilot-lamp drop carries the
+// output too, but not the load current.
+function loadPast(c: Cable, s: string, p: Project): boolean {
+  const [, r, n] = s.split(':')
+  const relay = el(p, r)
+  if (!relay) return true
+  const host = relay.host ?? relay.id
+  const loads = p.elements.filter((e) => (e.type === 'boiler' || e.type === 'appliance') && e.feedRelayId === r && (e.feedOutput ?? 1) === +n).map((e) => e.id)
+  const targets = new Set<string>()
+  for (const x of p.cables) { const ends = cableEnds(x, p); if (ends.some((e) => e && loads.includes(e.id))) for (const e of ends) if (e && isPlace(e)) targets.add(e.id) }
+  if (!targets.size || targets.has(host)) return false
+  const skip = new Set(bundleMembers(c.id, p).flatMap((m) => m.ids))
+  const seen = new Set([host]), queue = [host]
+  while (queue.length) {
+    const cur = queue.shift()!
+    if (targets.has(cur)) return false
+    for (const x of p.cables) { if (skip.has(x.id)) continue; const pl = cablePlaces(x, p); if (!pl) continue; const nb = pl[0].id === cur ? pl[1].id : pl[1].id === cur ? pl[0].id : null; if (nb && !seen.has(nb)) { seen.add(nb); queue.push(nb) } }
+  }
+  return true
+}
 export function minSectionFor(c: Cable, p: Project): number {
   const r = rulesOf(p), circ = circuitsOf(p)
   if (isControlCable(c.type) || coreColors(c.type).length === 0 || /^pe\b/i.test(c.type)) return 0
@@ -892,7 +912,8 @@ export function minSectionFor(c: Cable, p: Project): number {
   if (pl) {
     const load = cableLoad(c.id, pl[0], pl[1], p)
     const mine = [...load.core.values()]
-    if (mine.some((s) => s && heavyOutput(s, p)) || (mine.includes('L') && load.signals.some((s) => heavyOutput(s, p)))) return 2.5
+    const heavyHere = (s: string | null) => !!s && heavyOutput(s, p) && loadPast(c, s, p)
+    if (mine.some(heavyHere) || (mine.includes('L') && load.signals.some(heavyHere))) return 2.5
   }
   // otherwise a further cable of a bundle carries only returns (lights, switches), never the circuit's L
   if (ms.length > 1 && !isBundleHead(c.id, p)) return 1.5
