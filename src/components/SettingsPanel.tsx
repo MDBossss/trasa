@@ -79,7 +79,7 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
             </label>
           ))}
         </div>
-        <p className="muted">PE (žuto-zelena) iz kabela za prekidač uvijek ide na zajednički PE u kutiji, to nije rezerva: zaštitni vodič se u razvodu ne ostavlja slobodan.</p>
+        <p className="muted">PE (žuto-zelena) se u kutiji spaja na zajednički PE. Iznimka je kraj kabela koji je uzemljen na svojem drugom kraju (npr. spust do plastičnog prekidača): taj dobije kapicu, a kabel koji samo prolazi zadrži PE neprerezan.</p>
       </div>
     </div>
   )

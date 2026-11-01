@@ -365,6 +365,9 @@ code { font: 11px ui-monospace, Menlo, monospace; background: var(--panel2); pad
 }
 
 /* project settings */
+.modal.settings { max-height: 88vh; overflow-y: auto; overscroll-behavior: contain; padding-top: 0; }
+.modal.settings > * { flex: none; }
+.modal.settings .modal-head { position: sticky; top: 0; z-index: 1; background: var(--panel); padding: 16px 0 8px; margin-bottom: -2px; }
 .modal.settings h4 { margin: 4px 0 0; }
 .choice { display: flex; flex-direction: column; gap: 6px; }
 .choice-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
