@@ -2,7 +2,7 @@ import { Fragment, useRef } from 'react'
 import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
-import { socket15Of, rulesOf, cableStockOf, cableShort, frameSlots, frameName, CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, isPlace, modulesOf, WIRE_LABEL, APPLIANCES, RACK_HEIGHTS, type ApplianceKind, type BoxDepth, type CableRole, type Project, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
+import { socket15Of, rulesOf, cableStockOf, cableShort, frameSlots, frameName, CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, inPortOf, outPortOf, SOCKET_KINDS, isPlace, modulesOf, WIRE_LABEL, APPLIANCES, RACK_HEIGHTS, type ApplianceKind, type BoxDepth, type CableRole, type Project, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
 import { BOX_CATALOG, cableIssues, cableNeeds, chainCables, circuitsOf, resolveCable, roleLabel, terminalMeta } from '../junction'
 import { Icon } from './Icons'
 import { wireSwatch } from './JunctionCanvas'
@@ -148,7 +148,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
                 <label>
                   Ulaz releja
                   <select value={el.relayInput ?? 1} onChange={(e) => updateElement(el.id, { relayInput: +e.target.value })}>
-                    {Array.from({ length: RELAY_MODELS[relayModelOf(relays.find((r) => r.id === el.relayId) ?? {})].inputs }, (_, i) => <option key={i} value={i + 1}>SW{i + 1}</option>)}
+                    {Array.from({ length: RELAY_MODELS[relayModelOf(relays.find((r) => r.id === el.relayId) ?? {})].inputs }, (_, i) => <option key={i} value={i + 1}>{inPortOf(relayModelOf(relays.find((r) => r.id === el.relayId) ?? {}), i + 1)}</option>)}
                   </select>
                 </label>
               )}
@@ -238,12 +238,12 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
             <>
               <label>
                 Pali ga relej
-                <select value={el.feedRelayId ?? ''} onChange={(e) => updateElement(el.id, { feedRelayId: e.target.value || undefined, feedOutput: undefined })}>
+                <select value={el.feedRelayId ? `${el.feedRelayId}:${el.feedOutput ?? 1}` : ''} onChange={(e) => { const [r, n] = e.target.value.split(':'); updateElement(el.id, { feedRelayId: r || undefined, feedOutput: r && +n > 1 ? +n : undefined }) }}>
                   <option value="">nitko (samo daljinski)</option>
-                  {relayGroups(relays.filter((r) => RELAY_MODELS[relayModelOf(r)].dry), (r) => <option key={r.id} value={r.id}>{r.label} {RELAY_MODELS[relayModelOf(r)].label} · u {hostLabel(r.host)}{r.roomId !== room.id ? ` (${roomName(r.roomId)})` : ''}</option>)}
+                  {relayGroups(relays.filter((r) => RELAY_MODELS[relayModelOf(r)].dry), (r) => <Fragment key={r.id}>{Array.from({ length: RELAY_MODELS[relayModelOf(r)].outputs }, (_, i) => <option key={`${r.id}:${i + 1}`} value={`${r.id}:${i + 1}`}>{r.label} {RELAY_MODELS[relayModelOf(r)].label}{RELAY_MODELS[relayModelOf(r)].outputs > 1 ? ` · kanal ${outPortOf(relayModelOf(r), i + 1)}` : ''} · u {hostLabel(r.host)}{r.roomId !== room.id ? ` (${roomName(r.roomId)})` : ''}</option>)}</Fragment>)}
                 </select>
               </label>
-              <p className="muted">Jedinica vrata dobiva L N PE i dvije žile "impuls" s I i O releja (suhi kontakt, bez napona). Kabel 5×1,5, ili 3×1,5 za napajanje i zaseban upravljački 2×0,75 za impuls. Shelly: Auto OFF 0,5 s. Tipkalo veži na taj relej ("Na relej"). Sonoff nema suhi kontakt, zato za vrata nije u izboru.</p>
+              <p className="muted">Jedinica vrata dobiva L N PE i dvije žile "impuls" s I i O releja (suhi kontakt, bez napona). Kabel 5×1,5, ili 3×1,5 za napajanje i zaseban upravljački 2×0,75 za impuls. Shelly: Auto OFF 0,5 s. Aqara T2: crvenu premosnicu makni, način "pulse" (L1/L2 prema LOUT), jedan T2 vodi dvoja vrata (svaka na svoj kanal). Tipkalo veži na taj relej ("Na relej"). Sonoff nema suhi kontakt, zato za vrata nije u izboru.</p>
             </>
           )}
           {el.type === 'ledpsu' && (
@@ -285,7 +285,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
               </label>
               {(() => { const m = project.elements.find((x) => x.type === 'motor' && x.feedRelayId === el.id); return <div className="stat"><span>Mod</span><b>{m ? `impuls (suhi kontakt I/O) za ${m.label}` : 'pali fazom (premosnica L → I)'}</b></div> })()}
               <div className="stat"><span>U</span><b>{hostLabel(el.host)}</b><span className="muted">klikni relejem na drugu kutiju da ga preseliš</span></div>
-              <div className="stat"><span>Ulazi</span><b>{project.elements.filter((s) => s.relayId === el.id).map((s) => `${s.label}→SW${s.relayInput ?? 1}`).join(', ') || '—'}</b></div>
+              <div className="stat"><span>Ulazi</span><b>{project.elements.filter((s) => s.relayId === el.id).map((s) => `${s.label}→${inPortOf(relayModelOf(el), s.relayInput ?? 1)}`).join(', ') || '—'}</b></div>
               <div className="stat"><span>Izlazi</span><b>{project.elements.filter((l) => l.feedRelayId === el.id).map((l) => `O${l.feedOutput ?? 1}→${l.label}`).join(', ') || '—'}</b></div>
               {RELAY_MODELS[relayModelOf(el)].dc && <p className="muted">24 V strana: traka i njeno napajanje, 230 V dolaz na L/N. Tipkala preko mreže (Plus i4) ili na DC ulaze.</p>}
             </>

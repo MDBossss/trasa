@@ -533,6 +533,22 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   assert.deepEqual(sep.k1err, [], 'a 3×1,5 is enough once a control cable carries the pulse')
   assert.equal(sep.v1, 'ok'); assert.equal(sep.v2, 'ok')
   assert.deepEqual(sep.v1imp, [sep.ctl1, sep.ctl1], 'V1 takes its pulse from its own control cable')
+  // Aqara T2: one relay drives two doors, L1/L2 close against the shared LOUT common
+  const aq = await page.evaluate(({ box, v1, r2 }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
+    s.updateElement(r2, { relayModel: 'aqarat2' })
+    const v2 = s.addElement({ roomId: room, wall: 0, type: 'motor', xM: 4.4, zM: 2.3, note: '', feedRelayId: r2, feedOutput: 2 }); s = window.__trasa.getState()
+    const c2 = s.addCable({ roomId: room, wall: 0, type: 'NYM-J 5x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: v2 }, via: [], note: '' })
+    const P = window.__trasa.getState().project
+    const k1 = E.allJunctions(P).find((j) => j.box.id === box)
+    const dev = (t) => t.wires.filter((w) => w.kind !== 'core').map((w) => w.port)
+    const com = k1.terminals.find((t) => t.id === `IMPC:${r2}`)
+    const out = { com: com && [com.wires.filter((w) => w.kind === 'core').length, ...dev(com)], imp: k1.terminals.filter((t) => t.id.startsWith('IMP:')).map((t) => dev(t)[0]).sort(), err: k1.checks.filter((x) => x.level === 'err').map((x) => x.text) }
+    s = window.__trasa.getState(); s.updateElement(r2, { relayModel: 'gen4' }); s = window.__trasa.getState()
+    s.patchProject({ cables: s.project.cables.filter((x) => x.id !== c2), elements: s.project.elements.filter((e) => e.id !== v2) })
+    return out }, { box: ids.box, ...gar })
+  assert.deepEqual(aq.com, [2, 'LOUT'], 'both doors share the T2 common LOUT')
+  assert.deepEqual(aq.imp, ['L1', 'L2'], 'each door gets its own T2 channel')
+  assert.deepEqual(aq.err, [])
   // the door props offer only Plus 1 relays
   await page.evaluate(({ v1 }) => { const s = window.__trasa.getState(); s.setView({ kind: 'room', roomId: s.project.rooms[0].id, wall: 0 }); s.select(v1) }, gar)
   await page.locator('.props h3', { hasText: 'Vrata / motor' }).waitFor()

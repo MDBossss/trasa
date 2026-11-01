@@ -5,7 +5,7 @@ import { bomFor } from '../bom'
 import { allJunctions, allLeafJunctions, wirePlan, type Junction } from '../junction'
 import { cableColor, cablePath, conduitTouchesRoom, cornerAt, wallExits, type WallInfo } from '../walls'
 import { bounds } from '../geometry'
-import { ELEMENT_META, RELAY_MODELS, WIRE_LABEL, type Project, type Room, type WallElement, relayModelOf, frameName } from '../types'
+import { ELEMENT_META, RELAY_MODELS, inPortOf, outPortOf, WIRE_LABEL, type Project, type Room, type WallElement, relayModelOf, frameName } from '../types'
 import { Icon } from './Icons'
 import { JunctionCanvas } from './JunctionCanvas'
 
@@ -82,7 +82,7 @@ function RoomPages({ room, project, junctions, date }: { room: Room; project: Pr
                 const m = RELAY_MODELS[relayModelOf(r)]
                 const ins = project.elements.filter((s) => s.relayId === r.id)
                 const outs = project.elements.filter((l) => l.feedRelayId === r.id)
-                return <tr key={r.id}><td>{r.label}</td><td>{m.label}</td><td>{project.elements.find((e) => e.id === r.host)?.label ?? '?'}</td><td>{ins.map((s) => `SW${s.relayInput ?? 1} ← ${s.label}`).join(', ') || '—'}</td><td>{outs.map((l) => `O${l.feedOutput ?? 1} → ${l.label}`).join(', ') || '—'}</td><td>{ins.every((s) => s.switchKind === 'tipkalo') ? 'button / momentary' : 'switch / edge'}</td></tr>
+                return <tr key={r.id}><td>{r.label}</td><td>{m.label}</td><td>{project.elements.find((e) => e.id === r.host)?.label ?? '?'}</td><td>{ins.map((s) => `${inPortOf(relayModelOf(r), s.relayInput ?? 1)} ← ${s.label}`).join(', ') || '—'}</td><td>{outs.map((l) => `${outPortOf(relayModelOf(r), l.feedOutput ?? 1)} → ${l.label}`).join(', ') || '—'}</td><td>{ins.every((s) => s.switchKind === 'tipkalo') ? 'button / momentary' : 'switch / edge'}</td></tr>
               })}
             </tbody>
           </table>

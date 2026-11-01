@@ -58,14 +58,17 @@ export interface Wall {
 export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'motor' | 'kip' | 'boiler' | 'appliance' | 'rack'
 
 // Smart relays that sit in a box: inputs are SW terminals, outputs are O terminals.
-export type RelayModel = 'gen4' | 'gen4pm' | 'zbminir2' | 'rgbw'
+export type RelayModel = 'gen4' | 'gen4pm' | 'zbminir2' | 'rgbw' | 'aqarat2'
 // dry: relay contact is potential-free (I/O), usable as an impulse for a door unit
 // swLow: the button input is a low-voltage pair (S1/S2) instead of L-referenced SW
-export const RELAY_MODELS: Record<RelayModel, { label: string; inputs: number; outputs: number; needsN: boolean; dim: boolean; dc: boolean; dry: boolean; swLow: boolean; ports: string[]; wMm: number; hMm: number }> = {
+// inPorts/outPorts name the terminals when they are not SW1…/O…; com: the dry outputs share this common
+export const RELAY_MODELS: Record<RelayModel, { label: string; inputs: number; outputs: number; needsN: boolean; dim: boolean; dc: boolean; dry: boolean; swLow: boolean; ports: string[]; wMm: number; hMm: number; inPorts?: string[]; outPorts?: string[]; com?: string }> = {
   zbminir2: { label: 'Sonoff ZBMINIR2 (Zigbee)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: false, swLow: true, ports: ['L', 'N', 'Lout', 'Nout', 'S1', 'S2'], wMm: 40, hMm: 33 },
   // switched output (phase on O) with power metering; for heavier loads such as a water heater
   gen4pm: { label: 'Shelly 1PM Gen4 (Zigbee, mjerenje, 16 A)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: false, swLow: false, ports: ['L', 'N', 'SW1', 'O'], wMm: 37, hMm: 42 },
   gen4: { label: 'Shelly 1 Gen4 (Zigbee, suhi kontakt)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: true, swLow: false, ports: ['L', 'N', 'SW1', 'I', 'O'], wMm: 37, hMm: 42 },
+  // two channels, one per door; without the red jumper L1/L2 close against LOUT (shared common)
+  aqarat2: { label: 'Aqara Dual Relay T2 (Zigbee, suhi kontakt, 2 kanala)', inputs: 2, outputs: 2, needsN: true, dim: false, dc: false, dry: true, swLow: false, ports: ['L', 'N', 'S1', 'S2', 'LOUT', 'L1', 'L2'], wMm: 46, hMm: 48, inPorts: ['S1', 'S2'], outPorts: ['L1', 'L2'], com: 'LOUT' },
   rgbw: { label: 'Shelly Plus RGBW PM (24 V)', inputs: 4, outputs: 4, needsN: true, dim: true, dc: true, dry: false, swLow: false, ports: ['L', 'N'], wMm: 37, hMm: 42 },
 }
 // older saves may carry models that are no longer offered; they land on the nearest current one
@@ -73,6 +76,8 @@ const LEGACY_RELAY: Record<string, RelayModel> = { plus1: 'gen4', plus2pm: 'gen4
 export type RelayBrand = 'shelly' | 'sonoff'
 export const RELAY_LOOK: Record<RelayBrand, { fill: string; stroke: string; text: string }> = { shelly: { fill: '#2563eb', stroke: '#1e40af', text: '#fff' }, sonoff: { fill: '#f0862b', stroke: '#b85e12', text: '#fff' } }
 export const relayBrand = (m: RelayModel): RelayBrand => (m.startsWith('zb') ? 'sonoff' : 'shelly')
+export const inPortOf = (m: RelayModel, i: number) => RELAY_MODELS[m].inPorts?.[i - 1] ?? `SW${i}`
+export const outPortOf = (m: RelayModel, n: number) => RELAY_MODELS[m].outPorts?.[n - 1] ?? (RELAY_MODELS[m].outputs === 1 ? 'O' : `O${n}`)
 export const relayModelOf = (e: { relayModel?: string }): RelayModel => (e.relayModel && e.relayModel in RELAY_MODELS ? (e.relayModel as RelayModel) : LEGACY_RELAY[e.relayModel ?? ''] ?? 'zbminir2')
 export type SwitchKind = 'obicni' | 'serijski' | 'izmjenicni' | 'krizni' | 'tipkalo'
 export type BoxDepth = 'plitka' | 'duboka'
