@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-01T08:13:36.845Z",
+ "savedAt": "2026-11-01T08:14:22.519Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -8617,7 +8617,7 @@
    {
     "roomId": "49c80zwd",
     "wall": 3,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 3x2.5",
     "from": {
      "kind": "exit",
      "conduitId": "tro4q0lb",
@@ -11465,8 +11465,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "icogq6ir",
-   "wall": 5
+   "roomId": "49c80zwd",
+   "wall": 3
   }
  }
 }
