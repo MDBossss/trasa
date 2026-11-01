@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-01T07:59:09.171Z",
+ "savedAt": "2026-11-01T08:05:09.127Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -3422,7 +3422,7 @@
     "note": "",
     "host": "xt9mmh05",
     "id": "tx8pp867",
-    "label": "U15",
+    "label": "U140",
     "slotOrder": 2
    },
    {
@@ -3434,7 +3434,7 @@
     "note": "",
     "host": "mvlk35ir",
     "id": "viri1tc4",
-    "label": "U15",
+    "label": "U141",
     "slotOrder": 0
    },
    {
@@ -3446,7 +3446,7 @@
     "note": "",
     "host": "mvlk35ir",
     "id": "8zmslhry",
-    "label": "U16",
+    "label": "U142",
     "slotOrder": 1
    },
    {
@@ -3702,7 +3702,7 @@
     "note": "",
     "host": "bshjxclk",
     "id": "rdukcqge",
-    "label": "U27",
+    "label": "U143",
     "slotOrder": 0
    },
    {
@@ -3714,7 +3714,7 @@
     "note": "",
     "host": "bshjxclk",
     "id": "fdvzp5ha",
-    "label": "U28",
+    "label": "U144",
     "slotOrder": 1
    },
    {
@@ -5471,7 +5471,7 @@
     "note": "glavno svjetlo",
     "host": "3jpippck",
     "id": "3k5xeyjf",
-    "label": "P20",
+    "label": "P37",
     "slotOrder": 0,
     "modules": 2,
     "controls": [
@@ -5586,7 +5586,7 @@
     "zM": 0.87,
     "note": "",
     "id": "mnxtsz4w",
-    "label": "D49",
+    "label": "D75",
     "modules": 4
    },
    {
@@ -5598,7 +5598,7 @@
     "note": "",
     "host": "mnxtsz4w",
     "id": "wuimxtpk",
-    "label": "U100",
+    "label": "U145",
     "slotOrder": 0
    },
    {
@@ -5610,7 +5610,7 @@
     "note": "",
     "host": "mnxtsz4w",
     "id": "ywav9vmy",
-    "label": "U101",
+    "label": "U146",
     "slotOrder": 1
    },
    {
@@ -6031,7 +6031,7 @@
     "id": "lucz6h0o",
     "label": "P24",
     "slotOrder": 1,
-    "relayId": "pkhlt7eu",
+    "relayId": "l167p3tb",
     "relayInput": 1,
     "controls": [
      "4td3ia1f"
@@ -6052,7 +6052,7 @@
     "controls": [
      "6smjg1w5"
     ],
-    "relayId": "4msv6z1y",
+    "relayId": "34cjlpn7",
     "relayInput": 1
    },
    {
@@ -6064,7 +6064,7 @@
     "note": "",
     "id": "6smjg1w5",
     "label": "S15",
-    "feedRelayId": "l167p3tb",
+    "feedRelayId": "34cjlpn7",
     "feedOutput": 1
    },
    {
@@ -6076,7 +6076,7 @@
     "note": "",
     "id": "4td3ia1f",
     "label": "S16",
-    "feedRelayId": "34cjlpn7",
+    "feedRelayId": "l167p3tb",
     "feedOutput": 1
    },
    {
@@ -6447,7 +6447,7 @@
     "note": "",
     "host": "s1hdxub6",
     "id": "cpwt921q",
-    "label": "U131",
+    "label": "U147",
     "slotOrder": 0
    },
    {
@@ -6796,7 +6796,7 @@
     "note": "",
     "host": "xt9mmh05",
     "id": "k8nzctgh",
-    "label": "P36",
+    "label": "P38",
     "slotOrder": 3,
     "controls": [
      "2jyaql5v"
@@ -6822,7 +6822,7 @@
     "note": "",
     "host": "nl9bxvav",
     "id": "3ck6txy8",
-    "label": "U137",
+    "label": "U148",
     "slotOrder": 0
    },
    {
@@ -6854,7 +6854,7 @@
     "note": "",
     "host": "9q36pcg1",
     "id": "m4k4hmxd",
-    "label": "U138",
+    "label": "U149",
     "slotOrder": 0,
     "socketKind": "euro"
    },
@@ -6881,7 +6881,7 @@
     "host": "rbnyjj0n",
     "relayModel": "gen4pm",
     "id": "581jz72f",
-    "label": "R13"
+    "label": "R16"
    },
    {
     "roomId": "icogq6ir",
@@ -6893,7 +6893,7 @@
     "host": "4dmc1bb7",
     "relayModel": "zbminir2",
     "id": "l167p3tb",
-    "label": "R12"
+    "label": "R17"
    },
    {
     "roomId": "icogq6ir",
@@ -6905,7 +6905,7 @@
     "host": "4dmc1bb7",
     "relayModel": "zbminir2",
     "id": "34cjlpn7",
-    "label": "R13"
+    "label": "R18"
    }
   ],
   "cables": [
@@ -11465,8 +11465,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "icogq6ir",
-   "wall": 5
+   "roomId": "49c80zwd",
+   "wall": 3
   }
  }
 }
