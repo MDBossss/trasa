@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-01T08:05:09.127Z",
+ "savedAt": "2026-11-01T08:13:36.845Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -5776,7 +5776,7 @@
     "type": "appliance",
     "xM": 3.2099999999999995,
     "zM": 1.56,
-    "note": "",
+    "note": "220cm od poda\n40cm od stropa",
     "id": "gktbkynx",
     "label": "UR4",
     "appliance": "ac"
@@ -11465,8 +11465,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "49c80zwd",
-   "wall": 3
+   "roomId": "icogq6ir",
+   "wall": 5
   }
  }
 }
