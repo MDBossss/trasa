@@ -1,6 +1,6 @@
 import { useStore } from '../store'
 import { BOX_CATALOG } from '../junction'
-import { POWER_TYPES, cableShort, cableStockOf, rulesOf, spareCoresOf, type CableRules, type SpareCores } from '../types'
+import { POWER_TYPES, cableShort, cableStockOf, relabelDuplicates, rulesOf, spareCoresOf, type CableRules, type SpareCores } from '../types'
 
 // Project settings travel with the save file, so the electrician's sheets come out the same on every machine.
 const RULES: { id: keyof CableRules; label: string; desc: string }[] = [
@@ -31,6 +31,19 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
       <div className="modal settings" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Postavke projekta">
         <div className="modal-head"><h3>Postavke projekta</h3><button className="mini" onClick={onClose}>✕</button></div>
         <p className="muted">Vrijede za ovaj projekt i spremaju se s njim. Spojevi, koraci i materijal se odmah preračunaju.</p>
+        {(() => {
+          const fix = relabelDuplicates(project.elements)
+          if (!fix.renamed.length) return null
+          return (
+            <div className="check warn">
+              <span>⚠</span>
+              <span>{fix.renamed.length} oznaka se ponavlja ({[...new Set(fix.renamed.map((r) => r.from))].join(', ')}).{' '}
+                <button className="mini" onClick={() => patchProject({ elements: fix.elements })}>Prenumeriraj ponovljene</button>
+                <span className="muted"> Prvi zadrži oznaku, ostali dobiju sljedeći slobodan broj.</span>
+              </span>
+            </div>
+          )
+        })()}
         <h4>Rezervne žile u kutiji</h4>
         <div className="choice" role="radiogroup" aria-label="Rezervne žile u kutiji">
           {SPARE.map((o) => (

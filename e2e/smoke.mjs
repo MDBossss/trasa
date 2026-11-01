@@ -855,6 +855,14 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const onL = (dev) => j.terminals.find((t) => t.id.startsWith('L@') && t.wires.some((w) => w.kind === 'port' && w.deviceId === dev))?.id
     return [onL('s'), onL('t')] })
   assert.deepEqual(ownCirc, ['L@ga', 'L@bo'], 'the light switch is on the light circuit, the boiler button on the boiler circuit')
+  // a new element after a deletion gets the next free number, never a label already in use
+  const labels = await page.evaluate(() => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id
+    const a = s.addElement({ roomId: room, wall: 0, type: 'relay', xM: 0, zM: 0, note: '' }); const b = s.addElement({ roomId: room, wall: 0, type: 'relay', xM: 0, zM: 0, note: '' }); s = window.__trasa.getState()
+    s.patchProject({ elements: s.project.elements.filter((e) => e.id !== a) }); s = window.__trasa.getState()
+    const c = s.addElement({ roomId: room, wall: 0, type: 'relay', xM: 0, zM: 0, note: '' }); s = window.__trasa.getState()
+    const L = (id) => s.project.elements.find((e) => e.id === id).label
+    const out = [L(b), L(c)]; s.patchProject({ elements: s.project.elements.filter((e) => e.id !== b && e.id !== c) }); return out })
+  assert.notEqual(labels[0], labels[1], 'no repeated relay label after a deletion: ' + labels.join(' '))
   // two frames joined only to each other: a socket there has no feed, so no circuit rule could check it
   const unfed = await page.evaluate(() => { const E = window.__trasaEngine; const s = window.__trasa.getState().project; const room = s.rooms[0].id
     const e = (o) => ({ roomId: room, wall: 0, note: '', ...o })

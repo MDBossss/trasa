@@ -966,6 +966,11 @@ export function junctionFor(box: WallElement, p: Project): Junction {
       return { ...r, ...sideOf(r, box, p), wires: cross ? crossWires(r, box, p, checks) : leafWires(r, box, p, checks) }
     })
     .sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role) || SIDE_ORDER.indexOf(a.side) - SIDE_ORDER.indexOf(b.side) || a.order - b.order)
+  // the same label elsewhere in the house: the electrician (and the relay pickers) can't tell them apart
+  for (const e of [box, ...p.elements.filter((x) => x.host === box.id)]) {
+    const twins = p.elements.filter((x) => x.id !== e.id && x.label === e.label)
+    if (twins.length) checks.push({ level: 'warn', text: `Oznaka ${e.label} postoji još ${twins.length === 1 ? 'jednom' : `${twins.length} puta`} (${twins.map((x) => `${p.rooms.find((r) => r.id === x.roomId)?.name ?? '?'}${x.host ? ` u ${el(p, x.host)?.label}` : ''}`).join(', ')}): preimenuj jedan.` })
+  }
   for (const c of p.cables) if (isAtBox(c, box) && cableEnds(c, p).every((e) => e?.id === box.id)) checks.push({ cableId: c.id, level: 'err', text: `Kabel ${cableShort(c.type)} počinje i završava u ${box.label}: ništa ne spaja, obriši ga.` })
   const devices = devicesIn(box, p)
   for (const d of devices) if (d.kind === 'relay' && !RELAY_MODELS[relayModelOf(d.el)].dry && pulseTarget(d.el, p)) checks.push({ level: 'err', text: `${d.el.label}: suhi kontakt za vrata ima samo Shelly 1 Gen4; ${RELAY_MODELS[relayModelOf(d.el)].label} pali fazom.` })

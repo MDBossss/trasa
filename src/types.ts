@@ -128,6 +128,18 @@ export function keepFramePositions(before: WallElement[], after: WallElement[], 
 }
 // modules an element takes inside a modular frame
 // A 2×7M box is one box with two rows of seven; a 2M device never straddles the rows.
+// Give every repeated label but the first the next free number of its prefix (links go by id, so nothing breaks).
+export function relabelDuplicates(elements: WallElement[]): { elements: WallElement[]; renamed: { from: string; to: string; id: string }[] } {
+  const used = new Set(elements.map((e) => e.label)), seen = new Set<string>(), renamed: { from: string; to: string; id: string }[] = []
+  const next = (pre: string) => { let n = 1 + Math.max(0, ...[...used].map((l) => (l.startsWith(pre) ? Number(l.slice(pre.length)) : NaN)).filter((v) => Number.isInteger(v))); while (used.has(`${pre}${n}`)) n++; return `${pre}${n}` }
+  const out = elements.map((e) => {
+    if (!seen.has(e.label)) { seen.add(e.label); return e }
+    const to = next(ELEMENT_META[e.type].prefix)
+    used.add(to); renamed.push({ from: e.label, to, id: e.id })
+    return { ...e, label: to }
+  })
+  return { elements: out, renamed }
+}
 export const frameCols = (m: number) => (m > 7 ? 7 : m)
 export const frameRows = (m: number) => (m > 7 ? 2 : 1)
 export const frameName = (m: number) => (m === 14 ? '2×7M' : `${m}M`)

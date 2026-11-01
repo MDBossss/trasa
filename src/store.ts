@@ -119,8 +119,10 @@ export const useStore = create<State>()(
       addElement: (e) => {
         const id = uid()
         set((s) => {
-          const n = s.project.elements.filter((x) => x.type === e.type).length + 1
-          const label = e.label ?? `${ELEMENT_META[e.type].prefix}${n}`
+          // next free number after the highest in use: a count would repeat a label once something was deleted
+          const pre = ELEMENT_META[e.type].prefix
+          const n = Math.max(0, ...s.project.elements.map((x) => (x.label.startsWith(pre) ? Number(x.label.slice(pre.length)) : NaN)).filter((v) => Number.isInteger(v))) + 1
+          const label = e.label ?? `${pre}${n}`
           let elements = [...s.project.elements, { ...e, id, label }]
           if (e.host && (e.type === 'switch' || e.type === 'socket')) elements = placeInFrame(elements, e.host, id)
           return { project: { ...s.project, elements }, selectedId: id }
