@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-01T08:14:22.519Z",
+ "savedAt": "2026-11-03T15:51:59.885Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -4681,7 +4681,7 @@
     "id": "k54s5l57",
     "label": "P13",
     "slotOrder": 1,
-    "modules": 2,
+    "modules": 1,
     "controls": [
      "6t090yt4"
     ]
@@ -4697,8 +4697,8 @@
     "switchKind": "izmjenicni",
     "id": "3zyenpl6",
     "label": "P14",
-    "slotOrder": 0,
-    "modules": 2,
+    "slotOrder": 1,
+    "modules": 1,
     "controls": [
      "6t090yt4"
     ]
@@ -6868,7 +6868,7 @@
     "host": "kgp7x3ag",
     "id": "hr0r1wwo",
     "label": "U139",
-    "slotOrder": 1,
+    "slotOrder": 2,
     "socketKind": "euro"
    },
    {
@@ -6906,6 +6906,56 @@
     "relayModel": "zbminir2",
     "id": "34cjlpn7",
     "label": "R18"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "switch",
+    "xM": 0.66,
+    "zM": 0.97,
+    "note": "",
+    "host": "9q36pcg1",
+    "id": "pz42vbgh",
+    "label": "P39",
+    "slotOrder": 2,
+    "controls": [
+     "fbduxtgx"
+    ]
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "switch",
+    "xM": 2.17,
+    "zM": 1,
+    "note": "",
+    "host": "kgp7x3ag",
+    "id": "zm42k0p9",
+    "label": "P40",
+    "slotOrder": 0,
+    "controls": [
+     "ktzoym6y"
+    ]
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "light",
+    "xM": 0.66,
+    "zM": 1.28,
+    "note": "",
+    "id": "fbduxtgx",
+    "label": "S26"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "light",
+    "xM": 2.17,
+    "zM": 1.33,
+    "note": "",
+    "id": "ktzoym6y",
+    "label": "S27"
    }
   ],
   "cables": [
@@ -11344,6 +11394,38 @@
     ],
     "note": "",
     "id": "r07bdkjw"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "9q36pcg1"
+    },
+    "to": {
+     "kind": "element",
+     "id": "fbduxtgx"
+    },
+    "via": [],
+    "note": "",
+    "id": "0mt90ys6"
+   },
+   {
+    "roomId": "mmcst90r",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "kgp7x3ag"
+    },
+    "to": {
+     "kind": "element",
+     "id": "ktzoym6y"
+    },
+    "via": [],
+    "note": "",
+    "id": "vh7hz158"
    }
   ],
   "categories": [
@@ -11464,9 +11546,8 @@
  },
  "ui": {
   "view": {
-   "kind": "room",
-   "roomId": "49c80zwd",
-   "wall": 3
+   "kind": "junctions",
+   "elementId": "9q36pcg1"
   }
  }
 }
