@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-03T15:51:59.885Z",
+ "savedAt": "2026-11-06T09:47:26.823Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -7672,50 +7672,6 @@
    },
    {
     "roomId": "j5g1ml5l",
-    "wall": 0,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 1.81
-    },
-    "to": {
-     "kind": "element",
-     "id": "iq9etxt1"
-    },
-    "via": [
-     {
-      "xM": 2.15,
-      "zM": 1.81
-     }
-    ],
-    "note": "",
-    "id": "uj1bgls0"
-   },
-   {
-    "roomId": "j5g1ml5l",
-    "wall": 1,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 1.81
-    },
-    "to": {
-     "kind": "element",
-     "id": "t4b7ftfl"
-    },
-    "via": [
-     {
-      "xM": 0.65,
-      "zM": 1.62
-     }
-    ],
-    "note": "",
-    "id": "abyebnjz"
-   },
-   {
-    "roomId": "j5g1ml5l",
     "wall": 1,
     "type": "UTP cat6",
     "from": {
@@ -11426,6 +11382,40 @@
     "via": [],
     "note": "",
     "id": "vh7hz158"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "2qnvq51i"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 0,
+     "zM": 0.55
+    },
+    "via": [],
+    "note": "",
+    "id": "xcvh1agh"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 0,
+     "zM": 0.55
+    },
+    "to": {
+     "kind": "element",
+     "id": "bkt0k4u9"
+    },
+    "via": [],
+    "note": "",
+    "id": "zuc6ovwq"
    }
   ],
   "categories": [
@@ -11546,8 +11536,9 @@
  },
  "ui": {
   "view": {
-   "kind": "junctions",
-   "elementId": "9q36pcg1"
+   "kind": "room",
+   "roomId": "j5g1ml5l",
+   "wall": 1
   }
  }
 }
