@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-06T09:47:26.823Z",
+ "savedAt": "2026-11-07T07:47:11.578Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -6956,6 +6956,32 @@
     "note": "",
     "id": "ktzoym6y",
     "label": "S27"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 1,
+    "type": "light",
+    "xM": 2.88,
+    "zM": 1.45,
+    "note": "",
+    "id": "udt7j3qj",
+    "label": "S28"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 1,
+    "type": "switch",
+    "xM": 2.09,
+    "zM": 1.28,
+    "note": "",
+    "host": "any2qxx5",
+    "id": "fewzqx52",
+    "label": "P41",
+    "slotOrder": 2,
+    "controls": [
+     "c7bowyx1"
+    ],
+    "modules": 2
    }
   ],
   "cables": [
@@ -11416,6 +11442,27 @@
     "via": [],
     "note": "",
     "id": "zuc6ovwq"
+   },
+   {
+    "roomId": "j5g1ml5l",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "udt7j3qj"
+    },
+    "to": {
+     "kind": "element",
+     "id": "mqzav1si"
+    },
+    "via": [
+     {
+      "xM": 2.88,
+      "zM": 1.73
+     }
+    ],
+    "note": "",
+    "id": "7pf1z6i2"
    }
   ],
   "categories": [
