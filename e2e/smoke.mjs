@@ -984,6 +984,9 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   // undo the split by hand: U1's cable moved to the new box too, so point it back at K1
   await page.evaluate(({ extra, split, box }) => { const s = window.__trasa.getState(); const drop = new Set([...extra, split.id, split.link.id]); const back = (e) => (e.kind === 'element' && e.id === split.id ? { ...e, id: box } : e); s.patchProject({ cables: s.project.cables.filter((x) => !drop.has(x.id)).map((c) => ({ ...c, from: back(c.from), to: back(c.to) })), elements: s.project.elements.filter((e) => !drop.has(e.id)) }) }, { extra: [...extra, ...more], split, box: ids.box })
   await page.evaluate(({ v1, r2, c }) => { const s = window.__trasa.getState(); s.patchProject({ cables: s.project.cables.filter((x) => x.id !== c), elements: s.project.elements.filter((e) => e.id !== v1 && e.id !== r2) }) }, gar)
+  // Sobe tab returns to the room and wall last viewed, not the first room
+  const back = await page.evaluate(() => { const s = window.__trasa.getState(); const r = s.project.rooms[0]; const extra = { ...r, id: 'rmback', name: 'Druga' }; s.patchProject({ rooms: [...s.project.rooms, extra] }); s.setView({ kind: 'room', roomId: 'rmback', wall: 2 }); s.setView({ kind: 'junctions', elementId: null }); s.openRooms(); const v = window.__trasa.getState().view; s.patchProject({ rooms: s.project.rooms.filter((x) => x.id !== 'rmback') }); s.setView({ kind: 'plan' }); return v })
+  assert.deepEqual(back, { kind: 'room', roomId: 'rmback', wall: 2 })
   await page.getByRole('button', { name: 'Spojevi' }).click()
   // K1 now has an O terminal pairing the cable's black core with the light's brown
   await page.locator('.junctions-list .list li', { hasText: 'K1' }).click()

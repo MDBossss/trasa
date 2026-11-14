@@ -34,6 +34,8 @@ interface State {
   openSettings: boolean
   roomId: string | null // room context shared by Sobe / Spojevi / Materijal (null = whole house in Materijal)
   setRoom: (id: string | null) => void
+  lastWall: { roomId: string; wall: number | null } | null
+  openRooms: () => void // Sobe tab: back to the room/wall last viewed, not the first room
   camera: { x: number; y: number; scale: number }
   fitNonce: number
   dirty: boolean
@@ -98,6 +100,13 @@ export const useStore = create<State>()(
       openSettings: false,
       roomId: null,
       setRoom: (roomId) => set({ roomId }),
+      lastWall: null,
+      openRooms: () => {
+        const { view, roomId, lastWall, project } = get()
+        if (view.kind === 'room' || !project.rooms.length) return
+        const id = roomId && project.rooms.some((r) => r.id === roomId) ? roomId : project.rooms[0].id
+        get().setView({ kind: 'room', roomId: id, wall: lastWall?.roomId === id ? lastWall.wall : 0 })
+      },
       camera: { x: 0, y: 0, scale: 1 },
       fitNonce: 0,
       dirty: false,
@@ -145,7 +154,7 @@ export const useStore = create<State>()(
       updateCable: (id, p) =>
         set((s) => ({ project: { ...s.project, cables: s.project.cables.map((c) => (c.id === id ? { ...c, ...p } : c)) } })),
       select: (selectedId) => set({ selectedId }),
-      setView: (view) => set((s) => ({ view, roomId: view.kind === 'room' ? view.roomId : s.roomId })),
+      setView: (view) => set(() => (view.kind === 'room' ? { view, roomId: view.roomId, lastWall: { roomId: view.roomId, wall: view.wall } } : { view })),
       toggle: (k) => set((s) => ({ [k]: !s[k] })),
       setFocusRoom: (focusRoomId) => set({ focusRoomId }),
       toggleHiddenCategory: (id) => set((s) => ({ hiddenCategories: s.hiddenCategories.includes(id) ? s.hiddenCategories.filter((x) => x !== id) : [...s.hiddenCategories, id] })),
