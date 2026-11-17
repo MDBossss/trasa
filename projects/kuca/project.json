@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-17T15:55:54.701Z",
+ "savedAt": "2026-11-17T16:02:00.678Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -6203,10 +6203,11 @@
     "id": "jxdjhdcf",
     "label": "P26",
     "slotOrder": 2,
-    "modules": 1,
+    "modules": 2,
     "controls": [
      "w0xah1vk"
-    ]
+    ],
+    "switchKind": "izmjenicni"
    },
    {
     "roomId": "icogq6ir",
@@ -6646,11 +6647,12 @@
     "host": "w47v74u9",
     "id": "w0u6hn1m",
     "label": "P33",
-    "slotOrder": 0,
+    "slotOrder": 1,
     "modules": 2,
     "controls": [
      "o3wjk0xj"
-    ]
+    ],
+    "gapBefore": 1
    },
    {
     "roomId": "akuvhdws",
@@ -7024,9 +7026,10 @@
     "zM": 1.28,
     "note": "ravno prema sobama, 4 mjesta ukupno",
     "host": "w47v74u9",
+    "switchKind": "krizni",
     "id": "onqnoyij",
     "label": "P42",
-    "slotOrder": 1,
+    "slotOrder": 2,
     "controls": [
      "u8dshz0h",
      "avq9b1wi"
@@ -7040,9 +7043,10 @@
     "zM": 1.28,
     "note": "lampa 5, prema boravku, tamo prekidac izmj?",
     "host": "w47v74u9",
+    "switchKind": "izmjenicni",
     "id": "2uf8elq8",
     "label": "P43",
-    "slotOrder": 2,
+    "slotOrder": 3,
     "controls": [
      "w0xah1vk"
     ]
@@ -7075,6 +7079,7 @@
     "zM": 1.26,
     "note": "hodnik dolje sve krizni",
     "host": "2qjqdzdw",
+    "switchKind": "izmjenicni",
     "id": "2a6p6rui",
     "label": "P44",
     "slotOrder": 3,
@@ -7130,6 +7135,22 @@
     "id": "n5sw2rzr",
     "label": "U154",
     "slotOrder": 1
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "switch",
+    "xM": 1.25,
+    "zM": 1.28,
+    "note": "kupaona",
+    "host": "w47v74u9",
+    "id": "h1x977fx",
+    "label": "P45",
+    "slotOrder": 0,
+    "modules": 2,
+    "controls": [
+     "1cy26wsr"
+    ]
    }
   ],
   "cables": [
@@ -11834,7 +11855,7 @@
   "view": {
    "kind": "room",
    "roomId": "akuvhdws",
-   "wall": 7
+   "wall": 6
   }
  }
 }
