@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-20T18:53:25.894Z",
+ "savedAt": "2026-11-20T19:33:42.166Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -6761,7 +6761,7 @@
     "type": "switch",
     "xM": 1.85,
     "zM": 1.28,
-    "note": "zid i garaza ispred kuce i stepenice",
+    "note": "zid kod jure",
     "host": "en9n5irk",
     "switchKind": "tipkalo",
     "id": "bz31j1au",
@@ -6779,7 +6779,7 @@
     "type": "switch",
     "xM": 1.85,
     "zM": 1.28,
-    "note": "zid desno",
+    "note": "garaza i na zidu kuce ispred",
     "host": "en9n5irk",
     "switchKind": "tipkalo",
     "id": "eph1e9kj",
@@ -6822,7 +6822,7 @@
     "type": "switch",
     "xM": 1.85,
     "zM": 1.28,
-    "note": "",
+    "note": "pali ulaz 2 buzir",
     "host": "en9n5irk",
     "id": "grckoprz",
     "label": "P36",
@@ -6920,7 +6920,7 @@
     "type": "ledpsu",
     "xM": 0.79,
     "zM": 0.77,
-    "note": "",
+    "note": "traka stepenice",
     "id": "n5ldvcbo",
     "label": "N4",
     "ledM": 6
@@ -7261,6 +7261,7 @@
     "zM": 1.23,
     "note": "",
     "host": "wthwvdgn",
+    "switchKind": "tipkalo",
     "id": "7eh227u6",
     "label": "P47",
     "slotOrder": 0,
@@ -7276,6 +7277,7 @@
     "zM": 1.23,
     "note": "",
     "host": "wthwvdgn",
+    "switchKind": "tipkalo",
     "id": "isyivqxi",
     "label": "P48",
     "slotOrder": 1,
@@ -7388,8 +7390,9 @@
     "type": "switch",
     "xM": 1.85,
     "zM": 1.28,
-    "note": "",
+    "note": "za stepenice traka vani",
     "host": "en9n5irk",
+    "switchKind": "tipkalo",
     "id": "6g3s824a",
     "label": "P49",
     "slotOrder": 1,
@@ -7403,7 +7406,8 @@
     "zM": 2.07,
     "note": "",
     "id": "052xpor4",
-    "label": "T3"
+    "label": "T3",
+    "ledM": 2
    },
    {
     "roomId": "9lsb9f44",
@@ -7413,7 +7417,8 @@
     "zM": 1.87,
     "note": "",
     "id": "rvoitu39",
-    "label": "T4"
+    "label": "T4",
+    "ledM": 2
    },
    {
     "roomId": "9lsb9f44",
@@ -7423,7 +7428,8 @@
     "zM": 1.73,
     "note": "",
     "id": "1vo8ktsd",
-    "label": "T5"
+    "label": "T5",
+    "ledM": 2
    }
   ],
   "cables": [
@@ -10297,7 +10303,7 @@
    {
     "roomId": "akuvhdws",
     "wall": 6,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 3x2.5",
     "from": {
      "kind": "element",
      "id": "w47v74u9"
@@ -12188,6 +12194,121 @@
     "via": [],
     "note": "",
     "id": "6q0tejk5"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "w47v74u9"
+    },
+    "to": {
+     "kind": "element",
+     "id": "rhqu9zxg"
+    },
+    "via": [],
+    "note": "",
+    "id": "iorv2cwf"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "w47v74u9"
+    },
+    "to": {
+     "kind": "element",
+     "id": "rhqu9zxg"
+    },
+    "via": [],
+    "note": "",
+    "circuit": "07n6jc5d",
+    "id": "rsgldx5h"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 7,
+     "zM": 2.46
+    },
+    "to": {
+     "kind": "element",
+     "id": "rhqu9zxg"
+    },
+    "via": [
+     {
+      "xM": 1.42,
+      "zM": 2.46
+     }
+    ],
+    "note": "",
+    "id": "96a68u5p"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "corner",
+     "corner": 7,
+     "zM": 2.34
+    },
+    "to": {
+     "kind": "element",
+     "id": "bdcy4po6"
+    },
+    "via": [
+     {
+      "xM": 1.72,
+      "zM": 2.34
+     }
+    ],
+    "note": "",
+    "id": "fauh0cyy"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "NYM-J 5x1.5",
+    "from": {
+     "kind": "element",
+     "id": "en9n5irk"
+    },
+    "to": {
+     "kind": "element",
+     "id": "bdcy4po6"
+    },
+    "via": [],
+    "note": "",
+    "id": "n0k2octr"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 7,
+     "zM": 2.24
+    },
+    "to": {
+     "kind": "element",
+     "id": "bdcy4po6"
+    },
+    "via": [
+     {
+      "xM": 1.76,
+      "zM": 2.24
+     }
+    ],
+    "note": "",
+    "id": "qzgcwn96"
    }
   ],
   "categories": [
@@ -12309,8 +12430,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "9lsb9f44",
-   "wall": 3
+   "roomId": "akuvhdws",
+   "wall": 5
   }
  }
 }
