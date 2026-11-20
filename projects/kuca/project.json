@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-20T16:58:21.016Z",
+ "savedAt": "2026-11-20T17:42:40.928Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -12316,7 +12316,7 @@
   "view": {
    "kind": "room",
    "roomId": "fqmzanpn",
-   "wall": 0
+   "wall": 2
   }
  }
 }
