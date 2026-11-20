@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-20T18:22:43.720Z",
+ "savedAt": "2026-11-20T18:40:32.319Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -5478,7 +5478,7 @@
     "id": "snf2ny7j",
     "label": "P20",
     "slotOrder": 3,
-    "relayId": "ly4lnm99",
+    "relayId": "0irscwbr",
     "relayInput": 1
    },
    {
@@ -5511,7 +5511,8 @@
     "note": "",
     "id": "gcxo07n6",
     "label": "V4",
-    "feedRelayId": "ly4lnm99"
+    "feedRelayId": "0irscwbr",
+    "feedOutput": 2
    },
    {
     "roomId": "c2b55x6m",
@@ -5521,21 +5522,9 @@
     "zM": 1.25,
     "note": "",
     "host": "wdkwpzx7",
-    "relayModel": "gen4",
+    "relayModel": "aqarat2",
     "id": "0irscwbr",
     "label": "R7"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 1,
-    "type": "relay",
-    "xM": 2.24,
-    "zM": 1.25,
-    "note": "",
-    "host": "wdkwpzx7",
-    "relayModel": "gen4",
-    "id": "ly4lnm99",
-    "label": "R8"
    },
    {
     "roomId": "z6exkgda",
@@ -9934,24 +9923,6 @@
    },
    {
     "roomId": "akuvhdws",
-    "wall": 6,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "element",
-     "id": "en9n5irk"
-    },
-    "to": {
-     "kind": "corner",
-     "corner": 7,
-     "zM": 2.34
-    },
-    "via": [],
-    "note": "",
-    "id": "odj3pb7f",
-    "role": "feed"
-   },
-   {
-    "roomId": "akuvhdws",
     "wall": 7,
     "type": "NYM-J 3x1.5",
     "from": {
@@ -10023,74 +9994,6 @@
     "id": "tksy0dif"
    },
    {
-    "roomId": "akuvhdws",
-    "wall": 6,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "corner",
-     "corner": 7,
-     "zM": 1.89
-    },
-    "to": {
-     "kind": "element",
-     "id": "en9n5irk"
-    },
-    "via": [],
-    "note": "",
-    "id": "nbt1jl69"
-   },
-   {
-    "roomId": "akuvhdws",
-    "wall": 6,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "corner",
-     "corner": 7,
-     "zM": 1.99
-    },
-    "to": {
-     "kind": "element",
-     "id": "en9n5irk"
-    },
-    "via": [],
-    "note": "",
-    "id": "0fxgrzy1"
-   },
-   {
-    "roomId": "akuvhdws",
-    "wall": 6,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "corner",
-     "corner": 7,
-     "zM": 2.11
-    },
-    "to": {
-     "kind": "element",
-     "id": "en9n5irk"
-    },
-    "via": [],
-    "note": "",
-    "id": "y9rr737m"
-   },
-   {
-    "roomId": "akuvhdws",
-    "wall": 6,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "corner",
-     "corner": 7,
-     "zM": 2.24
-    },
-    "to": {
-     "kind": "element",
-     "id": "en9n5irk"
-    },
-    "via": [],
-    "note": "",
-    "id": "hatr056z"
-   },
-   {
     "roomId": "xyw3llcm",
     "wall": 0,
     "type": "NYM-J 3x1.5",
@@ -10158,23 +10061,6 @@
     "via": [],
     "note": "",
     "id": "ae77dh49"
-   },
-   {
-    "roomId": "akuvhdws",
-    "wall": 6,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "corner",
-     "corner": 7,
-     "zM": 1.77
-    },
-    "to": {
-     "kind": "element",
-     "id": "en9n5irk"
-    },
-    "via": [],
-    "note": "",
-    "id": "b33fk3x1"
    },
    {
     "roomId": "c2b55x6m",
@@ -12342,8 +12228,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "akuvhdws",
-   "wall": 7
+   "roomId": "c2b55x6m",
+   "wall": 1
   }
  }
 }
