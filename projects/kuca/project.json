@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-17T16:02:00.678Z",
+ "savedAt": "2026-11-20T16:03:55.455Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -7151,6 +7151,104 @@
     "controls": [
      "1cy26wsr"
     ]
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 1,
+    "type": "switch",
+    "xM": 0.51,
+    "zM": 1.28,
+    "note": "",
+    "host": "qo20jebm",
+    "id": "1i1f3ek4",
+    "label": "P46",
+    "slotOrder": 2,
+    "modules": 2,
+    "controls": [
+     "02tkzv80"
+    ]
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 3,
+    "type": "socket",
+    "xM": 0.6,
+    "zM": 1.37,
+    "note": "",
+    "id": "euztjx9b",
+    "label": "U155"
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 3,
+    "type": "modbox",
+    "xM": 0.95,
+    "zM": 1.23,
+    "note": "",
+    "id": "wthwvdgn",
+    "label": "D76",
+    "modules": 2
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 3,
+    "type": "modbox",
+    "xM": 0.95,
+    "zM": 1,
+    "note": "",
+    "id": "kmr3qhax",
+    "label": "D77",
+    "modules": 4
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 3,
+    "type": "switch",
+    "xM": 0.95,
+    "zM": 1.23,
+    "note": "",
+    "host": "wthwvdgn",
+    "id": "7eh227u6",
+    "label": "P47",
+    "slotOrder": 0,
+    "controls": []
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 3,
+    "type": "switch",
+    "xM": 0.95,
+    "zM": 1.23,
+    "note": "",
+    "host": "wthwvdgn",
+    "id": "isyivqxi",
+    "label": "P48",
+    "slotOrder": 1,
+    "controls": []
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 3,
+    "type": "socket",
+    "xM": 0.95,
+    "zM": 1.01,
+    "note": "",
+    "host": "kmr3qhax",
+    "id": "6jvj9pgp",
+    "label": "U156",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 3,
+    "type": "socket",
+    "xM": 0.95,
+    "zM": 1.01,
+    "note": "",
+    "host": "kmr3qhax",
+    "id": "1pe1n36s",
+    "label": "U157",
+    "slotOrder": 1
    }
   ],
   "cables": [
@@ -11733,6 +11831,54 @@
     "via": [],
     "note": "",
     "id": "actmfmqh"
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 3,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "4zir1mti"
+    },
+    "to": {
+     "kind": "element",
+     "id": "euztjx9b"
+    },
+    "via": [],
+    "note": "",
+    "id": "6xvvvfp5"
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 3,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "kmr3qhax"
+    },
+    "to": {
+     "kind": "element",
+     "id": "wthwvdgn"
+    },
+    "via": [],
+    "note": "",
+    "id": "g3ffvf5f"
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 3,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "4zir1mti"
+    },
+    "to": {
+     "kind": "element",
+     "id": "wthwvdgn"
+    },
+    "via": [],
+    "note": "",
+    "id": "v1bgvu81"
    }
   ],
   "categories": [
@@ -11854,8 +12000,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "akuvhdws",
-   "wall": 6
+   "roomId": "fb7su35f",
+   "wall": 1
   }
  }
 }
