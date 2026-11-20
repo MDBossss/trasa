@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-20T18:10:19.885Z",
+ "savedAt": "2026-11-20T18:22:43.720Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -1557,7 +1557,7 @@
     "categoryId": "todo",
     "exitZ": {
      "end": 2.07,
-     "start": 2.51
+     "start": 2.48
     },
     "feed": true
    },
@@ -2214,8 +2214,8 @@
       "y": 1791.5814979446136
      },
      {
-      "x": 915.9060591759344,
-      "y": 1714.5930902340708
+      "x": 915.9235554724569,
+      "y": 1717.9873717594442
      }
     ],
     "from": "",
@@ -2233,8 +2233,8 @@
     "diameter": 20,
     "points": [
      {
-      "x": 919.2742593736378,
-      "y": 1714.5757283773817
+      "x": 919.3150840655237,
+      "y": 1722.4957186032525
      },
      {
       "x": 931.5577728498453,
@@ -7377,7 +7377,8 @@
     "zM": 1.99,
     "note": "",
     "id": "rhqu9zxg",
-    "label": "K32"
+    "label": "K32",
+    "boxSize": "30 × 20"
    }
   ],
   "cables": [
@@ -12174,7 +12175,52 @@
      }
     ],
     "note": "",
-    "id": "r1cp9s74"
+    "id": "r1cp9s74",
+    "circuit": "07n6jc5d"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "3hkut1lt",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "rhqu9zxg"
+    },
+    "via": [
+     {
+      "xM": 0.98,
+      "zM": 2.17
+     }
+    ],
+    "note": "",
+    "id": "1qwxu0et"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "wfvva2oc",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "rhqu9zxg"
+    },
+    "via": [
+     {
+      "xM": 1.1300000000000014,
+      "zM": 2.15
+     }
+    ],
+    "note": "",
+    "id": "n5hmdpzq"
    }
   ],
   "categories": [
@@ -12297,7 +12343,7 @@
   "view": {
    "kind": "room",
    "roomId": "akuvhdws",
-   "wall": 0
+   "wall": 7
   }
  }
 }
