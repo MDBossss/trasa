@@ -1182,8 +1182,10 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   const portTerm: Record<string, string> = Object.fromEntries(ledSig.map((x) => [terminalMeta(x.terminal, p).label, x.terminal]))
   // without a controller, control cables at a LED supply are its 24 V outputs to the strips (all in parallel)
   const strip = el.type === 'ledstrip'
-  const toStrip = (c: Cable) => el.type === 'ledpsu' && isControlCable(c.type) && cableEnds(c, p).some((x) => x?.type === 'ledstrip')
-  const out24 = strip || (el.type === 'ledpsu' && p.cables.some((c) => isAtBox(c, el) && isControlCable(c.type) && (!ctl || toStrip(c))))
+  // the 24 V lead may be any cable (a spare NYM 3×1,5 too): it is 24 V because it joins a supply and a strip
+  const toStrip = (c: Cable) => el.type === 'ledpsu' && cableEnds(c, p).some((x) => x?.type === 'ledstrip')
+  const toPsu = (c: Cable) => strip && cableEnds(c, p).some((x) => x?.type === 'ledpsu')
+  const out24 = strip || (el.type === 'ledpsu' && p.cables.some((c) => isAtBox(c, el) && (toStrip(c) || (isControlCable(c.type) && !ctl))))
   if (out24) { portTerm['V+'] = 'V+'; portTerm['V−'] = 'V-' }
   const ports = strip ? ['V+', 'V−'] : el.type === 'motor' ? ['L', 'N', 'PE', 'IMP 1', 'IMP 2'] : dm ? [dm.port] : threePhase ? ['L1', 'L2', 'L3', 'N', 'PE'] : ['L', 'N', 'PE', ...Object.keys(portTerm)]
   const name = el.type === 'ledpsu' ? 'utičnica za napajanje LED trake' : strip ? 'LED traka' : el.type === 'light' ? 'svjetiljka' : el.type === 'motor' ? 'upravljačka jedinica' : el.type === 'boiler' ? 'bojler, priključna stezaljka' : ap ? `${ap.label.toLowerCase()}, priključna stezaljka` : dm ? dm.name : 'utičnica'
@@ -1195,7 +1197,10 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
       const r = resolveCable(c, el, p)
       const spare = r.cores.filter((k) => k !== 'brown' && k !== 'blue' && k !== 'gnye')
       const v24 = (k: WireColor, i: number): Wire => (i === 0 || i === 1 ? { color: k, terminal: i === 0 ? 'V+' : 'V-', note: strip ? (i === 0 ? '+24 V iz napajanja' : '− iz napajanja') : i === 0 ? '+24 V prema traci' : '− prema traci' } : { color: k, terminal: 'PARK', note: 'rezerva' })
-      const wires: Wire[] = dm && dataKindOf(c.type) ? [{ color: 'other', terminal: dm.port, note: dm.wire }] : strip ? r.cores.map((k, i) => (isControlCable(c.type) ? v24(k, i) : { color: k, terminal: 'PARK', note: '230 V ne smije na traku' })) : r.cores.map((k) => {
+      // NYM on 24 V: brown = +, blue = −, green-yellow stays unused
+      const nym24 = (k: WireColor): Wire => (k === 'brown' ? v24(k, 0) : k === 'blue' ? v24(k, 1) : { color: k, terminal: 'PARK', note: 'ne koristi se (24 V)' })
+      const lead24 = toStrip(c) || toPsu(c)
+      const wires: Wire[] = dm && dataKindOf(c.type) ? [{ color: 'other', terminal: dm.port, note: dm.wire }] : lead24 && !isControlCable(c.type) ? r.cores.map(nym24) : strip ? r.cores.map((k, i) => (isControlCable(c.type) ? v24(k, i) : { color: k, terminal: 'PARK', note: '230 V ne smije na traku' })) : r.cores.map((k) => {
         if (threePhase && (k === 'brown' || k === 'black' || k === 'grey')) { const n = k === 'brown' ? 1 : k === 'black' ? 2 : 3; return { color: k, terminal: `L${n}`, note: `faza L${n}` } }
         if (k === 'brown') return { color: k, terminal: 'L', note: el.type === 'light' || (el.type === 'ledpsu' && !ctl) ? 'faza sa prekidača / releja' : 'faza' }
         if (k === 'blue') return { color: k, terminal: 'N' }
@@ -1211,7 +1216,8 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   if (!cables.length) checks.push({ level: 'warn', text: strip ? `${el.label}: traka nema dovod 24 V. Povuci kabel LED 24V 2x1.5 od LED napajanja (N).` : `${el.label}: do ${name === 'svjetiljka' ? 'svjetla' : name} ne dolazi nijedan kabel.` })
   if (strip) {
     const v = el.ledV ?? 24, m = el.ledM ?? 5, sup = suppliesOf(el, p)
-    for (const c of cables) if (!isControlCable(c.cable.type)) checks.push({ cableId: c.cable.id, level: 'err', text: `${el.label}: na traku ide ${v} V iz napajanja, ne ${c.cable.type}. 230 V vodi do LED napajanja (N), od njega do trake kabel LED 24V 2x1.5.` })
+    for (const c of cables) if (!isControlCable(c.cable.type) && !toPsu(c.cable)) checks.push({ cableId: c.cable.id, level: 'err', text: `${el.label}: ${c.cable.type} ne vodi do LED napajanja, a na traku smije samo ${v} V iz napajanja. 230 V vodi do LED napajanja (N), od njega kabel do trake.` })
+    for (const c of cables) if (!isControlCable(c.cable.type) && toPsu(c.cable)) checks.push({ cableId: c.cable.id, level: 'ok', text: `${el.label}: ${c.cable.type} na ${v} V: smeđa +, plava −, žuto-zelena se ne spaja. Označi kabel "${v} V" na oba kraja da ga nitko ne spoji na 230 V.` })
     if (cables.length && !sup.length) checks.push({ level: 'warn', text: `${el.label}: kabel ne vodi do LED napajanja (N). Traka se napaja samo iz napajanja ${v} V.` })
     // a strip fed from one end dims towards the far end past ~5 m at 24 V (~2,5 m at 12 V)
     if (m > (v === 12 ? 2.5 : 5) && cables.length < 2) checks.push({ level: 'warn', text: `${el.label}: ${String(m).replace('.', ',')} m na ${v} V s jednog kraja tamni prema kraju. Dovedi drugi kabel na drugi kraj ili podijeli traku.` })
@@ -1241,7 +1247,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
     if (c.far.place && !el.feedRelayId) checks.push({ level: 'warn', text: `${el.label}: bojler se napaja preko kutije ${c.far.place.label}. Uobičajeno je vlastiti krug ravno iz ormara (bužir kategorije Dolaz ili kabel do ormara).` })
   }
   // a door unit may take power and pulse over two cables (L N PE + a control pair)
-  const power = cables.filter((c) => !isControlCable(c.cable.type))
+  const power = cables.filter((c) => !isControlCable(c.cable.type) && !toStrip(c.cable))
   if (el.type === 'motor' && cables.length && !power.some((c) => c.cores.includes('brown'))) checks.push({ level: 'warn', text: `${el.label}: stiže samo upravljački kabel, nema napajanja (L N PE).` })
   if (power.length > 1) checks.push({ level: 'warn', text: `${el.label}: ${power.length} kabela na jednom uređaju; obično je jedan (ili provlačenje kroz dozu).` })
   const map = new Map<string, TerminalWire[]>()

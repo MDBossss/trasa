@@ -52,7 +52,7 @@ pregledniku i vraćaju nakon osvježavanja.
     slika spoja i provlačenje utičnica slijede isti redoslijed. **LED napajanje (N)**: 230 V s prekidača
     ili releja ulazi u napajanje (mora ostati dostupno: namještaj, kutija s poklopcem, iznad spuštenog stropa); pali se kao
     svjetlo. **LED traka (E)**: crta se u stvarnoj dužini od kraja gdje ulazi dovod; od napajanja do nje ide kabel
-    LED 24V 2x1.5 (V+ / V−). Napajanje zbraja sve spojene trake × 1,2. Provjere: 230 V na traci, traka bez napajanja,
+    LED 24V 2x1.5 ili NYM 3×1,5 (smeđa +, plava −, žuto-zelena se ne spaja; označi ga "24 V"). Napajanje zbraja sve spojene trake × 1,2. Provjere: 230 V na traci, traka bez napajanja,
     traka dulja od 5 m (24 V) s dovodom samo s jednog kraja. Provjere: relej bez nule, relej u plitkoj dozi, kabel s
     premalo žila, izlaz releja bez kabela do svjetla, klasični prekidač na releju.
     **Vrata / motor (D)**: upravljačka jedinica rolo ili sekcijskih vrata; na njoj odaberi "Pali ga relej" (samo Shelly

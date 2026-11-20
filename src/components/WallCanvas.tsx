@@ -164,10 +164,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       const boilerEnd = (e: CableEnd) => e.kind === 'element' && project.elements.find((x) => x.id === e.id)?.type === 'boiler'
       const appOf = (e: CableEnd) => { const x = e.kind === 'element' ? project.elements.find((y) => y.id === e.id) : undefined; return x?.type === 'appliance' ? APPLIANCES[x.appliance ?? 'hob'].cable : null }
       const heavy = boilerEnd(draft.from) || boilerEnd(to) ? 'NYM-J 3x2.5' : appOf(to) ?? appOf(draft.from)
-      // to a LED strip: the 24 V lead from its supply
-      const stripEnd = (e: CableEnd) => e.kind === 'element' && project.elements.find((x) => x.id === e.id)?.type === 'ledstrip'
-      const v24 = stripEnd(draft.from) || stripEnd(to) ? 'LED 24V 2x1.5' : null
-      addCable({ roomId, wall: wall.i, type: earth ?? heavy ?? v24 ?? dataEnd(to) ?? dataEnd(draft.from) ?? 'NYM-J 3x1.5', from: draft.from, to, via: draft.via, note: '' })
+      addCable({ roomId, wall: wall.i, type: earth ?? heavy ?? dataEnd(to) ?? dataEnd(draft.from) ?? 'NYM-J 3x1.5', from: draft.from, to, via: draft.via, note: '' })
       setDraft(null)
     },
     [draft, addCable, roomId, wall.i],
