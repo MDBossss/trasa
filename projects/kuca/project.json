@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-20T16:38:27.183Z",
+ "savedAt": "2026-11-20T16:40:59.649Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2387,8 +2387,8 @@
       "y": 1289.2064460492543
      },
      {
-      "x": 1246.7571409214754,
-      "y": 1293.7469272134858
+      "x": 1072.3739700981373,
+      "y": 1385.3937459162617
      }
     ],
     "from": "",
@@ -2396,7 +2396,8 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "start": 2.05
+     "start": 2.05,
+     "end": 2.1
     }
    },
    {
@@ -2419,7 +2420,8 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "start": 1.82
+     "start": 1.82,
+     "end": 2.2
     }
    },
    {
@@ -2434,7 +2436,7 @@
      },
      {
       "x": 1245.625698715268,
-      "y": 1302.7984648631427
+      "y": 1307.3242336879712
      }
     ],
     "from": "",
@@ -2442,7 +2444,8 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "start": 1.94
+     "start": 1.94,
+     "end": 2.21
     }
    }
   ],
@@ -12053,6 +12056,66 @@
     ],
     "note": "",
     "id": "eibz4u16"
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "o02hehqm"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "6djv580l",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "15zm3to0"
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "od6hdbkc",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "9fdcyhwo"
+    },
+    "via": [
+     {
+      "xM": 0.1600000000000005,
+      "zM": 2.02
+     },
+     {
+      "xM": 0.5,
+      "zM": 2.03
+     }
+    ],
+    "note": "",
+    "id": "vai6dnff"
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "4zir1mti"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "lrtuwksm",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "l9lshi03"
    }
   ],
   "categories": [
@@ -12174,7 +12237,7 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "j02a68g1",
+   "roomId": "fb7su35f",
    "wall": 3
   }
  }
