@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-20T16:51:25.357Z",
+ "savedAt": "2026-11-20T16:52:44.631Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -12141,24 +12141,6 @@
      "end": "start"
     },
     "to": {
-     "kind": "exit",
-     "conduitId": "od6hdbkc",
-     "end": "start"
-    },
-    "via": [],
-    "note": "",
-    "id": "yebg3kun"
-   },
-   {
-    "roomId": "j02a68g1",
-    "wall": 3,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "exit",
-     "conduitId": "od6hdbkc",
-     "end": "start"
-    },
-    "to": {
      "kind": "element",
      "id": "61klz3px"
     },
@@ -12303,7 +12285,7 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "fb7su35f",
+   "roomId": "j02a68g1",
    "wall": 3
   }
  }
