@@ -55,7 +55,7 @@ export interface Wall {
   photoStretch?: boolean
 }
 
-export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'motor' | 'kip' | 'boiler' | 'appliance' | 'rack'
+export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'ledstrip' | 'motor' | 'kip' | 'boiler' | 'appliance' | 'rack'
 
 // Smart relays that sit in a box: inputs are SW terminals, outputs are O terminals.
 export type RelayModel = 'gen4' | 'gen4pm' | 'zbminir2' | 'rgbw' | 'aqarat2'
@@ -199,10 +199,12 @@ export interface WallElement {
   feedOutput?: number
   // socket: schuko takes 2 modules in a frame, euro 1
   socketKind?: SocketKind
-  // LED supply + strip in a niche
+  // LED strip (or a supply with its strip in a niche): length, power per metre, voltage
   ledM?: number
   ledWpm?: number
   ledV?: 12 | 24
+  // LED strip: the end its 24 V feed comes in at; the strip runs from there to the other side
+  ledFeed?: 'left' | 'right'
 }
 
 export type CableEnd =
@@ -234,7 +236,8 @@ export const CABLE_ROLES: Record<Exclude<CableRole, 'auto'>, string> = {
 
 export type WireColor = 'brown' | 'blue' | 'gnye' | 'black' | 'grey' | 'black2' | 'grey2' | 'other'
 // core colours by cable type (HD 308 S2); NYM-O has no PE: brown / black / grey
-export const isControlCable = (type: string) => /upravlja/i.test(type)
+// low-voltage pairs: control cables and the 24 V lead from a LED supply to its strip
+export const isControlCable = (type: string) => /upravlja|24\s?v/i.test(type)
 export function coreColors(type: string): WireColor[] {
   const t = type.toLowerCase()
   if (/utp|koaks|zvono|ostalo/.test(t)) return []
@@ -253,7 +256,7 @@ export function coreColors(type: string): WireColor[] {
 export const WIRE_LABEL: Record<WireColor, string> = { brown: 'smeđa', blue: 'plava', gnye: 'žuto-zelena', black: 'crna', grey: 'siva', black2: 'crna 2', grey2: 'siva 2', other: 'UTP' }
 export const WIRE_HEX: Record<WireColor, string> = { brown: '#6b3a1e', blue: '#1f4fb3', gnye: '#2e8b3a', black: '#222', grey: '#8c8c8c', black2: '#3a3a3a', grey2: '#a5a5a5', other: '#4a90d9' }
 
-export const CABLE_TYPES = ['NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-O 3x1.5', 'NYM-J 5x1.5', 'NYM-J 5x2.5', 'NYM-J 7x1.5', 'NYM-J 4x1.5', 'PE Cu 16 mm²', 'PE Cu 6 mm²', 'upravljački 2x0.75', 'upravljački 4x0.75', 'UTP cat6', 'koaks', 'zvono 2x0.75', 'ostalo']
+export const CABLE_TYPES = ['NYM-J 3x1.5', 'NYM-J 3x2.5', 'NYM-O 3x1.5', 'NYM-J 5x1.5', 'NYM-J 5x2.5', 'NYM-J 7x1.5', 'NYM-J 4x1.5', 'PE Cu 16 mm²', 'PE Cu 6 mm²', 'upravljački 2x0.75', 'upravljački 4x0.75', 'LED 24V 2x1.5', 'UTP cat6', 'koaks', 'zvono 2x0.75', 'ostalo']
 
 export const ELEMENT_META: Record<ElementType, { label: string; key: string; prefix: string; zM: number }> = {
   box: { label: 'Razvodna kutija', key: 'K', prefix: 'K', zM: 2.3 },
@@ -263,7 +266,9 @@ export const ELEMENT_META: Record<ElementType, { label: string; key: string; pre
   panel: { label: 'Ormar', key: 'O', prefix: 'RO', zM: 1.5 },
   modbox: { label: 'Modularna doza', key: 'M', prefix: 'D', zM: 1.05 },
   relay: { label: 'Relej', key: 'R', prefix: 'R', zM: 1.05 },
-  ledpsu: { label: 'LED traka', key: 'N', prefix: 'N', zM: 2.5 },
+  // LED supply: 230 V in (from a switch or relay), 24 V out over its own cable to the strips
+  ledpsu: { label: 'LED napajanje', key: 'N', prefix: 'N', zM: 2.5 },
+  ledstrip: { label: 'LED traka', key: 'E', prefix: 'T', zM: 0.08 },
   // garage door / roller shutter control unit: fed L N PE, driven by a dry-contact pulse from a Shelly Plus 1
   motor: { label: 'Vrata / motor', key: 'D', prefix: 'V', zM: 2.3 },
   // main earthing terminal: the FeZn foundation-electrode tail lands on a busbar; Cu 16 to the board, Cu 6 bonding

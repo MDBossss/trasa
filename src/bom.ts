@@ -1,5 +1,5 @@
 import { polylineLength } from './geometry'
-import { allJunctions, boxSizeLabel } from './junction'
+import { allJunctions, boxSizeLabel, ledWatts, psuWatts, stripsOf } from './junction'
 import { frameName, APPLIANCES, ELEMENT_META, RELAY_MODELS, SOCKET_KINDS, type Project, relayModelOf, hostedFront, modulesOf } from './types'
 import { TEM_BLANK, TEM_FRAME, TEM_SOCKET, TEM_SWITCH, temCode } from './tem'
 import { cableLengthM, wallExits } from './walls'
@@ -101,13 +101,19 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
         break
       case 'relay': add(out, 'Releji', RELAY_MODELS[relayModelOf(e)].label, 'kom', 1); break
       case 'ledpsu': {
-        const m = e.ledM ?? 5, w = e.ledWpm ?? 10
-        add(out, 'LED', `LED traka ${e.ledV ?? 24} V COB (${w} W/m)`, 'm', m)
-        add(out, 'LED', `Alu profil s difuzorom`, 'm', m)
-        add(out, 'LED', `Napajanje ${e.ledV ?? 24} V ≥ ${Math.ceil((m * w * 1.2) / 10) * 10} W`, 'kom', 1)
+        // drawn strips list themselves; a supply without one still carries the strip typed on it
+        if (!stripsOf(e, p).length) {
+          add(out, 'LED', `LED traka ${e.ledV ?? 24} V COB (${e.ledWpm ?? 10} W/m)`, 'm', e.ledM ?? 5)
+          add(out, 'LED', `Alu profil s difuzorom`, 'm', e.ledM ?? 5)
+        }
+        add(out, 'LED', `Napajanje ${e.ledV ?? 24} V ≥ ${psuWatts(ledWatts(e, p))} W`, 'kom', 1)
         add(out, 'Utičnice', 'Šuko utičnica nadžbukna, u elementu (za napajanje LED trake)', 'kom', 1)
         break
       }
+      case 'ledstrip':
+        add(out, 'LED', `LED traka ${e.ledV ?? 24} V COB (${e.ledWpm ?? 10} W/m)`, 'm', e.ledM ?? 5)
+        add(out, 'LED', `Alu profil s difuzorom`, 'm', e.ledM ?? 5)
+        break
     }
   }
   const order = ['Kabeli', 'Stezaljke', 'Doze i kutije', 'Utičnice', 'Prekidači', 'Dekorativno', 'Svjetla', 'Releji', 'LED', 'Ostalo']

@@ -3,7 +3,7 @@ import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
 import { socket15Of, rulesOf, cableStockOf, cableShort, frameSlots, frameName, CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, inPortOf, outPortOf, SOCKET_KINDS, isPlace, modulesOf, WIRE_LABEL, APPLIANCES, RACK_HEIGHTS, type ApplianceKind, type BoxDepth, type CableRole, type Project, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
-import { BOX_CATALOG, cableIssues, cableNeeds, chainCables, circuitsOf, resolveCable, roleLabel, terminalMeta } from '../junction'
+import { BOX_CATALOG, ledWatts, psuWatts, stripsOf, suppliesOf, cableIssues, cableNeeds, chainCables, circuitsOf, resolveCable, roleLabel, terminalMeta } from '../junction'
 import { Icon } from './Icons'
 import { wireSwatch } from './JunctionCanvas'
 
@@ -246,15 +246,36 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
               <p className="muted">Jedinica vrata dobiva L N PE i dvije žile "impuls" s I i O releja (suhi kontakt, bez napona). Kabel 5×1,5, ili 3×1,5 za napajanje i zaseban upravljački 2×0,75 za impuls. Shelly: Auto OFF 0,5 s. Aqara T2: crvenu premosnicu makni, način "pulse" (L1/L2 prema LOUT), jedan T2 vodi dvoja vrata (svaka na svoj kanal). Tipkalo veži na taj relej ("Na relej"). Sonoff nema suhi kontakt, zato za vrata nije u izboru.</p>
             </>
           )}
-          {el.type === 'ledpsu' && (
+          {el.type === 'ledpsu' && (() => {
+            const ss = stripsOf(el, project), w = ledWatts(el, project)
+            return (
+              <>
+                {ss.length > 0 ? (
+                  <div className="stat"><span>Trake</span><b>{ss.map((x) => `${x.label} ${String(x.ledM ?? 5).replace('.', ',')} m`).join(' + ')}</b><span className="muted">{w} W ukupno</span></div>
+                ) : (
+                  <>
+                    <div className="field-row">
+                      <label>Traka (m) <input type="number" step={0.1} min={0} value={el.ledM ?? 5} onChange={(e) => updateElement(el.id, { ledM: +e.target.value || 0 })} /></label>
+                      <label>W/m <input type="number" step={1} min={0} value={el.ledWpm ?? 10} onChange={(e) => updateElement(el.id, { ledWpm: +e.target.value || 0 })} /></label>
+                    </div>
+                    <p className="muted">Traka uz samo napajanje (niša, element). Ako je traka dalje, postavi je zasebno (E) i spoji kabelom LED 24V 2x1.5.</p>
+                  </>
+                )}
+                <label>Napon <select value={el.ledV ?? 24} onChange={(e) => updateElement(el.id, { ledV: +e.target.value as 12 | 24 })}><option value={24}>24 V (preporuka)</option><option value={12}>12 V</option></select></label>
+                <div className="stat"><span>Napajanje</span><b>≥ {psuWatts(w)} W</b><span className="muted">{w} W trake × 1,2</span></div>
+                <div className="stat"><span>Releji uz traku</span><b>{project.elements.filter((h) => h.host === el.id).map((h) => `${h.label} ${RELAY_MODELS[relayModelOf(h)].label}`).join(', ') || '—'}</b></div>
+              </>
+            )
+          })()}
+          {el.type === 'ledstrip' && (
             <>
               <div className="field-row">
-                <label>Traka (m) <input type="number" step={0.1} min={0} value={el.ledM ?? 5} onChange={(e) => updateElement(el.id, { ledM: +e.target.value || 0 })} /></label>
+                <label>Dužina (m) <input type="number" step={0.1} min={0} value={el.ledM ?? 5} onChange={(e) => updateElement(el.id, { ledM: +e.target.value || 0 })} /></label>
                 <label>W/m <input type="number" step={1} min={0} value={el.ledWpm ?? 10} onChange={(e) => updateElement(el.id, { ledWpm: +e.target.value || 0 })} /></label>
               </div>
+              <label>Dovod <select value={el.ledFeed ?? 'left'} onChange={(e) => updateElement(el.id, { ledFeed: e.target.value as 'left' | 'right' })}><option value="left">lijevi kraj, traka ide desno</option><option value="right">desni kraj, traka ide lijevo</option></select></label>
               <label>Napon <select value={el.ledV ?? 24} onChange={(e) => updateElement(el.id, { ledV: +e.target.value as 12 | 24 })}><option value={24}>24 V (preporuka)</option><option value={12}>12 V</option></select></label>
-              <div className="stat"><span>Napajanje</span><b>≥ {Math.ceil(((el.ledM ?? 5) * (el.ledWpm ?? 10) * 1.2) / 10) * 10} W</b><span className="muted">{(el.ledM ?? 5) * (el.ledWpm ?? 10)} W trake × 1,2</span></div>
-              <div className="stat"><span>Releji uz traku</span><b>{project.elements.filter((h) => h.host === el.id).map((h) => `${h.label} ${RELAY_MODELS[relayModelOf(h)].label}`).join(', ') || '—'}</b></div>
+              <div className="stat"><span>Napaja je</span><b>{suppliesOf(el, project).map((x) => x.label).join(', ') || '—'}</b><span className="muted">{(el.ledM ?? 5) * (el.ledWpm ?? 10)} W</span></div>
             </>
           )}
           {el.type === 'socket' && (
@@ -320,7 +341,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
             </label>
           )}
           {el.type === 'box' && <button className="primary" onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori kutiju (spojevi)</button>}
-          {(el.type === 'light' || el.type === 'ledpsu' || el.type === 'motor' || el.type === 'kip' || el.type === 'boiler' || el.type === 'appliance' || (el.type === 'socket' && !el.host)) && <button className="primary" onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori spoj (koje žile kamo)</button>}
+          {(el.type === 'light' || el.type === 'ledpsu' || el.type === 'ledstrip' || el.type === 'motor' || el.type === 'kip' || el.type === 'boiler' || el.type === 'appliance' || (el.type === 'socket' && !el.host)) && <button className="primary" onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori spoj (koje žile kamo)</button>}
           {el.host && <div className="stat"><span>U</span><b>{hostLabel(el.host)}</b></div>}
           <div className="field-row" hidden={!!el.host}>
             <label>Od lijevo (m) <input type="number" step={0.01} value={el.xM} onChange={(e) => updateElement(el.id, { xM: +e.target.value || 0 })} /></label>

@@ -645,7 +645,7 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const out = { n, drop: [n, r, d, t, ...cs], strip: jk.cables.find((c) => c.cable.id === cs[0]).wires.map((w) => w.terminal), dErr: jd.checks.filter((c) => c.level !== 'ok').map((c) => c.text), dT: jd.terminals.map((x) => x.label).sort(), leafT: jl.terminals.map((x) => x.label).sort(), leafLevel: jl.level }
     s.setView({ kind: 'junctions', elementId: n })
     return out }, { box: ids.box })
-  await page.locator('.junction-main .room-head h2', { hasText: 'LED traka' }).waitFor()
+  await page.locator('.junction-main .room-head h2', { hasText: 'LED napajanje' }).waitFor()
   await page.locator('.checks').getByText(/napajanje 24 V od barem 30 W/).waitFor()
   await page.evaluate(({ drop }) => { const s = window.__trasa.getState(); const d = new Set(drop); s.patchProject({ cables: s.project.cables.filter((x) => !d.has(x.id)), elements: s.project.elements.filter((e) => !d.has(e.id)) }) }, led)
   assert.deepEqual(led.leafT, ['+24', 'L', 'N', 'PE', 'SW1'], 'the LED socket shows L N PE and the button pair on the controller'); assert.equal(led.leafLevel, 'ok')
@@ -699,6 +699,27 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     s = window.__trasa.getState(); const drop = new Set([n, ...cs]); s.patchProject({ cables: s.project.cables.filter((x) => !drop.has(x.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) })
     return out }, { box: ids.box })
   assert.deepEqual(psu, { vplus: 4, vminus: 4, wago: 415 }, 'three strips and the supply output share one 5-way WAGO per pole')
+
+  // 230 V goes to the supply, a 24 V lead goes on to each strip drawn on its own; the supply sizes for both strips
+  const strips = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
+    const add = (o) => { const id = s.addElement({ roomId: room, wall: 0, note: '', ...o }); s = window.__trasa.getState(); return id }
+    const n = add({ type: 'ledpsu', xM: 3.8, zM: 0.3 }), t1 = add({ type: 'ledstrip', xM: 0.2, zM: 0.08, ledM: 5, ledWpm: 8 }), t2 = add({ type: 'ledstrip', xM: 0.4, zM: 0.08, ledM: 6, ledWpm: 8 })
+    const cab = (type, f, t) => { const id = s.addCable({ roomId: room, wall: 0, type, from: { kind: 'element', id: f }, to: { kind: 'element', id: t }, via: [], note: '' }); s = window.__trasa.getState(); return id }
+    const cs = [cab('NYM-J 3x1.5', box, n), cab('LED 24V 2x1.5', n, t1), cab('LED 24V 2x1.5', n, t2)]
+    const P = window.__trasa.getState().project, leaf = (id) => E.allLeafJunctions(P).find((x) => x.box.id === id)
+    const jn = leaf(n), j1 = leaf(t1), j2 = leaf(t2)
+    const out = { psuT: jn.terminals.map((x) => x.label).sort(), watts: E.ledWatts(P.elements.find((e) => e.id === n), P), psuText: jn.checks.map((c) => c.text).join(' '),
+      t1: j1.terminals.map((x) => x.label).sort(), t1Level: j1.level, t2Warn: j2.checks.filter((c) => c.level === 'warn').map((c) => c.text).join(' ') }
+    // a 230 V cable straight onto a strip is an error
+    const bad = cab('NYM-J 3x1.5', box, t1); out.badErr = E.allLeafJunctions(window.__trasa.getState().project).find((x) => x.box.id === t1).level === 'err'
+    s = window.__trasa.getState(); const drop = new Set([n, t1, t2, ...cs, bad]); s.patchProject({ cables: s.project.cables.filter((x) => !drop.has(x.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) })
+    return out }, { box: ids.box })
+  assert.deepEqual(strips.psuT, ['L', 'N', 'PE', 'V+', 'V−'], 'the supply takes L N PE in and gives V+ / V− out')
+  assert.equal(strips.watts, 88, 'the supply carries both strips (5 m + 6 m at 8 W/m)')
+  assert.match(strips.psuText, /T\d+ \+ T\d+ = 88 W, napajanje 24 V od barem 110 W/)
+  assert.deepEqual(strips.t1, ['V+', 'V−'], 'a strip gets only the 24 V pair'); assert.equal(strips.t1Level, 'ok')
+  assert.match(strips.t2Warn, /6 m na 24 V s jednog kraja tamni/, 'a 6 m strip fed from one end is flagged')
+  assert.ok(strips.badErr, '230 V on a strip is an error')
 
   // section rules and cable bundles, on a small project of their own: feeds and socket circuits need 2,5 mm²,
   // a thicker cable after a thinner one is flagged, and two cables between the same boxes share the cores

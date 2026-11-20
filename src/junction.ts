@@ -120,6 +120,7 @@ function roleOfElement(e: WallElement): Role {
   switch (e.type) {
     case 'socket': return 'socket'
     case 'light': case 'ledpsu': return 'light'
+    case 'ledstrip': return 'lowv'
     case 'motor': return 'motor'
     case 'kip': return 'earth'
     case 'boiler': return e.feedRelayId ? 'light' : 'socket'
@@ -1157,7 +1158,14 @@ export function allJunctions(p: Project): Junction[] {
 }
 
 // A light, a door unit or a stand-alone socket: one terminal block (klema) and the cable's cores going straight onto it.
-export const LEAF_TYPES: ElementType[] = ['light', 'motor', 'socket', 'kip', 'boiler', 'appliance', 'ledpsu']
+export const LEAF_TYPES: ElementType[] = ['light', 'motor', 'socket', 'kip', 'boiler', 'appliance', 'ledpsu', 'ledstrip']
+// LED supply ↔ strip: joined by a 24 V cable (any segment chain), found from either side
+const ledLinked = (a: WallElement, type: ElementType, p: Project) => p.elements.filter((e) => e.type === type && p.cables.some((c) => isAtBox(c, a) && cableEnds(c, p).some((x) => x?.id === e.id)))
+export const stripsOf = (psu: WallElement, p: Project) => ledLinked(psu, 'ledstrip', p)
+export const suppliesOf = (strip: WallElement, p: Project) => ledLinked(strip, 'ledpsu', p)
+// load on a supply: its drawn strips, or (no strip drawn) the strip typed on the supply itself
+export const ledWatts = (psu: WallElement, p: Project) => { const ss = stripsOf(psu, p); return ss.length ? ss.reduce((w, x) => w + (x.ledM ?? 5) * (x.ledWpm ?? 10), 0) : (psu.ledM ?? 5) * (psu.ledWpm ?? 10) }
+export const psuWatts = (w: number) => Math.ceil((w * 1.2) / 10) * 10
 export const isLeaf = (e: WallElement) => LEAF_TYPES.includes(e.type) && !e.host
 export function leafJunctionFor(el: WallElement, p: Project): Junction {
   if (el.type === 'kip') return kipJunctionFor(el, p)
@@ -1173,10 +1181,12 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   const ledSig = ctl ? p.elements.filter((e) => e.type === 'switch' && e.relayId === ctl.id).flatMap((e) => switchSignals(e, p, [], Infinity)) : []
   const portTerm: Record<string, string> = Object.fromEntries(ledSig.map((x) => [terminalMeta(x.terminal, p).label, x.terminal]))
   // without a controller, control cables at a LED supply are its 24 V outputs to the strips (all in parallel)
-  const out24 = el.type === 'ledpsu' && !ctl && p.cables.some((c) => isAtBox(c, el) && isControlCable(c.type))
+  const strip = el.type === 'ledstrip'
+  const toStrip = (c: Cable) => el.type === 'ledpsu' && isControlCable(c.type) && cableEnds(c, p).some((x) => x?.type === 'ledstrip')
+  const out24 = strip || (el.type === 'ledpsu' && p.cables.some((c) => isAtBox(c, el) && isControlCable(c.type) && (!ctl || toStrip(c))))
   if (out24) { portTerm['V+'] = 'V+'; portTerm['V−'] = 'V-' }
-  const ports = el.type === 'motor' ? ['L', 'N', 'PE', 'IMP 1', 'IMP 2'] : dm ? [dm.port] : threePhase ? ['L1', 'L2', 'L3', 'N', 'PE'] : ['L', 'N', 'PE', ...Object.keys(portTerm)]
-  const name = el.type === 'ledpsu' ? 'utičnica za napajanje LED trake' : el.type === 'light' ? 'svjetiljka' : el.type === 'motor' ? 'upravljačka jedinica' : el.type === 'boiler' ? 'bojler, priključna stezaljka' : ap ? `${ap.label.toLowerCase()}, priključna stezaljka` : dm ? dm.name : 'utičnica'
+  const ports = strip ? ['V+', 'V−'] : el.type === 'motor' ? ['L', 'N', 'PE', 'IMP 1', 'IMP 2'] : dm ? [dm.port] : threePhase ? ['L1', 'L2', 'L3', 'N', 'PE'] : ['L', 'N', 'PE', ...Object.keys(portTerm)]
+  const name = el.type === 'ledpsu' ? 'utičnica za napajanje LED trake' : strip ? 'LED traka' : el.type === 'light' ? 'svjetiljka' : el.type === 'motor' ? 'upravljačka jedinica' : el.type === 'boiler' ? 'bojler, priključna stezaljka' : ap ? `${ap.label.toLowerCase()}, priključna stezaljka` : dm ? dm.name : 'utičnica'
   const device: Device = { el, label: `${el.label} ${name}`, ports, wMm: Math.max(24, ports.length * 8), hMm: 16, kind: 'terminal' }
   const pulse = el.type === 'motor' ? pulseChain(el, p) : new Set<string>()
   const cables: BoxCable[] = p.cables
@@ -1184,20 +1194,29 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
     .map((c) => {
       const r = resolveCable(c, el, p)
       const spare = r.cores.filter((k) => k !== 'brown' && k !== 'blue' && k !== 'gnye')
-      const wires: Wire[] = dm && dataKindOf(c.type) ? [{ color: 'other', terminal: dm.port, note: dm.wire }] : r.cores.map((k) => {
+      const v24 = (k: WireColor, i: number): Wire => (i === 0 || i === 1 ? { color: k, terminal: i === 0 ? 'V+' : 'V-', note: strip ? (i === 0 ? '+24 V iz napajanja' : '− iz napajanja') : i === 0 ? '+24 V prema traci' : '− prema traci' } : { color: k, terminal: 'PARK', note: 'rezerva' })
+      const wires: Wire[] = dm && dataKindOf(c.type) ? [{ color: 'other', terminal: dm.port, note: dm.wire }] : strip ? r.cores.map((k, i) => (isControlCable(c.type) ? v24(k, i) : { color: k, terminal: 'PARK', note: '230 V ne smije na traku' })) : r.cores.map((k) => {
         if (threePhase && (k === 'brown' || k === 'black' || k === 'grey')) { const n = k === 'brown' ? 1 : k === 'black' ? 2 : 3; return { color: k, terminal: `L${n}`, note: `faza L${n}` } }
         if (k === 'brown') return { color: k, terminal: 'L', note: el.type === 'light' || (el.type === 'ledpsu' && !ctl) ? 'faza sa prekidača / releja' : 'faza' }
         if (k === 'blue') return { color: k, terminal: 'N' }
         if (k === 'gnye') return { color: k, terminal: 'PE' }
         const i = spare.indexOf(k)
+        if (out24 && isControlCable(c.type) && (!ctl || toStrip(c))) return v24(k, i)
         if (el.type === 'ledpsu' && i >= 0 && i < ledSig.length) return { color: k, terminal: ledSig[i].terminal, note: 'tipkalo, 24 V' }
-        if (out24 && isControlCable(c.type) && (i === 0 || i === 1)) return { color: k, terminal: i === 0 ? 'V+' : 'V-', note: i === 0 ? '+24 V prema traci' : '− prema traci' }
         if (el.type === 'motor' && pulse.has(c.id) && i < 2) return { color: k, terminal: `IMP${i + 1}`, note: 'impuls s releja (suhi kontakt)' }
         return { color: k, terminal: 'PARK', note: 'rezerva' }
       })
       return { ...r, ...sideOf(r, el, p), wires }
     })
-  if (!cables.length) checks.push({ level: 'warn', text: `${el.label}: do ${name === 'svjetiljka' ? 'svjetla' : name} ne dolazi nijedan kabel.` })
+  if (!cables.length) checks.push({ level: 'warn', text: strip ? `${el.label}: traka nema dovod 24 V. Povuci kabel LED 24V 2x1.5 od LED napajanja (N).` : `${el.label}: do ${name === 'svjetiljka' ? 'svjetla' : name} ne dolazi nijedan kabel.` })
+  if (strip) {
+    const v = el.ledV ?? 24, m = el.ledM ?? 5, sup = suppliesOf(el, p)
+    for (const c of cables) if (!isControlCable(c.cable.type)) checks.push({ cableId: c.cable.id, level: 'err', text: `${el.label}: na traku ide ${v} V iz napajanja, ne ${c.cable.type}. 230 V vodi do LED napajanja (N), od njega do trake kabel LED 24V 2x1.5.` })
+    if (cables.length && !sup.length) checks.push({ level: 'warn', text: `${el.label}: kabel ne vodi do LED napajanja (N). Traka se napaja samo iz napajanja ${v} V.` })
+    // a strip fed from one end dims towards the far end past ~5 m at 24 V (~2,5 m at 12 V)
+    if (m > (v === 12 ? 2.5 : 5) && cables.length < 2) checks.push({ level: 'warn', text: `${el.label}: ${String(m).replace('.', ',')} m na ${v} V s jednog kraja tamni prema kraju. Dovedi drugi kabel na drugi kraj ili podijeli traku.` })
+    if (sup.length) checks.push({ level: 'ok', text: `${el.label}: ${String(m).replace('.', ',')} m × ${el.ledWpm ?? 10} W/m = ${m * (el.ledWpm ?? 10)} W, napaja je ${sup.map((x) => x.label).join(', ')}.` })
+  }
   if (ap) for (const c of cables) {
     // the thinnest segment of the run decides (a 3×1,5 stub before a corner limits the whole cable)
     const thin = thinnest(c.cable, p).type, sect = sectionOf(thin), cores = coreColors(thin).length
@@ -1207,10 +1226,10 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
     if (kind !== 'hood' && c.far.place) checks.push({ level: 'warn', text: `${el.label}: ${ap.label.toLowerCase()} se napaja preko kutije ${c.far.place.label}. Uobičajeno je vlastiti krug ravno iz ormara.` })
   }
   if (el.type === 'ledpsu') {
-    const w = (el.ledM ?? 5) * (el.ledWpm ?? 10), need = Math.ceil((w * 1.2) / 10) * 10
+    const ss = stripsOf(el, p), w = ledWatts(el, p), need = psuWatts(w)
     const t = lightTerminal(el, p)
     if (!t.by) checks.push({ level: 'warn', text: `${el.label}: traku nitko ne pali. Označi je na prekidaču ("Pali svjetla"), odaberi relej ("Napaja ga") ili u nju stavi LED regulator.` })
-    checks.push({ level: 'ok', text: `${el.label}: ${String(el.ledM ?? 5).replace('.', ',')} m × ${el.ledWpm ?? 10} W/m = ${w} W, napajanje ${el.ledV ?? 24} V od barem ${need} W. ${ctl ? `Utičnica stalno pod naponom, pali ${ctl.label} na 24 V strani.` : `Utičnica na prekidaču: ${t.by ? t.by.label : '?'} pali fazu, napajanje i traka se pale s njom.`}` })
+    checks.push({ level: 'ok', text: `${el.label}: ${ss.length ? `${ss.map((x) => x.label).join(' + ')} = ${w} W` : `${String(el.ledM ?? 5).replace('.', ',')} m × ${el.ledWpm ?? 10} W/m = ${w} W`}, napajanje ${el.ledV ?? 24} V od barem ${need} W. ${ctl ? `Utičnica stalno pod naponom, pali ${ctl.label} na 24 V strani.` : `Utičnica na prekidaču: ${t.by ? t.by.label : '?'} pali fazu, napajanje i traka se pale s njom.`}` })
   }
   if (el.type === 'boiler' && el.feedRelayId) {
     const r = p.elements.find((x) => x.id === el.feedRelayId)
@@ -1228,7 +1247,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   const map = new Map<string, TerminalWire[]>()
   const add = (id: string, w: TerminalWire) => { if (!map.has(id)) map.set(id, []); map.get(id)!.push(w) }
   for (const bc of cables) for (const w of bc.wires) if (w.terminal) add(w.terminal === 'PARK' ? `PARK:${bc.cable.id}:${w.color}` : w.terminal, { kind: 'core', cableId: bc.cable.id, cableLabel: bc.label, color: w.color, note: w.note })
-  for (const port of ports) { const id = portTerm[port] ?? port.replace(' ', ''); if (map.has(id)) add(id, { kind: 'port', deviceId: el.id, deviceLabel: portTerm[port] && ctl ? `${ctl.label} ${RELAY_MODELS[relayModelOf(ctl)].label}` : portTerm[port] ? `${el.label} napajanje 24 V` : device.label, port, color: id === 'L' || id === 'L1' ? 'brown' : id === 'N' ? 'blue' : id === 'PE' ? 'gnye' : id === 'L3' ? 'grey' : id === 'UTP' || id === 'ANT' ? 'other' : 'black' }) }
+  for (const port of ports) { const id = portTerm[port] ?? port.replace(' ', ''); if (map.has(id)) add(id, { kind: 'port', deviceId: el.id, deviceLabel: strip ? device.label : portTerm[port] && ctl ? `${ctl.label} ${RELAY_MODELS[relayModelOf(ctl)].label}` : portTerm[port] ? `${el.label} napajanje 24 V` : device.label, port, color: id === 'L' || id === 'L1' ? 'brown' : id === 'N' ? 'blue' : id === 'PE' ? 'gnye' : id === 'L3' ? 'grey' : id === 'UTP' || id === 'ANT' ? 'other' : 'black' }) }
   const terminals: Terminal[] = [...map.entries()].map(([id, wires]) => {
     const meta = /^L[123]$/.test(id) ? { label: id, desc: `faza ${id}` } : id.startsWith('IMP') ? { label: id, desc: 'impuls, suhi kontakt' } : id.startsWith('PARK') ? (spareCoresOf(p) === 'cap' ? { label: '·', desc: 'rezerva' } : { label: '·', desc: 'parkirano' }) : terminalMeta(id, p)
     const cap = id.startsWith('PARK') && spareCoresOf(p) === 'cap'

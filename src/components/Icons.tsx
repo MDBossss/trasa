@@ -62,6 +62,7 @@ export const Icon = {
   modbox: I('<rect x="2" y="7" width="20" height="10" rx="1"/><path d="M8 7v10M14 7v10"/>'),
   relay: I('<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 19v2M12 19v2M16 19v2M8 9h8M8 13h5"/>'),
   led: I('<path d="M3 8h18v4H3z"/><path d="M6 12v3M12 12v3M18 12v3"/><path d="M4 19h16"/>'),
+  psu: I('<rect x="4" y="6" width="16" height="12" rx="1.5"/><path d="M7 11c1-2 2-2 3 0s2 2 3 0"/><path d="M14 10h4M14 14h4"/>'),
   print: I('<path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M6 15h12v6H6z"/>'),
   cable: I('<circle cx="5" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h7v12h3"/>'),
   next: I('<path d="M5 12h14M12 5l7 7-7 7"/>'),

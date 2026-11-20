@@ -164,7 +164,10 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       const boilerEnd = (e: CableEnd) => e.kind === 'element' && project.elements.find((x) => x.id === e.id)?.type === 'boiler'
       const appOf = (e: CableEnd) => { const x = e.kind === 'element' ? project.elements.find((y) => y.id === e.id) : undefined; return x?.type === 'appliance' ? APPLIANCES[x.appliance ?? 'hob'].cable : null }
       const heavy = boilerEnd(draft.from) || boilerEnd(to) ? 'NYM-J 3x2.5' : appOf(to) ?? appOf(draft.from)
-      addCable({ roomId, wall: wall.i, type: earth ?? heavy ?? dataEnd(to) ?? dataEnd(draft.from) ?? 'NYM-J 3x1.5', from: draft.from, to, via: draft.via, note: '' })
+      // to a LED strip: the 24 V lead from its supply
+      const stripEnd = (e: CableEnd) => e.kind === 'element' && project.elements.find((x) => x.id === e.id)?.type === 'ledstrip'
+      const v24 = stripEnd(draft.from) || stripEnd(to) ? 'LED 24V 2x1.5' : null
+      addCable({ roomId, wall: wall.i, type: earth ?? heavy ?? v24 ?? dataEnd(to) ?? dataEnd(draft.from) ?? 'NYM-J 3x1.5', from: draft.from, to, via: draft.via, note: '' })
       setDraft(null)
     },
     [draft, addCable, roomId, wall.i],
@@ -181,7 +184,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       if (e.key === 'Backspace' && draft) { setDraft({ ...draft, via: draft.via.slice(0, -1) }); return }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) { removeSelected(); return }
       if (e.metaKey || e.ctrlKey) return
-      const map: Record<string, [typeof tool, ElementType?, 'tipkalo'?]> = { v: ['select'], h: ['pan'], k: ['element', 'box'], u: ['element', 'socket'], p: ['element', 'switch'], t: ['element', 'switch', 'tipkalo'], l: ['element', 'light'], o: ['element', 'panel'], a: ['element', 'rack'], m: ['element', 'modbox'], r: ['element', 'relay'], n: ['element', 'ledpsu'], d: ['element', 'motor'], z: ['element', 'kip'], b: ['element', 'boiler'], f: ['element', 'appliance'], c: ['cable'] }
+      const map: Record<string, [typeof tool, ElementType?, 'tipkalo'?]> = { v: ['select'], h: ['pan'], k: ['element', 'box'], u: ['element', 'socket'], p: ['element', 'switch'], t: ['element', 'switch', 'tipkalo'], l: ['element', 'light'], o: ['element', 'panel'], a: ['element', 'rack'], m: ['element', 'modbox'], r: ['element', 'relay'], n: ['element', 'ledpsu'], e: ['element', 'ledstrip'], d: ['element', 'motor'], z: ['element', 'kip'], b: ['element', 'boiler'], f: ['element', 'appliance'], c: ['cable'] }
       if (map[e.key]) setWallTool(...map[e.key])
       if (e.key === 'g') toggle('showGrid')
       if (e.key === '+' || e.key === '=') wallZoomBy(1.2, { x: size.w / 2, y: size.h / 2 })
@@ -441,15 +444,15 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
             return (
               <Group key={el.id} name={el.id} x={toX(p)} y={toY(p)} {...elementDrag(el)}>
                 {/* invisible hit area: symbols are thin strokes with gaps, a click a pixel off would miss them */}
-                {el.type === 'rack' ? <Rect x={-RACK_W / 2} y={-(RACK_HEIGHTS[el.rackU ?? 9] ?? 50) / 2} width={RACK_W} height={RACK_HEIGHTS[el.rackU ?? 9] ?? 50} fill="#000" opacity={0.001} /> : el.type === 'modbox' ? <Rect x={-(frameCols(el.modules ?? 3) * MODW) / 2 - 4} y={-4 - 6 * frameRows(el.modules ?? 3)} width={frameCols(el.modules ?? 3) * MODW + 8} height={8 + 12 * frameRows(el.modules ?? 3)} fill="#000" opacity={0.001} /> : <Circle radius={14} fill="#000" opacity={0.001} />}
-                <Symbol type={el.type} selected={isSel} px={px} modules={el.type === 'rack' ? el.rackU : el.modules} swKind={el.switchKind} data={isData(el)} tv={el.socketKind === 'tv'} appKind={el.appliance} />
+                {el.type === 'ledstrip' ? <Rect x={stripX(el)} y={-5} width={(el.ledM ?? 5) * 100} height={10} fill="#000" opacity={0.001} /> : el.type === 'rack' ? <Rect x={-RACK_W / 2} y={-(RACK_HEIGHTS[el.rackU ?? 9] ?? 50) / 2} width={RACK_W} height={RACK_HEIGHTS[el.rackU ?? 9] ?? 50} fill="#000" opacity={0.001} /> : el.type === 'modbox' ? <Rect x={-(frameCols(el.modules ?? 3) * MODW) / 2 - 4} y={-4 - 6 * frameRows(el.modules ?? 3)} width={frameCols(el.modules ?? 3) * MODW + 8} height={8 + 12 * frameRows(el.modules ?? 3)} fill="#000" opacity={0.001} /> : <Circle radius={14} fill="#000" opacity={0.001} />}
+                <Symbol type={el.type} selected={isSel} px={px} strip={el.type === 'ledstrip' ? el : undefined} modules={el.type === 'rack' ? el.rackU : el.modules} swKind={el.switchKind} data={isData(el)} tv={el.socketKind === 'tv'} appKind={el.appliance} />
                 {(() => {
                   const hosted = hostedOf(el.id)
                   const mods = hostedFront(project.elements, el.id)
                   const relays = hosted.filter((h) => h.type === 'relay')
                   const w = el.type === 'modbox' ? frameCols(el.modules ?? 3) * MODW : 16
                   const rows = el.type === 'modbox' ? frameRows(el.modules ?? 3) : 1
-                  const top = el.type === 'modbox' ? -6 * rows : el.type === 'ledpsu' ? -3 : -7
+                  const top = el.type === 'modbox' ? -6 * rows : el.type === 'ledpsu' || el.type === 'ledstrip' ? -3 : -7
                   const slots = frameSlots(mods, el.modules ?? 3).starts
                   const sel = (h: WallElement) => (ev: KonvaEventObject<MouseEvent | TouchEvent>) => { if (tool === 'select') { ev.cancelBubble = true; select(h.id) } }
                   return (
@@ -485,11 +488,11 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
                           </Group>
                         )
                       })}
-                      {relays.length > 0 && <Text text={relays.map((h) => h.label).join(' · ')} x={0} y={(el.type === 'modbox' ? 8 + 6 * frameRows(el.modules ?? 3) : el.type === 'ledpsu' ? 10 : 16) + px(13)} offsetX={60} width={120} align="center" fontSize={px(9)} fill="#5b6472" />}
+                      {relays.length > 0 && <Text text={relays.map((h) => h.label).join(' · ')} x={0} y={(el.type === 'modbox' ? 8 + 6 * frameRows(el.modules ?? 3) : el.type === 'ledpsu' || el.type === 'ledstrip' ? 10 : 16) + px(13)} offsetX={60} width={120} align="center" fontSize={px(9)} fill="#5b6472" />}
                     </>
                   )
                 })()}
-                <Text text={el.label} x={0} y={el.type === 'modbox' ? 8 + 6 * frameRows(el.modules ?? 3) : el.type === 'ledpsu' ? 10 : 16} offsetX={60} width={120} align="center" fontSize={px(11)} fontStyle="bold" fill="#1f2430" />
+                <Text text={el.label} x={0} y={el.type === 'modbox' ? 8 + 6 * frameRows(el.modules ?? 3) : el.type === 'ledpsu' || el.type === 'ledstrip' ? 10 : 16} offsetX={60} width={120} align="center" fontSize={px(11)} fontStyle="bold" fill="#1f2430" />
               </Group>
             )
           })}
@@ -531,7 +534,9 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
 }
 
 // IEC 60617-style symbols drawn in centimetres so they keep real-world size.
-function Symbol({ type, selected, px, modules, swKind, data, tv, appKind }: { type: ElementType; selected: boolean; px: (n: number) => number; modules?: number; swKind?: string; data?: boolean; tv?: boolean; appKind?: string }) {
+// a LED strip is drawn at its real length from the feed end (the element's point) towards the other side
+const stripX = (el: Pick<WallElement, 'ledM' | 'ledFeed'>) => (el.ledFeed === 'right' ? -(el.ledM ?? 5) * 100 : 0)
+function Symbol({ type, selected, px, modules, swKind, data, tv, appKind, strip }: { type: ElementType; selected: boolean; px: (n: number) => number; modules?: number; swKind?: string; data?: boolean; tv?: boolean; appKind?: string; strip?: Pick<WallElement, 'ledM' | 'ledFeed'> }) {
   const stroke = selected ? '#1e88e5' : '#1f2430'
   const sw = px(2)
   const halo = selected ? <Circle radius={13} fill="rgba(30,136,229,0.18)" /> : null
@@ -542,8 +547,12 @@ function Symbol({ type, selected, px, modules, swKind, data, tv, appKind }: { ty
     }
     case 'relay':
       return <>{halo}<Rect x={-7} y={-5} width={14} height={10} cornerRadius={2} fill="#2563eb" stroke={stroke} strokeWidth={sw} /></>
-    case 'ledpsu':
-      return <>{halo}<Rect x={-20} y={-3} width={40} height={6} fill="#fff1c7" stroke={stroke} strokeWidth={sw} /><Line points={[-14, -3, -14, 3]} stroke={stroke} strokeWidth={px(1)} /><Line points={[0, -3, 0, 3]} stroke={stroke} strokeWidth={px(1)} /><Line points={[14, -3, 14, 3]} stroke={stroke} strokeWidth={px(1)} /></>
+    case 'ledpsu': // supply box: AC in, DC out
+      return <>{halo}<Rect x={-10} y={-6} width={20} height={12} cornerRadius={1.5} fill="#fff1c7" stroke={stroke} strokeWidth={sw} /><Line points={[-6, -1.5, -4.5, -3, -3, -1.5, -1.5, 0]} stroke={stroke} strokeWidth={px(1.2)} /><Line points={[1.5, -1.5, 7, -1.5]} stroke={stroke} strokeWidth={px(1.2)} /><Line points={[1.5, 1.5, 7, 1.5]} stroke={stroke} strokeWidth={px(1.2)} dash={[px(1.5), px(1)]} /></>
+    case 'ledstrip': { // real length, feed end marked with a dot; the cursor preview shows one metre
+      const w = (strip?.ledM ?? 1) * 100, x = strip ? stripX(strip) : 0
+      return <><Rect x={x} y={-2} width={w} height={4} fill={selected ? 'rgba(30,136,229,0.3)' : '#ffd84d'} stroke={stroke} strokeWidth={sw} />{Array.from({ length: Math.max(0, Math.floor(w / 10) - 1) }, (_, i) => <Line key={i} points={[x + (i + 1) * 10, -2, x + (i + 1) * 10, 2]} stroke={stroke} strokeWidth={px(0.6)} opacity={0.5} />)}<Circle radius={3} fill={stroke} /></>
+    }
     case 'box': // square like the physical flush box (IEC uses a circle; this is a personal planner)
       return <>{halo}<Rect x={-7} y={-7} width={14} height={14} fill="#fff" stroke={stroke} strokeWidth={sw} /><Circle radius={2.2} fill={stroke} /></>
     case 'socket':
