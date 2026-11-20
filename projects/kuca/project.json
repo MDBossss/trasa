@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-20T18:42:17.542Z",
+ "savedAt": "2026-11-20T18:53:25.894Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2210,8 +2210,8 @@
     "diameter": 20,
     "points": [
      {
-      "x": 937.8734186269348,
-      "y": 1791.5814979446136
+      "x": 937.8044939676988,
+      "y": 1784.482258043302
      },
      {
       "x": 915.9235554724569,
@@ -2223,7 +2223,8 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "end": 1.14
+     "end": 0.98,
+     "start": 2.4
     }
    },
    {
@@ -2233,12 +2234,12 @@
     "diameter": 20,
     "points": [
      {
-      "x": 919.3150840655237,
-      "y": 1722.4957186032525
+      "x": 906.1525608087832,
+      "y": 1714.64336599885
      },
      {
-      "x": 931.5577728498453,
-      "y": 1795.0122055095424
+      "x": 931.6758259057408,
+      "y": 1807.1716702667782
      }
     ],
     "from": "",
@@ -2246,7 +2247,8 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "start": 0.38
+     "start": 0.54,
+     "end": 2.32
     }
    },
    {
@@ -2260,8 +2262,8 @@
       "y": 1714.610720505554
      },
      {
-      "x": 925.0740220745729,
-      "y": 1798.466412278954
+      "x": 925.3898249216116,
+      "y": 1830.994105523943
      }
     ],
     "from": "",
@@ -2269,7 +2271,8 @@
     "note": "",
     "categoryId": "todo",
     "exitZ": {
-     "start": 0.77
+     "start": 0.77,
+     "end": 2.25
     }
    },
    {
@@ -6746,7 +6749,7 @@
     "type": "light",
     "xM": 2.83,
     "zM": 1.39,
-    "note": "",
+    "note": "svjetlo predja strana kuce kod terase",
     "id": "otqs5faa",
     "label": "S22",
     "feedRelayId": "j9h358in",
@@ -6763,7 +6766,7 @@
     "switchKind": "tipkalo",
     "id": "bz31j1au",
     "label": "P34",
-    "slotOrder": 1,
+    "slotOrder": 2,
     "relayId": "1mmd4lti",
     "relayInput": 1,
     "controls": [
@@ -6781,7 +6784,7 @@
     "switchKind": "tipkalo",
     "id": "eph1e9kj",
     "label": "P35",
-    "slotOrder": 2,
+    "slotOrder": 3,
     "relayId": "j9h358in",
     "relayInput": 1,
     "controls": [
@@ -6824,7 +6827,6 @@
     "id": "grckoprz",
     "label": "P36",
     "slotOrder": 0,
-    "gapBefore": 3,
     "modules": 2,
     "controls": [
      "p903zbv5"
@@ -6836,7 +6838,7 @@
     "type": "light",
     "xM": 1.4300000000000002,
     "zM": 2.26,
-    "note": "",
+    "note": "svjetlo ulaz gore terasa",
     "id": "p903zbv5",
     "label": "S23"
    },
@@ -6920,7 +6922,8 @@
     "zM": 0.77,
     "note": "",
     "id": "n5ldvcbo",
-    "label": "N4"
+    "label": "N4",
+    "ledM": 6
    },
    {
     "roomId": "mmcst90r",
@@ -7368,6 +7371,59 @@
     "id": "rhqu9zxg",
     "label": "K32",
     "boxSize": "30 × 20"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "box",
+    "xM": 1.76,
+    "zM": 1.92,
+    "note": "",
+    "id": "bdcy4po6",
+    "label": "K33"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "switch",
+    "xM": 1.85,
+    "zM": 1.28,
+    "note": "",
+    "host": "en9n5irk",
+    "id": "6g3s824a",
+    "label": "P49",
+    "slotOrder": 1,
+    "gapBefore": 2
+   },
+   {
+    "roomId": "9lsb9f44",
+    "wall": 3,
+    "type": "ledstrip",
+    "xM": 0.6900000000000004,
+    "zM": 2.07,
+    "note": "",
+    "id": "052xpor4",
+    "label": "T3"
+   },
+   {
+    "roomId": "9lsb9f44",
+    "wall": 3,
+    "type": "ledstrip",
+    "xM": 0.4899999999999988,
+    "zM": 1.87,
+    "note": "",
+    "id": "rvoitu39",
+    "label": "T4"
+   },
+   {
+    "roomId": "9lsb9f44",
+    "wall": 3,
+    "type": "ledstrip",
+    "xM": 0.28000000000000086,
+    "zM": 1.73,
+    "note": "",
+    "id": "1vo8ktsd",
+    "label": "T5"
    }
   ],
   "cables": [
@@ -9766,32 +9822,6 @@
     "id": "nonvc8g0"
    },
    {
-    "roomId": "akuvhdws",
-    "wall": 6,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "corner",
-     "corner": 7,
-     "zM": 2.46
-    },
-    "to": {
-     "kind": "element",
-     "id": "w47v74u9"
-    },
-    "via": [
-     {
-      "xM": 1.85,
-      "zM": 1.92
-     },
-     {
-      "xM": 1.52,
-      "zM": 1.96
-     }
-    ],
-    "note": "",
-    "id": "vr7rhjc9"
-   },
-   {
     "roomId": "xyw3llcm",
     "wall": 0,
     "type": "NYM-J 3x1.5",
@@ -11157,7 +11187,7 @@
    {
     "roomId": "xyw3llcm",
     "wall": 3,
-    "type": "upravljački 2x0.75",
+    "type": "NYM-J 3x1.5",
     "from": {
      "kind": "element",
      "id": "n5ldvcbo"
@@ -11174,7 +11204,7 @@
    {
     "roomId": "xyw3llcm",
     "wall": 3,
-    "type": "upravljački 2x0.75",
+    "type": "NYM-J 3x1.5",
     "from": {
      "kind": "element",
      "id": "n5ldvcbo"
@@ -11191,7 +11221,7 @@
    {
     "roomId": "xyw3llcm",
     "wall": 3,
-    "type": "upravljački 2x0.75",
+    "type": "NYM-J 3x1.5",
     "from": {
      "kind": "element",
      "id": "n5ldvcbo"
@@ -12107,6 +12137,57 @@
     ],
     "note": "",
     "id": "n5hmdpzq"
+   },
+   {
+    "roomId": "9lsb9f44",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "052xpor4"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "7o1ft6lk",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "vyipjwdy"
+   },
+   {
+    "roomId": "9lsb9f44",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "rvoitu39"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "xjt16odh",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "tnxyhy75"
+   },
+   {
+    "roomId": "9lsb9f44",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "1vo8ktsd"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "f2b1ltp1",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "6q0tejk5"
    }
   ],
   "categories": [
@@ -12228,8 +12309,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "c2b55x6m",
-   "wall": 1
+   "roomId": "9lsb9f44",
+   "wall": 3
   }
  }
 }
