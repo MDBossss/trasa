@@ -3,7 +3,7 @@ import { useStore } from '../store'
 import { fileToDataUrl } from '../images'
 import { cableLengthM, endLabel, type WallInfo } from '../walls'
 import { socket15Of, rulesOf, cableStockOf, cableShort, frameSlots, frameName, CABLE_ROLES, CABLE_TYPES, ELEMENT_META, RELAY_MODELS, inPortOf, outPortOf, SOCKET_KINDS, isPlace, modulesOf, WIRE_LABEL, APPLIANCES, RACK_HEIGHTS, type ApplianceKind, type BoxDepth, type CableRole, type Project, type RelayModel, type Room, type SocketKind, type SwitchKind, type WallElement, relayModelOf, hostedFront } from '../types'
-import { BOX_CATALOG, ledWatts, psuWatts, stripsOf, suppliesOf, cableIssues, cableNeeds, chainCables, circuitsOf, resolveCable, roleLabel, terminalMeta } from '../junction'
+import { BOX_CATALOG, manifoldsOf, thermostatsOf, ledWatts, psuWatts, stripsOf, suppliesOf, cableIssues, cableNeeds, chainCables, circuitsOf, resolveCable, roleLabel, terminalMeta } from '../junction'
 import { Icon } from './Icons'
 import { wireSwatch } from './JunctionCanvas'
 
@@ -231,6 +231,23 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
           {el.type === 'boiler' && (
             <p className="muted">Fiksni priključak bez utikača: kabel <b>3×2,5</b> na vlastiti krug (<b>B16</b>, FID 30 mA), ravno iz ormara. Na zidu podžbukna priključna kutija s izvodom kabela; kod bojlera u kupaoni po želji dvopolni prekidač (TEM SM20) da se isključe i faza i nula.</p>
           )}
+          {el.type === 'ufh' && (() => {
+            const ts = thermostatsOf(el, project), wired = ts.filter((t) => !t.wireless)
+            return (
+              <>
+                <label>Zona na kutiji <input type="number" step={1} min={1} value={el.ufhZones ?? 8} onChange={(e) => updateElement(el.id, { ufhZones: Math.max(1, +e.target.value || 1) })} /></label>
+                <div className={`stat ${wired.length > (el.ufhZones ?? 8) ? 'warn' : ''}`}><span>Termostati</span><b>{ts.map((t) => `${t.label}${t.wireless ? ' (Zigbee)' : ` → Z${wired.indexOf(t) + 1}`}`).join(', ') || '—'}</b><span className="muted">{wired.length} / {el.ufhZones ?? 8} zona</span></div>
+                <p className="muted">Uz razdjelnik: kutija ili utičnica s 3×1,5 (po mogućnosti svoj osigurač). Od svakog sobnog termostata bužir Ø20 i 5×1,5 do razdjelnika. Do kotla ili toplinske pumpe kabel za signal "grij" po uputama kotla.</p>
+              </>
+            )
+          })()}
+          {el.type === 'thermostat' && (
+            <>
+              <label className="check-row"><input type="checkbox" checked={!!el.wireless} onChange={(e) => updateElement(el.id, { wireless: e.target.checked || undefined })} /><span>Zigbee (bežični) <span className="muted">(kabel ostaje kao rezerva)</span></span></label>
+              <div className="stat"><span>Razdjelnik</span><b>{manifoldsOf(el, project).map((m) => m.label).join(', ') || '—'}</b><span className="muted">{el.wireless ? 'kabel ostaje kao rezerva' : 'kabel 5×1,5: L, N, izlaz, PE + rezerva'}</span></div>
+              <p className="muted">Doza okrugla Ø60 duboka, u liniji s prekidačima (~1,4 m). Ne na vanjski zid, iznad radijatora ili na sunce.</p>
+            </>
+          )}
           {el.type === 'kip' && (
             <p className="muted">Traka FeZn iz temelja na sabirnicu. Kabel do ormara je Cu 16 mm² (glavni zaštitni vodič), kabeli do slobodnog kraja su Cu 6 mm² za izjednačenje: u bilješku kabela upiši što spaja (vodovod, grijanje, plin, bojler, kada).</p>
           )}
@@ -341,7 +358,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
             </label>
           )}
           {el.type === 'box' && <button className="primary" onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori kutiju (spojevi)</button>}
-          {(el.type === 'light' || el.type === 'ledpsu' || el.type === 'ledstrip' || el.type === 'motor' || el.type === 'kip' || el.type === 'boiler' || el.type === 'appliance' || (el.type === 'socket' && !el.host)) && <button className="primary" onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori spoj (koje žile kamo)</button>}
+          {(el.type === 'light' || el.type === 'ledpsu' || el.type === 'ledstrip' || el.type === 'ufh' || el.type === 'thermostat' || el.type === 'motor' || el.type === 'kip' || el.type === 'boiler' || el.type === 'appliance' || (el.type === 'socket' && !el.host)) && <button className="primary" onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori spoj (koje žile kamo)</button>}
           {el.host && <div className="stat"><span>U</span><b>{hostLabel(el.host)}</b></div>}
           <div className="field-row" hidden={!!el.host}>
             <label>Od lijevo (m) <input type="number" step={0.01} value={el.xM} onChange={(e) => updateElement(el.id, { xM: +e.target.value || 0 })} /></label>

@@ -720,6 +720,25 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   assert.deepEqual(strips.t1, ['V+', 'V−'], 'a strip gets only the 24 V pair'); assert.equal(strips.t1Level, 'ok')
   assert.match(strips.t2Warn, /6 m na 24 V s jednog kraja tamni/, 'a 6 m strip fed from one end is flagged'); assert.equal(strips.t2Err, 0)
   assert.ok(strips.badErr, '230 V on a strip is an error')
+
+  // underfloor heating: wired thermostats take L N PE from the manifold and land their output on a zone each;
+  // a Zigbee thermostat's cable is a coiled spare; 3×1,5 is too few cores for a wired one
+  const ufh = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
+    const add = (o) => { const id = s.addElement({ roomId: room, wall: 0, note: '', ...o }); s = window.__trasa.getState(); return id }
+    const rp = add({ type: 'ufh', xM: 3.5, zM: 0.6, ufhZones: 2 }), a = add({ type: 'thermostat', xM: 0.5, zM: 1.4 }), b = add({ type: 'thermostat', xM: 1, zM: 1.4, wireless: true }), c = add({ type: 'thermostat', xM: 1.5, zM: 1.4 })
+    const cab = (type, f, t) => { const id = s.addCable({ roomId: room, wall: 0, type, from: { kind: 'element', id: f }, to: { kind: 'element', id: t }, via: [], note: '' }); s = window.__trasa.getState(); return id }
+    const cs = [cab('NYM-J 3x1.5', box, rp), cab('NYM-J 5x1.5', a, rp), cab('NYM-J 5x1.5', b, rp), cab('NYM-J 3x1.5', c, rp)]
+    const P = window.__trasa.getState().project, leaf = (id) => E.allLeafJunctions(P).find((x) => x.box.id === id)
+    const jr = leaf(rp), ja = leaf(a), jb = leaf(b), jc = leaf(c)
+    const out = { rpT: jr.terminals.filter((t) => t.label !== '·').map((t) => t.label).sort(), rpLevel: jr.level, aT: ja.terminals.filter((t) => t.label !== '·').map((t) => t.label).sort(), aLevel: ja.level,
+      bT: jb.terminals.map((t) => t.label), bLevel: jb.level, cErr: jc.checks.some((x) => x.level === 'err' && /4 žile/.test(x.text)), zones: E.thermostatsOf(P.elements.find((e) => e.id === rp), P).length }
+    s = window.__trasa.getState(); const drop = new Set([rp, a, b, c, ...cs]); s.patchProject({ cables: s.project.cables.filter((x) => !drop.has(x.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) })
+    return out }, { box: ids.box })
+  assert.deepEqual(ufh.rpT, ['L', 'N', 'PE', 'Z1'], 'the manifold box feeds the wired thermostats and takes one zone each (the 3×1,5 one has no output core)')
+  assert.equal(ufh.rpLevel, 'ok'); assert.equal(ufh.zones, 3)
+  assert.deepEqual(ufh.aT, ['L', 'N', 'OUT', 'PE']); assert.equal(ufh.aLevel, 'ok')
+  assert.deepEqual(ufh.bT, ['·', '·', '·', '·', '·'], 'a Zigbee thermostat keeps its cable as a spare'); assert.equal(ufh.bLevel, 'ok')
+  assert.ok(ufh.cErr, 'a wired thermostat on 3×1,5 is short of cores')
   assert.deepEqual(strips.t2T, ['V+', 'V−', '·'], 'a spare NYM 3×1,5 works as the 24 V lead: brown +, blue −, green-yellow unused')
 
   // section rules and cable bundles, on a small project of their own: feeds and socket circuits need 2,5 mm²,

@@ -121,6 +121,8 @@ function roleOfElement(e: WallElement): Role {
     case 'socket': return 'socket'
     case 'light': case 'ledpsu': return 'light'
     case 'ledstrip': return 'lowv'
+    case 'ufh': return 'socket'
+    case 'thermostat': return 'switch'
     case 'motor': return 'motor'
     case 'kip': return 'earth'
     case 'boiler': return e.feedRelayId ? 'light' : 'socket'
@@ -1158,7 +1160,10 @@ export function allJunctions(p: Project): Junction[] {
 }
 
 // A light, a door unit or a stand-alone socket: one terminal block (klema) and the cable's cores going straight onto it.
-export const LEAF_TYPES: ElementType[] = ['light', 'motor', 'socket', 'kip', 'boiler', 'appliance', 'ledpsu', 'ledstrip']
+export const LEAF_TYPES: ElementType[] = ['light', 'motor', 'socket', 'kip', 'boiler', 'appliance', 'ledpsu', 'ledstrip', 'ufh', 'thermostat']
+// Underfloor heating: a wired thermostat gets L N PE from the manifold's control box and returns its output on one zone
+export const thermostatsOf = (ufh: WallElement, p: Project) => p.elements.filter((e) => e.type === 'thermostat' && p.cables.some((c) => isAtBox(c, e) && cableEnds(c, p).some((x) => x?.id === ufh.id)))
+export const manifoldsOf = (ts: WallElement, p: Project) => p.elements.filter((e) => e.type === 'ufh' && p.cables.some((c) => isAtBox(c, ts) && cableEnds(c, p).some((x) => x?.id === e.id)))
 // LED supply ↔ strip: joined by a 24 V cable (any segment chain), found from either side
 const ledLinked = (a: WallElement, type: ElementType, p: Project) => p.elements.filter((e) => e.type === type && p.cables.some((c) => isAtBox(c, a) && cableEnds(c, p).some((x) => x?.id === e.id)))
 export const stripsOf = (psu: WallElement, p: Project) => ledLinked(psu, 'ledstrip', p)
@@ -1169,6 +1174,7 @@ export const psuWatts = (w: number) => Math.ceil((w * 1.2) / 10) * 10
 export const isLeaf = (e: WallElement) => LEAF_TYPES.includes(e.type) && !e.host
 export function leafJunctionFor(el: WallElement, p: Project): Junction {
   if (el.type === 'kip') return kipJunctionFor(el, p)
+  if (el.type === 'ufh' || el.type === 'thermostat') return heatingJunctionFor(el, p)
   const room = p.rooms.find((r) => r.id === el.roomId)!
   const checks: Check[] = []
   const data = isData(el)
@@ -1264,6 +1270,70 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   const lay = boxLayout({ box: el, terminals, devices: [device] })
   const level: Level = checks.some((c) => c.level === 'err') ? 'err' : checks.some((c) => c.level === 'warn') ? 'warn' : 'ok'
   if (level === 'ok' && cables.length) checks.push({ level: 'ok', text: `Žile na stezaljke uređaja: ${terminals.filter((t) => !t.id.startsWith('PARK')).map((t) => t.label).join(', ')}.` })
+  return { box: el, room, cables, devices: [device], terminals, checks, bom: [], level, size: { W: lay.W, H: lay.H, overflow: false, stacked: false } }
+}
+// Underfloor heating. The manifold's control box: L N PE in from a circuit, and per wired thermostat L N PE out plus the
+// zone input (black) the thermostat switches; grey is a spare. A Zigbee thermostat's cable stays coiled as a spare.
+function heatingJunctionFor(el: WallElement, p: Project): Junction {
+  const room = p.rooms.find((r) => r.id === el.roomId)!
+  const checks: Check[] = []
+  const ufh = el.type === 'ufh'
+  const ts = ufh ? thermostatsOf(el, p) : []
+  const wired = ts.filter((t) => !t.wireless)
+  const zoneOf = (t: WallElement) => wired.indexOf(t) + 1
+  const zones = el.ufhZones ?? 8
+  const resolved = p.cables.filter((c) => isAtBox(c, el)).map((c) => ({ c, r: resolveCable(c, el, p), far: cableEnds(c, p).find((x) => x && x.id !== el.id) }))
+  const ports = ufh ? ['L', 'N', 'PE', ...wired.map((t) => `Z${zoneOf(t)}`)] : el.wireless ? ['rezerva'] : ['L', 'N', 'PE', 'OUT']
+  const device: Device = { el, label: ufh ? `${el.label} upravljačka kutija podnog` : `${el.label} termostat${el.wireless ? ' (Zigbee)' : ''}`, ports, wMm: Math.max(30, ports.length * 8), hMm: 16, kind: 'terminal' }
+  const park = (k: WireColor, note: string): Wire => ({ color: k, terminal: 'PARK', note })
+  const cables: BoxCable[] = resolved.map(({ r, far }) => {
+    const t = ufh ? (far?.type === 'thermostat' ? far : undefined) : el
+    const toTs = ufh ? !!t : far?.type === 'ufh'
+    const wires: Wire[] = r.cores.map((k) => {
+      if (toTs && t && t.wireless) return park(k, 'rezerva za žičani termostat')
+      if (toTs && t) {
+        const z = `Z${zoneOf(t)}`
+        if (k === 'brown') return { color: k, terminal: 'L', note: ufh ? `faza prema ${t.label}` : 'faza iz razdjelnika' }
+        if (k === 'blue') return { color: k, terminal: 'N' }
+        if (k === 'gnye') return { color: k, terminal: 'PE' }
+        if (k === 'black') return { color: k, terminal: ufh ? z : 'OUT', note: ufh ? `${t.label} traži grijanje → zona ${zoneOf(t)}` : `izlaz → zona ${zoneOf(t) || '?'} na razdjelniku` }
+        return park(k, 'rezerva')
+      }
+      if (!ufh) return park(k, 'ne ide do razdjelnika')
+      if (k === 'brown') return { color: k, terminal: 'L', note: 'napajanje 230 V' }
+      if (k === 'blue') return { color: k, terminal: 'N' }
+      if (k === 'gnye') return { color: k, terminal: 'PE' }
+      return park(k, 'rezerva')
+    })
+    return { ...r, ...sideOf(r, el, p), wires }
+  })
+  if (ufh) {
+    const power = resolved.filter((x) => x.far?.type !== 'thermostat')
+    if (!power.length) checks.push({ level: 'warn', text: `${el.label}: razdjelnik nema napajanje. Dovedi 3×1,5 (po mogućnosti svoj osigurač) do kutije ili utičnice uz razdjelnik.` })
+    if (wired.length > zones) checks.push({ level: 'err', text: `${el.label}: ${wired.length} žičanih termostata, a kutija ima ${zones} zona. Uzmi veću kutiju ili dio termostata stavi na Zigbee.` })
+    const noCable = p.elements.filter((e) => e.type === 'thermostat' && !e.wireless && !manifoldsOf(e, p).length)
+    if (noCable.length) checks.push({ level: 'warn', text: `Žičani termostati bez kabela do razdjelnika: ${noCable.map((e) => e.label).join(', ')}.` })
+    checks.push({ level: 'ok', text: `${el.label}: ${wired.length} žičanih${ts.length > wired.length ? `, ${ts.length - wired.length} Zigbee (kabel kao rezerva)` : ''} od ${zones} zona. Do kotla ili toplinske pumpe treba još kabel za signal "grij" (suhi kontakt), po uputama kotla.` })
+  } else {
+    const m = manifoldsOf(el, p)
+    for (const x of resolved) if (x.far?.type !== 'ufh') checks.push({ cableId: x.c.id, level: 'warn', text: `${el.label}: ${x.r.label} ne vodi do razdjelnika podnog. Kabel termostata ide bužirom ravno do razdjelnika (RP).` })
+    if (!el.wireless && !m.length) checks.push({ level: 'warn', text: `${el.label}: žičani termostat nema kabel do razdjelnika podnog. Povuci 5×1,5 do RP, ili ga označi kao Zigbee.` })
+    for (const x of resolved) if (x.far?.type === 'ufh' && !el.wireless && x.r.cores.length < 4) checks.push({ cableId: x.c.id, level: 'err', text: `${el.label}: termostat na 230 V treba 4 žile (L, N, izlaz, PE), ${x.c.type} ih ima ${x.r.cores.length}. Uzmi 5×1,5.` })
+    if (el.wireless) checks.push({ level: 'ok', text: `${el.label}: Zigbee termostat${m.length ? `, kabel do ${m.map((x) => x.label).join(', ')} ostaje kao rezerva` : ''}. Doza Ø60 duboka na ${String(el.zM).replace('.', ',')} m.` })
+    else if (m.length) checks.push({ level: 'ok', text: `${el.label}: žičani termostat 230 V, zona ${manifoldsOf(el, p).length ? thermostatsOf(m[0], p).filter((t) => !t.wireless).indexOf(el) + 1 : '?'} na ${m[0].label}. Doza Ø60 duboka.` })
+  }
+  const map = new Map<string, TerminalWire[]>()
+  const add = (id: string, w: TerminalWire) => { if (!map.has(id)) map.set(id, []); map.get(id)!.push(w) }
+  for (const bc of cables) for (const w of bc.wires) if (w.terminal) add(w.terminal === 'PARK' ? `PARK:${bc.cable.id}:${w.color}` : w.terminal, { kind: 'core', cableId: bc.cable.id, cableLabel: bc.label, color: w.color, note: w.note })
+  for (const port of ports) if (map.has(port)) add(port, { kind: 'port', deviceId: el.id, deviceLabel: device.label, port, color: port === 'L' ? 'brown' : port === 'N' ? 'blue' : port === 'PE' ? 'gnye' : 'black' })
+  const terminals: Terminal[] = [...map.entries()].map(([id, wires]) => {
+    const meta = id.startsWith('PARK') ? { label: '·', desc: 'rezerva' } : /^Z\d+$/.test(id) ? { label: id, desc: `zona ${id.slice(1)} (izlaz termostata)` } : id === 'OUT' ? { label: 'OUT', desc: 'izlaz termostata → zona' } : terminalMeta(id, p)
+    const direct = wires.length === 2 && wires.some((w) => w.kind === 'port')
+    const cap = id.startsWith('PARK') && spareCoresOf(p) === 'cap'
+    return { id, ...meta, wago: direct || cap || id.startsWith('PARK') ? 0 : wires.length <= 2 ? 412 : wires.length <= 3 ? 413 : 415, chained: 1, wires, cap }
+  })
+  const lay = boxLayout({ box: el, terminals, devices: [device] })
+  const level: Level = checks.some((c) => c.level === 'err') ? 'err' : checks.some((c) => c.level === 'warn') ? 'warn' : 'ok'
   return { box: el, room, cables, devices: [device], terminals, checks, bom: [], level, size: { W: lay.W, H: lay.H, overflow: false, stacked: false } }
 }
 // Main earthing terminal (KIP): one busbar; the FeZn foundation-electrode tail is bolted to it, every cable is a

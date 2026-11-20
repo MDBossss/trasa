@@ -164,7 +164,10 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       const boilerEnd = (e: CableEnd) => e.kind === 'element' && project.elements.find((x) => x.id === e.id)?.type === 'boiler'
       const appOf = (e: CableEnd) => { const x = e.kind === 'element' ? project.elements.find((y) => y.id === e.id) : undefined; return x?.type === 'appliance' ? APPLIANCES[x.appliance ?? 'hob'].cable : null }
       const heavy = boilerEnd(draft.from) || boilerEnd(to) ? 'NYM-J 3x2.5' : appOf(to) ?? appOf(draft.from)
-      addCable({ roomId, wall: wall.i, type: earth ?? heavy ?? dataEnd(to) ?? dataEnd(draft.from) ?? 'NYM-J 3x1.5', from: draft.from, to, via: draft.via, note: '' })
+      // a wired room thermostat: L N PE + its output (+ a spare) to the manifold
+      const tsEnd = (e: CableEnd) => e.kind === 'element' && project.elements.find((x) => x.id === e.id)?.type === 'thermostat'
+      const thermo = tsEnd(draft.from) || tsEnd(to) ? 'NYM-J 5x1.5' : null
+      addCable({ roomId, wall: wall.i, type: earth ?? heavy ?? thermo ?? dataEnd(to) ?? dataEnd(draft.from) ?? 'NYM-J 3x1.5', from: draft.from, to, via: draft.via, note: '' })
       setDraft(null)
     },
     [draft, addCable, roomId, wall.i],
@@ -181,7 +184,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       if (e.key === 'Backspace' && draft) { setDraft({ ...draft, via: draft.via.slice(0, -1) }); return }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) { removeSelected(); return }
       if (e.metaKey || e.ctrlKey) return
-      const map: Record<string, [typeof tool, ElementType?, 'tipkalo'?]> = { v: ['select'], h: ['pan'], k: ['element', 'box'], u: ['element', 'socket'], p: ['element', 'switch'], t: ['element', 'switch', 'tipkalo'], l: ['element', 'light'], o: ['element', 'panel'], a: ['element', 'rack'], m: ['element', 'modbox'], r: ['element', 'relay'], n: ['element', 'ledpsu'], e: ['element', 'ledstrip'], d: ['element', 'motor'], z: ['element', 'kip'], b: ['element', 'boiler'], f: ['element', 'appliance'], c: ['cable'] }
+      const map: Record<string, [typeof tool, ElementType?, 'tipkalo'?]> = { v: ['select'], h: ['pan'], k: ['element', 'box'], u: ['element', 'socket'], p: ['element', 'switch'], t: ['element', 'switch', 'tipkalo'], l: ['element', 'light'], o: ['element', 'panel'], a: ['element', 'rack'], m: ['element', 'modbox'], r: ['element', 'relay'], n: ['element', 'ledpsu'], e: ['element', 'ledstrip'], w: ['element', 'ufh'], q: ['element', 'thermostat'], d: ['element', 'motor'], z: ['element', 'kip'], b: ['element', 'boiler'], f: ['element', 'appliance'], c: ['cable'] }
       if (map[e.key]) setWallTool(...map[e.key])
       if (e.key === 'g') toggle('showGrid')
       if (e.key === '+' || e.key === '=') wallZoomBy(1.2, { x: size.w / 2, y: size.h / 2 })
@@ -575,6 +578,10 @@ function Symbol({ type, selected, px, modules, swKind, data, tv, appKind, strip 
       if (k === 'oven') return <>{halo}<Rect x={-11} y={-10} width={22} height={20} cornerRadius={2} fill="#fff" stroke={stroke} strokeWidth={sw} /><Rect x={-7} y={-3} width={14} height={9} cornerRadius={1} fill="#fff" stroke={stroke} strokeWidth={0.9} /><Line points={[-7, -6, 7, -6]} stroke={stroke} strokeWidth={0.9} /></>
       return <>{halo}<Rect x={-12} y={-9} width={24} height={18} cornerRadius={2} fill="#fff" stroke={stroke} strokeWidth={sw} />{[[-5, -3.5], [5, -3.5], [-5, 3.5], [5, 3.5]].map(([x, y]) => <Circle key={`${x}${y}`} x={x} y={y} radius={2.8} fill="#fff" stroke={stroke} strokeWidth={0.9} />)}</>
     }
+    case 'ufh': // manifold: the bar with its loop outlets, the control box under it
+      return <>{halo}<Rect x={-20} y={-12} width={40} height={24} cornerRadius={2} fill="#ffe9e3" stroke={stroke} strokeWidth={sw} /><Line points={[-16, -6, 16, -6]} stroke={stroke} strokeWidth={sw} />{[-12, -6, 0, 6, 12].map((x) => <Line key={x} points={[x, -6, x, 0]} stroke={stroke} strokeWidth={px(1.2)} />)}<Rect x={-10} y={3} width={20} height={6} fill="#fff" stroke={stroke} strokeWidth={px(1)} /></>
+    case 'thermostat': // round box with the thermometer mark
+      return <>{halo}<Circle radius={7} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[0, -4, 0, 2]} stroke={stroke} strokeWidth={px(1.6)} /><Circle y={3} radius={1.8} fill={stroke} /></>
     case 'boiler': // water heater: upright tank with the heating element zigzag
       return <>{halo}<Rect x={-8} y={-13} width={16} height={26} cornerRadius={8} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[-3, -6, 3, -3, -3, 0, 3, 3, -3, 6]} stroke={stroke} strokeWidth={sw} lineJoin="round" /></>
     case 'kip': // box with the IEC earth symbol (vertical stem, three shortening bars)

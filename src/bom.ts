@@ -110,13 +110,18 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
         add(out, 'Utičnice', 'Šuko utičnica nadžbukna, u elementu (za napajanje LED trake)', 'kom', 1)
         break
       }
+      case 'ufh': add(out, 'Grijanje', `Upravljačka kutija podnog, ${e.ufhZones ?? 8} zona, Zigbee (npr. ENGO ECB62-ZB)`, 'kom', 1); break
+      case 'thermostat':
+        add(out, 'Doze i kutije', 'Doza okrugla Ø60 duboka (termostat)', 'kom', 1)
+        add(out, 'Grijanje', e.wireless ? 'Sobni termostat Zigbee (npr. Aqara W100 / ENGO E901)' : 'Sobni termostat 230 V za podno', 'kom', 1)
+        break
       case 'ledstrip':
         add(out, 'LED', `LED traka ${e.ledV ?? 24} V COB (${e.ledWpm ?? 10} W/m)`, 'm', e.ledM ?? 5)
         add(out, 'LED', `Alu profil s difuzorom`, 'm', e.ledM ?? 5)
         break
     }
   }
-  const order = ['Kabeli', 'Stezaljke', 'Doze i kutije', 'Utičnice', 'Prekidači', 'Dekorativno', 'Svjetla', 'Releji', 'LED', 'Ostalo']
+  const order = ['Kabeli', 'Stezaljke', 'Doze i kutije', 'Utičnice', 'Prekidači', 'Dekorativno', 'Svjetla', 'Releji', 'LED', 'Grijanje', 'Ostalo']
   return [...out.values()]
     .map((l) => ({ ...l, qty: l.unit === 'm' ? Math.ceil(l.qty * 2) / 2 : l.qty }))
     .sort((a, b) => order.indexOf(a.group) - order.indexOf(b.group) || a.item.localeCompare(b.item))
