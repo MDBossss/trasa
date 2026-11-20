@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-20T18:40:32.319Z",
+ "savedAt": "2026-11-20T18:42:17.542Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -5479,7 +5479,7 @@
     "label": "P20",
     "slotOrder": 3,
     "relayId": "0irscwbr",
-    "relayInput": 1
+    "relayInput": 2
    },
    {
     "roomId": "irxyujn8",
