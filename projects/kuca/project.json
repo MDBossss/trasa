@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-20T16:54:00.511Z",
+ "savedAt": "2026-11-20T16:56:00.067Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2038,8 +2038,8 @@
     "diameter": 20,
     "points": [
      {
-      "x": 1292.0148291697597,
-      "y": 522.1033425802378
+      "x": 1314.6969821868936,
+      "y": 521.8873220753128
      },
      {
       "x": 1292.0148291697597,
@@ -2049,7 +2049,10 @@
     "from": "",
     "to": "",
     "note": "- FI 110, za vodu\n- komunikacijski kabel buzir\n- senzor tempereature\n",
-    "categoryId": "todo"
+    "categoryId": "todo",
+    "exitZ": {
+     "start": 0.65
+    }
    },
    {
     "id": "7hapwd5h",
@@ -12312,8 +12315,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "akuvhdws",
-   "wall": 6
+   "roomId": "fqmzanpn",
+   "wall": 0
   }
  }
 }
