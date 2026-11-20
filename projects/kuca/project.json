@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-20T16:52:44.631Z",
+ "savedAt": "2026-11-20T16:53:24.810Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -5017,7 +5017,8 @@
     "zM": 1.86,
     "note": "",
     "id": "4zir1mti",
-    "label": "K21"
+    "label": "K21",
+    "boxSize": "30 × 20"
    },
    {
     "roomId": "j02a68g1",
@@ -12284,9 +12285,8 @@
  },
  "ui": {
   "view": {
-   "kind": "room",
-   "roomId": "j02a68g1",
-   "wall": 3
+   "kind": "junctions",
+   "elementId": "4zir1mti"
   }
  }
 }
