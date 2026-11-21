@@ -703,7 +703,7 @@ export function terminalMeta(id: string, p: Project): { label: string; desc: str
   if (id.startsWith('L@') || id.startsWith('N@')) { const name = circuitsOf(p).names.get(id.slice(2)) ?? 'krug'; return { label: id[0], desc: `${id[0] === 'L' ? 'faza' : 'nula'} · ${name}` } }
   if (id === 'PE' || id.startsWith('PE@')) return { label: 'PE', desc: 'zaštitni' }
   if (id === 'V+' || id === 'V-') return { label: id === 'V+' ? 'V+' : 'V−', desc: `24 V iz napajanja → trake (${id === 'V+' ? 'plus' : 'minus'})` }
-  if (id.startsWith('SI:') && el(p, id.split(':')[1]) && RELAY_MODELS[relayModelOf(el(p, id.split(':')[1])!)].dc) { const [, rid, n, k] = id.split(':'); return { label: k === '1' ? '+24' : inPortOf(relayModelOf(el(p, rid)!), +n), desc: `tipkalo → ${el(p, rid)?.label ?? ''} ${k === '1' ? '+24 V' : `SW${n}`}, 24 V` } }
+  if (id.startsWith('SI:') && el(p, id.split(':')[1]) && RELAY_MODELS[relayModelOf(el(p, id.split(':')[1])!)].dc) { const [, rid, n, k] = id.split(':'); return { label: k === '1' ? '+24' : inPortOf(relayModelOf(el(p, rid)!), +n), desc: `tipkalo → ${el(p, rid)?.label ?? ''} ${k === '1' ? '+24 V' : inPortOf(relayModelOf(el(p, rid)!), +n)}, 24 V` } }
   if (id.startsWith('SI:')) { const [, rid, , k] = id.split(':'); return { label: `S${k}`, desc: `tipkalo → ${el(p, rid)?.label ?? ''} S${k}, niski napon` } }
   if (id.startsWith('JMP:')) { const r = el(p, id.split(':')[1]); const com = r ? RELAY_MODELS[relayModelOf(r)].com : undefined; return { label: `L→${com ?? 'I'}`, desc: `premosnica na ${com ? 'Aqari' : 'Shellyju'} (pali fazom)` } }
   if (id.startsWith('IMPC:')) { const r = el(p, id.split(':')[1]); return { label: 'COM', desc: `impuls ${r?.label ?? ''}: zajednički kontakt, bez napona` } }
@@ -763,7 +763,7 @@ export function boxLayout(j: Pick<Junction, 'box' | 'terminals' | 'devices' | 'b
     ...j.terminals.filter((t) => t.cap).map((t): Item => ({ kind: 'cap', t, w: CAP_W, h: CAP_H })),
     ...j.devices.map((d): Item => ({ kind: 'device', d, w: d.wMm, h: d.hMm })),
   ]
-  const base = j.box.type === 'modbox' ? [(j.box.modules ?? 3) <= 3 ? [100, 70] : (j.box.modules ?? 3) <= 4 ? [120, 70] : (j.box.modules ?? 3) <= 7 ? [160, 70] : [160, 120], [160, 100], [200, 120]] : isPlace(j.box) ? j.boxSizes ?? BOX_SIZES : j.box.type === 'kip' ? [[130, 90]] : [[60, 46], [90, 60]]
+  const base = j.box.type === 'modbox' ? [(j.box.modules ?? 3) <= 3 ? [100, 70] : (j.box.modules ?? 3) <= 4 ? [120, 70] : (j.box.modules ?? 3) <= 7 ? [160, 70] : [160, 120], [160, 100], [200, 120]] : isPlace(j.box) ? j.boxSizes ?? BOX_SIZES : j.box.type === 'kip' ? [[130, 90]] : [[60, 46], [90, 60], [160, 100], [200, 120]]
   for (const [W, H] of base) {
     const rows: { y: number; flip: boolean; x: number; items: Placed[]; h: number; inner?: boolean }[] = [
       { y: 5, flip: false, x: 5, items: [], h: DEPTH },
@@ -1186,6 +1186,10 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   const ctl = ledController(el, p)
   const ledSig = ctl ? p.elements.filter((e) => e.type === 'switch' && e.relayId === ctl.id).flatMap((e) => switchSignals(e, p, [], Infinity)) : []
   const portTerm: Record<string, string> = Object.fromEntries(ledSig.map((x) => [terminalMeta(x.terminal, p).label, x.terminal]))
+  // a dimmed supply is two devices: the supply (230 V in, DC+ / DC− out) and the controller between it and the strips;
+  // the button's +24 shares DC+, its other wire lands on the controller input
+  const dimmed = el.type === 'ledpsu' && !!ctl
+  const sigTerm = (t: string) => (dimmed && t.endsWith(':1') ? 'DC+' : t)
   // without a controller, control cables at a LED supply are its 24 V outputs to the strips (all in parallel)
   const strip = el.type === 'ledstrip'
   // the 24 V lead may be any cable (a spare NYM 3×1,5 too): it is 24 V because it joins a supply and a strip
@@ -1202,7 +1206,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
     .map((c) => {
       const r = resolveCable(c, el, p)
       const spare = r.cores.filter((k) => k !== 'brown' && k !== 'blue' && k !== 'gnye')
-      const v24 = (k: WireColor, i: number): Wire => (i === 0 || i === 1 ? { color: k, terminal: i === 0 ? 'V+' : 'V-', note: strip ? (i === 0 ? '+24 V iz napajanja' : '− iz napajanja') : i === 0 ? '+24 V prema traci' : '− prema traci' } : { color: k, terminal: 'PARK', note: 'rezerva' })
+      const v24 = (k: WireColor, i: number): Wire => (i === 0 || i === 1 ? dimmed ? { color: k, terminal: i === 0 ? 'LED+' : 'LED-', note: i === 0 ? '+ s kontrolera prema traci' : '− s kontrolera prema traci' } : { color: k, terminal: i === 0 ? 'V+' : 'V-', note: strip ? (i === 0 ? '+24 V iz napajanja' : '− iz napajanja') : i === 0 ? '+24 V prema traci' : '− prema traci' } : { color: k, terminal: 'PARK', note: 'rezerva' })
       // NYM on 24 V: brown = +, blue = −, green-yellow stays unused
       const nym24 = (k: WireColor): Wire => (k === 'brown' ? v24(k, 0) : k === 'blue' ? v24(k, 1) : { color: k, terminal: 'PARK', note: 'ne koristi se (24 V)' })
       const lead24 = toStrip(c) || toPsu(c)
@@ -1213,7 +1217,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
         if (k === 'gnye') return { color: k, terminal: 'PE' }
         const i = spare.indexOf(k)
         if (out24 && isControlCable(c.type) && (!ctl || toStrip(c))) return v24(k, i)
-        if (el.type === 'ledpsu' && i >= 0 && i < ledSig.length) return { color: k, terminal: ledSig[i].terminal, note: 'tipkalo, 24 V' }
+        if (el.type === 'ledpsu' && i >= 0 && i < ledSig.length) return { color: k, terminal: sigTerm(ledSig[i].terminal), note: 'tipkalo, 24 V' }
         if (el.type === 'motor' && pulse.has(c.id) && i < 2) return { color: k, terminal: `IMP${i + 1}`, note: 'impuls s releja (suhi kontakt)' }
         return { color: k, terminal: 'PARK', note: 'rezerva' }
       })
@@ -1261,18 +1265,33 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   const map = new Map<string, TerminalWire[]>()
   const add = (id: string, w: TerminalWire) => { if (!map.has(id)) map.set(id, []); map.get(id)!.push(w) }
   for (const bc of cables) for (const w of bc.wires) if (w.terminal) add(w.terminal === 'PARK' ? `PARK:${bc.cable.id}:${w.color}` : w.terminal, { kind: 'core', cableId: bc.cable.id, cableLabel: bc.label, color: w.color, note: w.note })
-  for (const port of ports) { const id = portTerm[port] ?? port.replace(' ', ''); if (map.has(id)) add(id, { kind: 'port', deviceId: el.id, deviceLabel: strip ? device.label : portTerm[port] && ctl ? `${ctl.label} ${RELAY_MODELS[relayModelOf(ctl)].label}` : portTerm[port] ? `${el.label} napajanje 24 V` : device.label, port, color: id === 'L' || id === 'L1' ? 'brown' : id === 'N' ? 'blue' : id === 'PE' ? 'gnye' : id === 'L3' ? 'grey' : id === 'UTP' || id === 'ANT' ? 'other' : 'black' }) }
+  const ctlM = ctl ? relayModelOf(ctl) : undefined
+  const ctlInputs = dimmed ? [...map.keys()].filter((id) => id.startsWith(`SI:${ctl!.id}:`)) : []
+  const devices: Device[] = dimmed ? [
+    { el, label: `${el.label} napajanje ${el.ledV ?? 24} V`, ports: ['L', 'N', 'PE', 'V+', 'V−'], wMm: 40, hMm: 16, kind: 'terminal' },
+    { el: ctl!, label: `${ctl!.label} ${RELAY_MODELS[ctlM!].label}`, ports: ['IN+', 'IN−', 'LED+', 'LED−', ...ctlInputs.map((id) => inPortOf(ctlM!, +id.split(':')[2]))], wMm: 48, hMm: 16, kind: 'terminal' },
+  ] : [device]
+  if (dimmed) {
+    const [sup, dim] = devices
+    const port = (d: Device, id: string, prt: string, color: WireColor) => add(id, { kind: 'port', deviceId: d.el.id, deviceLabel: d.label, port: prt, color })
+    for (const [id, color] of [['L', 'brown'], ['N', 'blue'], ['PE', 'gnye']] as const) if (map.has(id)) port(sup, id, id, color)
+    port(sup, 'DC+', 'V+', 'black'); port(dim, 'DC+', 'IN+', 'black'); port(sup, 'DC-', 'V−', 'black'); port(dim, 'DC-', 'IN−', 'black')
+    if (map.has('LED+')) port(dim, 'LED+', 'LED+', 'black')
+    if (map.has('LED-')) port(dim, 'LED-', 'LED−', 'black')
+    for (const id of ctlInputs) port(dim, id, inPortOf(ctlM!, +id.split(':')[2]), 'black')
+  } else for (const port of ports) { const id = portTerm[port] ?? port.replace(' ', ''); if (map.has(id)) add(id, { kind: 'port', deviceId: el.id, deviceLabel: strip ? device.label : portTerm[port] && ctl ? `${ctl.label} ${RELAY_MODELS[relayModelOf(ctl)].label}` : portTerm[port] ? `${el.label} napajanje 24 V` : device.label, port, color: id === 'L' || id === 'L1' ? 'brown' : id === 'N' ? 'blue' : id === 'PE' ? 'gnye' : id === 'L3' ? 'grey' : id === 'UTP' || id === 'ANT' ? 'other' : 'black' }) }
+  const DIM_META: Record<string, { label: string; desc: string }> = { 'DC+': { label: 'DC+', desc: `${el.ledV ?? 24} V napajanje → kontroler (plus)${ledSig.length ? ', i +24 tipkala' : ''}` }, 'DC-': { label: 'DC−', desc: `${el.ledV ?? 24} V napajanje → kontroler (minus)` }, 'LED+': { label: 'LED+', desc: 'kontroler → traka (plus)' }, 'LED-': { label: 'LED−', desc: 'kontroler → traka (minus, prigušeno)' } }
   const terminals: Terminal[] = [...map.entries()].map(([id, wires]) => {
-    const meta = /^L[123]$/.test(id) ? { label: id, desc: `faza ${id}` } : id.startsWith('IMP') ? { label: id, desc: 'impuls, suhi kontakt' } : id.startsWith('PARK') ? (spareCoresOf(p) === 'cap' ? { label: '·', desc: 'rezerva' } : { label: '·', desc: 'parkirano' }) : terminalMeta(id, p)
+    const meta = DIM_META[id] && dimmed ? DIM_META[id] : /^L[123]$/.test(id) ? { label: id, desc: `faza ${id}` } : id.startsWith('IMP') ? { label: id, desc: 'impuls, suhi kontakt' } : id.startsWith('PARK') ? (spareCoresOf(p) === 'cap' ? { label: '·', desc: 'rezerva' } : { label: '·', desc: 'parkirano' }) : terminalMeta(id, p)
     const cap = id.startsWith('PARK') && spareCoresOf(p) === 'cap'
     const direct = wires.length === 2 && wires.some((w) => w.kind === 'port')
     const wago: Terminal['wago'] = direct || cap ? 0 : wires.length <= 2 ? 412 : wires.length <= 3 ? 413 : 415
     return { id, ...meta, wago, chained: 1, wires, cap }
   })
-  const lay = boxLayout({ box: el, terminals, devices: [device] })
+  const lay = boxLayout({ box: el, terminals, devices })
   const level: Level = checks.some((c) => c.level === 'err') ? 'err' : checks.some((c) => c.level === 'warn') ? 'warn' : 'ok'
   if (level === 'ok' && cables.length) checks.push({ level: 'ok', text: `Žile na stezaljke uređaja: ${terminals.filter((t) => !t.id.startsWith('PARK')).map((t) => t.label).join(', ')}.` })
-  return { box: el, room, cables, devices: [device], terminals, checks, bom: [], level, size: { W: lay.W, H: lay.H, overflow: false, stacked: false } }
+  return { box: el, room, cables, devices, terminals, checks, bom: [], level, size: { W: lay.W, H: lay.H, overflow: false, stacked: false } }
 }
 // Underfloor heating. The manifold's control box: L N PE in from a circuit, and per wired thermostat L N PE out plus the
 // zone input (black) the thermostat switches; grey is a spare. A Zigbee thermostat's cable stays coiled as a spare.
