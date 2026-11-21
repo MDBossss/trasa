@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T10:17:33.324Z",
+ "savedAt": "2026-11-21T10:20:08.672Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -9833,22 +9833,6 @@
    },
    {
     "roomId": "icogq6ir",
-    "wall": 3,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "element",
-     "id": "oxoqwpa3"
-    },
-    "to": {
-     "kind": "element",
-     "id": "2qjqdzdw"
-    },
-    "via": [],
-    "note": "",
-    "id": "4wd0vlqy"
-   },
-   {
-    "roomId": "icogq6ir",
     "wall": 1,
     "type": "NYM-J 3x2.5",
     "from": {
@@ -10386,22 +10370,6 @@
     "via": [],
     "note": "",
     "id": "y5llaug6"
-   },
-   {
-    "roomId": "akuvhdws",
-    "wall": 6,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "element",
-     "id": "w47v74u9"
-    },
-    "to": {
-     "kind": "element",
-     "id": "4xzchbu7"
-    },
-    "via": [],
-    "note": "",
-    "id": "v7j17abk"
    },
    {
     "roomId": "c2b55x6m",
@@ -12215,23 +12183,7 @@
    {
     "roomId": "akuvhdws",
     "wall": 6,
-    "type": "NYM-J 3x2.5",
-    "from": {
-     "kind": "element",
-     "id": "w47v74u9"
-    },
-    "to": {
-     "kind": "element",
-     "id": "rhqu9zxg"
-    },
-    "via": [],
-    "note": "",
-    "id": "iorv2cwf"
-   },
-   {
-    "roomId": "akuvhdws",
-    "wall": 6,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 5x1.5",
     "from": {
      "kind": "element",
      "id": "w47v74u9"
@@ -12951,6 +12903,27 @@
     "via": [],
     "note": "",
     "id": "e1m0pvcv"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 6,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "4xzchbu7"
+    },
+    "to": {
+     "kind": "element",
+     "id": "rhqu9zxg"
+    },
+    "via": [
+     {
+      "xM": 1.5,
+      "zM": 1.27
+     }
+    ],
+    "note": "",
+    "id": "wd6kt5c7"
    }
   ],
   "categories": [
@@ -13072,8 +13045,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "akuvhdws",
-   "wall": 6
+   "roomId": "icogq6ir",
+   "wall": 3
   }
  }
 }
