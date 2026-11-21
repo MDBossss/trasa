@@ -1138,7 +1138,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
         const [k0, rid, inN] = id.split(':'), ctl = k0 === 'SI' ? el(p, rid) : undefined
         if (ctl && RELAY_MODELS[relayModelOf(ctl)].dc && w.kind === 'port') {
           const at = ctl.host ? el(p, ctl.host) : undefined, head = `${w.deviceLabel}: tipkalo za ${ctl.label} (ulaz ${inN})`
-          if (!checks.some((c) => c.text.startsWith(head))) checks.push({ level: 'warn', text: `${head} nema kabel do ${at?.label ?? 'kontrolera'}. Povuci zaseban kabel za tipkalo (upravljački 2×0,75) od ove kutije do ${at?.label ?? 'napajanja'}, ne kroz 230 V kabel.` })
+          if (!checks.some((c) => c.text.startsWith(head))) checks.push({ level: 'warn', text: `${head} nema kabel do ${at?.label ?? 'kontrolera'}. Povuci zaseban kabel za tipkalo (upravljački 2×0,75 ili NYM 3×1,5) od ove kutije do ${at?.label ?? 'napajanja'}, ne kroz 230 V kabel.` })
         } else checks.push({ level: 'warn', text: `Stezaljka ${meta.label} (${meta.desc}): samo ${w.kind === 'core' ? w.cableLabel : `${w.deviceLabel} ${w.port}`}, nedostaje druga strana.` })
       }
       return { id, ...meta, wago, chained, wires, cap, through }
