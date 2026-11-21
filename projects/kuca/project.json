@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T10:58:47.251Z",
+ "savedAt": "2026-11-21T19:12:12.823Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2622,6 +2622,29 @@
     "exitZ": {
      "start": 0.36,
      "end": 2.38
+    }
+   },
+   {
+    "id": "knxp3tlj",
+    "name": "ZA ZVONO",
+    "color": "#f58231",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 962.7651471634912,
+      "y": 1522.2982528673215
+     },
+     {
+      "x": 915.8570756427814,
+      "y": 1410.2854744528179
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "zvono",
+    "exitZ": {
+     "end": 1.62
     }
    }
   ],
@@ -7852,6 +7875,30 @@
     "note": "",
     "id": "hr65cos3",
     "label": "U160"
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 0,
+    "type": "modbox",
+    "xM": 0.9,
+    "zM": 1.39,
+    "note": "",
+    "id": "di6om0fe",
+    "label": "D79",
+    "modules": 2
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 0,
+    "type": "switch",
+    "xM": 0.9,
+    "zM": 1.39,
+    "note": "",
+    "host": "di6om0fe",
+    "id": "rpirakos",
+    "label": "P54",
+    "slotOrder": 0,
+    "modules": 2
    }
   ],
   "cables": [
@@ -13741,7 +13788,7 @@
   "view": {
    "kind": "room",
    "roomId": "akuvhdws",
-   "wall": 7
+   "wall": 0
   }
  }
 }
