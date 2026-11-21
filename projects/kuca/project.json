@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T09:41:32.222Z",
+ "savedAt": "2026-11-21T09:45:17.435Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -864,7 +864,7 @@
    {
     "id": "3hkut1lt",
     "name": "SPAJZA ZID",
-    "color": "#8000ff",
+    "color": "#e6194b",
     "diameter": 20,
     "points": [
      {
@@ -883,7 +883,7 @@
      "end": 2.15,
      "start": 2.47
     },
-    "feed": true
+    "categoryId": "struja"
    },
    {
     "id": "x3v27diw",
@@ -1539,7 +1539,7 @@
    {
     "id": "wfvva2oc",
     "name": "KUPAONA UTICNICA",
-    "color": "#06b6b4",
+    "color": "#e6194b",
     "diameter": 20,
     "points": [
      {
@@ -1554,12 +1554,11 @@
     "from": "",
     "to": "",
     "note": "",
-    "categoryId": "todo",
+    "categoryId": "struja",
     "exitZ": {
      "end": 2.07,
      "start": 2.48
-    },
-    "feed": true
+    }
    },
    {
     "id": "is1ge4ad",
@@ -12893,8 +12892,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "c2b55x6m",
-   "wall": 1
+   "roomId": "akuvhdws",
+   "wall": 6
   }
  }
 }
