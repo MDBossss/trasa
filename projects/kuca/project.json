@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T19:41:06.160Z",
+ "savedAt": "2026-11-21T19:43:22.233Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2631,12 +2631,12 @@
     "diameter": 20,
     "points": [
      {
-      "x": 962.7651471634912,
+      "x": 1006.8913932055683,
       "y": 1522.2982528673215
      },
      {
       "x": 915.8570756427814,
-      "y": 1410.2854744528179
+      "y": 1411.416916659025
      }
     ],
     "from": "",
@@ -2644,7 +2644,8 @@
     "note": "",
     "categoryId": "zvono",
     "exitZ": {
-     "end": 1.62
+     "end": 1.59,
+     "start": 1.53
     }
    }
   ],
@@ -7903,12 +7904,39 @@
    {
     "roomId": "akuvhdws",
     "wall": 0,
-    "type": "gong",
-    "xM": 1.03,
-    "zM": 1.63,
+    "type": "modbox",
+    "xM": 1.15,
+    "zM": 1.67,
     "note": "",
-    "id": "fchjwyhf",
-    "label": "ZV1"
+    "id": "t9d00yn5",
+    "label": "D80",
+    "modules": 2
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 0,
+    "type": "gong",
+    "xM": 0.98,
+    "zM": 1.79,
+    "note": "",
+    "host": "t9d00yn5",
+    "id": "dhswlb8w",
+    "label": "ZV1",
+    "slotOrder": 0,
+    "feedRelayId": "x7u20znr",
+    "feedOutput": 1
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 0,
+    "type": "relay",
+    "xM": 0.98,
+    "zM": 1.79,
+    "note": "",
+    "host": "t9d00yn5",
+    "relayModel": "gen4",
+    "id": "x7u20znr",
+    "label": "R26"
    }
   ],
   "cables": [
@@ -13676,6 +13704,40 @@
     "via": [],
     "note": "",
     "id": "4kgmhoul"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "t9d00yn5"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "knxp3tlj",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "bvu5956f"
+   },
+   {
+    "roomId": "xyw3llcm",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "di6om0fe"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "knxp3tlj",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "z3mz3qh0"
    }
   ],
   "categories": [
@@ -13797,7 +13859,7 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "akuvhdws",
+   "roomId": "xyw3llcm",
    "wall": 0
   }
  }
