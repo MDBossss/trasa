@@ -60,7 +60,8 @@ pregledniku i vraćaju nakon osvježavanja.
     **Razdjelnik podnog (W)**: upravljačka kutija podnog grijanja; 230 V do nje 3×1,5, broj zona upišeš desno.
     **Termostat (Q)**: doza Ø60 duboka na 1,4 m; žičani dobiva 5×1,5 bužirom do razdjelnika (L N PE iz kutije, crna =
     izlaz na svoju zonu Z1, Z2…), Zigbee termostat taj kabel drži kao rezervu. Provjere: premalo žila, više žičanih
-    termostata nego zona, termostat bez kabela do razdjelnika. Provjere: relej bez nule, relej u plitkoj dozi, kabel s
+    termostata nego zona, termostat bez kabela do razdjelnika.
+    **Bilješka (I)**: žuta oznaka na zidu bez spojeva; tekst upišeš desno, klik na nju ga pokaže u oblačiću. Provjere: relej bez nule, relej u plitkoj dozi, kabel s
     premalo žila, izlaz releja bez kabela do svjetla, klasični prekidač na releju.
     **Vrata / motor (D)**: upravljačka jedinica rolo ili sekcijskih vrata; na njoj odaberi "Pali ga relej" (samo Shelly
     1 Gen4). Taj Shelly tada radi kao suhi kontakt: I i O idu na "impuls" jedinice (stezaljke IMP1/IMP2, bez napona),

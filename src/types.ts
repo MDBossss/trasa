@@ -55,7 +55,7 @@ export interface Wall {
   photoStretch?: boolean
 }
 
-export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'ledstrip' | 'ufh' | 'thermostat' | 'motor' | 'kip' | 'boiler' | 'appliance' | 'rack'
+export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'ledstrip' | 'ufh' | 'thermostat' | 'note' | 'motor' | 'kip' | 'boiler' | 'appliance' | 'rack'
 
 // Smart relays that sit in a box: inputs are SW terminals, outputs are O terminals.
 export type RelayModel = 'gen4' | 'gen4pm' | 'zbminir2' | 'rgbw' | 'aqarat2' | 'zgdim'
@@ -280,6 +280,8 @@ export const ELEMENT_META: Record<ElementType, { label: string; key: string; pre
   ufh: { label: 'Razdjelnik podnog', key: 'W', prefix: 'RP', zM: 0.6 },
   // room thermostat in a deep round Ø60 box, in line with the switches
   thermostat: { label: 'Termostat', key: 'Q', prefix: 'TS', zM: 1.4 },
+  // a pinned note on the wall: no wiring, its text shows when clicked
+  note: { label: 'Bilješka', key: 'I', prefix: 'BL', zM: 1.6 },
   // garage door / roller shutter control unit: fed L N PE, driven by a dry-contact pulse from a Shelly Plus 1
   motor: { label: 'Vrata / motor', key: 'D', prefix: 'V', zM: 2.3 },
   // main earthing terminal: the FeZn foundation-electrode tail lands on a busbar; Cu 16 to the board, Cu 6 bonding

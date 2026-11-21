@@ -746,6 +746,15 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   assert.match(strips.t2Warn, /6 m na 24 V s jednog kraja tamni/, 'a 6 m strip fed from one end is flagged'); assert.equal(strips.t2Err, 0)
   assert.ok(strips.badErr, '230 V on a strip is an error')
 
+  // a wall note: no wiring, no material line; selecting it draws its bubble without breaking the wall canvas
+  const note = await page.evaluate(() => { let s = window.__trasa.getState(); const E = window.__trasaEngine
+    const id = s.addElement({ roomId: s.project.rooms[0].id, wall: 0, type: 'note', xM: 1, zM: 1.6, note: 'komoda ispod TV-a' }); s = window.__trasa.getState()
+    s.select(id); const P = window.__trasa.getState().project
+    return { id, leaf: E.allLeafJunctions(P).some((j) => j.box.id === id), box: E.allJunctions(P).some((j) => j.box.id === id) } })
+  await page.waitForTimeout(300); assert.ok(await page.locator('canvas').count(), 'the wall canvas survives a selected note')
+  assert.deepEqual([note.leaf, note.box], [false, false], 'a note has no junction')
+  await page.evaluate((id) => { const s = window.__trasa.getState(); s.patchProject({ elements: s.project.elements.filter((e) => e.id !== id) }) }, note.id)
+
   // underfloor heating: wired thermostats take L N PE from the manifold and land their output on a zone each;
   // a Zigbee thermostat's cable is a coiled spare; 3×1,5 is too few cores for a wired one
   const ufh = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine

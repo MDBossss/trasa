@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Stage, Layer, Image as KImage, Line, Circle, Rect, Shape, Text, Group, Arc } from 'react-konva'
+import { Stage, Layer, Image as KImage, Line, Circle, Rect, Shape, Text, Group, Arc, Label, Tag } from 'react-konva'
 import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import useImage from 'use-image'
@@ -184,7 +184,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       if (e.key === 'Backspace' && draft) { setDraft({ ...draft, via: draft.via.slice(0, -1) }); return }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) { removeSelected(); return }
       if (e.metaKey || e.ctrlKey) return
-      const map: Record<string, [typeof tool, ElementType?, 'tipkalo'?]> = { v: ['select'], h: ['pan'], k: ['element', 'box'], u: ['element', 'socket'], p: ['element', 'switch'], t: ['element', 'switch', 'tipkalo'], l: ['element', 'light'], o: ['element', 'panel'], a: ['element', 'rack'], m: ['element', 'modbox'], r: ['element', 'relay'], n: ['element', 'ledpsu'], e: ['element', 'ledstrip'], w: ['element', 'ufh'], q: ['element', 'thermostat'], d: ['element', 'motor'], z: ['element', 'kip'], b: ['element', 'boiler'], f: ['element', 'appliance'], c: ['cable'] }
+      const map: Record<string, [typeof tool, ElementType?, 'tipkalo'?]> = { v: ['select'], h: ['pan'], k: ['element', 'box'], u: ['element', 'socket'], p: ['element', 'switch'], t: ['element', 'switch', 'tipkalo'], l: ['element', 'light'], o: ['element', 'panel'], a: ['element', 'rack'], m: ['element', 'modbox'], r: ['element', 'relay'], n: ['element', 'ledpsu'], e: ['element', 'ledstrip'], w: ['element', 'ufh'], q: ['element', 'thermostat'], i: ['element', 'note'], d: ['element', 'motor'], z: ['element', 'kip'], b: ['element', 'boiler'], f: ['element', 'appliance'], c: ['cable'] }
       if (map[e.key]) setWallTool(...map[e.key])
       if (e.key === 'g') toggle('showGrid')
       if (e.key === '+' || e.key === '=') wallZoomBy(1.2, { x: size.w / 2, y: size.h / 2 })
@@ -496,6 +496,17 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
               </Group>
             )
           })}
+          {(() => { // the selected note shows its text in a bubble above it, drawn last so nothing covers it
+            const n = elements.find((e) => e.id === selectedId && e.type === 'note')
+            if (!n) return null
+            const p = live?.id === n.id ? live : n
+            return (
+              <Label x={toX(p)} y={toY(p) - 12} listening={false}>
+                <Tag fill="#fff8d6" stroke="#c9a400" strokeWidth={px(1)} cornerRadius={px(4)} pointerDirection="down" pointerWidth={px(10)} pointerHeight={px(7)} />
+                <Text text={n.note.trim() || 'Prazna bilješka: upiši tekst desno.'} width={px(240)} padding={px(8)} fontSize={px(12)} lineHeight={1.3} fill={n.note.trim() ? '#1f2430' : '#8a7a3a'} />
+              </Label>
+            )
+          })()}
         </Layer>
 
         <Layer>
@@ -580,6 +591,8 @@ function Symbol({ type, selected, px, modules, swKind, data, tv, appKind, strip 
     }
     case 'ufh': // manifold: the bar with its loop outlets, the control box under it
       return <>{halo}<Rect x={-20} y={-12} width={40} height={24} cornerRadius={2} fill="#ffe9e3" stroke={stroke} strokeWidth={sw} /><Line points={[-16, -6, 16, -6]} stroke={stroke} strokeWidth={sw} />{[-12, -6, 0, 6, 12].map((x) => <Line key={x} points={[x, -6, x, 0]} stroke={stroke} strokeWidth={px(1.2)} />)}<Rect x={-10} y={3} width={20} height={6} fill="#fff" stroke={stroke} strokeWidth={px(1)} /></>
+    case 'note': // a sticky note with an "i"
+      return <>{halo}<Rect x={-7} y={-7} width={14} height={14} cornerRadius={2} fill="#ffe680" stroke={stroke} strokeWidth={sw} /><Circle y={-3.2} radius={1.1} fill={stroke} /><Line points={[0, -0.8, 0, 4]} stroke={stroke} strokeWidth={px(1.6)} /></>
     case 'thermostat': // round box with the thermometer mark
       return <>{halo}<Circle radius={7} fill="#fff" stroke={stroke} strokeWidth={sw} /><Line points={[0, -4, 0, 2]} stroke={stroke} strokeWidth={px(1.6)} /><Circle y={3} radius={1.8} fill={stroke} /></>
     case 'boiler': // water heater: upright tank with the heating element zigzag
