@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T09:54:42.969Z",
+ "savedAt": "2026-11-21T09:56:25.281Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -5168,7 +5168,8 @@
     "note": "",
     "id": "rbnyjj0n",
     "label": "K22",
-    "boxSize": "30 × 20"
+    "boxSize": "30 × 20",
+    "depth": "duboka"
    },
    {
     "roomId": "j02a68g1",
@@ -12758,6 +12759,23 @@
     ],
     "note": "",
     "id": "brylnya3"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "uagf2fvr"
+    },
+    "to": {
+     "kind": "element",
+     "id": "rbnyjj0n"
+    },
+    "via": [],
+    "note": "",
+    "id": "48n5y5w1",
+    "circuit": "07n6jc5d"
    }
   ],
   "categories": [
@@ -12878,9 +12896,8 @@
  },
  "ui": {
   "view": {
-   "kind": "room",
-   "roomId": "j02a68g1",
-   "wall": 1
+   "kind": "junctions",
+   "elementId": "rbnyjj0n"
   }
  }
 }
