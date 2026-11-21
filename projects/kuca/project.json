@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T19:48:31.086Z",
+ "savedAt": "2026-11-21T19:50:53.338Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2625,18 +2625,18 @@
     }
    },
    {
-    "id": "knxp3tlj",
-    "name": "ZA ZVONO",
+    "id": "rzdkgcz8",
+    "name": "ZVONO",
     "color": "#f58231",
     "diameter": 20,
     "points": [
      {
       "x": 1110.9840761766222,
-      "y": 1522.2982528673215
+      "y": 1523.4296950735288
      },
      {
-      "x": 1049.8167509752443,
-      "y": 1489.4864288873155
+      "x": 1043.7306586262916,
+      "y": 1467.9890269693803
      }
     ],
     "from": "",
@@ -2644,8 +2644,8 @@
     "note": "",
     "categoryId": "zvono",
     "exitZ": {
-     "end": 1.58,
-     "start": 1.55
+     "start": 1.6,
+     "end": 1.67
     }
    }
   ],
@@ -13715,9 +13715,9 @@
      "zM": 1.58
     },
     "to": {
-     "kind": "exit",
-     "conduitId": "knxp3tlj",
-     "end": "end"
+     "kind": "free",
+     "xM": 0,
+     "zM": 2.6
     },
     "via": [],
     "note": "",
@@ -13732,9 +13732,9 @@
      "id": "di6om0fe"
     },
     "to": {
-     "kind": "exit",
-     "conduitId": "knxp3tlj",
-     "end": "start"
+     "kind": "free",
+     "xM": 0,
+     "zM": 2.6
     },
     "via": [],
     "note": "",
@@ -13757,12 +13757,29 @@
     "id": "e6vw1vcf"
    },
    {
+    "roomId": "xyw3llcm",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "di6om0fe"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "rzdkgcz8",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "cl2d2qxb"
+   },
+   {
     "roomId": "akuvhdws",
     "wall": 6,
     "type": "NYM-J 3x1.5",
     "from": {
      "kind": "exit",
-     "conduitId": "knxp3tlj",
+     "conduitId": "rzdkgcz8",
      "end": "end"
     },
     "to": {
@@ -13771,16 +13788,12 @@
     },
     "via": [
      {
-      "xM": 1.92,
-      "zM": 2.1
-     },
-     {
-      "xM": 1.58,
-      "zM": 2.1
+      "xM": 1.59,
+      "zM": 1.67
      }
     ],
     "note": "",
-    "id": "nscemcht"
+    "id": "o8vi2z19"
    }
   ],
   "categories": [
