@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T00:46:35.407Z",
+ "savedAt": "2026-11-21T01:05:18.305Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -7261,7 +7261,7 @@
     "zM": 1.23,
     "note": "",
     "host": "wthwvdgn",
-    "switchKind": "tipkalo",
+    "switchKind": "obicni",
     "id": "7eh227u6",
     "label": "P47",
     "slotOrder": 0,
@@ -7283,7 +7283,9 @@
     "slotOrder": 1,
     "controls": [
      "wwiibsi7"
-    ]
+    ],
+    "relayId": "pc540dca",
+    "relayInput": 1
    },
    {
     "roomId": "fb7su35f",
@@ -12442,7 +12444,7 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "j02a68g1",
+   "roomId": "fb7su35f",
    "wall": 3
   }
  }
