@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T08:34:43.003Z",
+ "savedAt": "2026-11-21T08:42:54.165Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2477,6 +2477,30 @@
     "exitZ": {
      "end": 2.18,
      "start": 1.66
+    }
+   },
+   {
+    "id": "iw8s4psf",
+    "name": "TRAKA TV ZID SIGNAL",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1150.5845533938714,
+      "y": 1087.824445683792
+     },
+     {
+      "x": 1296.5469147098984,
+      "y": 788.8852960326927
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "todo",
+    "exitZ": {
+     "start": 2.18,
+     "end": 1.66
     }
    }
   ],
@@ -5867,7 +5891,7 @@
     "type": "appliance",
     "xM": 3.2099999999999995,
     "zM": 1.56,
-    "note": "220cm od poda\n40cm od stropa\n\nostaviti extra kabela ako ce se kopcat vani ili unutra, plus rupa za van",
+    "note": "220cm od poda\n40cm od stropa\n\nostaviti extra kabela ako ce se kopcat vani ili unutra 2m, pa ako ce se kopcat se povuce unutra, plus rupa za van fi 80",
     "id": "gktbkynx",
     "label": "UR4",
     "appliance": "ac"
@@ -6309,7 +6333,6 @@
     "note": "",
     "id": "02tkzv80",
     "label": "S19",
-    "feedRelayId": "pkhlt7eu",
     "feedOutput": 1
    },
    {
@@ -6362,13 +6385,11 @@
     "zM": 1.28,
     "note": "ispred terase svjetlo",
     "host": "qo20jebm",
-    "switchKind": "tipkalo",
+    "switchKind": "obicni",
     "id": "j1hs17dn",
     "label": "P27",
     "slotOrder": 0,
     "modules": 2,
-    "relayId": "pkhlt7eu",
-    "relayInput": 1,
     "controls": [
      "wyacrqz8"
     ]
@@ -6379,7 +6400,7 @@
     "type": "switch",
     "xM": 0.51,
     "zM": 1.28,
-    "note": "led strop",
+    "note": "led traka strop",
     "host": "qo20jebm",
     "switchKind": "tipkalo",
     "id": "nmdyqoqt",
@@ -6391,18 +6412,6 @@
     "controls": [
      "q3un7yq8"
     ]
-   },
-   {
-    "roomId": "icogq6ir",
-    "wall": 1,
-    "type": "relay",
-    "xM": 0.51,
-    "zM": 1.28,
-    "note": "",
-    "host": "qo20jebm",
-    "relayModel": "zbminir2",
-    "id": "pkhlt7eu",
-    "label": "R13"
    },
    {
     "roomId": "icogq6ir",
@@ -7529,6 +7538,24 @@
     "note": "obje trake se stekaju na jedan utikac, i onda wago na obje.\n\nsignali idu uz kutiju gore do traka",
     "id": "fyeqxzxh",
     "label": "BL1"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 1,
+    "type": "switch",
+    "xM": 0.51,
+    "zM": 1.28,
+    "note": "led traka zid boravka",
+    "host": "qo20jebm",
+    "switchKind": "tipkalo",
+    "id": "zlw0ofk9",
+    "label": "P50",
+    "slotOrder": 3,
+    "relayId": "9z0ha08z",
+    "relayInput": 1,
+    "controls": [
+     "5vjr9ulh"
+    ]
    }
   ],
   "cables": [
@@ -12547,6 +12574,84 @@
     "via": [],
     "note": "",
     "id": "mepwp1uf"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "upravljački 2x0.75",
+    "from": {
+     "kind": "exit",
+     "conduitId": "saiv5f34",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "q3un7yq8"
+    },
+    "via": [
+     {
+      "xM": 2.18,
+      "zM": 1.55
+     },
+     {
+      "xM": 2.18,
+      "zM": 0.85
+     }
+    ],
+    "note": "",
+    "id": "xyey0ex3"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 1,
+    "type": "upravljački 2x0.75",
+    "from": {
+     "kind": "element",
+     "id": "qo20jebm"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "iw8s4psf",
+     "end": "start"
+    },
+    "via": [
+     {
+      "xM": 1.02,
+      "zM": 1.85
+     }
+    ],
+    "note": "",
+    "id": "hlw1n4d3"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "upravljački 2x0.75",
+    "from": {
+     "kind": "element",
+     "id": "5vjr9ulh"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "iw8s4psf",
+     "end": "end"
+    },
+    "via": [
+     {
+      "xM": 2.2,
+      "zM": 0.61
+     },
+     {
+      "xM": 2.23,
+      "zM": 0.87
+     },
+     {
+      "xM": 2.23,
+      "zM": 1.52
+     }
+    ],
+    "note": "",
+    "id": "6beb1jde"
    }
   ],
   "categories": [
