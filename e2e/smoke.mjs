@@ -792,6 +792,19 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   assert.deepEqual([gong2.g, gong2.d], [[], []], 'a gong over its own box with the relay inside wires without warnings')
   assert.ok(gong2.fromRelay, "the gong's L comes off the relay output in the same box")
 
+  // without the relay the push button rings the gong directly (classic bell), with no 'push button without relay' warning
+  const gong3 = await page.evaluate(() => { const E = window.__trasaEngine
+    const room = { id: 'rg3', name: 'R', points: [{ x: 0, y: 0 }, { x: 600, y: 0 }, { x: 600, y: 400 }, { x: 0, y: 400 }], walls: {} }
+    const e = (o) => ({ roomId: 'rg3', wall: 0, note: '', ...o }), el = (id) => ({ kind: 'element', id })
+    const cab = (id, type, f, t) => ({ id, roomId: 'rg3', wall: 0, type, from: f, to: t, via: [], note: '' })
+    const P = { ...window.__trasa.getState().project, rules: undefined, rooms: [room], conduits: [{ id: 'fd', name: 'DOLAZ', points: [{ x: 100, y: -50 }, { x: 100, y: 0 }], categoryId: 'dolaz', color: '#000' }],
+      elements: [e({ id: 'g', label: 'D1', type: 'modbox', modules: 2, xM: 1, zM: 2 }), e({ id: 'z', label: 'ZV1', type: 'gong', host: 'g', xM: 1, zM: 2 }),
+        e({ id: 'd', label: 'D2', type: 'modbox', modules: 2, xM: 3, zM: 1.3 }), e({ id: 't', label: 'P1', type: 'switch', switchKind: 'tipkalo', host: 'd', xM: 3, zM: 1.3, controls: ['z'] })],
+      cables: [cab('c0', 'NYM-J 3x2.5', { kind: 'exit', conduitId: 'fd', end: 'end' }, el('g')), cab('c2', 'NYM-J 3x1.5', el('g'), el('d'))] }
+    const warn = (j) => j.checks.filter((c) => c.level !== 'ok').map((c) => c.text)
+    return [warn(E.junctionFor(P.elements[0], P)), warn(E.junctionFor(P.elements[2], P))] })
+  assert.deepEqual(gong3, [[], []], 'a push button wired straight to a gong is fine')
+
   // a wall note: no wiring, no material line; selecting it draws its bubble without breaking the wall canvas
   const note = await page.evaluate(() => { let s = window.__trasa.getState(); const E = window.__trasaEngine
     const id = s.addElement({ roomId: s.project.rooms[0].id, wall: 0, type: 'note', xM: 1, zM: 1.6, note: 'komoda ispod TV-a' }); s = window.__trasa.getState()

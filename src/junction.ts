@@ -271,7 +271,9 @@ function switchSignals(sw: WallElement, p: Project, checks: Check[], usable: num
   }
   const lights = (sw.controls ?? []).map((id) => el(p, id)).filter((x): x is WallElement => !!x)
   if (!lights.length) checks.push({ level: 'warn', text: `Prekidač ${sw.label} ne pali nijedno svjetlo. Odaberi svjetla u svojstvima prekidača.` })
-  if (kind === 'tipkalo') checks.push({ level: 'warn', text: `${sw.label} je tipkalo bez releja: radi kao obični prekidač. Postavi relej (R) u dozu i tipkalo na njegov ulaz.` })
+  // a push button straight on a door chime is the classic bell: it rings while pressed
+  const onlyGongs = !!sw.controls?.length && sw.controls.every((id) => el(p, id)?.type === 'gong')
+  if (kind === 'tipkalo' && !onlyGongs) checks.push({ level: 'warn', text: `${sw.label} je tipkalo bez releja: radi kao obični prekidač. Postavi relej (R) u dozu i tipkalo na njegov ulaz.` })
   if (kind === 'obicni' || kind === 'tipkalo') return [{ terminal: 'L', note: 'dovod' }, { terminal: `SW:${sw.id}`, note: 'povratna' }]
   if (kind === 'serijski') {
     if (usable < 3) checks.push({ level: 'err', text: `Serijski prekidač ${sw.label} treba 3 žile bez PE (NYM-O 3×1,5 ili 5×1,5).` })
