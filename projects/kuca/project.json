@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T19:50:53.338Z",
+ "savedAt": "2026-11-21T19:53:16.266Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -7899,18 +7899,21 @@
     "id": "rpirakos",
     "label": "P54",
     "slotOrder": 0,
-    "modules": 2
+    "modules": 2,
+    "relayId": "3850vg3u",
+    "relayInput": 1
    },
    {
     "roomId": "akuvhdws",
     "wall": 6,
     "type": "modbox",
-    "xM": 1.58,
+    "xM": 1.55,
     "zM": 1.92,
     "note": "",
     "id": "9lvkvwh8",
     "label": "D80",
-    "modules": 2
+    "modules": 3,
+    "depth": "duboka"
    },
    {
     "roomId": "akuvhdws",
@@ -13724,23 +13727,6 @@
     "id": "bvu5956f"
    },
    {
-    "roomId": "xyw3llcm",
-    "wall": 0,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "element",
-     "id": "di6om0fe"
-    },
-    "to": {
-     "kind": "free",
-     "xM": 0,
-     "zM": 2.6
-    },
-    "via": [],
-    "note": "",
-    "id": "z3mz3qh0"
-   },
-   {
     "roomId": "akuvhdws",
     "wall": 6,
     "type": "NYM-J 3x1.5",
@@ -13915,8 +13901,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "akuvhdws",
-   "wall": 6
+   "roomId": "xyw3llcm",
+   "wall": 0
   }
  }
 }
