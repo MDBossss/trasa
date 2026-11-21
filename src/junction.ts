@@ -164,7 +164,7 @@ export function resolveCable(c: Cable, box: WallElement, p: Project): Omit<BoxCa
     else if (end.kind === 'corner') label = `kut ${end.corner + 1} → ?`
     far = { ...far, conduit: cd0 ?? far.conduit }
   }
-  if (cores.length === 0) role = 'lowv'
+  if (cores.length === 0 || buttonLead(c, p)) role = 'lowv'
   if (c.role && c.role !== 'auto') role = c.role
   return { cable: c, label, sub: c.type, role, cores, far }
 }
@@ -187,6 +187,19 @@ export function pulseChain(motor: WallElement, p: Project): Set<string> {
 // A LED strip with its own controller (Plus RGBW PM on the 24 V side): the supply stays live, the controller switches.
 const ledController = (led: WallElement, p: Project) => (led.type === 'ledpsu' ? p.elements.find((e) => e.host === led.id && e.type === 'relay' && RELAY_MODELS[relayModelOf(e)].dc) : undefined)
 // a push button on a 24 V controller input is a low-voltage pair, no 230 V in its frame
+// A NYM run as the push-button pair of a dimmed LED supply: it joins the supply and a box holding a button on that
+// supply's controller, while the supply gets its 230 V over another cable. Brown = +24, blue = input, green-yellow unused.
+export function buttonLead(c: Cable, p: Project): { psu: WallElement; ctl: WallElement; box: WallElement } | null {
+  if (isControlCable(c.type) || coreColors(c.type).length < 2) return null
+  const ends = cableEnds(c, p), psu = ends.find((e) => e?.type === 'ledpsu'), box = ends.find((e) => e && e.type !== 'ledpsu')
+  const ctl = psu ? ledController(psu, p) : undefined
+  if (!psu || !box || !ctl) return null
+  const onCtl = (b: WallElement | undefined) => !!b && p.elements.some((s) => s.type === 'switch' && s.relayId === ctl.id && s.host === b.id)
+  if (!onCtl(box)) return null
+  const chain = new Set(chainCables(c, p).map((x) => x.id))
+  const fedElsewhere = p.cables.some((x) => !chain.has(x.id) && isAtBox(x, psu) && !isControlCable(x.type) && !cableEnds(x, p).some((e) => e?.type === 'ledstrip' || (e && e.id !== psu.id && onCtl(e))))
+  return fedElsewhere ? { psu, ctl, box } : null
+}
 const lowVoltSwitch = (sw: WallElement, p: Project) => { const r = sw.relayId ? el(p, sw.relayId) : undefined; return !!r && RELAY_MODELS[relayModelOf(r)].dc }
 function lightTerminal(light: WallElement, p: Project): { id: string; by?: WallElement } {
   const ctl = ledController(light, p)
@@ -311,6 +324,12 @@ function leafWires(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallElem
       if (k) return [{ color: 'other', terminal: `DATA:${k.id}`, note: meta.wire }]
       if (box.type === 'modbox') checks.push({ cableId: bc.cable.id, level: 'warn', text: `${bc.label}: ${meta.port} kabel u dozi bez slobodnog modula; dodaj utičnicu vrste ${SOCKET_KINDS[dk].label}.` })
       return [{ color: 'other', terminal: null, note: `${meta.port}, prolazi` }]
+    }
+    const bl = buttonLead(bc.cable, p)
+    if (bl && bl.box.id === box.id) {
+      const sig = devicesIn(box, p).filter((d) => d.el.type === 'switch' && d.el.relayId === bl.ctl.id).flatMap((d) => switchSignals(d.el, p, [], Infinity))
+      if (sig.length > 2) checks.push({ cableId: bc.cable.id, level: 'err', text: `${bc.label}: ${sig.length / 2} tipkala na ${bl.ctl.label}, a ${bc.sub} nosi jedan par. Uzmi kabel s više žila.` })
+      return cores.map((c) => (c === 'brown' && sig[0] ? { color: c, terminal: sig[0].terminal, note: 'tipkalo, 24 V (+24)' } : c === 'blue' && sig[1] ? { color: c, terminal: sig[1].terminal, note: 'tipkalo, 24 V (ulaz)' } : park(c, 'ne koristi se (24 V)')))
     }
     return cores.map((c) => ({ color: c, terminal: null, note: 'slaba struja, prolazi' }))
   }
@@ -1215,6 +1234,12 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
       // NYM on 24 V: brown = +, blue = −, green-yellow stays unused
       const nym24 = (k: WireColor): Wire => (k === 'brown' ? v24(k, 0) : k === 'blue' ? v24(k, 1) : { color: k, terminal: 'PARK', note: 'ne koristi se (24 V)' })
       const lead24 = toStrip(c) || toPsu(c)
+      const bl = dimmed ? buttonLead(c, p) : null
+      if (bl) {
+        const sig = p.elements.filter((e) => e.type === 'switch' && e.relayId === ctl!.id && e.host === bl.box.id).flatMap((e) => switchSignals(e, p, [], Infinity))
+        const w: Wire[] = r.cores.map((k) => (k === 'brown' && sig[0] ? { color: k, terminal: sigTerm(sig[0].terminal), note: 'tipkalo +24 (s DC+)' } : k === 'blue' && sig[1] ? { color: k, terminal: sig[1].terminal, note: 'tipkalo → ulaz kontrolera' } : { color: k, terminal: 'PARK', note: 'ne koristi se (24 V)' }))
+        return { ...r, ...sideOf(r, el, p), wires: w }
+      }
       const wires: Wire[] = dm && dataKindOf(c.type) ? [{ color: 'other', terminal: dm.port, note: dm.wire }] : lead24 && !isControlCable(c.type) ? r.cores.map(nym24) : strip ? r.cores.map((k, i) => (isControlCable(c.type) ? v24(k, i) : { color: k, terminal: 'PARK', note: '230 V ne smije na traku' })) : r.cores.map((k) => {
         if (threePhase && (k === 'brown' || k === 'black' || k === 'grey')) { const n = k === 'brown' ? 1 : k === 'black' ? 2 : 3; return { color: k, terminal: `L${n}`, note: `faza L${n}` } }
         if (k === 'brown') return { color: k, terminal: 'L', note: el.type === 'light' || (el.type === 'ledpsu' && !ctl) ? 'faza sa prekidača / releja' : 'faza' }
@@ -1247,7 +1272,8 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
     if (kind !== 'hood' && c.far.place) checks.push({ level: 'warn', text: `${el.label}: ${ap.label.toLowerCase()} se napaja preko kutije ${c.far.place.label}. Uobičajeno je vlastiti krug ravno iz ormara.` })
   }
   // the button pair is low voltage: it gets its own control cable, never spare cores of a 230 V cable
-  if (ctl) for (const c of cables) if (!isControlCable(c.cable.type) && c.wires.some((w) => w.terminal?.startsWith('SI:'))) checks.push({ cableId: c.cable.id, level: 'warn', text: `${el.label}: tipkalo za ${ctl.label} (24 V) ide žilama kabela ${c.cable.type} uz 230 V. Povuci zaseban upravljački kabel (2×0,75) od tipkala do napajanja.` })
+  if (ctl) for (const c of cables) if (buttonLead(c.cable, p)) checks.push({ cableId: c.cable.id, level: 'ok', text: `${el.label}: ${c.cable.type} je kabel za tipkalo (24 V): smeđa +24, plava ulaz, žuto-zelena se ne spaja. Označi ga "24 V" na oba kraja.` })
+  if (ctl) for (const c of cables) if (!isControlCable(c.cable.type) && !buttonLead(c.cable, p) && c.wires.some((w) => w.terminal?.startsWith('SI:'))) checks.push({ cableId: c.cable.id, level: 'warn', text: `${el.label}: tipkalo za ${ctl.label} (24 V) ide žilama kabela ${c.cable.type} uz 230 V. Povuci zaseban upravljački kabel (2×0,75) od tipkala do napajanja.` })
   if (el.type === 'ledpsu') {
     const ss = stripsOf(el, p), w = ledWatts(el, p), need = psuWatts(w)
     const t = lightTerminal(el, p)
@@ -1264,7 +1290,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
     if (c.far.place && !el.feedRelayId) checks.push({ level: 'warn', text: `${el.label}: bojler se napaja preko kutije ${c.far.place.label}. Uobičajeno je vlastiti krug ravno iz ormara (bužir kategorije Dolaz ili kabel do ormara).` })
   }
   // a door unit may take power and pulse over two cables (L N PE + a control pair)
-  const power = cables.filter((c) => !isControlCable(c.cable.type) && !toStrip(c.cable))
+  const power = cables.filter((c) => !isControlCable(c.cable.type) && !toStrip(c.cable) && !buttonLead(c.cable, p))
   if (el.type === 'motor' && cables.length && !power.some((c) => c.cores.includes('brown'))) checks.push({ level: 'warn', text: `${el.label}: stiže samo upravljački kabel, nema napajanja (L N PE).` })
   if (power.length > 1) checks.push({ level: 'warn', text: `${el.label}: ${power.length} kabela na jednom uređaju; obično je jedan (ili provlačenje kroz dozu).` })
   const map = new Map<string, TerminalWire[]>()
