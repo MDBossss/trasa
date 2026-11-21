@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T10:42:38.819Z",
+ "savedAt": "2026-11-21T10:46:38.805Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -3344,7 +3344,7 @@
     "note": "",
     "id": "gzykrst0",
     "label": "V1",
-    "feedRelayId": "fhyg0oqp"
+    "feedRelayId": "2novwx3u"
    },
    {
     "roomId": "c2b55x6m",
@@ -3355,7 +3355,8 @@
     "note": "",
     "id": "gvhlwxp1",
     "label": "V2",
-    "feedRelayId": "x5r0u0de"
+    "feedRelayId": "2novwx3u",
+    "feedOutput": 2
    },
    {
     "roomId": "c2b55x6m",
@@ -3390,30 +3391,6 @@
     "label": "D4",
     "modules": 3,
     "depth": "duboka"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 2,
-    "type": "relay",
-    "xM": 2.12,
-    "zM": 1.91,
-    "note": "",
-    "host": "zipcv20q",
-    "relayModel": "gen4",
-    "id": "x5r0u0de",
-    "label": "R2"
-   },
-   {
-    "roomId": "c2b55x6m",
-    "wall": 2,
-    "type": "relay",
-    "xM": 2.12,
-    "zM": 1.91,
-    "note": "",
-    "host": "zipcv20q",
-    "relayModel": "gen4",
-    "id": "fhyg0oqp",
-    "label": "R3"
    },
    {
     "roomId": "c2b55x6m",
@@ -5556,7 +5533,7 @@
     "label": "P17",
     "slotOrder": 0,
     "modules": 2,
-    "relayId": "x5r0u0de",
+    "relayId": "0irscwbr",
     "relayInput": 1
    },
    {
@@ -5572,8 +5549,8 @@
     "label": "P18",
     "slotOrder": 1,
     "modules": 2,
-    "relayId": "fhyg0oqp",
-    "relayInput": 1
+    "relayId": "2novwx3u",
+    "relayInput": 2
    },
    {
     "roomId": "c2b55x6m",
@@ -7694,6 +7671,18 @@
     "note": "",
     "id": "9bymhov2",
     "label": "K37"
+   },
+   {
+    "roomId": "c2b55x6m",
+    "wall": 2,
+    "type": "relay",
+    "xM": 2.12,
+    "zM": 1.91,
+    "note": "",
+    "host": "zipcv20q",
+    "relayModel": "aqarat2",
+    "id": "2novwx3u",
+    "label": "R25"
    }
   ],
   "cables": [
@@ -13498,7 +13487,7 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "icogq6ir",
+   "roomId": "c2b55x6m",
    "wall": 1
   }
  }
