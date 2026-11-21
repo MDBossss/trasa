@@ -707,9 +707,9 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     out.nym = { t: nl.terminals.filter((x) => x.label !== '·').map((x) => x.label).sort(), level: nl.level, box: jd.cables.find((c) => c.cable.id === cs[1]).wires.map((w) => (w.terminal ? w.terminal.split(':')[0] + ':' + w.terminal.split(':').pop() : null)), boxWarn: jd.checks.filter((c) => c.level !== 'ok').map((c) => c.text) }
     const drop = new Set([n, r, d, t, ...cs]); s.patchProject({ cables: s.project.cables.filter((x) => !drop.has(x.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) })
     return out }, { box: ids.box })
-  assert.deepEqual(zg.t, ['DC+', 'DC−', 'L', 'N', 'PE', 'PUSH'], 'the push button shares DC+ and lands on PUSH, the supply stays live'); assert.equal(zg.level, 'ok')
+  assert.deepEqual(zg.t, ['DC+', 'DC−', 'GND', 'L', 'N', 'PE', 'PUSH'], 'the push button lands on the controller GND / PUSH (its own terminals), the supply stays live'); assert.equal(zg.level, 'ok')
   assert.ok(zg.warn, 'a 24 V button pair inside a 230 V cable is flagged')
-  assert.deepEqual(zg.nym.t, ['DC+', 'DC−', 'L', 'N', 'PE', 'PUSH'], 'a separate NYM 3×1,5 works as the button lead'); assert.equal(zg.nym.level, 'ok')
+  assert.deepEqual(zg.nym.t, ['DC+', 'DC−', 'GND', 'L', 'N', 'PE', 'PUSH'], 'a separate NYM 3×1,5 works as the button lead'); assert.equal(zg.nym.level, 'ok')
   assert.deepEqual(zg.nym.box, ['SI:1', 'SI:2', 'PARK:PARK'].map((x) => x === 'PARK:PARK' ? 'PARK:PARK' : x), 'in the button box: brown +24, blue input, green-yellow parked')
   assert.deepEqual(zg.nym.boxWarn, [], 'the button box has nothing missing')
 

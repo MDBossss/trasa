@@ -62,7 +62,8 @@ export type RelayModel = 'gen4' | 'gen4pm' | 'zbminir2' | 'rgbw' | 'aqarat2' | '
 // dry: relay contact is potential-free (I/O), usable as an impulse for a door unit
 // swLow: the button input is a low-voltage pair (S1/S2) instead of L-referenced SW
 // inPorts/outPorts name the terminals when they are not SW1…/O…; com: the dry outputs share this common
-export const RELAY_MODELS: Record<RelayModel, { label: string; inputs: number; outputs: number; needsN: boolean; dim: boolean; dc: boolean; dry: boolean; swLow: boolean; ports: string[]; wMm: number; hMm: number; inPorts?: string[]; outPorts?: string[]; com?: string }> = {
+// inCom: a DC controller's own button return (the button sits between it and the input), else the button takes +24 from DC+
+export const RELAY_MODELS: Record<RelayModel, { label: string; inputs: number; outputs: number; needsN: boolean; dim: boolean; dc: boolean; dry: boolean; swLow: boolean; ports: string[]; wMm: number; hMm: number; inPorts?: string[]; outPorts?: string[]; com?: string; inCom?: string }> = {
   zbminir2: { label: 'Sonoff ZBMINIR2 (Zigbee)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: false, swLow: true, ports: ['L', 'N', 'Lout', 'Nout', 'S1', 'S2'], wMm: 40, hMm: 33 },
   // switched output (phase on O) with power metering; for heavier loads such as a water heater
   gen4pm: { label: 'Shelly 1PM Gen4 (Zigbee, mjerenje, 16 A)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: false, swLow: false, ports: ['L', 'N', 'SW1', 'O'], wMm: 37, hMm: 42 },
@@ -70,7 +71,7 @@ export const RELAY_MODELS: Record<RelayModel, { label: string; inputs: number; o
   // two channels, one per door; without the red jumper L1/L2 close against LOUT (shared common)
   aqarat2: { label: 'Aqara Dual Relay T2 (Zigbee, suhi kontakt, 2 kanala)', inputs: 2, outputs: 2, needsN: true, dim: false, dc: false, dry: true, swLow: false, ports: ['L', 'N', 'S1', 'S2', 'LOUT', 'L1', 'L2'], wMm: 46, hMm: 48, inPorts: ['S1', 'S2'], outPorts: ['L1', 'L2'], com: 'LOUT' },
   // Zigbee single-colour dimmer on the 24 V side (Sunricher SR-ZG9101CS, sold as LED Connex): a push button dims it, no hub needed
-  zgdim: { label: 'LED Connex / Sunricher Zigbee dimmer (24 V, tipkalo)', inputs: 1, outputs: 1, needsN: false, dim: true, dc: true, dry: false, swLow: false, ports: ['V+', 'V−', 'PUSH'], wMm: 45, hMm: 25, inPorts: ['PUSH'] },
+  zgdim: { label: 'LED Connex / Sunricher Zigbee dimmer (24 V, tipkalo)', inputs: 1, outputs: 1, needsN: false, dim: true, dc: true, dry: false, swLow: false, ports: ['V+', 'V−', 'GND', 'PUSH'], wMm: 45, hMm: 25, inPorts: ['PUSH'], inCom: 'GND' },
   rgbw: { label: 'Shelly Plus RGBW PM (24 V)', inputs: 4, outputs: 4, needsN: true, dim: true, dc: true, dry: false, swLow: false, ports: ['L', 'N'], wMm: 37, hMm: 42 },
 }
 // older saves may carry models that are no longer offered; they land on the nearest current one
