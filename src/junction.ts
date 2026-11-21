@@ -1115,7 +1115,12 @@ export function junctionFor(box: WallElement, p: Project): Junction {
       if (id.startsWith('SW:?')) checks.push({ level: 'warn', text: `${meta.desc}: povratna nema para.` })
       else if (!LNPE.includes(baseId(id)) && !id.startsWith('PARK') && !id.startsWith('CH:') && n === 1) {
         const w = wires[0]
-        checks.push({ level: 'warn', text: `Stezaljka ${meta.label} (${meta.desc}): samo ${w.kind === 'core' ? w.cableLabel : `${w.deviceLabel} ${w.port}`}, nedostaje druga strana.` })
+        // a push button on a 24 V LED controller with no cable to the controller's supply: say so plainly, once per button
+        const [k0, rid, inN] = id.split(':'), ctl = k0 === 'SI' ? el(p, rid) : undefined
+        if (ctl && RELAY_MODELS[relayModelOf(ctl)].dc && w.kind === 'port') {
+          const at = ctl.host ? el(p, ctl.host) : undefined, head = `${w.deviceLabel}: tipkalo za ${ctl.label} (ulaz ${inN})`
+          if (!checks.some((c) => c.text.startsWith(head))) checks.push({ level: 'warn', text: `${head} nema kabel do ${at?.label ?? 'kontrolera'}. Povuci zaseban kabel za tipkalo (upravljački 2×0,75) od ove kutije do ${at?.label ?? 'napajanja'}, ne kroz 230 V kabel.` })
+        } else checks.push({ level: 'warn', text: `Stezaljka ${meta.label} (${meta.desc}): samo ${w.kind === 'core' ? w.cableLabel : `${w.deviceLabel} ${w.port}`}, nedostaje druga strana.` })
       }
       return { id, ...meta, wago, chained, wires, cap, through }
     })
