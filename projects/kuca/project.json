@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T09:18:59.182Z",
+ "savedAt": "2026-11-21T09:27:06.861Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -5623,7 +5623,8 @@
     "modules": 2,
     "controls": [
      "dxw24ie8"
-    ]
+    ],
+    "gapBefore": 1
    },
    {
     "roomId": "z6exkgda",
@@ -12774,8 +12775,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "icogq6ir",
-   "wall": 3
+   "roomId": "z6exkgda",
+   "wall": 2
   }
  }
 }
