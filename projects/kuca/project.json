@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T01:05:18.305Z",
+ "savedAt": "2026-11-21T01:06:55.350Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -7281,9 +7281,7 @@
     "id": "isyivqxi",
     "label": "P48",
     "slotOrder": 1,
-    "controls": [
-     "wwiibsi7"
-    ],
+    "controls": [],
     "relayId": "pc540dca",
     "relayInput": 1
    },
