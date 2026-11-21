@@ -63,6 +63,7 @@ pregledniku i vraćaju nakon osvježavanja.
     termostata nego zona, termostat bez kabela do razdjelnika.
     **Gong (J)**: zvono 230 V na ~2 m, spaja se kao svjetlo. Za obavijest na mobitel u dozu iza gonga relej Shelly 1 Gen4
     ("Napaja ga"), tipkalo vani na njegov ulaz (3×1,5: L, ulaz, PE), u Shellyju Auto OFF ~1 s.
+    Gong se može kliknuti i u modularnu dozu (zauzima 2M): tada je montiran preko nje, a doza nema okvir ni nosač.
     **Bilješka (I)**: žuta oznaka na zidu bez spojeva; tekst upišeš desno, klik na nju ga pokaže u oblačiću. Provjere: relej bez nule, relej u plitkoj dozi, kabel s
     premalo žila, izlaz releja bez kabela do svjetla, klasični prekidač na releju.
     **Vrata / motor (D)**: upravljačka jedinica rolo ili sekcijskih vrata; na njoj odaberi "Pali ga relej" (samo Shelly

@@ -215,7 +215,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       const name = e.target.name() || e.target.getParent()?.name() || ''
       const hit = elements.find((x) => x.id === name)
       // relays go into a box / frame / LED niche, buttons into a frame: click on the host places them inside
-      const canHost = hit && (elementType === 'relay' ? isPlace(hit) || hit.type === 'ledpsu' : (elementType === 'switch' || elementType === 'socket') && hit.type === 'modbox')
+      const canHost = hit && (elementType === 'relay' ? isPlace(hit) || hit.type === 'ledpsu' : (elementType === 'switch' || elementType === 'socket' || elementType === 'gong') && hit.type === 'modbox')
       if (canHost) { addElement({ roomId, wall: wall.i, type: elementType, xM: hit.xM, zM: hit.zM, note: '', host: hit.id, switchKind: placeKind, relayModel: elementType === 'relay' ? (hit.type === 'ledpsu' ? 'zgdim' : 'zbminir2') : undefined }); return }
       if (elementType === 'relay') { select(null); return }
       addElement({ roomId, wall: wall.i, type: elementType, xM: p.xM, zM: p.zM, note: '', switchKind: elementType === 'switch' ? placeKind : undefined })
@@ -471,6 +471,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
                             {h.type === 'switch' && h.switchKind === 'izmjenicni' && <Line points={[-2.2, 2.2, 2.2, -2.2]} stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.2)} lineCap="round" />}
                             {h.type === 'switch' && h.switchKind === 'krizni' && <Line points={[-2.2, 2.2, 2.2, -2.2, 0, 0, -2.2, -2.2, 2.2, 2.2]} stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.2)} lineCap="round" />}
                             {h.type === 'switch' && h.switchKind === 'serijski' && <Line points={[-2, 2, 0, -2, 2, 2]} stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.2)} lineCap="round" lineJoin="round" />}
+                            {h.type === 'gong' && <Arc innerRadius={0} outerRadius={3} angle={180} rotation={180} y={1.2} fill="none" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1)} />}
                             {h.type === 'socket' && !isData(h) && <Circle radius={2.2} fill="none" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1)} />}
                             {isData(h) && h.socketKind !== 'tv' && <Rect x={-2} y={-2.6} width={4} height={5.2} cornerRadius={0.6} fill="none" stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1)} />}
                             {h.socketKind === 'tv' && <Line points={[-2.4, -3.2, 0, -0.6, 2.4, -3.2, 0, -0.6, 0, 3.2]} stroke={hs ? '#1e88e5' : '#1f2430'} strokeWidth={px(1.1)} lineCap="round" lineJoin="round" />}

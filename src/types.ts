@@ -157,7 +157,8 @@ export function frameSlots(front: WallElement[], m: number): { starts: number[];
   const starts = front.map((e) => { pos += e.gapBefore ?? 0; const size = Math.max(1, modulesOf(e)); if ((pos % cols) + size > cols) pos += cols - (pos % cols); const st = pos; pos += size; return st })
   return { starts, used: pos }
 }
-export const modulesOf = (e: WallElement) => (e.type === 'socket' ? SOCKET_KINDS[e.socketKind ?? 'schuko'].modules : e.type === 'switch' ? (e.modules ?? 1) : 0)
+// a gong in a frame box covers it (2M on a round box); the box then needs no frame or carrier
+export const modulesOf = (e: WallElement) => (e.type === 'socket' ? SOCKET_KINDS[e.socketKind ?? 'schuko'].modules : e.type === 'switch' ? (e.modules ?? 1) : e.type === 'gong' ? 2 : 0)
 
 // Placed on a wall: x from the left (inside view), z from the floor, metres.
 export interface WallElement {

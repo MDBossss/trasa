@@ -133,7 +133,7 @@ export const useStore = create<State>()(
           const n = Math.max(0, ...s.project.elements.map((x) => (x.label.startsWith(pre) ? Number(x.label.slice(pre.length)) : NaN)).filter((v) => Number.isInteger(v))) + 1
           const label = e.label ?? `${pre}${n}`
           let elements = [...s.project.elements, { ...e, id, label }]
-          if (e.host && (e.type === 'switch' || e.type === 'socket')) elements = placeInFrame(elements, e.host, id)
+          if (e.host && (e.type === 'switch' || e.type === 'socket' || e.type === 'gong')) elements = placeInFrame(elements, e.host, id)
           return { project: { ...s.project, elements }, selectedId: id }
         })
         return id

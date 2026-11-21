@@ -407,8 +407,9 @@ function sideOf(bc: Omit<BoxCable, 'wires' | 'side' | 'order'>, box: WallElement
 // Devices sitting inside a place: relays and buttons with host = place.
 export function devicesIn(place: WallElement, p: Project): Device[] {
   // front elements in their frame order (left → right), relays after them
-  return [...hostedFront(p.elements, place.id).filter((e) => e.type === 'switch' || e.type === 'socket'), ...p.elements.filter((e) => e.host === place.id && e.type === 'relay')]
+  return [...hostedFront(p.elements, place.id).filter((e) => e.type === 'switch' || e.type === 'socket' || e.type === 'gong'), ...p.elements.filter((e) => e.host === place.id && e.type === 'relay')]
     .map((e) => {
+      if (e.type === 'gong') return { el: e, label: `${e.label} gong`, ports: ['L', 'N', 'PE'], wMm: 30, hMm: 16, kind: 'terminal' as const }
       if (e.type === 'relay') {
         const m = RELAY_MODELS[relayModelOf(e)]
         return { el: e, label: `${e.label} ${m.label}`, ports: m.ports, wMm: Math.max(37, m.ports.length * 7), hMm: 14, kind: 'relay' as const }
@@ -422,6 +423,12 @@ export function devicesIn(place: WallElement, p: Project): Device[] {
 type PortMember = { port: string; terminal: string; color: WireColor; note?: string }
 function devicePorts(d: Device, p: Project, checks: Check[]): PortMember[] {
   const out: PortMember[] = []
+  if (d.el.type === 'gong') {
+    // a gong mounted over its box: wired like a light from the relay output or switch return in that box
+    const t = lightTerminal(d.el, p)
+    if (!t.by) checks.push({ level: 'warn', text: `${d.el.label}: gong nitko ne pali. Odaberi relej ("Napaja ga") ili ga označi na prekidaču.` })
+    return [{ port: 'L', terminal: t.id, color: 'brown', note: 'faza sa releja / prekidača' }, { port: 'N', terminal: 'N', color: 'blue' }, { port: 'PE', terminal: 'PE', color: 'gnye' }]
+  }
   if (d.kind === 'relay') {
     const m = RELAY_MODELS[relayModelOf(d.el)]
     out.push({ port: 'L', terminal: 'L', color: 'brown' })

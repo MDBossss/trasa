@@ -64,6 +64,8 @@ export function bomFor(p: Project, roomId: string | null): BomLine[] {
         const m = e.modules ?? 3
         add(out, 'Doze i kutije', `Doza modularna ${frameName(m)}${m === 3 ? ' (TEM PM3)' : m === 4 ? ' (TEM PM4)' : m === 7 ? (e.depth === 'duboka' ? ' (TEM PM7-65)' : ' (TEM PM7)') : ''}${depth}`, 'kom', 1)
         const f = TEM_FRAME[m]
+        // a gong mounted over the box covers it: no frame, carrier or blanks
+        if (p.elements.some((x) => x.host === e.id && x.type === 'gong')) break
         if (m === 14) { add(out, 'Dekorativno', 'Okvir LINE 2×7M (dvoredni, provjeri šifru)', 'kom', 1); add(out, 'Dekorativno', 'Nosač 2×7M', 'kom', 1) }
         else if (f) { add(out, 'Dekorativno', `${temCode(f.frame)} · okvir LINE ${m}M`, 'kom', 1); add(out, 'Dekorativno', `${temCode(f.carrier, false)} · ${f.carrierName}`, 'kom', 1) }
         else add(out, 'Dekorativno', `Nosač + okvir ${m}M`, 'kom', 1)
