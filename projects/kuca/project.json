@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T19:53:16.266Z",
+ "savedAt": "2026-11-21T19:53:59.102Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -7896,6 +7896,7 @@
     "zM": 1.39,
     "note": "",
     "host": "di6om0fe",
+    "switchKind": "tipkalo",
     "id": "rpirakos",
     "label": "P54",
     "slotOrder": 0,
