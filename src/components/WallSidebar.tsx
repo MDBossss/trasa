@@ -23,7 +23,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
   const project = useStore((s) => s.project)
   const selectedId = useStore((s) => s.selectedId)
   const { select, setView, setWallPhoto, updateRoom, updateElement, updateCable, addCable, removeSelected, setWallTool } = useStore.getState()
-  const allLights = project.elements.filter((e) => e.type === 'light' || e.type === 'ledpsu')
+  const allLights = project.elements.filter((e) => e.type === 'light' || e.type === 'ledpsu' || e.type === 'gong')
   const roomLights = allLights.filter((e) => e.roomId === room.id)
   const relays = project.elements.filter((e) => e.type === 'relay')
   const roomName = (id: string) => project.rooms.find((r) => r.id === id)?.name ?? '?'
@@ -194,7 +194,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
               </div>
             </>
           )}
-          {(el.type === 'light' || el.type === 'ledpsu' || el.type === 'boiler') && (
+          {(el.type === 'light' || el.type === 'ledpsu' || el.type === 'boiler' || el.type === 'gong') && (
             <>
               <label>
                 Napaja ga
@@ -227,6 +227,9 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
               </label>
               <p className="muted">Visina je sredina racka: s 9U na 1,75 m donji rub je na 1,50 m, gornji na 2,00 m. Struju mu daj dvostrukom utičnicom pored njega (10–15 cm od ruba, da ne smeta vratima), na vlastitom krugu 3×2,5 / B16. UTP bužiri ulaze odozgo.</p>
             </>
+          )}
+          {el.type === 'gong' && (
+            <p className="muted">Spaja se kao svjetlo. Za obavijest na mobitel u dozu iza gonga stavi relej <b>Shelly 1 Gen4</b> ("Napaja ga"), tipkalo vani na njegov ulaz i u Shellyju uključi <b>Auto OFF ~1 s</b>. Tipkalo bez lampice (lampica na ulazu releja zna sama okinuti). Doza iza gonga duboka Ø60 na ~2 m; gong se montira nakon bojanja.</p>
           )}
           {el.type === 'boiler' && (
             <p className="muted">Fiksni priključak bez utikača: kabel <b>3×2,5</b> na vlastiti krug (<b>B16</b>, FID 30 mA), ravno iz ormara. Na zidu podžbukna priključna kutija s izvodom kabela; kod bojlera u kupaoni po želji dvopolni prekidač (TEM SM20) da se isključe i faza i nula.</p>
@@ -375,7 +378,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
             </label>
           )}
           {el.type === 'box' && <button className="primary" onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori kutiju (spojevi)</button>}
-          {(el.type === 'light' || el.type === 'ledpsu' || el.type === 'ledstrip' || el.type === 'ufh' || el.type === 'thermostat' || el.type === 'motor' || el.type === 'kip' || el.type === 'boiler' || el.type === 'appliance' || (el.type === 'socket' && !el.host)) && <button className="primary" onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori spoj (koje žile kamo)</button>}
+          {(el.type === 'light' || el.type === 'gong' || el.type === 'ledpsu' || el.type === 'ledstrip' || el.type === 'ufh' || el.type === 'thermostat' || el.type === 'motor' || el.type === 'kip' || el.type === 'boiler' || el.type === 'appliance' || (el.type === 'socket' && !el.host)) && <button className="primary" onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori spoj (koje žile kamo)</button>}
           {el.host && <div className="stat"><span>U</span><b>{hostLabel(el.host)}</b></div>}
           <div className="field-row" hidden={!!el.host}>
             <label>Od lijevo (m) <input type="number" step={0.01} value={el.xM} onChange={(e) => updateElement(el.id, { xM: +e.target.value || 0 })} /></label>

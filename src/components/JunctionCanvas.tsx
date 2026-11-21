@@ -336,7 +336,7 @@ function roleShort(c: BoxCable) {
   if (c.role === 'lowv' && /koaks|coax|rg-?6/i.test(c.sub)) return 'antena'
   // name the far end by what it is when the wiring role is borrowed (a heater on a relay is wired like a light)
   const far = c.far.element?.type
-  const byType: Record<string, string> = { boiler: 'bojler', appliance: 'uređaj', ledpsu: 'LED napajanje', ledstrip: 'LED 24 V', thermostat: 'termostat', ufh: 'razdjelnik podnog', motor: 'vrata' }
+  const byType: Record<string, string> = { boiler: 'bojler', appliance: 'uređaj', ledpsu: 'LED napajanje', ledstrip: 'LED 24 V', thermostat: 'termostat', ufh: 'razdjelnik podnog', motor: 'vrata', gong: 'gong' }
   if (far && byType[far] && c.role !== 'feed' && c.role !== 'pass') return c.role === 'light' && far === 'boiler' ? 'bojler (s releja)' : byType[far]
   return ({ feed: 'dolaz', pass: 'prolaz', socket: 'utičnica', light: 'svjetlo', motor: 'vrata', switch: 'prekidač', lowv: 'slaba struja', earth: 'uzemljenje', unknown: '?' } as Record<string, string>)[c.role]
 }

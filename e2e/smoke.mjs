@@ -761,6 +761,21 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     return { before, after: hit(E.junctionFor(Q.elements[0], Q)) } })
   assert.deepEqual(ded, { before: { box: true, boiler: true }, after: false }, 'a heater circuit feeding a socket is flagged; alone it is not')
 
+  // a gong on a Shelly 1 Gen4 in its box, the outdoor push button on the relay input over 3×1,5: wired like a light
+  const gong = await page.evaluate(() => { const E = window.__trasaEngine
+    const room = { id: 'rg', name: 'R', points: [{ x: 0, y: 0 }, { x: 600, y: 0 }, { x: 600, y: 400 }, { x: 0, y: 400 }], walls: {} }
+    const e = (o) => ({ roomId: 'rg', wall: 0, note: '', ...o }), el = (id) => ({ kind: 'element', id })
+    const cab = (id, type, f, t) => ({ id, roomId: 'rg', wall: 0, type, from: f, to: t, via: [], note: '' })
+    const P = { ...window.__trasa.getState().project, rules: undefined, rooms: [room], conduits: [{ id: 'fd', name: 'DOLAZ', points: [{ x: 100, y: -50 }, { x: 100, y: 0 }], categoryId: 'dolaz', color: '#000' }],
+      elements: [e({ id: 'k', label: 'K1', type: 'box', xM: 1, zM: 2.3 }), e({ id: 'r1', label: 'R1', type: 'relay', relayModel: 'gen4', host: 'k', xM: 1, zM: 2.3 }), e({ id: 'g', label: 'ZV1', type: 'gong', xM: 2, zM: 2, feedRelayId: 'r1', feedOutput: 1 }),
+        e({ id: 'd', label: 'D1', type: 'modbox', modules: 1, xM: 3, zM: 1.3 }), e({ id: 't', label: 'P1', type: 'switch', switchKind: 'tipkalo', host: 'd', xM: 3, zM: 1.3, relayId: 'r1', relayInput: 1 })],
+      cables: [cab('c0', 'NYM-J 3x2.5', { kind: 'exit', conduitId: 'fd', end: 'end' }, el('k')), cab('c1', 'NYM-J 3x1.5', el('k'), el('g')), cab('c2', 'NYM-J 3x1.5', el('k'), el('d'))] }
+    const warn = (j) => j.checks.filter((c) => c.level !== 'ok').map((c) => c.text)
+    const jk = E.junctionFor(P.elements[0], P), jd = E.junctionFor(P.elements[3], P), jg = E.leafJunctionFor(P.elements[2], P)
+    return { k: warn(jk), d: warn(jd), g: warn(jg), gT: jg.terminals.map((x) => x.label).sort(), toGong: jk.cables.find((c) => c.cable.id === 'c1').wires.map((w) => w.terminal.split(':')[0]) } })
+  assert.deepEqual([gong.k, gong.d, gong.g], [[], [], []], 'a gong on a relay with an outdoor push button wires without warnings')
+  assert.deepEqual(gong.gT, ['L', 'N', 'PE']); assert.deepEqual(gong.toGong, ['O', 'N', 'PE'], 'the gong takes the relay output')
+
   // a wall note: no wiring, no material line; selecting it draws its bubble without breaking the wall canvas
   const note = await page.evaluate(() => { let s = window.__trasa.getState(); const E = window.__trasaEngine
     const id = s.addElement({ roomId: s.project.rooms[0].id, wall: 0, type: 'note', xM: 1, zM: 1.6, note: 'komoda ispod TV-a' }); s = window.__trasa.getState()

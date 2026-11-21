@@ -62,6 +62,7 @@ export const Icon = {
   modbox: I('<rect x="2" y="7" width="20" height="10" rx="1"/><path d="M8 7v10M14 7v10"/>'),
   relay: I('<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 19v2M12 19v2M16 19v2M8 9h8M8 13h5"/>'),
   led: I('<path d="M3 8h18v4H3z"/><path d="M6 12v3M12 12v3M18 12v3"/><path d="M4 19h16"/>'),
+  bell: I('<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/>'),
   note: I('<path d="M5 3h14v13l-5 5H5z"/><path d="M14 21v-5h5"/><path d="M9 8h6M9 12h4"/>'),
   ufh: I('<rect x="3" y="5" width="18" height="6" rx="1"/><path d="M6 11v4M10 11v4M14 11v4M18 11v4"/><path d="M5 19c2-2 4 2 6 0s4 2 6 0 2-1 2-1"/>'),
   thermostat: I('<circle cx="12" cy="12" r="9"/><path d="M12 7v6"/><circle cx="12" cy="15" r="1.5"/>'),

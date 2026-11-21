@@ -61,6 +61,8 @@ pregledniku i vraćaju nakon osvježavanja.
     **Termostat (Q)**: doza Ø60 duboka na 1,4 m; žičani dobiva 5×1,5 bužirom do razdjelnika (L N PE iz kutije, crna =
     izlaz na svoju zonu Z1, Z2…), Zigbee termostat taj kabel drži kao rezervu. Provjere: premalo žila, više žičanih
     termostata nego zona, termostat bez kabela do razdjelnika.
+    **Gong (J)**: zvono 230 V na ~2 m, spaja se kao svjetlo. Za obavijest na mobitel u dozu iza gonga relej Shelly 1 Gen4
+    ("Napaja ga"), tipkalo vani na njegov ulaz (3×1,5: L, ulaz, PE), u Shellyju Auto OFF ~1 s.
     **Bilješka (I)**: žuta oznaka na zidu bez spojeva; tekst upišeš desno, klik na nju ga pokaže u oblačiću. Provjere: relej bez nule, relej u plitkoj dozi, kabel s
     premalo žila, izlaz releja bez kabela do svjetla, klasični prekidač na releju.
     **Vrata / motor (D)**: upravljačka jedinica rolo ili sekcijskih vrata; na njoj odaberi "Pali ga relej" (samo Shelly

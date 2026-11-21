@@ -20,6 +20,7 @@ export const WALL_TOOLS: WallToolDef[] = [
   { id: 'element', type: 'ledstrip', label: ELEMENT_META.ledstrip.label, key: 'E', icon: 'led', hint: 'Klik postavi početak LED trake (tu ulazi dovod); dužinu i stranu biraš desno. Kabelom LED 24V 2x1.5 spoji je na LED napajanje (N)' },
   { id: 'element', type: 'ufh', label: ELEMENT_META.ufh.label, key: 'W', icon: 'ufh', hint: 'Klik postavi razdjelnik podnog grijanja s upravljačkom kutijom: 230 V 3×1,5, a od svakog žičanog termostata 5×1,5' },
   { id: 'element', type: 'thermostat', label: ELEMENT_META.thermostat.label, key: 'Q', icon: 'thermostat', hint: 'Klik postavi sobni termostat (doza Ø60 duboka, 1,4 m); kabel 5×1,5 bužirom do razdjelnika podnog, ili ga označi kao Zigbee' },
+  { id: 'element', type: 'gong', label: ELEMENT_META.gong.label, key: 'J', icon: 'bell', hint: 'Klik postavi gong (zvono 230 V, ~2 m); spaja se kao svjetlo. Za obavijest na mobitel: Shelly 1 Gen4 u dozu, tipkalo vani na njegov ulaz' },
   { id: 'element', type: 'note', label: ELEMENT_META.note.label, key: 'I', icon: 'note', hint: 'Klik postavi bilješku na zid; tekst upiši desno, a klik na nju ga pokaže na zidu' },
   { id: 'element', type: 'motor', label: ELEMENT_META.motor.label, key: 'D', icon: 'motor', hint: 'Klik postavi upravljačku jedinicu vrata (rolo / sekcijska): L N PE + impuls sa Shellyja' },
   { id: 'element', type: 'boiler', label: ELEMENT_META.boiler.label, key: 'B', icon: 'boiler', hint: 'Klik postavi bojler: fiksni priključak L N PE, kabel 3×2,5 na vlastiti krug' },
@@ -30,7 +31,7 @@ export const WALL_TOOLS: WallToolDef[] = [
 
 // grouped by name, not position, so a new tool can never fall out of the rail
 const key = (t: WallToolDef) => (t.id === 'element' ? `${t.type}${t.switchKind ? `:${t.switchKind}` : ''}` : t.id)
-const GROUP_KEYS = [['select', 'pan', 'cable'], ['box', 'modbox', 'socket', 'switch', 'switch:tipkalo', 'light'], ['relay', 'ledpsu', 'ledstrip', 'motor', 'boiler', 'appliance'], ['ufh', 'thermostat'], ['panel', 'rack', 'kip', 'note']]
+const GROUP_KEYS = [['select', 'pan', 'cable'], ['box', 'modbox', 'socket', 'switch', 'switch:tipkalo', 'light'], ['relay', 'ledpsu', 'ledstrip', 'motor', 'boiler', 'appliance', 'gong'], ['ufh', 'thermostat'], ['panel', 'rack', 'kip', 'note']]
 const GROUPS: number[][] = GROUP_KEYS.map((g) => g.map((k) => WALL_TOOLS.findIndex((t) => key(t) === k)).filter((i) => i >= 0))
 const rest = WALL_TOOLS.map((_, i) => i).filter((i) => !GROUPS.flat().includes(i))
 if (rest.length) GROUPS.push(rest)

@@ -119,7 +119,7 @@ function follow(p: Project, c: Cable, end: CableEnd, hops = 0): { end: CableEnd;
 function roleOfElement(e: WallElement): Role {
   switch (e.type) {
     case 'socket': return 'socket'
-    case 'light': case 'ledpsu': return 'light'
+    case 'light': case 'ledpsu': case 'gong': return 'light'
     case 'ledstrip': return 'lowv'
     case 'ufh': return 'socket'
     case 'thermostat': return 'switch'
@@ -842,7 +842,7 @@ export function sharedDedicated(p: Project) {
     const others: WallElement[] = []
     for (const e of ends.values()) {
       if (heavy(e)) continue
-      if (['socket', 'light', 'ledpsu', 'motor', 'appliance'].includes(e.type)) others.push(e)
+      if (['socket', 'light', 'ledpsu', 'motor', 'appliance', 'gong'].includes(e.type)) others.push(e)
       else if (isPlace(e) && powerAt(e).length && powerAt(e).every((c) => circ.byCable.get(c.id)?.id === k)) others.push(...p.elements.filter((h) => h.host === e.id && h.type === 'socket'))
     }
     if (others.length) out.set(k, { name, loads, others })
@@ -1213,7 +1213,7 @@ export function allJunctions(p: Project): Junction[] {
 }
 
 // A light, a door unit or a stand-alone socket: one terminal block (klema) and the cable's cores going straight onto it.
-export const LEAF_TYPES: ElementType[] = ['light', 'motor', 'socket', 'kip', 'boiler', 'appliance', 'ledpsu', 'ledstrip', 'ufh', 'thermostat']
+export const LEAF_TYPES: ElementType[] = ['light', 'motor', 'socket', 'kip', 'boiler', 'appliance', 'ledpsu', 'ledstrip', 'ufh', 'thermostat', 'gong']
 // Underfloor heating: a wired thermostat gets L N PE from the manifold's control box and returns its output on one zone
 export const thermostatsOf = (ufh: WallElement, p: Project) => p.elements.filter((e) => e.type === 'thermostat' && p.cables.some((c) => isAtBox(c, e) && cableEnds(c, p).some((x) => x?.id === ufh.id)))
 export const manifoldsOf = (ts: WallElement, p: Project) => p.elements.filter((e) => e.type === 'ufh' && p.cables.some((c) => isAtBox(c, ts) && cableEnds(c, p).some((x) => x?.id === e.id)))
@@ -1252,7 +1252,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   const out24 = strip || (el.type === 'ledpsu' && p.cables.some((c) => isAtBox(c, el) && (toStrip(c) || (isControlCable(c.type) && !ctl))))
   if (out24) { portTerm['V+'] = 'V+'; portTerm['V−'] = 'V-' }
   const ports = strip ? ['V+', 'V−'] : el.type === 'motor' ? ['L', 'N', 'PE', 'IMP 1', 'IMP 2'] : dm ? [dm.port] : threePhase ? ['L1', 'L2', 'L3', 'N', 'PE'] : ['L', 'N', 'PE', ...Object.keys(portTerm)]
-  const name = el.type === 'ledpsu' ? 'utičnica za napajanje LED trake' : strip ? 'LED traka' : el.type === 'light' ? 'svjetiljka' : el.type === 'motor' ? 'upravljačka jedinica' : el.type === 'boiler' ? 'bojler, priključna stezaljka' : ap ? `${ap.label.toLowerCase()}, priključna stezaljka` : dm ? dm.name : 'utičnica'
+  const name = el.type === 'ledpsu' ? 'utičnica za napajanje LED trake' : strip ? 'LED traka' : el.type === 'gong' ? 'gong' : el.type === 'light' ? 'svjetiljka' : el.type === 'motor' ? 'upravljačka jedinica' : el.type === 'boiler' ? 'bojler, priključna stezaljka' : ap ? `${ap.label.toLowerCase()}, priključna stezaljka` : dm ? dm.name : 'utičnica'
   const device: Device = { el, label: `${el.label} ${name}`, ports, wMm: Math.max(24, ports.length * 8), hMm: 16, kind: 'terminal' }
   const pulse = el.type === 'motor' ? pulseChain(el, p) : new Set<string>()
   const cables: BoxCable[] = p.cables
@@ -1272,7 +1272,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
       }
       const wires: Wire[] = dm && dataKindOf(c.type) ? [{ color: 'other', terminal: dm.port, note: dm.wire }] : lead24 && !isControlCable(c.type) ? r.cores.map(nym24) : strip ? r.cores.map((k, i) => (isControlCable(c.type) ? v24(k, i) : { color: k, terminal: 'PARK', note: '230 V ne smije na traku' })) : r.cores.map((k) => {
         if (threePhase && (k === 'brown' || k === 'black' || k === 'grey')) { const n = k === 'brown' ? 1 : k === 'black' ? 2 : 3; return { color: k, terminal: `L${n}`, note: `faza L${n}` } }
-        if (k === 'brown') return { color: k, terminal: 'L', note: el.type === 'light' || (el.type === 'ledpsu' && !ctl) ? 'faza sa prekidača / releja' : 'faza' }
+        if (k === 'brown') return { color: k, terminal: 'L', note: el.type === 'light' || el.type === 'gong' || (el.type === 'ledpsu' && !ctl) ? 'faza sa prekidača / releja' : 'faza' }
         if (k === 'blue') return { color: k, terminal: 'N' }
         if (k === 'gnye') return { color: k, terminal: 'PE' }
         const i = spare.indexOf(k)
