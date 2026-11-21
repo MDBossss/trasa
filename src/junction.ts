@@ -1292,6 +1292,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
   }
   // a door unit may take power and pulse over two cables (L N PE + a control pair)
   const power = cables.filter((c) => !isControlCable(c.cable.type) && !toStrip(c.cable) && !buttonLead(c.cable, p))
+  if (el.type === 'ledpsu' && cables.length && !power.length) checks.push({ level: 'warn', text: `${el.label}: napajanje nema 230 V. Dovedi kabel (L N PE) s prekidača, releja ili kutije${ctl ? ' (s kontrolerom: stalna faza)' : ''}.` })
   if (el.type === 'motor' && cables.length && !power.some((c) => c.cores.includes('brown'))) checks.push({ level: 'warn', text: `${el.label}: stiže samo upravljački kabel, nema napajanja (L N PE).` })
   if (power.length > 1) checks.push({ level: 'warn', text: `${el.label}: ${power.length} kabela na jednom uređaju; obično je jedan (ili provlačenje kroz dozu).` })
   const map = new Map<string, TerminalWire[]>()
