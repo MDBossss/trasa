@@ -823,6 +823,34 @@ function isFed(place: WallElement, p: Project, seen = new Set<string>()): boolea
 // Which supply each cable's L and N belong to. Every feed cable starts a circuit; a cable gets the circuit
 // whose feed is nearest over the box graph (ties are reported); a cable's own "circuit" setting wins.
 export interface CircuitInfo { id: string; name: string; tie: boolean }
+// A circuit meant for one heavy load (water heater, hob, oven, A/C) that also reaches sockets or lights: switching that
+// breaker off for the heater kills them too, and the heater shares its 16 A. Sockets count where every power cable of
+// their frame is on that circuit; lights and other loads where a cable of that circuit ends at them.
+const dedicatedCache = new WeakMap<Project, Map<string, { name: string; loads: WallElement[]; others: WallElement[] }>>()
+export function sharedDedicated(p: Project) {
+  const hit = dedicatedCache.get(p)
+  if (hit) return hit
+  const circ = circuitsOf(p), out = new Map<string, { name: string; loads: WallElement[]; others: WallElement[] }>()
+  const heavy = (e: WallElement) => e.type === 'boiler' || (e.type === 'appliance' && (e.appliance ?? 'hob') !== 'hood')
+  const powerAt = (pl: WallElement) => p.cables.filter((c) => isAtBox(c, pl) && coreColors(c.type).length >= 3 && !isControlCable(c.type))
+  for (const [k, name] of circ.names) {
+    const cs = p.cables.filter((c) => circ.byCable.get(c.id)?.id === k)
+    const ends = new Map<string, WallElement>()
+    for (const c of cs) for (const e of cableEnds(c, p)) if (e) ends.set(e.id, e)
+    const loads = [...ends.values()].filter(heavy)
+    if (!loads.length) continue
+    const others: WallElement[] = []
+    for (const e of ends.values()) {
+      if (heavy(e)) continue
+      if (['socket', 'light', 'ledpsu', 'motor', 'appliance'].includes(e.type)) others.push(e)
+      else if (isPlace(e) && powerAt(e).length && powerAt(e).every((c) => circ.byCable.get(c.id)?.id === k)) others.push(...p.elements.filter((h) => h.host === e.id && h.type === 'socket'))
+    }
+    if (others.length) out.set(k, { name, loads, others })
+  }
+  dedicatedCache.set(p, out)
+  return out
+}
+const dedicatedText = (d: { name: string; loads: WallElement[]; others: WallElement[] }) => `Krug ${d.name} je za ${d.loads.map((x) => x.label).join(', ')} (vlastiti krug), a napaja i ${d.others.map((x) => x.label).join(', ')}. Na kabelima prema njima odaberi drugi krug ("Krug" u svojstvima kabela) ili ih napoji s drugog kruga.`
 const circuitCache = new WeakMap<Project, { byCable: Map<string, CircuitInfo>; names: Map<string, string>; dist: Map<string, Map<string, number>>; feedCables: Set<string>; withSockets: Set<string>; socketPath: Set<string> }>()
 export function circuitsOf(p: Project) {
   const hit = circuitCache.get(p)
@@ -1016,6 +1044,7 @@ export function junctionFor(box: WallElement, p: Project): Junction {
   // two or more circuits in this box: each keeps its own L and N (PE stays common)
   const circ = circuitsOf(p)
   const circOf = (bc: BoxCable) => (bc.role === 'lowv' || bc.role === 'earth' ? undefined : circ.byCable.get(bc.cable.id))
+  for (const bc of cables) if (circ.feedCables.has(bc.cable.id)) { const d = sharedDedicated(p).get(circOf(bc)?.id ?? ''); if (d) checks.push({ cableId: bc.cable.id, level: 'err', text: dedicatedText(d) }) }
   const here = new Map<string, string>()
   for (const bc of cables) { const c = circOf(bc); if (c) here.set(c.id, c.name) }
   const multi = here.size > 1
@@ -1281,6 +1310,7 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
     if (!t.by) checks.push({ level: 'warn', text: `${el.label}: traku nitko ne pali. Označi je na prekidaču ("Pali svjetla"), odaberi relej ("Napaja ga") ili u nju stavi LED regulator.` })
     checks.push({ level: 'ok', text: `${el.label}: ${ss.length ? `${ss.map((x) => x.label).join(' + ')} = ${w} W` : `${String(el.ledM ?? 5).replace('.', ',')} m × ${el.ledWpm ?? 10} W/m = ${w} W`}, napajanje ${el.ledV ?? 24} V od barem ${need} W. ${ctl ? `Utičnica stalno pod naponom, pali ${ctl.label} na 24 V strani.` : `Utičnica na prekidaču: ${t.by ? t.by.label : '?'} pali fazu, napajanje i traka se pale s njom.`}` })
   }
+  if (el.type === 'boiler' || (ap && (el.appliance ?? 'hob') !== 'hood')) for (const bc of cables) { const d = sharedDedicated(p).get(circuitsOf(p).byCable.get(bc.cable.id)?.id ?? ''); if (d && !checks.some((c) => c.text === dedicatedText(d))) checks.push({ level: 'err', text: dedicatedText(d) }) }
   if (el.type === 'boiler' && el.feedRelayId) {
     const r = p.elements.find((x) => x.id === el.feedRelayId)
     if (r && relayModelOf(r) !== 'gen4pm') checks.push({ level: 'warn', text: `${el.label}: bojler (~9 A satima) pali ${r.label}. Za trajno opterećenje uzmi Shelly 1PM Gen4 ili sklopnik u ormaru.` })

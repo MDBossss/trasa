@@ -670,7 +670,8 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
     const c = s.addCable({ roomId: room, wall: 0, type: 'NYM-J 3x1.5', from: { kind: 'element', id: box }, to: { kind: 'element', id: a }, via: [], note: '' }); s = window.__trasa.getState()
     const thin = E.allLeafJunctions(s.project).find((j) => j.box.id === a).checks.some((x) => x.level === 'err' && /Klima .* treba barem 2,5 mm²/i.test(x.text))
     s.updateCable(c, { type: 'NYM-J 3x2.5' }); s = window.__trasa.getState()
-    const ok = !E.allLeafJunctions(s.project).find((j) => j.box.id === a).checks.some((x) => x.level === 'err')
+    // the fixture box also feeds sockets, so the shared-circuit error is expected here; only the section matters
+    const ok = !E.allLeafJunctions(s.project).find((j) => j.box.id === a).checks.some((x) => x.level === 'err' && !/^Krug .* je za/.test(x.text))
     s.patchProject({ cables: s.project.cables.filter((x) => x.id !== c), elements: s.project.elements.filter((e) => e.id !== a) })
     return { thin, ok } }, { box: ids.box })
   assert.deepEqual(ac, { thin: true, ok: true }, 'a split AC on 3×1,5 is an error, on 3×2,5 it is fine')
@@ -745,6 +746,20 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   assert.deepEqual(strips.t1, ['V+', 'V−'], 'a strip gets only the 24 V pair'); assert.equal(strips.t1Level, 'ok')
   assert.match(strips.t2Warn, /6 m na 24 V s jednog kraja tamni/, 'a 6 m strip fed from one end is flagged'); assert.equal(strips.t2Err, 0)
   assert.ok(strips.badErr, '230 V on a strip is an error')
+
+  // a water heater's own circuit that also reaches sockets is an error at the heater and at the feed box
+  const ded = await page.evaluate(() => { const E = window.__trasaEngine
+    const room = { id: 'rd', name: 'R', points: [{ x: 0, y: 0 }, { x: 600, y: 0 }, { x: 600, y: 400 }, { x: 0, y: 400 }], walls: {} }
+    const e = (o) => ({ roomId: 'rd', wall: 0, note: '', ...o }), el = (id) => ({ kind: 'element', id })
+    const cab = (id, f, t, type = 'NYM-J 3x2.5') => ({ id, roomId: 'rd', wall: 0, type, from: f, to: t, via: [], note: '' })
+    const P = { ...window.__trasa.getState().project, rooms: [room], conduits: [{ id: 'fd', name: 'BOJLER', points: [{ x: 100, y: -50 }, { x: 100, y: 0 }], categoryId: 'dolaz', color: '#000' }],
+      elements: [e({ id: 'k', label: 'K1', type: 'box', xM: 1, zM: 2.3 }), e({ id: 'b', label: 'BO1', type: 'boiler', xM: 2, zM: 1.8 }), e({ id: 'd', label: 'D1', type: 'modbox', modules: 2, xM: 3, zM: 0.3 }), e({ id: 'u', label: 'U1', type: 'socket', host: 'd', xM: 3, zM: 0.3 })],
+      cables: [cab('c1', { kind: 'exit', conduitId: 'fd', end: 'end' }, el('k')), cab('c2', el('k'), el('b')), cab('c3', el('k'), el('d'))] }
+    const hit = (j) => j.checks.some((c) => c.level === 'err' && /Krug BOJLER je za BO1/.test(c.text))
+    const before = { box: hit(E.junctionFor(P.elements[0], P)), boiler: hit(E.leafJunctionFor(P.elements[1], P)) }
+    const Q = { ...P, cables: P.cables.filter((c) => c.id !== 'c3') }
+    return { before, after: hit(E.junctionFor(Q.elements[0], Q)) } })
+  assert.deepEqual(ded, { before: { box: true, boiler: true }, after: false }, 'a heater circuit feeding a socket is flagged; alone it is not')
 
   // a wall note: no wiring, no material line; selecting it draws its bubble without breaking the wall canvas
   const note = await page.evaluate(() => { let s = window.__trasa.getState(); const E = window.__trasaEngine
