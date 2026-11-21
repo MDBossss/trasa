@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T20:02:22.643Z",
+ "savedAt": "2026-11-21T20:03:55.475Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -7900,7 +7900,10 @@
     "id": "rpirakos",
     "label": "P54",
     "slotOrder": 0,
-    "modules": 2
+    "modules": 2,
+    "controls": [
+     "t23y0p1n"
+    ]
    },
    {
     "roomId": "akuvhdws",
@@ -13887,8 +13890,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "akuvhdws",
-   "wall": 6
+   "roomId": "xyw3llcm",
+   "wall": 0
   }
  }
 }
