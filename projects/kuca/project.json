@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T10:37:35.412Z",
+ "savedAt": "2026-11-21T10:41:45.944Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2549,6 +2549,30 @@
     "exitZ": {
      "start": 0.79,
      "end": 0.34
+    }
+   },
+   {
+    "id": "o4y3d8mm",
+    "name": "ZA UTICNICU",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1201.439182022881,
+      "y": 1087.824445683792
+     },
+     {
+      "x": 1234.3112766531972,
+      "y": 1117.2419430451769
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "todo",
+    "exitZ": {
+     "end": 0.87,
+     "start": 0.72
     }
    }
   ],
@@ -13319,6 +13343,40 @@
     ],
     "note": "",
     "id": "hjuy5yw6"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 1,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "un185scs"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "o4y3d8mm",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "dmu376cb"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "542kcndv"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "o4y3d8mm",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "qzamhpsq"
    }
   ],
   "categories": [
@@ -13441,7 +13499,7 @@
   "view": {
    "kind": "room",
    "roomId": "akuvhdws",
-   "wall": 7
+   "wall": 3
   }
  }
 }
