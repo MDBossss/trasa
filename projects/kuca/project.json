@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T07:00:34.696Z",
+ "savedAt": "2026-11-21T07:02:34.540Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -7354,16 +7354,6 @@
     "ledM": 2.7
    },
    {
-    "roomId": "j02a68g1",
-    "wall": 3,
-    "type": "box",
-    "xM": 1.42,
-    "zM": 0.55,
-    "note": "",
-    "id": "eihu8akn",
-    "label": "K31"
-   },
-   {
     "roomId": "akuvhdws",
     "wall": 6,
     "type": "box",
@@ -11915,7 +11905,7 @@
    {
     "roomId": "fb7su35f",
     "wall": 3,
-    "type": "NYM-J 5x1.5",
+    "type": "NYM-J 3x2.5",
     "from": {
      "kind": "element",
      "id": "4zir1mti"
@@ -11944,60 +11934,6 @@
     "via": [],
     "note": "",
     "id": "dnxgegz6"
-   },
-   {
-    "roomId": "j02a68g1",
-    "wall": 3,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "element",
-     "id": "eihu8akn"
-    },
-    "to": {
-     "kind": "element",
-     "id": "61klz3px"
-    },
-    "via": [],
-    "note": "",
-    "id": "dlat8bdr"
-   },
-   {
-    "roomId": "j02a68g1",
-    "wall": 3,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "element",
-     "id": "eihu8akn"
-    },
-    "to": {
-     "kind": "element",
-     "id": "wwiibsi7"
-    },
-    "via": [],
-    "note": "",
-    "id": "pnnjt5jy"
-   },
-   {
-    "roomId": "j02a68g1",
-    "wall": 3,
-    "type": "NYM-J 5x1.5",
-    "from": {
-     "kind": "exit",
-     "conduitId": "lrtuwksm",
-     "end": "start"
-    },
-    "to": {
-     "kind": "element",
-     "id": "eihu8akn"
-    },
-    "via": [
-     {
-      "xM": 1.49,
-      "zM": 1.98
-     }
-    ],
-    "note": "",
-    "id": "86u4bre8"
    },
    {
     "roomId": "j02a68g1",
@@ -12359,6 +12295,58 @@
     ],
     "note": "",
     "id": "xi6ejg85"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 3,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "lrtuwksm",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "61klz3px"
+    },
+    "via": [
+     {
+      "xM": 1.4,
+      "zM": 2.01
+     },
+     {
+      "xM": 1.4,
+      "zM": 0.6
+     }
+    ],
+    "note": "",
+    "id": "exo60a7f"
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 3,
+    "type": "upravljački 2x0.75",
+    "from": {
+     "kind": "exit",
+     "conduitId": "lrtuwksm",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "wwiibsi7"
+    },
+    "via": [
+     {
+      "xM": 1.45,
+      "zM": 1.96
+     },
+     {
+      "xM": 1.45,
+      "zM": 0.46
+     }
+    ],
+    "note": "",
+    "id": "sug12hax"
    }
   ],
   "categories": [
