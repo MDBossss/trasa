@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T20:03:55.475Z",
+ "savedAt": "2026-11-21T20:05:24.005Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -7914,7 +7914,7 @@
     "note": "",
     "id": "9lvkvwh8",
     "label": "D80",
-    "modules": 3,
+    "modules": 2,
     "depth": "duboka"
    },
    {
@@ -13890,8 +13890,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "xyw3llcm",
-   "wall": 0
+   "roomId": "akuvhdws",
+   "wall": 6
   }
  }
 }
