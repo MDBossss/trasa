@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T10:28:06.336Z",
+ "savedAt": "2026-11-21T10:29:42.737Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -6615,7 +6615,7 @@
     "modules": 2,
     "switchKind": "krizni",
     "controls": [
-     "avq9b1wi"
+     "lpjpcphl"
     ]
    },
    {
@@ -6654,7 +6654,7 @@
     "modules": 2,
     "switchKind": "izmjenicni",
     "controls": [
-     "avq9b1wi"
+     "lpjpcphl"
     ]
    },
    {
@@ -7116,7 +7116,7 @@
     "label": "P42",
     "slotOrder": 2,
     "controls": [
-     "avq9b1wi"
+     "lpjpcphl"
     ]
    },
    {
@@ -7136,16 +7136,6 @@
     ]
    },
    {
-    "roomId": "akuvhdws",
-    "wall": 2,
-    "type": "light",
-    "xM": 3.6,
-    "zM": 2.39,
-    "note": "",
-    "id": "avq9b1wi",
-    "label": "S31"
-   },
-   {
     "roomId": "icogq6ir",
     "wall": 3,
     "type": "switch",
@@ -7158,7 +7148,7 @@
     "label": "P44",
     "slotOrder": 3,
     "controls": [
-     "avq9b1wi"
+     "lpjpcphl"
     ]
    },
    {
@@ -11826,23 +11816,6 @@
     "via": [],
     "note": "",
     "id": "ozxnz5nd"
-   },
-   {
-    "roomId": "akuvhdws",
-    "wall": 2,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "element",
-     "id": "avq9b1wi"
-    },
-    "to": {
-     "kind": "exit",
-     "conduitId": "uqtqurx4",
-     "end": "start"
-    },
-    "via": [],
-    "note": "",
-    "id": "nyopse5i"
    },
    {
     "roomId": "fb7su35f",
