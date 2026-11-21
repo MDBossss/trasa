@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T09:39:40.834Z",
+ "savedAt": "2026-11-21T09:40:19.852Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -6791,9 +6791,7 @@
     "slotOrder": 2,
     "relayId": "864jpmau",
     "relayInput": 1,
-    "controls": [
-     "zm42tjnv"
-    ]
+    "controls": []
    },
    {
     "roomId": "akuvhdws",
@@ -6809,10 +6807,7 @@
     "slotOrder": 3,
     "relayId": "uwot03w0",
     "relayInput": 1,
-    "controls": [
-     "fa52hgkv",
-     "otqs5faa"
-    ]
+    "controls": []
    },
    {
     "roomId": "akuvhdws",
@@ -12898,8 +12893,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "fcv0y1qm",
-   "wall": 0
+   "roomId": "akuvhdws",
+   "wall": 6
   }
  }
 }
