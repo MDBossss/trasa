@@ -42,7 +42,7 @@ export function WallToolRail() {
   const setWallTool = useStore((s) => s.setWallTool)
   const placeKind = useStore((s) => s.placeSwitchKind)
   return (
-    <nav className="tool-rail" aria-label="Alati zida">
+    <nav className="tool-rail wall-rail" aria-label="Alati zida">
       {GROUPS.map((g, gi) => (
         <div className="tool-group" key={gi}>
           {g.map((idx) => {

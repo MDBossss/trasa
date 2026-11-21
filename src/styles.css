@@ -56,6 +56,8 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
 .tool-rail { width: 52px; background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; padding: 8px 0; gap: 6px; overflow-y: auto; scrollbar-width: none; }
 .tool-group { display: flex; flex-direction: column; gap: 2px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
 .tool-group:last-child { border-bottom: none; }
+/* the wall rail has ~20 tools: below ~1060 px of height they go two to a row so none hides under a scroll */
+@media (max-height: 1060px) { .tool-rail.wall-rail { width: 94px; } .wall-rail .tool-group { display: grid; grid-template-columns: 40px 40px; } }
 .tool { position: relative; width: 40px; height: 40px; padding: 0; justify-content: center; border-color: transparent; background: transparent; }
 .tool kbd { position: absolute; right: 4px; bottom: 3px; font-size: 9px; }
 .tool.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
