@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T19:53:59.102Z",
+ "savedAt": "2026-11-21T20:02:22.643Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -7900,9 +7900,7 @@
     "id": "rpirakos",
     "label": "P54",
     "slotOrder": 0,
-    "modules": 2,
-    "relayId": "3850vg3u",
-    "relayInput": 1
+    "modules": 2
    },
    {
     "roomId": "akuvhdws",
@@ -7927,20 +7925,7 @@
     "id": "t23y0p1n",
     "label": "ZV1",
     "slotOrder": 0,
-    "feedRelayId": "3850vg3u",
     "feedOutput": 1
-   },
-   {
-    "roomId": "akuvhdws",
-    "wall": 6,
-    "type": "relay",
-    "xM": 1.58,
-    "zM": 1.92,
-    "note": "",
-    "host": "9lvkvwh8",
-    "relayModel": "gen4",
-    "id": "3850vg3u",
-    "label": "R26"
    }
   ],
   "cables": [
@@ -13902,8 +13887,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "xyw3llcm",
-   "wall": 0
+   "roomId": "akuvhdws",
+   "wall": 6
   }
  }
 }
