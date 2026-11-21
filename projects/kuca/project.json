@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T08:42:54.165Z",
+ "savedAt": "2026-11-21T08:44:02.322Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -6124,7 +6124,7 @@
     "type": "switch",
     "xM": 3.27,
     "zM": 1.11,
-    "note": "",
+    "note": "terasa vani strop",
     "host": "wm9b12lo",
     "id": "fnovg3tw",
     "label": "P23",
@@ -6158,7 +6158,7 @@
     "type": "switch",
     "xM": 3.27,
     "zM": 1.11,
-    "note": "",
+    "note": "vani desno",
     "host": "wm9b12lo",
     "switchKind": "tipkalo",
     "id": "tl6ylbaw",
