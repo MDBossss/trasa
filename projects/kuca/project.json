@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T10:26:36.717Z",
+ "savedAt": "2026-11-21T10:28:06.336Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -721,7 +721,10 @@
     "from": "",
     "to": "",
     "note": "",
-    "categoryId": "rasvjeta"
+    "categoryId": "rasvjeta",
+    "exitZ": {
+     "start": 2.53
+    }
    },
    {
     "id": "uqtqurx4",
@@ -7600,6 +7603,16 @@
     "note": "",
     "id": "k9g6rwe7",
     "label": "K35"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 1,
+    "type": "light",
+    "xM": 0.39542162819885357,
+    "zM": 2.34,
+    "note": "",
+    "id": "lpjpcphl",
+    "label": "S33"
    }
   ],
   "cables": [
@@ -13027,6 +13040,49 @@
     ],
     "note": "",
     "id": "j3suj0lk"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 2.35
+    },
+    "to": {
+     "kind": "element",
+     "id": "lpjpcphl"
+    },
+    "via": [],
+    "note": "",
+    "id": "2clkk7vp"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 0,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 2.35
+    },
+    "to": {
+     "kind": "element",
+     "id": "3lpk0ieh"
+    },
+    "via": [
+     {
+      "xM": 7.1,
+      "zM": 1.95
+     },
+     {
+      "xM": 7.05,
+      "zM": 1.81
+     }
+    ],
+    "note": "",
+    "id": "ieqrtwp7"
    }
   ],
   "categories": [
