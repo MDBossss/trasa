@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T08:29:41.064Z",
+ "savedAt": "2026-11-21T08:34:43.003Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -5867,7 +5867,7 @@
     "type": "appliance",
     "xM": 3.2099999999999995,
     "zM": 1.56,
-    "note": "220cm od poda\n40cm od stropa",
+    "note": "220cm od poda\n40cm od stropa\n\nostaviti extra kabela ako ce se kopcat vani ili unutra, plus rupa za van",
     "id": "gktbkynx",
     "label": "UR4",
     "appliance": "ac"
@@ -7471,11 +7471,12 @@
     "roomId": "icogq6ir",
     "wall": 5,
     "type": "ledstrip",
-    "xM": 2.8800505327505506,
+    "xM": 2.67,
     "zM": 1.56,
     "note": "",
     "id": "0vfbrnw8",
-    "label": "T6"
+    "label": "T6",
+    "ledM": 0.3
    },
    {
     "roomId": "icogq6ir",
@@ -7518,6 +7519,16 @@
     "note": "",
     "id": "6d1h6u7i",
     "label": "T7"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "note",
+    "xM": 2.14,
+    "zM": 0.47,
+    "note": "obje trake se stekaju na jedan utikac, i onda wago na obje.\n\nsignali idu uz kutiju gore do traka",
+    "id": "fyeqxzxh",
+    "label": "BL1"
    }
   ],
   "cables": [
