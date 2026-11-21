@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T08:44:02.322Z",
+ "savedAt": "2026-11-21T09:18:59.182Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -6322,6 +6322,7 @@
     "controls": [
      "w0xah1vk"
     ],
+    "gapBefore": 1,
     "switchKind": "izmjenicni"
    },
    {
@@ -6419,7 +6420,7 @@
     "type": "switch",
     "xM": 2.24,
     "zM": 1.26,
-    "note": "",
+    "note": "ispred hodnika gore",
     "host": "2qjqdzdw",
     "id": "7vrwo0gs",
     "label": "P29",
@@ -6435,12 +6436,12 @@
     "type": "switch",
     "xM": 2.24,
     "zM": 1.26,
-    "note": "",
+    "note": "iznad stola",
     "host": "2qjqdzdw",
     "id": "d0zxu8h1",
     "label": "P30",
     "slotOrder": 1,
-    "modules": 2,
+    "modules": 1,
     "controls": [
      "bfuthcop"
     ]
@@ -12774,7 +12775,7 @@
   "view": {
    "kind": "room",
    "roomId": "icogq6ir",
-   "wall": 5
+   "wall": 3
   }
  }
 }
