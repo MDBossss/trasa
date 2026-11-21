@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-20T19:33:42.166Z",
+ "savedAt": "2026-11-21T00:46:35.407Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -7430,6 +7430,18 @@
     "id": "1vo8ktsd",
     "label": "T5",
     "ledM": 2
+   },
+   {
+    "roomId": "j02a68g1",
+    "wall": 3,
+    "type": "relay",
+    "relayModel": "zgdim",
+    "host": "wwiibsi7",
+    "xM": 1.14,
+    "zM": 0.45,
+    "note": "",
+    "id": "pc540dca",
+    "label": "R19"
    }
   ],
   "cables": [
@@ -12430,8 +12442,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "akuvhdws",
-   "wall": 5
+   "roomId": "j02a68g1",
+   "wall": 3
   }
  }
 }
