@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T09:34:30.117Z",
+ "savedAt": "2026-11-21T09:39:40.834Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -6774,6 +6774,7 @@
     "note": "svjetlo predja strana kuce kod terase",
     "id": "otqs5faa",
     "label": "S22",
+    "feedRelayId": "uwot03w0",
     "feedOutput": 1
    },
    {
@@ -6848,6 +6849,7 @@
     "note": "",
     "id": "fa52hgkv",
     "label": "S24",
+    "feedRelayId": "uwot03w0",
     "feedOutput": 1
    },
    {
@@ -6859,6 +6861,7 @@
     "note": "",
     "id": "zm42tjnv",
     "label": "S25",
+    "feedRelayId": "864jpmau",
     "feedOutput": 1
    },
    {
@@ -6918,7 +6921,9 @@
     "note": "traka stepenice",
     "id": "n5ldvcbo",
     "label": "N4",
-    "ledM": 6
+    "feedRelayId": "wd2eyrfh",
+    "ledM": 6,
+    "feedOutput": 1
    },
    {
     "roomId": "mmcst90r",
@@ -12670,7 +12675,7 @@
    {
     "roomId": "akuvhdws",
     "wall": 6,
-    "type": "NYM-J 3x1.5",
+    "type": "NYM-J 5x1.5",
     "from": {
      "kind": "element",
      "id": "en9n5irk"
@@ -12893,7 +12898,7 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "akuvhdws",
+   "roomId": "fcv0y1qm",
    "wall": 0
   }
  }
