@@ -280,6 +280,23 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
                 )}
                 <label>Napon <select value={el.ledV ?? 24} onChange={(e) => updateElement(el.id, { ledV: +e.target.value as 12 | 24 })}><option value={24}>24 V (preporuka)</option><option value={12}>12 V</option></select></label>
                 <div className="stat"><span>Napajanje</span><b>≥ {psuWatts(w)} W</b><span className="muted">{w} W trake × 1,2</span></div>
+                {(() => {
+                  // dimming = a Zigbee push-dim controller hosted in the supply; the push button then picks it under "Na relej"
+                  const ctl = project.elements.find((h) => h.host === el.id && h.type === 'relay' && RELAY_MODELS[relayModelOf(h)].dc)
+                  const toggle = (on: boolean) => {
+                    const st = useStore.getState()
+                    if (on) { st.addElement({ roomId: el.roomId, wall: el.wall, type: 'relay', relayModel: 'zgdim', host: el.id, xM: el.xM, zM: el.zM, note: '' }); st.select(el.id); return }
+                    if (!ctl) return
+                    const pr = st.project
+                    st.patchProject({ elements: pr.elements.filter((h) => h.id !== ctl.id).map((h) => (h.relayId === ctl.id ? { ...h, relayId: undefined, relayInput: undefined } : h)) })
+                  }
+                  return (
+                    <>
+                      <label className="check-row"><input type="checkbox" checked={!!ctl} onChange={(e) => toggle(e.target.checked)} /><span>Prigušivanje <span className="muted">(Zigbee kontroler uz napajanje)</span></span></label>
+                      {ctl && <p className="muted">Napajanje dobiva stalnih 230 V (makni ga s "Pali svjetla" na prekidaču). Tipkalo: "Na relej" → {ctl.label}, upravljački kabel 2×0,75 do napajanja.</p>}
+                    </>
+                  )
+                })()}
                 <div className="stat"><span>Releji uz traku</span><b>{project.elements.filter((h) => h.host === el.id).map((h) => `${h.label} ${RELAY_MODELS[relayModelOf(h)].label}`).join(', ') || '—'}</b></div>
               </>
             )
