@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T07:38:14.570Z",
+ "savedAt": "2026-11-21T08:11:41.305Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2454,6 +2454,26 @@
      "start": 1.94,
      "end": 2.21
     }
+   },
+   {
+    "id": "saiv5f34",
+    "name": "TRAKA STROP SIGNAL",
+    "color": "#06b6b4",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1321.4323265311446,
+      "y": 791.3865876575296
+     },
+     {
+      "x": 1231.974342357579,
+      "y": 1087.1587488393893
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "todo"
    }
   ],
   "rooms": [
@@ -2783,28 +2803,28 @@
     "name": "Boravak / Blagavaona",
     "points": [
      {
-      "x": 1005.7599509993613,
-      "y": 764.2319747085589
+      "x": 1013.6800464428111,
+      "y": 785.7293766264941
      },
      {
-      "x": 1005.7599509993613,
-      "y": 1070.8528125906853
+      "x": 1013.6800464428111,
+      "y": 1091.2187723024133
      },
      {
-      "x": 1267.1231006332032,
-      "y": 1070.8528125906853
+      "x": 1275.0431960766532,
+      "y": 1091.2187723024133
      },
      {
-      "x": 1267.1231006332032,
-      "y": 1239.4377013155445
+      "x": 1275.043196076653,
+      "y": 1260.9351032334796
      },
      {
-      "x": 1617.870184557407,
-      "y": 1239.4377013155445
+      "x": 1625.7902800008567,
+      "y": 1260.9351032334796
      },
      {
-      "x": 1617.870184557407,
-      "y": 763.1005325023518
+      "x": 1625.7902800008567,
+      "y": 784.597934420287
      }
     ],
     "walls": {
@@ -5930,8 +5950,8 @@
     "host": "qmkp48l8",
     "id": "o7yk10ob",
     "label": "U113",
-    "slotOrder": 3,
-    "socketKind": "euro"
+    "slotOrder": 2,
+    "socketKind": "schuko"
    },
    {
     "roomId": "icogq6ir",
@@ -6323,13 +6343,12 @@
     "roomId": "icogq6ir",
     "wall": 5,
     "type": "ledpsu",
-    "xM": 2.8600000000000003,
-    "zM": 1.7,
+    "xM": 2.43,
+    "zM": 0.7,
     "note": "",
     "id": "q3un7yq8",
     "label": "N3",
-    "feedRelayId": "4msv6z1y",
-    "feedOutput": 1
+    "ledM": 10
    },
    {
     "roomId": "icogq6ir",
@@ -6337,7 +6356,7 @@
     "type": "switch",
     "xM": 0.51,
     "zM": 1.28,
-    "note": "",
+    "note": "glavno svj nakon izlaza hodnika",
     "host": "qo20jebm",
     "switchKind": "tipkalo",
     "id": "j1hs17dn",
@@ -6356,30 +6375,18 @@
     "type": "switch",
     "xM": 0.51,
     "zM": 1.28,
-    "note": "",
+    "note": "led strop",
     "host": "qo20jebm",
     "switchKind": "tipkalo",
     "id": "nmdyqoqt",
     "label": "P28",
     "slotOrder": 1,
     "modules": 2,
-    "relayId": "4msv6z1y",
+    "relayId": "n70kiz5v",
     "relayInput": 1,
     "controls": [
      "q3un7yq8"
     ]
-   },
-   {
-    "roomId": "icogq6ir",
-    "wall": 1,
-    "type": "relay",
-    "xM": 0.51,
-    "zM": 1.28,
-    "note": "",
-    "host": "qo20jebm",
-    "relayModel": "zbminir2",
-    "id": "4msv6z1y",
-    "label": "R12"
    },
    {
     "roomId": "icogq6ir",
@@ -7211,7 +7218,7 @@
     "type": "switch",
     "xM": 0.51,
     "zM": 1.28,
-    "note": "",
+    "note": "boravak ledice okrugle",
     "host": "qo20jebm",
     "id": "1i1f3ek4",
     "label": "P46",
@@ -7442,6 +7449,63 @@
     "note": "",
     "id": "evleqxw4",
     "label": "K34"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "relay",
+    "relayModel": "zgdim",
+    "host": "q3un7yq8",
+    "xM": 2.54,
+    "zM": 1.16,
+    "note": "",
+    "id": "n70kiz5v",
+    "label": "R20"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "ledstrip",
+    "xM": 2.8800505327505506,
+    "zM": 1.56,
+    "note": "",
+    "id": "0vfbrnw8",
+    "label": "T6"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "socket",
+    "xM": 1.94,
+    "zM": 0.7,
+    "note": "",
+    "host": "qmkp48l8",
+    "id": "wzj4ujpu",
+    "label": "U158",
+    "slotOrder": 3,
+    "socketKind": "euro"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "ledpsu",
+    "xM": 2.43,
+    "zM": 0.57,
+    "note": "",
+    "id": "5vjr9ulh",
+    "label": "N7"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "relay",
+    "relayModel": "zgdim",
+    "host": "5vjr9ulh",
+    "xM": 2.43,
+    "zM": 0.57,
+    "note": "",
+    "id": "9z0ha08z",
+    "label": "R21"
    }
   ],
   "cables": [
@@ -9636,23 +9700,6 @@
     "via": [],
     "note": "",
     "id": "34mdb0kl"
-   },
-   {
-    "roomId": "icogq6ir",
-    "wall": 5,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "exit",
-     "conduitId": "w0w9psjn",
-     "end": "end"
-    },
-    "to": {
-     "kind": "element",
-     "id": "q3un7yq8"
-    },
-    "via": [],
-    "note": "",
-    "id": "oulfn1lm"
    },
    {
     "roomId": "icogq6ir",
@@ -12365,6 +12412,59 @@
     ],
     "note": "",
     "id": "s3j6xwix"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "q3un7yq8"
+    },
+    "to": {
+     "kind": "element",
+     "id": "0vfbrnw8"
+    },
+    "via": [
+     {
+      "xM": 2.42,
+      "zM": 1.58
+     }
+    ],
+    "note": "",
+    "id": "j958bw4y"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "qmkp48l8"
+    },
+    "to": {
+     "kind": "element",
+     "id": "q3un7yq8"
+    },
+    "via": [],
+    "note": "",
+    "id": "ygq3ylk3"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 5,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "qmkp48l8"
+    },
+    "to": {
+     "kind": "element",
+     "id": "5vjr9ulh"
+    },
+    "via": [],
+    "note": "",
+    "id": "q4kh2siz"
    }
   ],
   "categories": [
@@ -12486,8 +12586,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "j02a68g1",
-   "wall": 3
+   "roomId": "icogq6ir",
+   "wall": 5
   }
  }
 }
