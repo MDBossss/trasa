@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T19:12:12.823Z",
+ "savedAt": "2026-11-21T19:41:06.160Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -7899,6 +7899,16 @@
     "label": "P54",
     "slotOrder": 0,
     "modules": 2
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 0,
+    "type": "gong",
+    "xM": 1.03,
+    "zM": 1.63,
+    "note": "",
+    "id": "fchjwyhf",
+    "label": "ZV1"
    }
   ],
   "cables": [
