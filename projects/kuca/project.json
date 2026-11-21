@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T10:50:13.474Z",
+ "savedAt": "2026-11-21T10:58:47.251Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -990,8 +990,8 @@
       "y": 763.1005325023519
      },
      {
-      "x": 1346.324055067701,
-      "y": 640.9047742319842
+      "x": 1346.4948976108556,
+      "y": 678.4901337259948
      }
     ],
     "from": "",
@@ -999,7 +999,8 @@
     "note": "",
     "categoryId": "rasvjeta",
     "exitZ": {
-     "start": 1.8
+     "start": 1.8,
+     "end": 2.57
     }
    },
    {
@@ -2574,6 +2575,54 @@
      "end": 0.87,
      "start": 0.72
     }
+   },
+   {
+    "id": "4gjb90a0",
+    "name": "LAMPA",
+    "color": "#3cb44b",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1430.0507783270268,
+      "y": 655.6135229126766
+     },
+     {
+      "x": 1395.2796214354707,
+      "y": 699.7660089787238
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "rasvjeta",
+    "exitZ": {
+     "start": 1.42,
+     "end": 1.29
+    }
+   },
+   {
+    "id": "rwtc5pbe",
+    "name": "DOLAZ JACUZZI",
+    "color": "#ff0000",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1450.4167380387548,
+      "y": 752.9175526464879
+     },
+     {
+      "x": 1017.0293990156041,
+      "y": 388.22048553023563
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "dolaz",
+    "exitZ": {
+     "start": 0.36,
+     "end": 2.38
+    }
    }
   ],
   "rooms": [
@@ -3209,6 +3258,29 @@
      {
       "x": 906.1930368531357,
       "y": 1862.8623569356614
+     }
+    ],
+    "walls": {}
+   },
+   {
+    "id": "m75rymff",
+    "name": "jacuzzi zid",
+    "points": [
+     {
+      "x": 1706.1226766415612,
+      "y": 398.776142103663
+     },
+     {
+      "x": 1706.1226766415612,
+      "y": 233.58557999742519
+     },
+     {
+      "x": 512.4511490930618,
+      "y": 233.58557999742519
+     },
+     {
+      "x": 512.4511490930618,
+      "y": 403.30191092849145
      }
     ],
     "walls": {}
@@ -7683,6 +7755,103 @@
     "relayModel": "aqarat2",
     "id": "2novwx3u",
     "label": "R25"
+   },
+   {
+    "roomId": "fqmzanpn",
+    "wall": 1,
+    "type": "light",
+    "xM": 1.68,
+    "zM": 2.41,
+    "note": "",
+    "id": "m8h31kz3",
+    "label": "S34"
+   },
+   {
+    "roomId": "ccucgr9f",
+    "wall": 3,
+    "type": "modbox",
+    "xM": 0.94,
+    "zM": 1.28,
+    "note": "svjetlo unutra\nsvjetlo zid iza\nsvjetlo jacuzzi",
+    "id": "fgk38re5",
+    "label": "D78",
+    "modules": 3
+   },
+   {
+    "roomId": "ccucgr9f",
+    "wall": 3,
+    "type": "switch",
+    "xM": 0.94,
+    "zM": 1.28,
+    "note": "",
+    "host": "fgk38re5",
+    "id": "e2t6w86c",
+    "label": "P51",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "ccucgr9f",
+    "wall": 3,
+    "type": "switch",
+    "xM": 0.94,
+    "zM": 1.28,
+    "note": "",
+    "host": "fgk38re5",
+    "id": "dygix35i",
+    "label": "P52",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "ccucgr9f",
+    "wall": 3,
+    "type": "switch",
+    "xM": 0.94,
+    "zM": 1.28,
+    "note": "",
+    "host": "fgk38re5",
+    "id": "bfuqtc9z",
+    "label": "P53",
+    "slotOrder": 2
+   },
+   {
+    "roomId": "m75rymff",
+    "wall": 3,
+    "type": "box",
+    "xM": 6.09,
+    "zM": 2.03,
+    "note": "",
+    "id": "ukyqc01j",
+    "label": "K39"
+   },
+   {
+    "roomId": "m75rymff",
+    "wall": 3,
+    "type": "light",
+    "xM": 6.57,
+    "zM": 2.03,
+    "note": "",
+    "id": "zpzox34q",
+    "label": "S36"
+   },
+   {
+    "roomId": "m75rymff",
+    "wall": 3,
+    "type": "light",
+    "xM": 4.54,
+    "zM": 2.03,
+    "note": "",
+    "id": "3zrzjioz",
+    "label": "S37"
+   },
+   {
+    "roomId": "m75rymff",
+    "wall": 3,
+    "type": "socket",
+    "xM": 4.54,
+    "zM": 2.31,
+    "note": "",
+    "id": "hr65cos3",
+    "label": "U160"
    }
   ],
   "cables": [
@@ -13350,6 +13519,106 @@
     "via": [],
     "note": "",
     "id": "qzamhpsq"
+   },
+   {
+    "roomId": "fqmzanpn",
+    "wall": 1,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "4gjb90a0",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "m8h31kz3"
+    },
+    "via": [],
+    "note": "",
+    "id": "gt4akbw3"
+   },
+   {
+    "roomId": "ccucgr9f",
+    "wall": 2,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "306rhxau",
+     "end": "start"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "rwtc5pbe",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "9sk7vc9w"
+   },
+   {
+    "roomId": "m75rymff",
+    "wall": 3,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "rwtc5pbe",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "ukyqc01j"
+    },
+    "via": [],
+    "note": "",
+    "id": "w57x16ku"
+   },
+   {
+    "roomId": "m75rymff",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "ukyqc01j"
+    },
+    "to": {
+     "kind": "element",
+     "id": "zpzox34q"
+    },
+    "via": [],
+    "note": "",
+    "id": "6fbx0jpb"
+   },
+   {
+    "roomId": "m75rymff",
+    "wall": 3,
+    "type": "NYM-J 3x1.5",
+    "from": {
+     "kind": "element",
+     "id": "ukyqc01j"
+    },
+    "to": {
+     "kind": "element",
+     "id": "3zrzjioz"
+    },
+    "via": [],
+    "note": "",
+    "id": "2m5c3zt4"
+   },
+   {
+    "roomId": "m75rymff",
+    "wall": 3,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "ukyqc01j"
+    },
+    "to": {
+     "kind": "element",
+     "id": "hr65cos3"
+    },
+    "via": [],
+    "note": "",
+    "id": "4kgmhoul"
    }
   ],
   "categories": [
@@ -13472,7 +13741,7 @@
   "view": {
    "kind": "room",
    "roomId": "akuvhdws",
-   "wall": 0
+   "wall": 7
   }
  }
 }
