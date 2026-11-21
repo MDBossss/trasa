@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T10:33:05.888Z",
+ "savedAt": "2026-11-21T10:37:35.412Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -691,7 +691,7 @@
      },
      {
       "x": 909.7674786632163,
-      "y": 1179.4712643865678
+      "y": 1176.0769377679464
      }
     ],
     "from": "",
@@ -699,7 +699,7 @@
     "note": "",
     "categoryId": "rasvjeta",
     "exitZ": {
-     "end": 2.39,
+     "end": 2.35,
      "start": 1.83
     }
    },
@@ -738,7 +738,7 @@
      },
      {
       "x": 914.4150170784635,
-      "y": 1196.4428974796745
+      "y": 1216.8088571914022
      }
     ],
     "from": "",
@@ -746,7 +746,7 @@
     "note": "",
     "categoryId": "rasvjeta",
     "exitZ": {
-     "end": 2.34
+     "end": 2.29
     }
    },
    {
@@ -757,7 +757,7 @@
     "points": [
      {
       "x": 915.2445745027926,
-      "y": 1169.2882845307038
+      "y": 1193.0485708610531
      },
      {
       "x": 996.472363863073,
@@ -769,7 +769,7 @@
     "note": "",
     "categoryId": "rasvjeta",
     "exitZ": {
-     "start": 2.26
+     "start": 2.3
     }
    },
    {
@@ -780,7 +780,7 @@
     "points": [
      {
       "x": 923.1646699462424,
-      "y": 1206.6258773355385
+      "y": 1198.7057818920887
      },
      {
       "x": 1045.4756003884343,
@@ -791,7 +791,7 @@
     "to": "",
     "note": "",
     "exitZ": {
-     "start": 2.49,
+     "start": 2.46,
      "end": 2.32
     }
    },
@@ -803,7 +803,7 @@
     "points": [
      {
       "x": 917.5074589152068,
-      "y": 1156.8424202624255
+      "y": 1167.0254001182896
      },
      {
       "x": 1046.4051080714837,
@@ -814,7 +814,7 @@
     "to": "",
     "note": "",
     "exitZ": {
-     "start": 2.54,
+     "start": 2.49,
      "end": 2.37
     }
    },
@@ -2526,6 +2526,29 @@
     "exitZ": {
      "start": 2.29,
      "end": 1.79
+    }
+   },
+   {
+    "id": "d9fkg5wb",
+    "name": "UTIKAC HODNIK",
+    "color": "#bfef45",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 1327.08953756218,
+      "y": 1254.146449996237
+     },
+     {
+      "x": 1256.9401207773392,
+      "y": 1254.146449996237
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "exitZ": {
+     "start": 0.79,
+     "end": 0.34
     }
    }
   ],
@@ -7613,6 +7636,40 @@
     "note": "",
     "id": "1qn2t4ec",
     "label": "K36"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 2,
+    "type": "socket",
+    "xM": 2.69,
+    "zM": 0.8,
+    "note": "",
+    "host": "pvypc2bb",
+    "id": "41a3whzg",
+    "label": "U158",
+    "slotOrder": 0
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 2,
+    "type": "socket",
+    "xM": 2.69,
+    "zM": 0.8,
+    "note": "",
+    "host": "pvypc2bb",
+    "id": "9mz0dyol",
+    "label": "U159",
+    "slotOrder": 1
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 0,
+    "type": "box",
+    "xM": 6.94,
+    "zM": 1.71,
+    "note": "",
+    "id": "9bymhov2",
+    "label": "K37"
    }
   ],
   "cables": [
@@ -13071,28 +13128,6 @@
     "wall": 0,
     "type": "NYM-J 3x2.5",
     "from": {
-     "kind": "element",
-     "id": "ezkikhe2"
-    },
-    "to": {
-     "kind": "exit",
-     "conduitId": "it8y3736",
-     "end": "start"
-    },
-    "via": [
-     {
-      "xM": 6.94,
-      "zM": 1.58
-     }
-    ],
-    "note": "",
-    "id": "fu2ohsrc"
-   },
-   {
-    "roomId": "akuvhdws",
-    "wall": 0,
-    "type": "NYM-J 3x2.5",
-    "from": {
      "kind": "exit",
      "conduitId": "it8y3736",
      "end": "end"
@@ -13139,6 +13174,151 @@
     "via": [],
     "note": "",
     "id": "3gltsji2"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 3,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "oxoqwpa3"
+    },
+    "to": {
+     "kind": "element",
+     "id": "2qjqdzdw"
+    },
+    "via": [],
+    "note": "",
+    "id": "vtbszv3y"
+   },
+   {
+    "roomId": "icogq6ir",
+    "wall": 3,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "d9fkg5wb",
+     "end": "start"
+    },
+    "to": {
+     "kind": "element",
+     "id": "oxoqwpa3"
+    },
+    "via": [],
+    "note": "",
+    "id": "ivhexjce"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 5,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "c814nrwf"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "d9fkg5wb",
+     "end": "end"
+    },
+    "via": [],
+    "note": "",
+    "id": "uxb1uxjv"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 0,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "ezkikhe2"
+    },
+    "to": {
+     "kind": "element",
+     "id": "9bymhov2"
+    },
+    "via": [],
+    "note": "",
+    "id": "wfj8v90o"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 0,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "9bymhov2"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "it8y3736",
+     "end": "start"
+    },
+    "via": [],
+    "note": "",
+    "id": "bqt6ux37"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 0,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "element",
+     "id": "9bymhov2"
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 2.41
+    },
+    "via": [
+     {
+      "xM": 7.2,
+      "zM": 2.34
+     }
+    ],
+    "note": "",
+    "id": "8jxkueg8"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 1,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "corner",
+     "corner": 1,
+     "zM": 2.41
+    },
+    "to": {
+     "kind": "corner",
+     "corner": 2,
+     "zM": 2.41
+    },
+    "via": [],
+    "note": "",
+    "id": "541x64pe"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 2,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "corner",
+     "corner": 2,
+     "zM": 2.41
+    },
+    "to": {
+     "kind": "element",
+     "id": "pvypc2bb"
+    },
+    "via": [
+     {
+      "xM": 2.28,
+      "zM": 2.47
+     }
+    ],
+    "note": "",
+    "id": "hjuy5yw6"
    }
   ],
   "categories": [
@@ -13261,7 +13441,7 @@
   "view": {
    "kind": "room",
    "roomId": "akuvhdws",
-   "wall": 6
+   "wall": 7
   }
  }
 }
