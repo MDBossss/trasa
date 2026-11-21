@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T07:02:34.540Z",
+ "savedAt": "2026-11-21T07:03:57.405Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -7318,7 +7318,7 @@
     "note": "",
     "id": "o02hehqm",
     "label": "T1",
-    "ledM": 1.5
+    "ledM": 2.7
    },
    {
     "roomId": "fb7su35f",
@@ -12259,44 +12259,6 @@
     "id": "qzgcwn96"
    },
    {
-    "roomId": "fb7su35f",
-    "wall": 3,
-    "type": "upravljački 2x0.75",
-    "from": {
-     "kind": "element",
-     "id": "wthwvdgn"
-    },
-    "to": {
-     "kind": "element",
-     "id": "4zir1mti"
-    },
-    "via": [],
-    "note": "",
-    "id": "csck8zjz"
-   },
-   {
-    "roomId": "fb7su35f",
-    "wall": 3,
-    "type": "upravljački 2x0.75",
-    "from": {
-     "kind": "element",
-     "id": "4zir1mti"
-    },
-    "to": {
-     "kind": "exit",
-     "conduitId": "lrtuwksm",
-     "end": "end"
-    },
-    "via": [
-     {
-      "xM": 0.96,
-      "zM": 1.95
-     }
-    ],
-    "note": "",
-    "id": "xi6ejg85"
-   },
-   {
     "roomId": "j02a68g1",
     "wall": 3,
     "type": "NYM-J 3x2.5",
@@ -12347,6 +12309,28 @@
     ],
     "note": "",
     "id": "sug12hax"
+   },
+   {
+    "roomId": "fb7su35f",
+    "wall": 3,
+    "type": "upravljački 2x0.75",
+    "from": {
+     "kind": "element",
+     "id": "wthwvdgn"
+    },
+    "to": {
+     "kind": "exit",
+     "conduitId": "lrtuwksm",
+     "end": "end"
+    },
+    "via": [
+     {
+      "xM": 0.95,
+      "zM": 1.72
+     }
+    ],
+    "note": "",
+    "id": "5zkombu2"
    }
   ],
   "categories": [
@@ -12468,7 +12452,7 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "fb7su35f",
+   "roomId": "j02a68g1",
    "wall": 3
   }
  }
