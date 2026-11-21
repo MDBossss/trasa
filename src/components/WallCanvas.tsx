@@ -216,7 +216,7 @@ export function WallCanvas({ roomId, wall, photo, onMoveExit }: { roomId: string
       const hit = elements.find((x) => x.id === name)
       // relays go into a box / frame / LED niche, buttons into a frame: click on the host places them inside
       const canHost = hit && (elementType === 'relay' ? isPlace(hit) || hit.type === 'ledpsu' : (elementType === 'switch' || elementType === 'socket') && hit.type === 'modbox')
-      if (canHost) { addElement({ roomId, wall: wall.i, type: elementType, xM: hit.xM, zM: hit.zM, note: '', host: hit.id, switchKind: placeKind, relayModel: elementType === 'relay' ? (hit.type === 'ledpsu' ? 'rgbw' : 'zbminir2') : undefined }); return }
+      if (canHost) { addElement({ roomId, wall: wall.i, type: elementType, xM: hit.xM, zM: hit.zM, note: '', host: hit.id, switchKind: placeKind, relayModel: elementType === 'relay' ? (hit.type === 'ledpsu' ? 'zgdim' : 'zbminir2') : undefined }); return }
       if (elementType === 'relay') { select(null); return }
       addElement({ roomId, wall: wall.i, type: elementType, xM: p.xM, zM: p.zM, note: '', switchKind: elementType === 'switch' ? placeKind : undefined })
       return

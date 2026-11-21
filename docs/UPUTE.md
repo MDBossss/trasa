@@ -54,6 +54,9 @@ pregledniku i vraćaju nakon osvježavanja.
     svjetlo. **LED traka (E)**: crta se u stvarnoj dužini od kraja gdje ulazi dovod; od napajanja do nje ide kabel
     LED 24V 2x1.5 ili NYM 3×1,5 (smeđa +, plava −, žuto-zelena se ne spaja; označi ga "24 V"). Napajanje zbraja sve spojene trake × 1,2. Provjere: 230 V na traci, traka bez napajanja,
     traka dulja od 5 m (24 V) s dovodom samo s jednog kraja.
+    **LED kontroler** (prigušivanje): alatom Relej klikni na LED napajanje; zadani je LED Connex / Sunricher Zigbee
+    dimmer. Napajanje tada dobiva stalnih 230 V, tipkalo ("Na relej") ide upravljačkim kabelom 2×0,75 na +24 / PUSH
+    i radi i bez Zigbee mreže. Upozorenje ako signal tipkala ide žilama 230 V kabela.
     **Razdjelnik podnog (W)**: upravljačka kutija podnog grijanja; 230 V do nje 3×1,5, broj zona upišeš desno.
     **Termostat (Q)**: doza Ø60 duboka na 1,4 m; žičani dobiva 5×1,5 bužirom do razdjelnika (L N PE iz kutije, crna =
     izlaz na svoju zonu Z1, Z2…), Zigbee termostat taj kabel drži kao rezervu. Provjere: premalo žila, više žičanih

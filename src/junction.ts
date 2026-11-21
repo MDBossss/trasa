@@ -252,7 +252,7 @@ function switchSignals(sw: WallElement, p: Project, checks: Check[], usable: num
     const r = el(p, sw.relayId)
     if (!r) checks.push({ level: 'err', text: `${sw.label}: relej više ne postoji.` })
     if (kind !== 'tipkalo') checks.push({ level: 'warn', text: `${sw.label} je ${kind} na releju: koristi tipkalo ili postavi relej u "toggle/edge" način.` })
-    if (r && RELAY_MODELS[relayModelOf(r)].dc) { const n = sw.relayInput ?? 1; return [{ terminal: `SI:${sw.relayId}:${n}:1`, note: `na ${r.label} +24 V` }, { terminal: `SI:${sw.relayId}:${n}:2`, note: `na ${r.label} SW${n}` }] }
+    if (r && RELAY_MODELS[relayModelOf(r)].dc) { const n = sw.relayInput ?? 1; return [{ terminal: `SI:${sw.relayId}:${n}:1`, note: `na ${r.label} +24 V` }, { terminal: `SI:${sw.relayId}:${n}:2`, note: `na ${r.label} ${inPortOf(relayModelOf(r), n)}` }] }
     if (r && RELAY_MODELS[relayModelOf(r)].swLow) return [{ terminal: `SI:${sw.relayId}:1:1`, note: `na ${r.label} S1` }, { terminal: `SI:${sw.relayId}:1:2`, note: `na ${r.label} S2` }]
     return [{ terminal: 'L', note: 'dovod' }, { terminal: `I:${sw.relayId}:${sw.relayInput ?? 1}`, note: `na ${r?.label ?? 'relej'} ${r ? inPortOf(relayModelOf(r), sw.relayInput ?? 1) : `SW${sw.relayInput ?? 1}`}` }]
   }
@@ -703,7 +703,7 @@ export function terminalMeta(id: string, p: Project): { label: string; desc: str
   if (id.startsWith('L@') || id.startsWith('N@')) { const name = circuitsOf(p).names.get(id.slice(2)) ?? 'krug'; return { label: id[0], desc: `${id[0] === 'L' ? 'faza' : 'nula'} · ${name}` } }
   if (id === 'PE' || id.startsWith('PE@')) return { label: 'PE', desc: 'zaštitni' }
   if (id === 'V+' || id === 'V-') return { label: id === 'V+' ? 'V+' : 'V−', desc: `24 V iz napajanja → trake (${id === 'V+' ? 'plus' : 'minus'})` }
-  if (id.startsWith('SI:') && el(p, id.split(':')[1]) && RELAY_MODELS[relayModelOf(el(p, id.split(':')[1])!)].dc) { const [, rid, n, k] = id.split(':'); return { label: k === '1' ? '+24' : `SW${n}`, desc: `tipkalo → ${el(p, rid)?.label ?? ''} ${k === '1' ? '+24 V' : `SW${n}`}, 24 V` } }
+  if (id.startsWith('SI:') && el(p, id.split(':')[1]) && RELAY_MODELS[relayModelOf(el(p, id.split(':')[1])!)].dc) { const [, rid, n, k] = id.split(':'); return { label: k === '1' ? '+24' : inPortOf(relayModelOf(el(p, rid)!), +n), desc: `tipkalo → ${el(p, rid)?.label ?? ''} ${k === '1' ? '+24 V' : `SW${n}`}, 24 V` } }
   if (id.startsWith('SI:')) { const [, rid, , k] = id.split(':'); return { label: `S${k}`, desc: `tipkalo → ${el(p, rid)?.label ?? ''} S${k}, niski napon` } }
   if (id.startsWith('JMP:')) { const r = el(p, id.split(':')[1]); const com = r ? RELAY_MODELS[relayModelOf(r)].com : undefined; return { label: `L→${com ?? 'I'}`, desc: `premosnica na ${com ? 'Aqari' : 'Shellyju'} (pali fazom)` } }
   if (id.startsWith('IMPC:')) { const r = el(p, id.split(':')[1]); return { label: 'COM', desc: `impuls ${r?.label ?? ''}: zajednički kontakt, bez napona` } }
@@ -1237,6 +1237,8 @@ export function leafJunctionFor(el: WallElement, p: Project): Junction {
     else if (kind === 'hob' && cores < 5 && sect < 6) checks.push({ level: 'warn', text: `${el.label}: jednofazno na ${thin} ploča radi samo uz ograničenje snage (~3,7 kW, B16). Za punu snagu 5×2,5 trofazno ili 3×6 na B32.` })
     if (kind !== 'hood' && c.far.place) checks.push({ level: 'warn', text: `${el.label}: ${ap.label.toLowerCase()} se napaja preko kutije ${c.far.place.label}. Uobičajeno je vlastiti krug ravno iz ormara.` })
   }
+  // the button pair is low voltage: it gets its own control cable, never spare cores of a 230 V cable
+  if (ctl) for (const c of cables) if (!isControlCable(c.cable.type) && c.wires.some((w) => w.terminal?.startsWith('SI:'))) checks.push({ cableId: c.cable.id, level: 'warn', text: `${el.label}: tipkalo za ${ctl.label} (24 V) ide žilama kabela ${c.cable.type} uz 230 V. Povuci zaseban upravljački kabel (2×0,75) od tipkala do napajanja.` })
   if (el.type === 'ledpsu') {
     const ss = stripsOf(el, p), w = ledWatts(el, p), need = psuWatts(w)
     const t = lightTerminal(el, p)

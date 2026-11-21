@@ -688,6 +688,22 @@ await page.screenshot({ path: `${SHOTS}/trasa-wall.png` })
   assert.deepEqual(await page.evaluate(({ sw }) => window.__trasa.getState().project.elements.find((e) => e.id === sw).controls, xr), [xr.lx])
   await page.evaluate(({ other, lx, d, sw }) => { const s = window.__trasa.getState(); const drop = new Set([lx, d, sw]); s.patchProject({ elements: s.project.elements.filter((e) => !drop.has(e.id)), rooms: s.project.rooms.filter((r) => r.id !== other) }) }, xr)
 
+  // the Zigbee push-dim controller (Sunricher / LED Connex): the button lands on +24 / PUSH; carried in a 230 V cable it is flagged
+  const zg = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
+    const add = (o) => { const id = s.addElement({ roomId: room, wall: 0, note: '', ...o }); s = window.__trasa.getState(); return id }
+    const n = add({ type: 'ledpsu', xM: 3.6, zM: 1.75, ledM: 2.7 }), r = add({ type: 'relay', relayModel: 'zgdim', host: n, xM: 3.6, zM: 1.75 })
+    const d = add({ type: 'modbox', xM: 3.9, zM: 1.1, modules: 2 }), t = add({ type: 'switch', switchKind: 'tipkalo', host: d, xM: 3.9, zM: 1.1, relayId: r, relayInput: 1 })
+    const cab = (type, f, to) => { const id = s.addCable({ roomId: room, wall: 0, type, from: { kind: 'element', id: f }, to: { kind: 'element', id: to }, via: [], note: '' }); s = window.__trasa.getState(); return id }
+    const cs = [cab('NYM-J 3x1.5', box, n), cab('upravljački 2x0.75', d, n)]
+    const leaf = () => E.allLeafJunctions(window.__trasa.getState().project).find((x) => x.box.id === n)
+    const ok = leaf(); const out = { t: ok.terminals.map((x) => x.label).sort(), level: ok.level }
+    s.updateCable(cs[1], { type: 'NYM-J 5x1.5' }); s = window.__trasa.getState()
+    out.warn = leaf().checks.some((c) => c.level === 'warn' && /zaseban upravljački kabel/.test(c.text))
+    const drop = new Set([n, r, d, t, ...cs]); s.patchProject({ cables: s.project.cables.filter((x) => !drop.has(x.id)), elements: s.project.elements.filter((e) => !drop.has(e.id)) })
+    return out }, { box: ids.box })
+  assert.deepEqual(zg.t, ['+24', 'L', 'N', 'PE', 'PUSH'], 'the push button lands on the controller +24 / PUSH, the supply stays live'); assert.equal(zg.level, 'ok')
+  assert.ok(zg.warn, 'a 24 V button pair inside a 230 V cable is flagged')
+
   // a LED supply without a controller: control cables leaving it are its 24 V outputs, joined in parallel (V+ / V−)
   const psu = await page.evaluate(({ box }) => { let s = window.__trasa.getState(); const room = s.project.rooms[0].id; const E = window.__trasaEngine
     const n = s.addElement({ roomId: room, wall: 0, type: 'ledpsu', xM: 3.8, zM: 0.3, note: '', ledM: 3, ledWpm: 6 }); s = window.__trasa.getState()

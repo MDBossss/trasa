@@ -325,7 +325,7 @@ export function WallSidebar({ room, walls, wall, part }: { room: Room; walls: Wa
               <div className="stat"><span>U</span><b>{hostLabel(el.host)}</b><span className="muted">klikni relejem na drugu kutiju da ga preseliš</span></div>
               <div className="stat"><span>Ulazi</span><b>{project.elements.filter((s) => s.relayId === el.id).map((s) => `${s.label}→${inPortOf(relayModelOf(el), s.relayInput ?? 1)}`).join(', ') || '—'}</b></div>
               <div className="stat"><span>Izlazi</span><b>{project.elements.filter((l) => l.feedRelayId === el.id).map((l) => `O${l.feedOutput ?? 1}→${l.label}`).join(', ') || '—'}</b></div>
-              {RELAY_MODELS[relayModelOf(el)].dc && <p className="muted">24 V strana: traka i njeno napajanje, 230 V dolaz na L/N. Tipkala preko mreže (Plus i4) ili na DC ulaze.</p>}
+              {RELAY_MODELS[relayModelOf(el)].dc && <p className="muted">Kontroler na 24 V strani: napajanje dobiva stalnih 230 V, kontroler pali i prigušuje traku. Tipkalo ("Na relej") je niskonaponski par{relayModelOf(el) === 'zgdim' ? ' na ulaz PUSH (kratko pali/gasi, dugo prigušuje); radi i bez Zigbee mreže' : ' na DC ulaze'}, zaseban upravljački kabel 2×0,75 do napajanja, ne kroz 230 V kabel.</p>}
             </>
           )}
           {el.type === 'modbox' && <button className="primary" onClick={() => setView({ kind: 'junctions', elementId: el.id })}><Icon.box /> Otvori dozu (spojevi)</button>}

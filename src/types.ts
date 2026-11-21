@@ -58,7 +58,7 @@ export interface Wall {
 export type ElementType = 'box' | 'socket' | 'switch' | 'light' | 'panel' | 'modbox' | 'relay' | 'ledpsu' | 'ledstrip' | 'ufh' | 'thermostat' | 'motor' | 'kip' | 'boiler' | 'appliance' | 'rack'
 
 // Smart relays that sit in a box: inputs are SW terminals, outputs are O terminals.
-export type RelayModel = 'gen4' | 'gen4pm' | 'zbminir2' | 'rgbw' | 'aqarat2'
+export type RelayModel = 'gen4' | 'gen4pm' | 'zbminir2' | 'rgbw' | 'aqarat2' | 'zgdim'
 // dry: relay contact is potential-free (I/O), usable as an impulse for a door unit
 // swLow: the button input is a low-voltage pair (S1/S2) instead of L-referenced SW
 // inPorts/outPorts name the terminals when they are not SW1…/O…; com: the dry outputs share this common
@@ -69,6 +69,8 @@ export const RELAY_MODELS: Record<RelayModel, { label: string; inputs: number; o
   gen4: { label: 'Shelly 1 Gen4 (Zigbee, suhi kontakt)', inputs: 1, outputs: 1, needsN: true, dim: false, dc: false, dry: true, swLow: false, ports: ['L', 'N', 'SW1', 'I', 'O'], wMm: 37, hMm: 42 },
   // two channels, one per door; without the red jumper L1/L2 close against LOUT (shared common)
   aqarat2: { label: 'Aqara Dual Relay T2 (Zigbee, suhi kontakt, 2 kanala)', inputs: 2, outputs: 2, needsN: true, dim: false, dc: false, dry: true, swLow: false, ports: ['L', 'N', 'S1', 'S2', 'LOUT', 'L1', 'L2'], wMm: 46, hMm: 48, inPorts: ['S1', 'S2'], outPorts: ['L1', 'L2'], com: 'LOUT' },
+  // Zigbee single-colour dimmer on the 24 V side (Sunricher SR-ZG9101CS, sold as LED Connex): a push button dims it, no hub needed
+  zgdim: { label: 'LED Connex / Sunricher Zigbee dimmer (24 V, tipkalo)', inputs: 1, outputs: 1, needsN: false, dim: true, dc: true, dry: false, swLow: false, ports: ['V+', 'V−', 'PUSH'], wMm: 45, hMm: 25, inPorts: ['PUSH'] },
   rgbw: { label: 'Shelly Plus RGBW PM (24 V)', inputs: 4, outputs: 4, needsN: true, dim: true, dc: true, dry: false, swLow: false, ports: ['L', 'N'], wMm: 37, hMm: 42 },
 }
 // older saves may carry models that are no longer offered; they land on the nearest current one
