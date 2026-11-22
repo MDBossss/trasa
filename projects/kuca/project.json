@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-22T11:15:38.304Z",
+ "savedAt": "2026-11-22T11:17:04.320Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -5752,7 +5752,11 @@
     "id": "d08mn68w",
     "label": "P21",
     "slotOrder": 1,
-    "modules": 2
+    "modules": 2,
+    "controls": [
+     "dg1hdfey",
+     "v9e4pw6f"
+    ]
    },
    {
     "roomId": "z6exkgda",
