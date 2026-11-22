@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-21T20:05:24.005Z",
+ "savedAt": "2026-11-22T11:15:38.304Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -5748,13 +5748,11 @@
     "zM": 1.23,
     "note": "led ispod ormarica",
     "host": "3jpippck",
-    "switchKind": "tipkalo",
+    "switchKind": "obicni",
     "id": "d08mn68w",
     "label": "P21",
     "slotOrder": 1,
-    "modules": 2,
-    "relayId": "4u3ggzz4",
-    "relayInput": 1
+    "modules": 2
    },
    {
     "roomId": "z6exkgda",
@@ -5783,7 +5781,6 @@
     "id": "dg1hdfey",
     "label": "N1",
     "ledM": 2,
-    "feedRelayId": "4u3ggzz4",
     "feedOutput": 1
    },
    {
@@ -5796,20 +5793,7 @@
     "id": "v9e4pw6f",
     "label": "N2",
     "ledM": 2.5,
-    "feedRelayId": "4u3ggzz4",
     "feedOutput": 1
-   },
-   {
-    "roomId": "z6exkgda",
-    "wall": 2,
-    "type": "relay",
-    "xM": 1.87,
-    "zM": 1.23,
-    "note": "",
-    "host": "3jpippck",
-    "relayModel": "zbminir2",
-    "id": "4u3ggzz4",
-    "label": "R9"
    },
    {
     "roomId": "z6exkgda",
@@ -10615,58 +10599,6 @@
     "id": "w8aiaeq0"
    },
    {
-    "roomId": "z6exkgda",
-    "wall": 0,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 2.5
-    },
-    "to": {
-     "kind": "element",
-     "id": "xw9co270"
-    },
-    "via": [],
-    "note": "",
-    "id": "dp2c225b"
-   },
-   {
-    "roomId": "z6exkgda",
-    "wall": 1,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "corner",
-     "corner": 2,
-     "zM": 2.48
-    },
-    "to": {
-     "kind": "corner",
-     "corner": 1,
-     "zM": 2.5
-    },
-    "via": [],
-    "note": "",
-    "id": "0zzz37nr"
-   },
-   {
-    "roomId": "z6exkgda",
-    "wall": 2,
-    "type": "NYM-J 3x1.5",
-    "from": {
-     "kind": "element",
-     "id": "9cgabio4"
-    },
-    "to": {
-     "kind": "corner",
-     "corner": 2,
-     "zM": 2.48
-    },
-    "via": [],
-    "note": "",
-    "id": "xk4hqrsc"
-   },
-   {
     "roomId": "icogq6ir",
     "wall": 1,
     "type": "NYM-J 3x1.5",
@@ -13890,8 +13822,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "akuvhdws",
-   "wall": 6
+   "roomId": "z6exkgda",
+   "wall": 2
   }
  }
 }
