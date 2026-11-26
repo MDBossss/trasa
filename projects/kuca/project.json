@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-26T17:58:58.059Z",
+ "savedAt": "2026-11-26T18:01:35.465Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -8793,7 +8793,7 @@
     ],
     "note": "",
     "id": "cbftcxpm",
-    "circuit": "07n6jc5d"
+    "circuit": "ltybv1m6"
    },
    {
     "roomId": "j02a68g1",
@@ -8883,7 +8883,8 @@
     },
     "via": [],
     "note": "",
-    "id": "wx6lintk"
+    "id": "wx6lintk",
+    "circuit": "ltybv1m6"
    },
    {
     "roomId": "j02a68g1",
@@ -8918,7 +8919,7 @@
     "via": [],
     "note": "",
     "id": "ng4wso13",
-    "circuit": "07n6jc5d"
+    "circuit": "ltybv1m6"
    },
    {
     "roomId": "z6exkgda",
@@ -8954,7 +8955,7 @@
     "via": [],
     "note": "",
     "id": "tu5ymkof",
-    "circuit": "07n6jc5d"
+    "circuit": "ltybv1m6"
    },
    {
     "roomId": "j02a68g1",
@@ -8971,7 +8972,7 @@
     "via": [],
     "note": "",
     "id": "e88bg117",
-    "circuit": "07n6jc5d"
+    "circuit": "ltybv1m6"
    },
    {
     "roomId": "j02a68g1",
@@ -8989,7 +8990,7 @@
     "via": [],
     "note": "",
     "id": "y4ax4qd5",
-    "circuit": "07n6jc5d"
+    "circuit": "ltybv1m6"
    },
    {
     "roomId": "z6exkgda",
@@ -12845,7 +12846,7 @@
     "via": [],
     "note": "",
     "id": "48n5y5w1",
-    "circuit": "07n6jc5d"
+    "circuit": "ltybv1m6"
    },
    {
     "roomId": "icogq6ir",
@@ -13908,8 +13909,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "akuvhdws",
-   "wall": 6
+   "roomId": "j02a68g1",
+   "wall": 1
   }
  }
 }
