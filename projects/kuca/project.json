@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-22T13:15:02.432Z",
+ "savedAt": "2026-11-26T17:58:58.059Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -2646,6 +2646,29 @@
     "exitZ": {
      "start": 1.6,
      "end": 1.67
+    }
+   },
+   {
+    "id": "ltybv1m6",
+    "name": "DOLAZ HOD SPAJ",
+    "color": "#ff0000",
+    "diameter": 20,
+    "points": [
+     {
+      "x": 907.3244790593428,
+      "y": 1086.6930034775849
+     },
+     {
+      "x": 907.3244790593428,
+      "y": 1150.053767025183
+     }
+    ],
+    "from": "",
+    "to": "",
+    "note": "",
+    "categoryId": "dolaz",
+    "exitZ": {
+     "end": 2.57
     }
    }
   ],
@@ -12260,7 +12283,8 @@
      }
     ],
     "note": "",
-    "id": "1qwxu0et"
+    "id": "1qwxu0et",
+    "circuit": "ltybv1m6"
    },
    {
     "roomId": "akuvhdws",
@@ -13746,6 +13770,23 @@
     ],
     "note": "",
     "id": "riaf3jos"
+   },
+   {
+    "roomId": "akuvhdws",
+    "wall": 0,
+    "type": "NYM-J 3x2.5",
+    "from": {
+     "kind": "exit",
+     "conduitId": "ltybv1m6",
+     "end": "end"
+    },
+    "to": {
+     "kind": "element",
+     "id": "1qn2t4ec"
+    },
+    "via": [],
+    "note": "",
+    "id": "37bmy10z"
    }
   ],
   "categories": [
@@ -13867,8 +13908,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "fb7su35f",
-   "wall": 3
+   "roomId": "akuvhdws",
+   "wall": 6
   }
  }
 }
