@@ -1,7 +1,7 @@
 {
  "app": "trasa",
  "version": 1,
- "savedAt": "2026-11-26T18:01:35.465Z",
+ "savedAt": "2026-11-26T18:36:06.132Z",
  "project": {
   "version": 1,
   "name": "Kuća",
@@ -963,7 +963,7 @@
     "diameter": 20,
     "points": [
      {
-      "x": 1450.4167380387548,
+      "x": 1448.1538536263406,
       "y": 752.9175526464879
      },
      {
@@ -7818,7 +7818,7 @@
     "type": "switch",
     "xM": 0.94,
     "zM": 1.28,
-    "note": "",
+    "note": "kotlovnica unutra",
     "host": "fgk38re5",
     "id": "e2t6w86c",
     "label": "P51",
@@ -7830,7 +7830,7 @@
     "type": "switch",
     "xM": 0.94,
     "zM": 1.28,
-    "note": "",
+    "note": "zid gore",
     "host": "fgk38re5",
     "id": "dygix35i",
     "label": "P52",
@@ -7842,7 +7842,7 @@
     "type": "switch",
     "xM": 0.94,
     "zM": 1.28,
-    "note": "",
+    "note": "jazucci svjetla",
     "host": "fgk38re5",
     "id": "bfuqtc9z",
     "label": "P53",
@@ -13909,8 +13909,8 @@
  "ui": {
   "view": {
    "kind": "room",
-   "roomId": "j02a68g1",
-   "wall": 1
+   "roomId": "ccucgr9f",
+   "wall": 3
   }
  }
 }
